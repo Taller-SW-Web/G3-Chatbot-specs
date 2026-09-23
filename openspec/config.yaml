@@ -1,0 +1,62 @@
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+  Project: Canal Chatbot specs repo (OpenSpec source of truth only, no app code).
+  Domain: customer-facing chat sales channel, mobile-first web (UNMSM 2026-II, group G3).
+  Backend (sibling, read-only): Python 3.12, FastAPI, hexagonal.
+  Frontend (sibling, read-only): Next.js (App Router, frontend only, no BFF role) + React + TypeScript, hexagonal.
+  Spec content language: Spanish (neutral/professional). CONFIRMED hybrid format:
+  OpenSpec structural keywords stay in English (## Purpose, ## Requirements,
+  ### Requirement:, #### Scenario:), each requirement's first sentence carries the
+  Spanish RFC 2119 keyword with the English one in parentheses (DEBE (SHALL),
+  NO DEBE (SHALL NOT), DEBERÍA (SHOULD), PUEDE (MAY)), and scenarios use bold
+  Spanish Gherkin bullets (**DADO** / **CUANDO** / **ENTONCES** / **Y**).
+  Baseline specs migrated from ../specs-chatbot/ (22 SPEC-*.md) into
+  openspec/specs/<slug>/ (spec.md + design.md); cross-cutting docs in docs/.
+
+strict_tdd: false
+
+testing:
+  runner: none
+  note: >
+    Docs-only repo (OpenSpec specs). No test runner here. Backend/frontend
+    sibling repos run pytest+respx and Vitest+Testing Library+Playwright,
+    but those are out of scope for this repo per sdd-init instructions.
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+  specs:
+    - >-
+      Scenarios go under "#### Scenario: <nombre en español>" and use bold
+      Spanish Gherkin bullets (- **DADO** / - **CUANDO** / - **ENTONCES** / - **Y**)
+    - >-
+      Keep OpenSpec structural keywords in English (## Purpose, ## Requirements,
+      ### Requirement:, #### Scenario:) so the parser and archive merges work
+    - >-
+      Each requirement's first sentence MUST contain the RFC 2119 keyword in
+      Spanish with the English keyword in parentheses, e.g. "El sistema DEBE
+      (SHALL) ...", "NO DEBE (SHALL NOT)", "DEBERÍA (SHOULD)", "PUEDE (MAY)"
+    - Every requirement keeps at least one scenario
+    - Spec prose content is in neutral/professional Spanish
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow existing conventions from README.md (section Convenciones)
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: ""
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
+
+delivery_strategy: ask-on-risk
+review_budget_lines: 800

@@ -23,6 +23,7 @@ Documentos transversales:
 | [`docs/modelo-datos.md`](docs/modelo-datos.md) | Tablas de la base de datos propia del chatbot |
 | [`docs/producto/`](docs/producto/README.md) | Capa de producto sobre las specs: alcance, épicas, historias de usuario, reglas de negocio, Definición de Listo y de Terminado, y trazabilidad (no reemplaza a las specs) |
 | [`docs/conversacion/`](docs/conversacion/README.md) | Diseño conversacional sobre las specs: persona y tono, catálogo de intenciones, diálogos de ejemplo, flujos, KPIs del chatbot y privacidad (no reemplaza a las specs) |
+| [`docs/arquitectura/`](docs/arquitectura/README.md) | Modelo C4 (contexto, contenedores y componentes del backend) y registro de decisiones de arquitectura (ADR) sobre las specs (no reemplaza a las specs) |
 
 > Esta versión incorpora la arquitectura hexagonal (frontend y backend) y los wireframes mobile ya definidos por el equipo. Las secciones marcadas 🧩 reflejan decisiones tomadas a partir de esos artefactos; lo que no estaba explícito en ellos queda anotado como supuesto.
 
@@ -31,6 +32,8 @@ Documentos transversales:
 ## 1. Arquitectura
 
 El sistema se organiza en **arquitectura hexagonal (puertos y adaptadores) tanto en el frontend como en el backend**, cada uno con su propio núcleo de dominio y casos de uso independientes del framework.
+
+> Las vistas C4 (contexto, contenedores y componentes) y las decisiones de arquitectura (ADR) están en [`docs/arquitectura/`](docs/arquitectura/README.md).
 
 ### 1.1 Frontend — Next.js (App Router) hexagonal
 

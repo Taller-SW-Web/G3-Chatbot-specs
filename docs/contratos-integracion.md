@@ -104,6 +104,7 @@ Si el WebSocket no conecta, el frontend hace *polling* de `GET /chat/conversacio
 | GET | `/pedidos` | Pedidos del cliente (proxy de Ventas, filtrado por `sub`). |
 | GET | `/pedidos/{pedidoId}` | Detalle, estado e historial. |
 | GET | `/pedidos/{pedidoId}/seguimiento` | Hitos del despacho (proxy de Despacho). |
+| POST | `/pedidos/{pedidoId}/reenviar-confirmacion` | Reenvía el correo de confirmación del pedido (máx. 2 por pedido, SPEC-16 · Req. 3). Se invoca desde la acción "Reenviar" de la UI, no como herramienta del LLM. |
 
 ### 2.6 Reclamos (SPEC-19, SPEC-20) ✅
 | Método | Ruta | Descripción |

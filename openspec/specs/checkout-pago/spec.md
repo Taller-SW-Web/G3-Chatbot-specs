@@ -42,7 +42,7 @@ Incluye:
 ## Requirements
 
 ### Requirement: Precondiciones del checkout
-El sistema DEBE (SHALL) verificar las precondiciones al iniciar el checkout y resolver cada una en el chat antes de mostrar el resumen, en este orden: sesión (SPEC-03) → celular verificado (SPEC-04) → carrito válido (SPEC-10 y SPEC-11) → dirección y cotización (SPEC-12) → cupón vigente (SPEC-13).
+El sistema DEBE (SHALL) verificar las precondiciones al iniciar el checkout y resolver cada una antes de mostrar el resumen, en este orden: sesión (SPEC-03) → celular verificado (SPEC-04) → carrito válido (SPEC-10 y SPEC-11) → dirección y cotización (SPEC-12) → cupón vigente (SPEC-13). Sesión, celular, carrito y cupón se resuelven en el chat; la dirección y la cotización se resuelven en `CheckoutPage`, con los campos libres de SPEC-12.
 
 *Trazabilidad: SPEC-14 · Requisito 1.*
 
@@ -54,7 +54,7 @@ El sistema DEBE (SHALL) verificar las precondiciones al iniciar el checkout y re
 #### Scenario: Falta una precondición
 - **DADO** un cliente sin dirección elegida
 - **CUANDO** inicia el checkout
-- **ENTONCES** el chat lo guía primero a elegir la dirección (SPEC-12) y luego continúa automáticamente al resumen
+- **ENTONCES** se navega a `CheckoutPage` con la sección de dirección enfocada (campos libres de SPEC-12) y, al cotizarse el envío, se muestra el resumen con los importes actualizados sin volver al chat
 
 #### Scenario: Carrito vacío o solo con productos no disponibles
 - **DADO** un carrito sin líneas válidas

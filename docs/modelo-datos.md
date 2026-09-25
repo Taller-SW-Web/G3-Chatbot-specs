@@ -134,11 +134,12 @@ Verificación propia del chatbot (SPEC-04), independiente del perfil de Segurida
 | Campo | Tipo | Notas |
 |---|---|---|
 | id | uuid | PK |
-| pedido_id | varchar | Único con `tipo` (idempotencia) |
-| tipo | varchar | `CONFIRMACION_PEDIDO` |
+| pedido_id | varchar | Único con `tipo` y `numero_reenvio` (idempotencia) |
+| tipo | varchar | `CONFIRMACION_PEDIDO`, `REENVIO_CONFIRMACION` |
+| numero_reenvio | int | `0` para `CONFIRMACION_PEDIDO`; `1` o `2` para `REENVIO_CONFIRMACION` (máx. 2 por pedido, SPEC-16). Provisional: se revisará al refinar el modelo de datos. |
 | destinatario | varchar | Correo |
 | estado | varchar | `PENDIENTE`, `ENVIADA`, `FALLIDA` |
-| intentos | int | Máximo 3 |
+| intentos | int | Reintentos de envío SMTP de esta notificación, máximo 3 (no cuenta reenvíos) |
 | ultimo_error | text null | |
 
 ### `reclamo_ref`
@@ -173,7 +174,7 @@ Referencia local de una solicitud de devolución/cambio registrada en Ventas (F3
 | id | uuid | PK |
 | devolucion_id | varchar null | Null mientras el borrador no se ha enviado |
 | conversacion_id | uuid | Para asociar la evidencia al borrador antes de enviarlo |
-| tipo | varchar | `IMAGEN` (tal como lo devuelve Ventas) |
+| tipo | varchar | Tal como lo devuelve Ventas, sin `CHECK` local (hoy `IMAGEN`; valor para PDF pendiente de confirmar con Ventas) |
 | url | varchar | La URL que devolvió `POST /api/v2/devoluciones/evidencias/upload`; es la misma que se envía luego en `evidencias[]` al registrar la devolución |
 | nombre_archivo_original | varchar | Tal como lo devuelve Ventas |
 | tamanio_bytes | int | CHECK ≤ 5 MB |

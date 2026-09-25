@@ -31,7 +31,7 @@ Incluye:
 ### Fuera de alcance
 
 - Anular un pedido desde el chat: es F2 de Ventas y no se ofrece en este canal (el cliente puede crear un reclamo).
-- Devoluciones o cambios: no se incluyen en este canal.
+- Solicitar o consultar devoluciones y cambios: no forman parte de esta spec; se cubren en SPEC-21 (`solicitud-devolucion-cambio`) y SPEC-22 (`consulta-devolucion-reembolso`).
 - Historial de pedidos con descarga de comprobantes.
 
 ## Requirements

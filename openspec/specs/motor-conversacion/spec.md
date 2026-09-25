@@ -87,7 +87,12 @@ El sistema DEBE (SHALL) mostrar, al abrir la app o al no tener ninguna conversac
 #### Scenario: Primera apertura
 - **DADO** un visitante que abre la app por primera vez
 - **CUANDO** carga `HomePage`
-- **ENTONCES** se muestran el banner de ofertas (carrusel con indicadores), un grid de hasta 4 productos en oferta (`GET /catalogo/promociones` + `soloOfertas=true`, SPEC-08 y SPEC-06) y el campo de chat en la parte inferior, sin necesidad de sesión
+- **ENTONCES** se muestran el banner de ofertas (carrusel con indicadores) alimentado por `GET /catalogo/promociones` (SPEC-08), un grid de hasta 4 productos en oferta obtenido con la búsqueda `soloOfertas=true` (SPEC-06) y el campo de chat en la parte inferior, sin necesidad de sesión
+
+#### Scenario: Promociones no disponibles
+- **DADO** que `GET /catalogo/promociones` (SPEC-08) todavía no está disponible (Hito 3), falla o no devuelve promociones vigentes
+- **CUANDO** carga `HomePage`
+- **ENTONCES** el banner de ofertas no se muestra, el grid de productos en oferta (SPEC-06) y el campo de chat se muestran igual, y no se muestra ningún error al cliente
 
 #### Scenario: Escribir desde la pantalla de inicio
 - **DADO** el campo de chat de `HomePage`

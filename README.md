@@ -141,7 +141,7 @@ El frontend guarda el `accessToken` en **`chatStore` respaldado por LocalStorage
 | Pruebas | pytest, respx (mocks HTTP), Prism para el mock de Seguridad, Vitest + Testing Library, Playwright (E2E) |
 | Diseño | Figma |
 
-> ⚠️ **Validar con el profesor:** los lineamientos del curso listan Java Spring Boot, .NET Core o Node.js como backend; el equipo optó por Python/FastAPI.
+> ✅ **Aprobado por el profesor:** los lineamientos del curso listan Java Spring Boot, .NET Core o Node.js como backend; el equipo optó por Python/FastAPI y el profesor lo aceptó.
 
 ---
 

@@ -21,6 +21,7 @@ Documentos transversales:
 |---|---|
 | [`docs/contratos-integracion.md`](docs/contratos-integracion.md) | API propia del chatbot, endpoints consumidos de cada módulo, mapeo de estados y acuerdos pendientes |
 | [`docs/modelo-datos.md`](docs/modelo-datos.md) | Tablas de la base de datos propia del chatbot |
+| [`docs/producto/`](docs/producto/README.md) | Capa de producto sobre las specs: alcance, épicas, historias de usuario, reglas de negocio, Definición de Listo y de Terminado, y trazabilidad (no reemplaza a las specs) |
 
 > Esta versión incorpora la arquitectura hexagonal (frontend y backend) y los wireframes mobile ya definidos por el equipo. Las secciones marcadas 🧩 reflejan decisiones tomadas a partir de esos artefactos; lo que no estaba explícito en ellos queda anotado como supuesto.
 

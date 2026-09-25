@@ -116,7 +116,7 @@ Payload real `POST {VEN}/api/v1/pedidos/{pedidoId}/pagos/notificacion`:
 #### Scenario: Notificación exitosa
 - **DADO** un pago aprobado
 - **CUANDO** se registra en el outbox (`NOTIFICAR_PAGO_VENTAS`) en la misma transacción que el intento de pago y el worker lo envía y recibe `200 {pedidoId, nuevoEstado: PAGADO, transaccionId, fechaTransicion}`
-- **ENTONCES** `pedido_ref` pasa a `PAGADO_NOTIFICADO`, el checkout a `CONFIRMADO` y el carrito a `CONVERTIDO`, se encola el correo (SPEC-16) y el chat muestra `CONFIRMACION_PEDIDO` con el número de pedido, el total, la tarjeta `•••• 1111`, la dirección y "Te enviamos la confirmación a m****a@…"
+- **ENTONCES** `pedido_ref` pasa a `PAGADO_NOTIFICADO`, el checkout a `CONFIRMADO` y el carrito a `CONVERTIDO`, se encola el correo (SPEC-16) y el chat muestra `CONFIRMACION_PEDIDO` con el número de pedido, el total, la tarjeta `•••• 1111`, la dirección y "Te enviaremos la confirmación a m****a@…" (SPEC-16: sin prometer que ya llegó)
 
 #### Scenario: Ventas cae después del cobro
 - **DADO** un pago aprobado y Ventas sin responder

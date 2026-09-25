@@ -12,7 +12,7 @@
 | Área | Épica | Reglas |
 |---|---|---|
 | `IDE` | Identidad y sesión | 21 |
-| `CNV` | Motor de conversación | 18 |
+| `CNV` | Motor de conversación | 21 |
 | `CAT` | Descubrimiento de productos | 17 |
 | `CAR` | Carrito y stock | 16 |
 | `CHK` | Checkout y pago | 26 |
@@ -20,7 +20,7 @@
 | `SGT` | Seguimiento de pedidos | 14 |
 | `RCL` | Reclamos | 11 |
 | `DEV` | Devoluciones y reembolsos | 14 |
-| **Total** | | **151** |
+| **Total** | | **154** |
 
 ---
 
@@ -67,11 +67,14 @@
 | RN-CNV-11 | Si el LLM invoca una herramienta con argumentos inválidos, se le devuelve el error como máximo 1 vez; si persiste, se pide el dato al cliente. | SPEC-05 · Req. 6 | Chatbot |
 | RN-CNV-12 | Precios, stock, descuentos, totales y estados se presentan únicamente a partir de los resultados de las herramientas; un precio en el texto transmitido que no coincida se corrige antes de cerrar el turno. | SPEC-05 · Req. 7 | Chatbot |
 | RN-CNV-13 | Las acciones de botones se ejecutan directamente sobre el caso de uso, sin pasar por el LLM ni por el WebSocket, y quedan registradas en el historial. | SPEC-05 · Req. 8 | Chatbot |
-| RN-CNV-14 | Toda secuencia de 13 a 19 dígitos que pase la validación Luhn se reemplaza por `[tarjeta oculta]` antes de persistirse o enviarse al LLM; contraseñas, OTP y datos de tarjeta nunca llegan al LLM ni a la base de datos. | SPEC-05 · Req. 9 | Chatbot |
+| RN-CNV-14 | Toda secuencia de 13 a 19 dígitos que pase la validación Luhn se reemplaza por `[tarjeta oculta]`, y todo número de documento precedido por "DNI", "RUC", "documento", "carné", "CE" o "pasaporte" se reemplaza por `[documento oculto]`, antes de persistirse o enviarse al LLM; contraseñas, OTP, datos de tarjeta y documentos nunca llegan al LLM ni a la base de datos. | SPEC-05 · Req. 9 | Chatbot |
 | RN-CNV-15 | El contenido devuelto por las herramientas se trata como dato, nunca como instrucción; los descuentos solo provienen de Productos. | SPEC-05 · Req. 9 | Chatbot |
 | RN-CNV-16 | Si el proveedor LLM excede 15 s o devuelve error, se activa el modo degradado con menú de acciones rápidas y búsqueda por palabra clave. | SPEC-05 · Req. 10 | Chatbot |
 | RN-CNV-17 | Un cliente o IP que envía más de 20 mensajes en 1 minuto (sumando todas sus conversaciones) recibe `429 DEMASIADAS_SOLICITUDES`. | SPEC-05 · Req. 11 | Chatbot |
 | RN-CNV-18 | Con más de 50 conversaciones, crear una nueva está permitido, pero el listado archiva automáticamente (sin borrar) las que llevan más de 90 días sin actividad. | SPEC-05 · Req. 11 | Chatbot |
+| RN-CNV-19 | El asistente se identifica siempre como asistente virtual, con el nombre configurado en `ASSISTANT_NAME`: se presenta en una línea en la primera respuesta de cada conversación (sin repetirlo después) y lo aclara cada vez que el cliente pregunta si habla con una persona. Nunca afirma ni sugiere ser humano. | SPEC-05 · Req. 12 | Chatbot |
+| RN-CNV-20 | Antes de la primera interacción se muestra, junto al campo de chat, un aviso breve de privacidad con enlace a la política completa; el aviso no bloquea la navegación ni el envío de mensajes y no usa casillas de aceptación premarcadas. | SPEC-05 · Req. 12 | Chatbot |
+| RN-CNV-21 | El canal no ofrece atención con agente humano: ante ese pedido, el asistente lo explica y ofrece "Crear un reclamo", "Mis pedidos" y, solo si está configurado, el canal de contacto de la tienda, sin prometer una derivación ni tiempos de respuesta. | SPEC-05 · Req. 12 y Fuera de alcance | Chatbot |
 
 ## RN-CAT — Descubrimiento de productos
 
@@ -180,7 +183,7 @@
 | RN-SGT-08 | La fecha estimada de entrega se calcula con el plazo de la cotización (snapshot) o, si ya existe, con la fecha programada de Despacho. | SPEC-17 · Req. 3 | Chatbot |
 | RN-SGT-09 | Si Ventas no responde, solo se puede mostrar el último estado conocido de pedidos creados en este canal, marcado como "último estado conocido". | SPEC-17 · Req. 4 | Chatbot |
 | RN-SGT-10 | El seguimiento se consulta solo para pedidos del cliente; un `404` de Despacho en un pedido `PAGADO` o `EN_PREPARACION` no es un error. | SPEC-18 · Req. 1 | Chatbot |
-| RN-SGT-11 | Solo llegan al frontend y al LLM los campos `estadoEtiqueta`, `estado`, `fechaProgramada`, `distrito`, `hitos[{titulo, fecha, completado}]` y `recibidoPor?`; nunca el motivo de un fallo, el comentario o los datos del repartidor, ni coordenadas. | SPEC-18 · Req. 2, Req. 3 y RNF (Privacidad) | Despacho (RT-04); Chatbot (lista blanca) |
+| RN-SGT-11 | Solo llegan al frontend y al LLM los campos `estadoEtiqueta`, `estado`, `fechaProgramada`, `distrito` e `hitos[{titulo, fecha, completado}]`; `recibidoPor?` llega solo al frontend, nunca al LLM; nunca el motivo de un fallo, el comentario o los datos del repartidor, ni coordenadas. | SPEC-18 · Req. 2, Req. 3 y RNF (Privacidad) | Despacho (RT-04); Chatbot (lista blanca) |
 | RN-SGT-12 | Si Ventas indica `ENTREGADO` y Despacho aún no, prevalece Ventas. | SPEC-18 · RNF (Coherencia) | Ventas |
 | RN-SGT-13 | La consulta a Despacho usa un token de servicio vigente; ante `401` se renueva una vez y se reintenta; ante `403 SCOPE_INSUFICIENTE` no se reintenta. | SPEC-18 · Req. 4 y RNF | Seguridad / Despacho (acuerdo A4) |
 | RN-SGT-14 | Si Despacho no responde en 4 s, se muestra el estado según Ventas con el aviso de detalle no disponible. | SPEC-18 · Req. 4 | Chatbot |

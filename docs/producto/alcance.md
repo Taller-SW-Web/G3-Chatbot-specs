@@ -39,7 +39,7 @@ Agrupadas por épica (ver [`epicas.md`](epicas.md)). Una línea por capacidad.
 - Verificación local del celular por OTP simulado (6 dígitos, 5 min, 3 intentos) antes del primer pago ([SPEC-04](../../openspec/specs/validacion-celular/spec.md)).
 
 **EP-02 · Motor de conversación**
-- Conversaciones múltiples (crear, listar, buscar, retomar), pantalla de inicio, interpretación con herramientas, streaming por WebSocket con *fallback* a *polling*, acciones directas, guardarraíles, modo degradado y límites de uso ([SPEC-05](../../openspec/specs/motor-conversacion/spec.md)).
+- Conversaciones múltiples (crear, listar, buscar, retomar), pantalla de inicio, interpretación con herramientas, streaming por WebSocket con *fallback* a *polling*, acciones directas, guardarraíles, modo degradado, límites de uso y presentación del asistente virtual con aviso de privacidad ([SPEC-05](../../openspec/specs/motor-conversacion/spec.md)).
 
 **EP-03 · Descubrimiento de productos**
 - Búsqueda con filtros combinados, sinónimos locales, refinamiento y paginación de 10 en 10 ([SPEC-06](../../openspec/specs/busqueda-filtrado/spec.md)).

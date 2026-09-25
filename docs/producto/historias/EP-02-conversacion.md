@@ -1,6 +1,6 @@
 # EP-02 · Motor de conversación — Historias de usuario
 
-> Spec: [SPEC-05](../../../openspec/specs/motor-conversacion/spec.md) · Área `CNV` · 12 historias · 57 puntos
+> Spec: [SPEC-05](../../../openspec/specs/motor-conversacion/spec.md) · Área `CNV` · 13 historias · 60 puntos
 >
 > Los criterios de aceptación **remiten** a los escenarios de la spec, que son la única fuente de verdad del comportamiento. Aquí solo se resume cada uno en una línea.
 
@@ -178,6 +178,7 @@
 
 **Criterios de aceptación**
 - `SPEC-05 · Req. 9 · Scenario: El cliente escribe un número de tarjeta en el chat` — la secuencia se reemplaza por `[tarjeta oculta]` antes de persistirla o enviarla al LLM y se indica usar la pantalla de pago.
+- `SPEC-05 · Req. 9 · Scenario: El cliente escribe su documento de identidad en el chat` — el número precedido por "DNI", "RUC", etc. se reemplaza por `[documento oculto]` y se ofrece "Ir al pago"; otras secuencias de dígitos no se tocan.
 - `SPEC-05 · Req. 9 · Scenario: Instrucción maliciosa en el mensaje o en un dato` — el asistente no altera su comportamiento y los descuentos solo provienen de Productos.
 
 **Prioridad:** Must: el README fija como principio que los datos sensibles nunca pasan por el LLM.
@@ -218,10 +219,30 @@
 
 ---
 
+## HU-CNV-13 · Saber que converso con un asistente virtual y cómo se usan mis datos
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-02 | Must | 3 | Hito 3 | `SPEC-05 · Req. 12` | RN-CNV-19, RN-CNV-20, RN-CNV-21 | — |
+
+**Como** cliente (anónimo o autenticado), **quiero** saber desde el primer mensaje que hablo con un asistente virtual, ver un aviso claro sobre el uso de mis datos y recibir alternativas si pido una persona, **para** decidir con información qué comparto en el chat y no esperar una atención que el canal no ofrece.
+
+**Criterios de aceptación**
+- `SPEC-05 · Req. 12 · Scenario: Presentación en la primera respuesta de una conversación` — la primera respuesta de cada conversación incluye una presentación de una línea con `ASSISTANT_NAME` como asistente virtual, y no se repite en las siguientes.
+- `SPEC-05 · Req. 12 · Scenario: Aviso de privacidad antes de la primera interacción` — el aviso breve con enlace a la política se muestra junto al campo de chat, sin bloquear la navegación ni usar casillas premarcadas.
+- `SPEC-05 · Req. 12 · Scenario: El cliente pregunta si habla con una persona` — el asistente aclara que es un asistente virtual, sin invocar herramientas.
+- `SPEC-05 · Req. 12 · Scenario: El cliente pide hablar con un agente humano` — se explica que no hay asesores humanos y se ofrecen "Crear un reclamo" y "Mis pedidos", sin prometer una derivación.
+
+**Prioridad:** Must: la transparencia sobre el uso de IA y el aviso de privacidad son condiciones para operar el canal con datos personales (ver [`docs/conversacion/privacidad.md`](../../conversacion/privacidad.md)).
+
+**Notas:** reutiliza las tareas T5 (`Composer`, donde vive el aviso) y T17 (prompt del sistema v1) de SPEC-05; la guía de tono y el microcopy están en [`docs/conversacion/persona-tono.md`](../../conversacion/persona-tono.md). El texto de la política completa y el canal de contacto de la tienda están pendientes (ver [preguntas abiertas](../../conversacion/README.md#preguntas-abiertas)). **Al implementar:** confirmar si la tienda tiene un correo de atención (probable, sin verificar) y configurarlo como canal de contacto.
+
+---
+
 ## Asignación del desglose (`design.md`) a historias
 
 Tareas numeradas `T1…Tn` en el orden del "Desglose para issues" de `motor-conversacion/design.md`. Las tareas `[QA]` de escenarios se replican como una sub-issue por historia.
 
 | Spec | Tarea → Historia |
 |---|---|
-| SPEC-05 | T1 `[FE]` AppShell y rutas → HU-CNV-01 · T2 `[FE]` Sidebar → HU-CNV-01 (relacionada: HU-CNV-02) · T3 `[FE]` HomePage → HU-CNV-03 · T4 `[FE]` ChatPage, useChat, MessageList → HU-CNV-05 · T5 `[FE]` Composer, QuickReplies, TypingIndicator, DegradedBanner → HU-CNV-04 (relacionada: HU-CNV-11) · T6 `[FE]` chatStore y puertos → HU-CNV-01 · T7 `[FE]` adaptadores Axios y WebSocket → HU-CNV-05 · T8 `[FE]` container.ts y apiConfig.ts → HU-CNV-01 · T9 `[BE]` modelos `conversacion` y `mensaje` → HU-CNV-01 · T10 `[BE]` `chatbot_router.py` → HU-CNV-01 · T11 `[BE]` `chatbot_ws_adapter.py` → HU-CNV-05 · T12 `[BE]` GestionarConversacionUseCase → HU-CNV-01 · T13 `[BE]` LLMProvider → HU-CNV-04 · T14 `[BE]` ToolRegistry, InterpretarYResponderUseCase, ActionDispatcher → HU-CNV-04 (relacionadas: HU-CNV-07, HU-CNV-09) · T15 `[BE]` SensitiveDataFilter y OutputValidator → HU-CNV-08 (relacionada: HU-CNV-10) · T16 `[BE]` DegradedMode y RateLimiter → HU-CNV-11 (relacionada: HU-CNV-12) · T17 `[BE]` prompt del sistema v1 → HU-CNV-04 · T18 `[QA]` conjunto de evaluación y umbral en CI → HU-CNV-04 · T19 `[QA]` escenarios → HU-CNV-01 a HU-CNV-12 |
+| SPEC-05 | T1 `[FE]` AppShell y rutas → HU-CNV-01 · T2 `[FE]` Sidebar → HU-CNV-01 (relacionada: HU-CNV-02) · T3 `[FE]` HomePage → HU-CNV-03 · T4 `[FE]` ChatPage, useChat, MessageList → HU-CNV-05 · T5 `[FE]` Composer, QuickReplies, TypingIndicator, DegradedBanner → HU-CNV-04 (relacionadas: HU-CNV-11, HU-CNV-13) · T6 `[FE]` chatStore y puertos → HU-CNV-01 · T7 `[FE]` adaptadores Axios y WebSocket → HU-CNV-05 · T8 `[FE]` container.ts y apiConfig.ts → HU-CNV-01 · T9 `[BE]` modelos `conversacion` y `mensaje` → HU-CNV-01 · T10 `[BE]` `chatbot_router.py` → HU-CNV-01 · T11 `[BE]` `chatbot_ws_adapter.py` → HU-CNV-05 · T12 `[BE]` GestionarConversacionUseCase → HU-CNV-01 · T13 `[BE]` LLMProvider → HU-CNV-04 · T14 `[BE]` ToolRegistry, InterpretarYResponderUseCase, ActionDispatcher → HU-CNV-04 (relacionadas: HU-CNV-07, HU-CNV-09) · T15 `[BE]` SensitiveDataFilter y OutputValidator → HU-CNV-08 (relacionada: HU-CNV-10) · T16 `[BE]` DegradedMode y RateLimiter → HU-CNV-11 (relacionada: HU-CNV-12) · T17 `[BE]` prompt del sistema v1 → HU-CNV-04 (relacionada: HU-CNV-13) · T18 `[QA]` conjunto de evaluación y umbral en CI → HU-CNV-04 · T19 `[QA]` escenarios → HU-CNV-01 a HU-CNV-13 |

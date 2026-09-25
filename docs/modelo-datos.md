@@ -158,7 +158,7 @@ Referencia local de una solicitud de devolución/cambio registrada en Ventas (F3
 | Campo | Tipo | Notas |
 |---|---|---|
 | devolucion_id | varchar | PK (ID de Ventas) |
-| codigo | varchar | Código visible para el cliente (p. ej. `DEV-2026-00045`) |
+| codigo | varchar | Código visible para el cliente (p. ej. `DEV-2026-0042`; formato definido por Ventas) |
 | pedido_id | varchar | |
 | cliente_id | uuid | |
 | tipo_solicitado | varchar | `CAMBIO`, `DEVOLUCION_DINERO` |

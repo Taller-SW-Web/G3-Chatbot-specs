@@ -108,7 +108,7 @@ El sistema DEBE (SHALL) usar un token de servicio vigente para consultar a Despa
 
 ## Requisitos no funcionales
 
-- **Privacidad:** lista blanca de campos: `estadoEtiqueta`, `estado`, `fechaProgramada`, `distrito`, `hitos[{titulo, fecha, completado}]` y `recibidoPor?`. Nada más llega al frontend ni al LLM.
+- **Privacidad:** lista blanca de campos: `estadoEtiqueta`, `estado`, `fechaProgramada`, `distrito` e `hitos[{titulo, fecha, completado}]` llegan al frontend y al LLM; `recibidoPor?` (nombre de un tercero) llega **solo** al bloque del frontend, nunca al LLM. Nada más llega a ninguno de los dos.
 - **Seguridad:** el token de servicio se obtiene y cachea en el backend; nunca llega al frontend.
 - **Rendimiento:** la consulta tarda p95 ≤ 600 ms; caché de 30 s por pedido para evitar golpear a Despacho con consultas repetidas.
 - **Coherencia:** el estado del pedido lo decide Ventas; si Ventas dice `ENTREGADO` y Despacho aún no, se muestra "Entregado".

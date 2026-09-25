@@ -12,7 +12,7 @@
 | Épica | Nombre | Grupo (README) | Specs | Área | Hito | Historias | Puntos |
 |---|---|---|---|---|---|---|---|
 | EP-01 | Identidad y sesión | Identidad | SPEC-01, 02, 03, 04 | `IDE` | Hito 3 (01–03) · Hito 4 (04) | 14 | 50 |
-| EP-02 | Motor de conversación | Transversal | SPEC-05 | `CNV` | Hito 3 | 12 | 57 |
+| EP-02 | Motor de conversación | Transversal | SPEC-05 | `CNV` | Hito 3 | 13 | 60 |
 | EP-03 | Descubrimiento de productos | Descubrimiento | SPEC-06, 07, 08, 09 | `CAT` | Hito 3 (06, 09) · Hito 4 (07, 08) | 16 | 61 |
 | EP-04 | Carrito y stock | Carrito | SPEC-10, 11 | `CAR` | Hito 3 | 8 | 36 |
 | EP-05 | Checkout y pago | Checkout | SPEC-12, 13, 14 | `CHK` | Hito 4 | 16 | 65 |
@@ -20,7 +20,7 @@
 | EP-07 | Seguimiento de pedidos | Seguimiento | SPEC-17, 18 | `SGT` | Hito 5–6 | 8 | 28 |
 | EP-08 | Reclamos | Postventa | SPEC-19, 20 | `RCL` | Hito 5–6 | 7 | 22 |
 | EP-09 | Devoluciones y reembolsos | Postventa | SPEC-21, 22 | `DEV` | Hito 5–6 | 9 | 31 |
-| | **Total** | | **22 specs** | | | **98** | **382** |
+| | **Total** | | **22 specs** | | | **99** | **385** |
 
 ```mermaid
 graph LR

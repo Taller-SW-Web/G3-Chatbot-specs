@@ -8,7 +8,7 @@ Registrar en Ventas el pedido del cliente con un snapshot fiel de lo que confirm
 
 ## Contexto
 
-Ventas y Postventa es el dueño del pedido (M1 — Pedidos). Su `api-contract.md` (v1.2.0) ya no está vacío y define, para el Canal Chatbot:
+Ventas y Postventa es el dueño del pedido (M1 — Pedidos). Su `api-contract.md` (v1.3.0) ya no está vacío y define, para el Canal Chatbot:
 
 - La creación del pedido a partir de la solicitud de un canal, en un solo `POST` con los bloques `contacto`, `items`, `cupon`, `envio` y `pago` ya calculados, en estado `CREADO`.
 - Una **notificación de pago separada** (`POST /pedidos/{id}/pagos/notificacion`), que transiciona `CREADO → PAGADO` cuando el pago se confirma.

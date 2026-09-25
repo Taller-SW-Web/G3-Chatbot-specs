@@ -8,7 +8,7 @@
 |---|---|---|
 | Productos | `POST /cupones/validar {codigo, canal: CHATBOT, customerRef, lineas[{sku, cantidad}]}` | 🟡 A5 |
 | Productos | `POST /promociones/evaluar` con `cupon` (totales combinados) | 🟡 A5 |
-| Ventas | Campo `cupon` en `POST /pedidos` | 🟡 A8 |
+| Ventas | Campo `cupon` en `POST /pedidos` | ✅ A8 |
 
 ## Frontend
 

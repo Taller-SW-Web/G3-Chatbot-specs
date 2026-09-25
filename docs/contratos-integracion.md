@@ -139,7 +139,7 @@ Si el WebSocket no conecta, el frontend hace *polling* de `GET /chat/conversacio
 | `SERVICIO_NO_DISPONIBLE` | 503 | Falló un módulo externo; incluye `modulo`. |
 | `DEMASIADAS_SOLICITUDES` | 429 | Se superó el rate limit. |
 | `VALIDACION` | 400 | Incluye `errores[{campo, mensaje}]`. |
-| `DATO_INVALIDO` | 400 | Específico del documento de identidad (`tipoDocumento`/`numeroDocumento`); el frontend lo evita validando antes con las reglas de `SPEC-12` §4 Requisito 1, pero Ventas también lo aplica del lado suyo. |
+| `DATO_INVALIDO` | 400 | Específico del documento de identidad (`tipoDocumento`/`numeroDocumento`); el frontend lo evita validando antes con las reglas de `SPEC-12` · Requisito 1, pero Ventas también lo aplica del lado suyo. |
 
 ---
 
@@ -202,7 +202,7 @@ Errores de Seguridad: RFC 7807 con `code`. Lista completa: `TOKEN_INVALIDO`, `SC
 Notas que siguen vigentes sobre este contrato:
 - Los estados de pedido usan guion bajo y sin tildes: `EN_PREPARACION`, no "EN PREPARACIÓN".
 - El formato de error de Ventas usa la clave `codigo` (no `code`); `VentasClient` lo normaliza al `code` interno del chatbot.
-- Las reglas de `contacto.tipoDocumento`/`numeroDocumento` (DNI, RUC, CE, PASAPORTE) ya están en su propio contrato, idénticas a las de `SPEC-12` §4 Requisito 1.
+- Las reglas de `contacto.tipoDocumento`/`numeroDocumento` (DNI, RUC, CE, PASAPORTE) ya están en su propio contrato, idénticas a las de `SPEC-12` · Requisito 1.
 
 Códigos esperados: `400` datos incompletos o inconsistentes, `403` el cliente no es dueño del pedido, `404` inexistente, `409` sin stock, transición inválida o pedido en un estado que no admite la operación.
 
@@ -265,4 +265,4 @@ Mejoras posibles: suscribirse a `pedido entregado` de Ventas y a `usuario.desact
 | A11 | 🟡 Abierto | Despacho | Unificar el seguimiento: por `idPedido`, con token de servicio y sin coordenadas. | SPEC-18 |
 | A12 | 🟡 Abierto | Despacho | Autenticación de la cotización para canales: pública o con API key. | SPEC-12 |
 | A13 | ✅ Resuelto (23/09) | Ventas | Ventas hostea la evidencia ellos mismos: `POST /api/v2/devoluciones/evidencias/upload` (multipart, ≤ 5 MB, `image/jpeg`, `image/png`, `image/webp` o `application/pdf`) devuelve la URL que luego se manda en el `POST /devoluciones`. El chatbot **no necesita su propio bucket ni adaptador de almacenamiento** — solo un proxy del formulario hacia ese endpoint. | SPEC-21 |
-| A14 | ✅ Resuelto (23/09) | Ventas | `contacto.tipoDocumento` y `contacto.numeroDocumento` son **siempre obligatorios** en la creación del pedido — no opcionales, se usan para emitir el comprobante y validar la entrega. Ventas confirmó por escrito las 4 expresiones regulares exactas (DNI, RUC con prefijo, CE, y **PASAPORTE**, que no estaba contemplado antes) y el código de error `400 DATO_INVALIDO` cuando no calzan. SPEC-12 §4 Requisito 1 ya tiene las reglas exactas. Aviso no urgente para otros canales: si Ventas exige el documento a todos, Marketplace y Retail probablemente necesiten las mismas reglas. | SPEC-12, SPEC-14, SPEC-15 |
+| A14 | ✅ Resuelto (23/09) | Ventas | `contacto.tipoDocumento` y `contacto.numeroDocumento` son **siempre obligatorios** en la creación del pedido — no opcionales, se usan para emitir el comprobante y validar la entrega. Ventas confirmó por escrito las 4 expresiones regulares exactas (DNI, RUC con prefijo, CE, y **PASAPORTE**, que no estaba contemplado antes) y el código de error `400 DATO_INVALIDO` cuando no calzan. SPEC-12 · Requisito 1 ya tiene las reglas exactas. Aviso no urgente para otros canales: si Ventas exige el documento a todos, Marketplace y Retail probablemente necesiten las mismas reglas. | SPEC-12, SPEC-14, SPEC-15 |

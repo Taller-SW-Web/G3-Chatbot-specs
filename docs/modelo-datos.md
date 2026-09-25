@@ -58,7 +58,7 @@ erDiagram
 | creado_en | timestamptz | |
 
 ### `celular_verificacion_local`
-Verificación propia del chatbot (SPEC-04), independiente del perfil de Seguridad. Ver el cambio de diseño en SPEC-04 §1: Seguridad decidió no construir un mecanismo compartido este ciclo (acuerdo A2).
+Verificación propia del chatbot (SPEC-04), independiente del perfil de Seguridad. Ver el cambio de diseño en SPEC-04 · Contexto: Seguridad decidió no construir un mecanismo compartido este ciclo (acuerdo A2).
 
 | Campo | Tipo | Notas |
 |---|---|---|
@@ -126,7 +126,7 @@ Verificación propia del chatbot (SPEC-04), independiente del perfil de Segurida
 | pedido_id | varchar | PK (ID de Ventas) |
 | cliente_id | uuid | |
 | checkout_id | uuid | FK |
-| estado_local | varchar | `CREADO`, `PAGO_PENDIENTE_NOTIFICAR`, `PAGADO_NOTIFICADO`, `ANULACION_SOLICITADA` |
+| estado_local | varchar | `CREADO`, `PAGO_PENDIENTE_NOTIFICAR`, `PAGADO_NOTIFICADO`, `ANULACION_SOLICITADA`, `ANULADO` |
 | total | numeric | |
 | creado_en | timestamptz | |
 

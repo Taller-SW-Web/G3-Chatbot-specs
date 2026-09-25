@@ -94,7 +94,7 @@ El sistema DEBE (SHALL) capturar los datos de la tarjeta solo en el formulario `
 #### Scenario: Datos de tarjeta fuera del formulario
 - **DADO** que el cliente escribe su número de tarjeta en el chat
 - **CUANDO** se envía
-- **ENTONCES** se redacta antes de persistirlo y de enviarlo al LLM (SPEC-05 Req. 7) y se indica usar el formulario
+- **ENTONCES** se redacta antes de persistirlo y de enviarlo al LLM (SPEC-05 Req. 9) y se indica usar el formulario
 
 #### Scenario: Validación en el servidor
 - **DADO** una petición de pago con datos inválidos que evitó la validación del cliente

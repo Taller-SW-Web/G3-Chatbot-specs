@@ -69,7 +69,7 @@ El sistema DEBE (SHALL) validar en el frontend el formato de todos los campos an
 - **ENTONCES** se muestra en tiempo real la lista de reglas con su estado (cumplida o pendiente) y el envío queda bloqueado
 
 ### Requirement: Registro exitoso
-El sistema DEBE (SHALL) reenviar el registro a `POST /auth/registro` de Seguridad, agregando siempre `canalOrigen: "CHATBOT"` al payload (🧩 lista cerrada definida por Seguridad — decide a qué pantalla lleva el enlace de verificación; ver SPEC-02 §1). Ante `201`, informa en el chat que la cuenta fue creada y que debe verificar el correo, sin abrir sesión.
+El sistema DEBE (SHALL) reenviar el registro a `POST /auth/registro` de Seguridad, agregando siempre `canalOrigen: "CHATBOT"` al payload (🧩 lista cerrada definida por Seguridad — decide a qué pantalla lleva el enlace de verificación; ver SPEC-02 · Contexto, acuerdo A1). Ante `201`, informa en el chat que la cuenta fue creada y que debe verificar el correo, sin abrir sesión.
 
 *Trazabilidad: SPEC-01 · Requisito 3.*
 

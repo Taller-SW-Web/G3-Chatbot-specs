@@ -35,7 +35,7 @@
 
 ## Desglose para issues
 
-- [ ] `[INT]` Acordar con Ventas el listado por cliente y el formato del historial (A8)
+- [x] `[INT]` Acordar con Ventas el listado por cliente y el formato del historial (A8, resuelto)
 - [ ] `[BE]` Endpoints de pedidos con control de pertenencia
 - [ ] `[BE]` `EstadoPedidoService` y `EstadoMapper`
 - [ ] `[BE]` Herramientas `listar_pedidos` y `consultar_pedido`

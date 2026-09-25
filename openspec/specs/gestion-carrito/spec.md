@@ -79,7 +79,7 @@ El sistema DEBE (SHALL) permitir cambiar cantidades y quitar líneas por texto o
 #### Scenario: Vaciar el carrito
 - **DADO** un carrito con líneas
 - **CUANDO** el cliente pide vaciarlo
-- **ENTONCES** se exige confirmación en la UI (SPEC-05 Req. 4) y, al confirmar, el carrito queda vacío (sin cupón ni envío)
+- **ENTONCES** se exige confirmación en la UI (SPEC-05 Req. 6) y, al confirmar, el carrito queda vacío (sin cupón ni envío)
 
 ### Requirement: Ver el carrito con totales recalculados
 El sistema DEBE (SHALL) mostrar el bloque `CARRITO` recalculando en cada lectura los precios (Pricing, canal `CHATBOT`), los descuentos (`POST /promociones/evaluar`) y la validez del cupón. Los totales son: `subtotal` (Σ precio regular vigente × cantidad), `descuentos[]`, `costoEnvio` (si hay cotización) y `total`.

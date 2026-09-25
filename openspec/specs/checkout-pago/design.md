@@ -6,8 +6,8 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Ventas | Creación del pedido y notificación del pago: ver SPEC-15 | 🟡 A8 |
-| Ventas | Anulación por pago no completado: ver SPEC-15 | 🟡 A9 |
+| Ventas | Creación del pedido y notificación del pago: ver SPEC-15 | ✅ A8 |
+| Ventas | Anulación por pago no completado: ver SPEC-15 | ✅ A9 |
 | Seguridad | `POST /auth/introspeccion` (scope `tokens:introspeccion` **concedido**; credenciales reales desde Hito 4) | ✅ A3 |
 | Productos, Despacho | Revalidación: disponibilidad, precios, evaluación, cupón y cotización | 🟡 A5 |
 

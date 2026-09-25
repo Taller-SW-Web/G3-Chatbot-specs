@@ -41,7 +41,7 @@
 | `LLMProvider` (puerto outbound) + `ClaudeProvider` / `OpenAIProvider` | Llamada con tools, streaming y timeouts. |
 | `ToolRegistry` | Nombre, descripción, esquema Pydantic, `requiere_sesion`, `requiere_confirmacion` y handler (un caso de uso). |
 | `ActionDispatcher` | Enruta las acciones de botones a los mismos handlers, sin pasar por `InterpretarYResponderUseCase`. |
-| `SensitiveDataFilter` | Redacta tarjetas (Luhn), secuencias de 6 dígitos tras pedir un OTP y patrones de contraseña. |
+| `SensitiveDataFilter` | Redacta tarjetas (Luhn), secuencias de 6 dígitos tras pedir un OTP, patrones de contraseña y números de documento precedidos por una palabra que los identifique (DNI, RUC, CE, pasaporte). |
 | `OutputValidator` | Contrasta los precios y montos del texto transmitido con los resultados de las herramientas. |
 | `DegradedMode` | Intérprete de palabras clave y menú, activo también cuando el WebSocket falla. |
 | `RateLimiter` | Por cliente, IP y conversación. |

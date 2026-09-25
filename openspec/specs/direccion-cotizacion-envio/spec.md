@@ -161,7 +161,7 @@ El sistema DEBE (SHALL) invalidar y recalcular la cotización cuando cambian la 
 
 ## Requisitos no funcionales
 
-- **Privacidad:** la dirección y el documento no se envían al LLM; si el cliente los menciona por chat, se le redirige a completarlos en `CheckoutPage`.
+- **Privacidad:** la dirección y el documento no se solicitan ni se envían al LLM; si el cliente los menciona por chat, se le redirige a completarlos en `CheckoutPage`. El documento escrito en el chat se redacta (SPEC-05 · Req. 9); una dirección escrita libremente no se puede detectar de forma fiable y queda como riesgo aceptado (ver `docs/conversacion/privacidad.md`).
 - **Seguridad:** el guardado de direcciones se hace con el token del cliente (el titular). El número de documento se guarda solo en el snapshot del pedido (`checkout.resumen.contacto`), nunca en una tabla propia de datos de identidad.
 - **Rendimiento:** la cotización tarda p95 ≤ 600 ms (es síncrona según F-01 de Despacho).
 - **Datos de ubigeo:** el selector de distrito usa un JSON estático (INEI), limitado a Lima y Callao si Despacho solo cubre esas zonas.

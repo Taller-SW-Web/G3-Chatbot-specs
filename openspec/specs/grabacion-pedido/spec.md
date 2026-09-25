@@ -8,7 +8,7 @@ Registrar en Ventas el pedido del cliente con un snapshot fiel de lo que confirm
 
 ## Contexto
 
-Ventas y Postventa es el dueño del pedido (M1 — Pedidos). Su `api-contract.md` (v1.2.0) ya no está vacío y define, para el Canal Chatbot:
+Ventas y Postventa es el dueño del pedido (M1 — Pedidos). Su `api-contract.md` (v1.3.0) ya no está vacío y define, para el Canal Chatbot:
 
 - La creación del pedido a partir de la solicitud de un canal, en un solo `POST` con los bloques `contacto`, `items`, `cupon`, `envio` y `pago` ya calculados, en estado `CREADO`.
 - Una **notificación de pago separada** (`POST /pedidos/{id}/pagos/notificacion`), que transiciona `CREADO → PAGADO` cuando el pago se confirma.
@@ -116,7 +116,7 @@ Payload real `POST {VEN}/api/v1/pedidos/{pedidoId}/pagos/notificacion`:
 #### Scenario: Notificación exitosa
 - **DADO** un pago aprobado
 - **CUANDO** se registra en el outbox (`NOTIFICAR_PAGO_VENTAS`) en la misma transacción que el intento de pago y el worker lo envía y recibe `200 {pedidoId, nuevoEstado: PAGADO, transaccionId, fechaTransicion}`
-- **ENTONCES** `pedido_ref` pasa a `PAGADO_NOTIFICADO`, el checkout a `CONFIRMADO` y el carrito a `CONVERTIDO`, se encola el correo (SPEC-16) y el chat muestra `CONFIRMACION_PEDIDO` con el número de pedido, el total, la tarjeta `•••• 1111`, la dirección y "Te enviamos la confirmación a m****a@…"
+- **ENTONCES** `pedido_ref` pasa a `PAGADO_NOTIFICADO`, el checkout a `CONFIRMADO` y el carrito a `CONVERTIDO`, se encola el correo (SPEC-16) y el chat muestra `CONFIRMACION_PEDIDO` con el número de pedido, el total, la tarjeta `•••• 1111`, la dirección y "Te enviaremos la confirmación a m****a@…" (SPEC-16: sin prometer que ya llegó)
 
 #### Scenario: Ventas cae después del cobro
 - **DADO** un pago aprobado y Ventas sin responder

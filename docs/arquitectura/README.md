@@ -7,7 +7,7 @@ Esta carpeta documenta la arquitectura del Canal Chatbot con dos herramientas co
 | Documento | Para qué sirve | Lectores principales |
 |---|---|---|
 | [`c4.md`](c4.md) | Diagramas C4 en Mermaid: contexto (nivel 1), contenedores (nivel 2), entorno de desarrollo y componentes del backend (nivel 3, en dos vistas). Cada diagrama trae una tabla de elementos con su spec de origen | Todo el equipo, docentes, otros módulos |
-| [`adr/`](adr/README.md) | Registro de decisiones de arquitectura (formato de Michael Nygard): 17 aceptadas y 1 propuesta, con índice y [plantilla](adr/plantilla.md) | Tech lead, backend, frontend |
+| [`adr/`](adr/README.md) | Registro de decisiones de arquitectura (formato de Michael Nygard): 18 aceptadas y 1 propuesta, con índice y [plantilla](adr/plantilla.md) | Tech lead, backend, frontend |
 
 ## Relación con el resto del repositorio
 

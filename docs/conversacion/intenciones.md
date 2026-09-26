@@ -111,6 +111,8 @@ El chatbot **no entrena un clasificador de intenciones (NLU)**: el LLM recibe el
 | INT-CAT-10 | Preguntar el precio de un producto | `buscar_productos` o `ver_detalle_producto` | producto* | No | No | SPEC-05 · Req. 7 |
 | INT-CAT-11 | Rechazar los complementos sugeridos | Sin herramienta (fija `contexto.crossSellSilenciado = true`) | — | No | No | SPEC-07 · Req. 3 |
 
+> 🧩 **Mensajes con imágenes (SPEC-23).** Un mensaje con una imagen adjunta no es una intención nueva: el LLM interpreta la imagen y la convierte en los mismos criterios de texto de INT-CAT-01 (por ejemplo "busco algo así" con la foto de unas zapatillas). No hay búsqueda por similitud visual. Si no puede deducir criterios, hace una sola pregunta aclaratoria; si la imagen no tiene relación con la tienda, aplica INT-SIS-04. Ver [D-16](dialogos-ejemplo.md#d-16--búsqueda-a-partir-de-una-imagen). Las frases del conjunto de evaluación siguen siendo solo de texto.
+
 **Frases de ejemplo**
 
 - **INT-CAT-01**

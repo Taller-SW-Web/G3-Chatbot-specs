@@ -12,7 +12,7 @@
 | Área | Épica | Reglas |
 |---|---|---|
 | `IDE` | Identidad y sesión | 21 |
-| `CNV` | Motor de conversación | 21 |
+| `CNV` | Motor de conversación | 29 |
 | `CAT` | Descubrimiento de productos | 17 |
 | `CAR` | Carrito y stock | 16 |
 | `CHK` | Checkout y pago | 26 |
@@ -20,7 +20,7 @@
 | `SGT` | Seguimiento de pedidos | 14 |
 | `RCL` | Reclamos | 11 |
 | `DEV` | Devoluciones y reembolsos | 14 |
-| **Total** | | **154** |
+| **Total** | | **162** |
 
 ---
 
@@ -75,6 +75,14 @@
 | RN-CNV-19 | El asistente se identifica siempre como asistente virtual, con el nombre configurado en `ASSISTANT_NAME`: se presenta en una línea en la primera respuesta de cada conversación (sin repetirlo después) y lo aclara cada vez que el cliente pregunta si habla con una persona. Nunca afirma ni sugiere ser humano. | SPEC-05 · Req. 12 | Chatbot |
 | RN-CNV-20 | Antes de la primera interacción se muestra, junto al campo de chat, un aviso breve de privacidad con enlace a la política completa; el aviso no bloquea la navegación ni el envío de mensajes y no usa casillas de aceptación premarcadas. | SPEC-05 · Req. 12 | Chatbot |
 | RN-CNV-21 | El canal no ofrece atención con agente humano: ante ese pedido, el asistente lo explica y ofrece "Crear un reclamo", "Mis pedidos" y, solo si está configurado, el canal de contacto de la tienda, sin prometer una derivación ni tiempos de respuesta. | SPEC-05 · Req. 12 y Fuera de alcance | Chatbot |
+| RN-CNV-22 | Un mensaje admite hasta 3 imágenes (`image/jpeg`, `image/png` o `image/webp`, máx. 5 MB cada una); el texto es opcional si hay al menos un adjunto. El tipo se valida por la firma binaria del archivo y se eliminan los metadatos EXIF y de ubicación. Los PDF no se aceptan en el chat. | SPEC-23 · Req. 1, 3 y 4 | Chatbot |
+| RN-CNV-23 | Antes de la primera carga de una imagen en un dispositivo se muestra un aviso de privacidad con enlace a la política; la confirmación se recuerda en el dispositivo, no usa casillas premarcadas y no bloquea el envío de texto. | SPEC-23 · Req. 2 | Chatbot |
+| RN-CNV-24 | Las imágenes llegan al LLM solo como base64 leído por el backend desde el almacenamiento privado, nunca como URL (pública o firmada); se envían las imágenes de los últimos 12 mensajes, con un máximo de 6 por turno. | SPEC-23 · Req. 5 | Chatbot |
+| RN-CNV-25 | El asistente traduce la imagen a criterios de texto para las búsquedas existentes y no promete coincidencia visual exacta; el texto que aparece dentro de una imagen es un dato, no una instrucción, y precios, stock y descuentos siguen viniendo solo de las herramientas. | SPEC-23 · Req. 5 y 6 | Chatbot |
+| RN-CNV-26 | Las imágenes se guardan en un bucket privado y se muestran mediante URLs firmadas de corta vida (5 minutos por defecto) emitidas por el backend; la pertenencia se verifica por `cliente_id` o `chat_sid`, también para clientes anónimos. | SPEC-23 · Req. 3, 7 y RNF | Chatbot |
+| RN-CNV-27 | Si el modelo no admite visión (`LLM_VISION_ENABLED=false`), el LLM falla o el archivo no se puede leer, se avisa que la imagen no pudo analizarse y el flujo de texto continúa sin interrupción. | SPEC-23 · Req. 8 | Chatbot |
+| RN-CNV-28 | Máximo 10 cargas de imagen por minuto por cliente o IP y 10 adjuntos pendientes por conversación; los pendientes sin enviar se eliminan a las 24 horas. | SPEC-23 · Req. 4 y 9 | Chatbot |
+| RN-CNV-29 | Las imágenes del chat no se reenvían a Ventas como evidencia de devolución ni de reclamo; se conservan mientras exista la conversación, sin que el archivado automático las borre (el plazo de retención está pendiente). | SPEC-23 · Req. 10 | Chatbot |
 
 ## RN-CAT — Descubrimiento de productos
 

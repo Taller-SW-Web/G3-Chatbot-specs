@@ -49,6 +49,12 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-CNV-11](historias/EP-02-conversacion.md#hu-cnv-11--seguir-comprando-aunque-el-asistente-falle) | Seguir comprando aunque el asistente falle | `SPEC-05 · Req. 10` | RN-CNV-16 | `POST /chat/conversaciones/{id}/mensajes` (respuesta REST) | PRO `GET /productos` 🟡 | Hito 3 | Should | 5 |
 | [HU-CNV-12](historias/EP-02-conversacion.md#hu-cnv-12--limitar-el-uso-para-proteger-el-servicio-habilitadora) | Limitar el uso para proteger el servicio (Habilitadora) | `SPEC-05 · Req. 11` | RN-CNV-17, RN-CNV-18 | `POST /chat/conversaciones/{id}/mensajes`, `POST /chat/conversaciones` (`429`) | — | Hito 3 | Should | 3 |
 | [HU-CNV-13](historias/EP-02-conversacion.md#hu-cnv-13--saber-que-converso-con-un-asistente-virtual-y-cómo-se-usan-mis-datos) | Saber que converso con un asistente virtual y cómo se usan mis datos | `SPEC-05 · Req. 12` | RN-CNV-19, RN-CNV-20, RN-CNV-21 | `POST /chat/conversaciones/{id}/mensajes` | Proveedor LLM | Hito 3 | Must | 3 |
+| [HU-CNV-14](historias/EP-02-conversacion.md#hu-cnv-14--adjuntar-imágenes-a-mi-mensaje-y-saber-cómo-se-usan) | Adjuntar imágenes a mi mensaje y saber cómo se usan | `SPEC-23 · Req. 1–2` | RN-CNV-22, RN-CNV-23 | `POST /chat/conversaciones/{id}/adjuntos`, `DELETE /chat/conversaciones/{id}/adjuntos/{adjuntoId}` | — | Hito 4 | Should | 5 |
+| [HU-CNV-15](historias/EP-02-conversacion.md#hu-cnv-15--subir-y-enviar-mis-imágenes-de-forma-segura) | Subir y enviar mis imágenes de forma segura | `SPEC-23 · Req. 3–4` | RN-CNV-22, RN-CNV-26, RN-CNV-28 | `POST /chat/conversaciones/{id}/adjuntos`, `POST /chat/conversaciones/{id}/mensajes` (`adjuntoIds`) | Supabase Storage (bucket privado) | Hito 4 | Should | 8 |
+| [HU-CNV-16](historias/EP-02-conversacion.md#hu-cnv-16--que-el-asistente-entienda-mis-imágenes-y-me-ayude-a-buscar-productos) | Que el asistente entienda mis imágenes y me ayude a buscar productos | `SPEC-23 · Req. 5–6` | RN-CNV-24, RN-CNV-25 | `POST /chat/conversaciones/{id}/mensajes` (herramienta `buscar_productos`) | Proveedor LLM (visión) ⚠️; PRO `GET /productos` 🟡 | Hito 4 | Should | 8 |
+| [HU-CNV-17](historias/EP-02-conversacion.md#hu-cnv-17--ver-mis-imágenes-en-el-historial) | Ver mis imágenes en el historial | `SPEC-23 · Req. 7` | RN-CNV-26 | `GET /chat/adjuntos/{adjuntoId}`, `GET /chat/conversaciones/{id}/mensajes` | Supabase Storage (URLs firmadas) | Hito 4 | Should | 5 |
+| [HU-CNV-18](historias/EP-02-conversacion.md#hu-cnv-18--seguir-conversando-aunque-falle-el-análisis-de-imágenes) | Seguir conversando aunque falle el análisis de imágenes | `SPEC-23 · Req. 8` | RN-CNV-27 | `POST /chat/conversaciones/{id}/mensajes` (respuesta REST) | Proveedor LLM | Hito 4 | Should | 3 |
+| [HU-CNV-19](historias/EP-02-conversacion.md#hu-cnv-19--limitar-el-uso-de-imágenes-y-conservar-sus-referencias-habilitadora) | Limitar el uso de imágenes y conservar sus referencias (Habilitadora) | `SPEC-23 · Req. 9–10` | RN-CNV-28, RN-CNV-29 | `POST /chat/conversaciones/{id}/adjuntos` (`429`, `422`) | — | Hito 4 | Should | 5 |
 | [HU-CAT-01](historias/EP-03-descubrimiento.md#hu-cat-01--buscar-productos-combinando-filtros) | Buscar productos combinando filtros | `SPEC-06 · Req. 1` | RN-CAT-01, RN-CAT-02, RN-CAT-05 | `GET /catalogo/productos` | PRO `GET /productos`, `GET /precios` 🟡 | Hito 3 | Must | 5 |
 | [HU-CAT-02](historias/EP-03-descubrimiento.md#hu-cat-02--ser-entendido-aunque-use-sinónimos-o-escriba-mal-la-marca) | Ser entendido aunque use sinónimos o escriba mal la marca | `SPEC-06 · Req. 2` | RN-CAT-03, RN-CAT-04 | `GET /catalogo/productos` | PRO `GET /categorias`, `GET /marcas` 🟡 | Hito 3 | Must | 5 |
 | [HU-CAT-03](historias/EP-03-descubrimiento.md#hu-cat-03--refinar-la-búsqueda-conversando-o-con-chips) | Refinar la búsqueda conversando o con chips | `SPEC-06 · Req. 3` | — | `GET /catalogo/productos` | PRO `GET /productos` 🟡 | Hito 3 | Should | 5 |
@@ -121,10 +127,20 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-DEV-07](historias/EP-09-devoluciones.md#hu-dev-07--ver-el-estado-de-mi-solicitud) | Ver el estado de mi solicitud | `SPEC-22 · Req. 2` | RN-DEV-11, RN-DEV-12 | `GET /devoluciones/{devolucionId}` | VEN `GET /api/v2/devoluciones/{id}` | Hito 5–6 | Could | 3 |
 | [HU-DEV-08](historias/EP-09-devoluciones.md#hu-dev-08--ver-el-estado-de-mi-reembolso) | Ver el estado de mi reembolso | `SPEC-22 · Req. 3` | RN-DEV-12, RN-DEV-14 | `GET /devoluciones/{devolucionId}` | VEN `GET /api/v2/devoluciones/{id}` | Hito 5–6 | Could | 3 |
 | [HU-DEV-09](historias/EP-09-devoluciones.md#hu-dev-09--saber-cuándo-no-se-pueden-consultar-mis-devoluciones) | Saber cuándo no se pueden consultar mis devoluciones | `SPEC-22 · Req. 4` | — | `GET /devoluciones/{devolucionId}` | VEN `GET /api/v2/devoluciones/{id}` | Hito 5–6 | Could | 1 |
+| `SPEC-23 · Req. 1` | Adjuntar imágenes desde el compositor | HU-CNV-14 |
+| `SPEC-23 · Req. 2` | Aviso de privacidad antes de la primera carga | HU-CNV-14 |
+| `SPEC-23 · Req. 3` | Carga previa de la imagen mediante el backend | HU-CNV-15 |
+| `SPEC-23 · Req. 4` | Enviar un mensaje con adjuntos | HU-CNV-15 |
+| `SPEC-23 · Req. 5` | Análisis de la imagen por el LLM | HU-CNV-16 |
+| `SPEC-23 · Req. 6` | Búsqueda de productos a partir de una imagen | HU-CNV-16 |
+| `SPEC-23 · Req. 7` | Miniaturas en el historial mediante URLs firmadas | HU-CNV-17 |
+| `SPEC-23 · Req. 8` | Degradación sin visión o ante una falla del LLM | HU-CNV-18 |
+| `SPEC-23 · Req. 9` | Límites de uso de las imágenes | HU-CNV-19 |
+| `SPEC-23 · Req. 10` | Conversaciones archivadas y referencias de adjuntos | HU-CNV-19 |
 
 ## 3. Verificación de cobertura de requisitos
 
-Cada uno de los **99 requisitos** de las 22 specs está cubierto por al menos una historia.
+Cada uno de los **109 requisitos** de las 23 specs está cubierto por al menos una historia.
 
 | Requisito | Nombre | Historia(s) |
 |---|---|---|
@@ -228,11 +244,11 @@ Cada uno de los **99 requisitos** de las 22 specs está cubierto por al menos un
 | `SPEC-22 · Req. 3` | Mostrar el estado del reembolso de dinero | HU-DEV-08 |
 | `SPEC-22 · Req. 4` | Tolerancia a fallos | HU-DEV-09 |
 
-**Resultado:** 99 de 99 requisitos cubiertos (100 %). Requisitos sin historia: ninguno.
+**Resultado:** 109 de 109 requisitos cubiertos (100 %). Requisitos sin historia: ninguno.
 
-Requisitos repartidos en más de una historia: `SPEC-05 · Req. 1` (HU-CNV-01 y HU-CNV-02) y `SPEC-16 · Req. 3` (HU-PED-07 y HU-PED-08). Historias que cubren más de un requisito: HU-IDE-02 (`SPEC-01 · Req. 2–3`) y HU-IDE-05 (`SPEC-02 · Req. 2–3`).
+Requisitos repartidos en más de una historia: `SPEC-05 · Req. 1` (HU-CNV-01 y HU-CNV-02) y `SPEC-16 · Req. 3` (HU-PED-07 y HU-PED-08). Historias que cubren más de un requisito: HU-IDE-02 (`SPEC-01 · Req. 2–3`), HU-IDE-05 (`SPEC-02 · Req. 2–3`), HU-CNV-14 (`SPEC-23 · Req. 1–2`), HU-CNV-15 (`SPEC-23 · Req. 3–4`), HU-CNV-16 (`SPEC-23 · Req. 5–6`) y HU-CNV-19 (`SPEC-23 · Req. 9–10`).
 
-La cobertura a nivel de escenario también es completa: los **279 escenarios** de las specs están citados por nombre en los criterios de aceptación de alguna historia.
+La cobertura a nivel de escenario también es completa: los **325 escenarios** de las specs están citados por nombre en los criterios de aceptación de alguna historia.
 
 ## 4. Totales
 
@@ -241,7 +257,7 @@ La cobertura a nivel de escenario también es completa: los **279 escenarios** d
 | Épica | Historias | Puntos | Must | Should | Could | Hito 3 (pts) | Hito 4 (pts) | Hito 5–6 (pts) |
 |---|---|---|---|---|---|---|---|---|
 | EP-01 · Identidad y sesión | 14 | 50 | 13 | 1 | — | 40 | 10 | — |
-| EP-02 · Motor de conversación | 13 | 60 | 10 | 3 | — | 60 | — | — |
+| EP-02 · Motor de conversación | 19 | 94 | 10 | 9 | — | 60 | 34 | — |
 | EP-03 · Descubrimiento de productos | 16 | 61 | 13 | 3 | — | 38 | 23 | — |
 | EP-04 · Carrito y stock | 8 | 36 | 7 | 1 | — | 36 | — | — |
 | EP-05 · Checkout y pago | 16 | 65 | 14 | 2 | — | — | 65 | — |
@@ -249,24 +265,24 @@ La cobertura a nivel de escenario también es completa: los **279 escenarios** d
 | EP-07 · Seguimiento de pedidos | 8 | 28 | 3 | 5 | — | — | — | 28 |
 | EP-08 · Reclamos | 7 | 22 | — | 4 | 3 | — | — | 22 |
 | EP-09 · Devoluciones y reembolsos | 9 | 31 | — | — | 9 | — | — | 31 |
-| **Total** | **99** | **385** | **67** | **20** | **12** | **174** | **130** | **81** |
+| **Total** | **105** | **419** | **67** | **26** | **12** | **174** | **164** | **81** |
 
 ### 4.2 Por hito
 
 | Hito | Specs (README) | Historias | Puntos | Must (pts) | Should (pts) | Could (pts) |
 |---|---|---|---|---|---|---|
 | Hito 3 | SPEC-01, 02, 03, 05, 06, 09, 10, 11 | 41 | 174 | 36 (156) | 5 (18) | 0 (0) |
-| Hito 4 | SPEC-04, 07, 08, 12, 13, 14, 15, 16 | 34 | 130 | 28 (116) | 6 (14) | 0 (0) |
+| Hito 4 | SPEC-04, 07, 08, 12, 13, 14, 15, 16, 23 | 40 | 164 | 28 (116) | 12 (48) | 0 (0) |
 | Hito 5–6 | SPEC-17 a 22 | 24 | 81 | 3 (12) | 9 (31) | 12 (38) |
-| **Total** | | **99** | **385** | **67 (284)** | **20 (63)** | **12 (38)** |
+| **Total** | | **105** | **419** | **67 (284)** | **26 (97)** | **12 (38)** |
 
 ### 4.3 Distribución MoSCoW
 
 | Prioridad | Historias | % historias | Puntos | % puntos |
 |---|---|---|---|---|
-| Must | 67 | 68 % | 284 | 74 % |
-| Should | 20 | 20 % | 63 | 16 % |
-| Could | 12 | 12 % | 38 | 10 % |
+| Must | 67 | 64 % | 284 | 68 % |
+| Should | 26 | 25 % | 97 | 23 % |
+| Could | 12 | 11 % | 38 | 9 % |
 | Won't (este ciclo) | 0 | — | — | — |
 
 Los puntos Won't no se cuentan: lo excluido del ciclo está en [`alcance.md` §5](alcance.md#5-fuera-de-alcance-consolidado) y no genera historias.
@@ -275,6 +291,6 @@ Los puntos Won't no se cuentan: lo excluido del ciclo está en [`alcance.md` §5
 
 | Área | IDE | CNV | CAT | CAR | CHK | PED | SGT | RCL | DEV | Total |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Reglas | 21 | 21 | 17 | 16 | 26 | 14 | 14 | 11 | 14 | **154** |
+| Reglas | 21 | 29 | 17 | 16 | 26 | 14 | 14 | 11 | 14 | **162** |
 
 Todas las reglas del catálogo están citadas por al menos una historia, y todas las reglas citadas en las historias existen en el catálogo.

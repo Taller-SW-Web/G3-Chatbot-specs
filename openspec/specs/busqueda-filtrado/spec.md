@@ -24,7 +24,7 @@ Incluye:
 
 ### Fuera de alcance
 
-- Búsqueda por imagen.
+- Búsqueda por similitud visual (comparar imágenes o usar embeddings de imagen). Un cliente que adjunta una imagen al chat y pide algo parecido queda cubierto por [`adjuntos-imagenes-chat`](../adjuntos-imagenes-chat/spec.md) (SPEC-23): el LLM interpreta la imagen, la convierte en criterios de texto (categoría, marca, color, uso) y usa la búsqueda de esta spec, sin cambios en sus filtros.
 - Filtros por características técnicas avanzadas (drop, peso de la zapatilla, etc.) mientras Productos no exponga la búsqueda por características.
 - Búsqueda semántica con embeddings propios: se usa la búsqueda de Productos.
 

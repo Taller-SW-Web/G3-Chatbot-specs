@@ -98,12 +98,12 @@ graph LR
     CU -->|API asíncrona| SEG
 ```
 
-Los **8 casos de uso** del núcleo backend agrupan las 22 specs de este repositorio:
+Los **8 casos de uso** del núcleo backend agrupan las 23 specs de este repositorio:
 
 | Caso de uso | Agrupa |
 |---|---|
-| `GestionarConversacionUseCase` | SPEC-05 (crear, listar, buscar, cargar historial) |
-| `InterpretarYResponderUseCase` | SPEC-05 (tool calling, streaming por WebSocket) |
+| `GestionarConversacionUseCase` | SPEC-05 (crear, listar, buscar, cargar historial), SPEC-23 (cargar, enviar y quitar adjuntos, URLs firmadas) |
+| `InterpretarYResponderUseCase` | SPEC-05 (tool calling, streaming por WebSocket), SPEC-23 (imágenes como entrada del LLM) |
 | `GestionarCatalogoUseCase` | SPEC-06, 07, 08, 09 |
 | `GestionarCarritoUseCase` | SPEC-10, 11, 13 |
 | `GestionarCheckoutUseCase` | SPEC-12, 14 |
@@ -119,7 +119,7 @@ Los **8 casos de uso** del núcleo backend agrupan las 22 specs de este reposito
 2. **Doble protocolo, un solo caso de uso.** El REST atiende las acciones que crean o modifican estado (agregar al carrito, pagar, etc.) y las lecturas puntuales; el **WebSocket se usa únicamente para el streaming de la respuesta del asistente** (efecto "escribiendo en vivo"), token por token, sobre la misma conversación. Ninguna acción con efecto (pagar, enviar un reclamo) se dispara por WebSocket.
 3. **Doble vía de entrada, una sola lógica.** Cada acción se puede disparar por texto libre (el LLM decide la herramienta) o por un botón de la UI (la acción va directo al caso de uso, sin LLM). Las dos vías ejecutan el mismo caso de uso.
 4. **El LLM no inventa datos.** Precios, stock, estados de pedido y descuentos provienen siempre de las herramientas. Las tarjetas y los resúmenes se renderizan con esos datos estructurados, no con el texto del LLM.
-5. **Los datos sensibles nunca pasan por el LLM.** Contraseñas, códigos OTP y datos de tarjeta se capturan en formularios seguros de la UI y se envían a endpoints dedicados.
+5. **Los datos sensibles nunca pasan por el LLM.** Contraseñas, códigos OTP y datos de tarjeta se capturan en formularios seguros de la UI y se envían a endpoints dedicados. 🧩 Esta garantía cubre el texto: las imágenes que el cliente adjunta al chat (SPEC-23) sí llegan al LLM y no se redactan automáticamente; se mitiga con un aviso previo y se documenta como riesgo residual en `docs/conversacion/privacidad.md`.
 6. **Sin acceso a bases de datos ajenas.** Todo se hace por API, según la matriz del curso. El chatbot es dueño de: conversaciones, carrito, checkout, intentos de pago simulados y referencias locales a pedidos, reclamos y solicitudes de devolución.
 7. **Nunca se asume disponibilidad.** Si un módulo no responde, la operación se rechaza de forma controlada y se informa al cliente.
 8. **Next.js solo como frontend.** Next.js aporta el enrutamiento (App Router) y el renderizado de la interfaz; no actúa como BFF. No se usan Route Handlers, Server Actions ni componentes de servidor para llamar al backend del chatbot ni a otros módulos. Las pantallas que dependen de la sesión, el chat o el carrito son componentes de cliente (`'use client'`), porque el token vive en LocalStorage y no existe en el servidor. La configuración de servidor de Next se limita a cabeceras de seguridad como la `Content-Security-Policy`.
@@ -141,7 +141,8 @@ El frontend guarda el `accessToken` en **`chatStore` respaldado por LocalStorage
 | Frontend | Next.js (App Router, usado solo como frontend) + React + TypeScript, arquitectura hexagonal propia (`inbound/`, `application/`, `domain/`, `outbound/`, `infrastructure/`), TanStack Query, Zustand (`chatStore`), React Hook Form + Zod, Tailwind CSS |
 | Backend | Python 3.12, **FastAPI** (`chatbot_router.py` REST, `chatbot_ws_adapter.py` WebSocket), arquitectura hexagonal (`domain/`, `application/`, `adapters/inbound/`, `adapters/outbound/`), Pydantic v2, SQLAlchemy 2 + Alembic, httpx async, PyJWT (JWKS), APScheduler para el worker de outbox |
 | LLM | Adaptador `LLMProvider` (puerto outbound) con implementaciones Claude y OpenAI (tool calling); el streaming de la respuesta se empuja al frontend por `chatbot_ws_adapter.py` |
-| Base de datos | PostgreSQL (`conversacion_postgres_adapter`) |
+| Base de datos | PostgreSQL (`conversacion_postgres_adapter`), alojado en Supabase (plan gratuito; PostgreSQL 18 sin confirmar) |
+| Imágenes del chat (SPEC-23) | Puerto `AttachmentStorage` con `SupabaseAttachmentStorage` (bucket privado de Supabase Storage); el LLM (`gpt-6-luna`, visión sin verificar) recibe las imágenes en base64 |
 | Correo | SMTP (Mailtrap en desarrollo) |
 | Pruebas | pytest, respx (mocks HTTP), Prism para el mock de Seguridad, Vitest + Testing Library, Playwright (E2E) |
 | Diseño | Figma |
@@ -195,11 +196,12 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 | [SPEC-20](openspec/specs/consulta-reclamo/spec.md) | `consulta-reclamo` | Consulta de estado y respuesta del reclamo | Postventa | Sí |
 | [SPEC-21](openspec/specs/solicitud-devolucion-cambio/spec.md) | `solicitud-devolucion-cambio` | Solicitud de devolución o cambio | Postventa | Sí |
 | [SPEC-22](openspec/specs/consulta-devolucion-reembolso/spec.md) | `consulta-devolucion-reembolso` | Consulta de estado de devolución y reembolso | Postventa | Sí |
+| [SPEC-23](openspec/specs/adjuntos-imagenes-chat/spec.md) | `adjuntos-imagenes-chat` | Adjuntos de imágenes en el chat (visión del LLM) | Transversal | No |
 
 ### Orden sugerido de implementación
 
 1. **Hito 3 (demo 1):** SPEC-05 (base del chat, conversaciones múltiples y herramientas), 06, 09, 10, 11, 01, 02 y 03.
-2. **Hito 4 (integración):** SPEC-04, 07, 08, 12, 13, 14, 15 y 16.
+2. **Hito 4 (integración):** SPEC-04, 07, 08, 12, 13, 14, 15, 16 y SPEC-23 (imágenes en el chat, después del núcleo del Hito 3).
 3. **Hito 5–6:** SPEC-17 a SPEC-22, más el endurecimiento de los RNF y las pruebas de performance.
 
 ---
@@ -220,6 +222,7 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 | (Extensión) Registro e inicio de sesión | SPEC-01, SPEC-03 |
 | (Extensión) Reclamos desde el canal | SPEC-19, SPEC-20 |
 | (Extensión, a partir del wireframe de historial) Devoluciones, cambios y reembolsos | SPEC-21, SPEC-22 |
+| (Extensión) Imágenes adjuntas al chat interpretadas por el LLM (el audio queda fuera de alcance) | SPEC-23 |
 
 ---
 

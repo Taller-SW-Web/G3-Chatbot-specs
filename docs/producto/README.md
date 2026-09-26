@@ -1,6 +1,6 @@
 # Capa de producto — Canal Chatbot
 
-Esta carpeta organiza las 22 specs de [`openspec/specs/`](../../openspec/specs/) en términos de producto ágil: alcance, épicas, historias de usuario, reglas de negocio y trazabilidad. **No reemplaza a las specs**: el comportamiento (requisitos y escenarios DADO/CUANDO/ENTONCES) se define únicamente en cada `spec.md`, y aquí solo se referencia por nombre.
+Esta carpeta organiza las 23 specs de [`openspec/specs/`](../../openspec/specs/) en términos de producto ágil: alcance, épicas, historias de usuario, reglas de negocio y trazabilidad. **No reemplaza a las specs**: el comportamiento (requisitos y escenarios DADO/CUANDO/ENTONCES) se define únicamente en cada `spec.md`, y aquí solo se referencia por nombre.
 
 ## Contenido
 
@@ -8,17 +8,17 @@ Esta carpeta organiza las 22 specs de [`openspec/specs/`](../../openspec/specs/)
 |---|---|---|
 | [`alcance.md`](alcance.md) | Visión, roles, canal, capacidades incluidas y excluidas, dependencias externas, restricciones medibles, supuestos, riesgos y **preguntas abiertas** | PO, todo el equipo |
 | [`epicas.md`](epicas.md) | Las 9 épicas (`EP-01` a `EP-09`), su valor, hito y dependencias, y el **mapeo a Linear** (proyectos, issues, sub-issues, milestones, prioridades y labels) | PO, Tech lead |
-| [`historias/`](historias/) | Un archivo por épica con sus historias `HU-XXX-NN` (99 en total) y la asignación de las tareas de `design.md` a cada historia | Todo el equipo |
-| [`reglas-negocio.md`](reglas-negocio.md) | Catálogo de las 154 reglas `RN-XXX-NN` extraídas de las specs, con su dueño (chatbot u otro módulo) | PO, QA |
+| [`historias/`](historias/) | Un archivo por épica con sus historias `HU-XXX-NN` (105 en total) y la asignación de las tareas de `design.md` a cada historia | Todo el equipo |
+| [`reglas-negocio.md`](reglas-negocio.md) | Catálogo de las 162 reglas `RN-XXX-NN` extraídas de las specs, con su dueño (chatbot u otro módulo) | PO, QA |
 | [`definicion-listo-terminado.md`](definicion-listo-terminado.md) | Definición de Listo y de Terminado, por niveles y con el rol que valida cada punto | Todo el equipo |
-| [`trazabilidad.md`](trazabilidad.md) | Convenciones de IDs, matriz HU → spec → regla → endpoint → hito → prioridad, verificación de cobertura (99/99 requisitos) y totales | PO, QA, Tech lead |
+| [`trazabilidad.md`](trazabilidad.md) | Convenciones de IDs, matriz HU → spec → regla → endpoint → hito → prioridad, verificación de cobertura (109/109 requisitos) y totales | PO, QA, Tech lead |
 
 ### Historias por épica
 
 | Archivo | Épica | Historias | Puntos |
 |---|---|---|---|
 | [`EP-01-identidad-sesion.md`](historias/EP-01-identidad-sesion.md) | Identidad y sesión | 14 | 50 |
-| [`EP-02-conversacion.md`](historias/EP-02-conversacion.md) | Motor de conversación | 13 | 60 |
+| [`EP-02-conversacion.md`](historias/EP-02-conversacion.md) | Motor de conversación | 19 | 94 |
 | [`EP-03-descubrimiento.md`](historias/EP-03-descubrimiento.md) | Descubrimiento de productos | 16 | 61 |
 | [`EP-04-carrito.md`](historias/EP-04-carrito.md) | Carrito y stock | 8 | 36 |
 | [`EP-05-checkout-pago.md`](historias/EP-05-checkout-pago.md) | Checkout y pago | 16 | 65 |

@@ -23,7 +23,7 @@ Actores externos que **no** usan el canal pero deciden sobre sus datos: el Gesto
 - **Incluido:** aplicación **web**, mobile-first, de pantalla completa (patrón tipo ChatGPT/WhatsApp Web), con frontend Next.js (App Router, solo como frontend) + React + TypeScript y backend FastAPI propio (BFF). Pantallas: Inicio, Barra lateral, Conversación, Carrito, Checkout e Historial de pedidos (README §2).
 - **Excluido explícitamente:**
   - WhatsApp y otros canales de mensajería (SPEC-05 · Fuera de alcance).
-  - Voz / speech-to-text (SPEC-05 · Fuera de alcance).
+  - Voz / speech-to-text (SPEC-05 · Fuera de alcance). Las imágenes adjuntas al chat sí están dentro del canal desde SPEC-23; el audio no.
   - Aplicaciones móviles nativas: el README define el canal como "solo web" (README, encabezado).
   - Widget embebido en otro módulo: es una aplicación propia (README, encabezado).
   - Notificaciones push y SMS al cliente (SPEC-08, SPEC-16 · Fuera de alcance).
@@ -40,6 +40,7 @@ Agrupadas por épica (ver [`epicas.md`](epicas.md)). Una línea por capacidad.
 
 **EP-02 · Motor de conversación**
 - Conversaciones múltiples (crear, listar, buscar, retomar), pantalla de inicio, interpretación con herramientas, streaming por WebSocket con *fallback* a *polling*, acciones directas, guardarraíles, modo degradado, límites de uso y presentación del asistente virtual con aviso de privacidad ([SPEC-05](../../openspec/specs/motor-conversacion/spec.md)).
+- Adjuntar hasta 3 imágenes por mensaje (JPG, PNG o WebP de hasta 5 MB) para que el asistente las interprete con visión, con aviso de privacidad previo, almacenamiento privado, miniaturas con URLs firmadas en el historial, degradación si el análisis falla y límites de uso ([SPEC-23](../../openspec/specs/adjuntos-imagenes-chat/spec.md), Hito 4). Las imágenes se convierten en criterios de texto para la búsqueda existente; no hay búsqueda por similitud visual.
 
 **EP-03 · Descubrimiento de productos**
 - Búsqueda con filtros combinados, sinónimos locales, refinamiento y paginación de 10 en 10 ([SPEC-06](../../openspec/specs/busqueda-filtrado/spec.md)).
@@ -74,13 +75,17 @@ Agrupadas por épica (ver [`epicas.md`](epicas.md)). Una línea por capacidad.
 
 ## 5. Fuera de alcance (consolidado)
 
-Recopilado de la sección *Fuera de alcance* de las 22 specs, sin duplicados. Cuando un mismo punto aparece en varias specs, se citan todas.
+Recopilado de la sección *Fuera de alcance* de las 23 specs, sin duplicados. Cuando un mismo punto aparece en varias specs, se citan todas.
 
 ### Canal e interacción
 | Excluido | Fuente |
 |---|---|
 | WhatsApp y otros canales de mensajería | SPEC-05 |
-| Voz (speech-to-text) | SPEC-05 |
+| Voz (speech-to-text) | SPEC-05, SPEC-23 |
+| PDF en el chat (solo imágenes; los PDF siguen admitidos únicamente como evidencia de devolución) | SPEC-23 |
+| Redacción automática de contenido sensible dentro de las imágenes (rostros, documentos, tarjetas) | SPEC-23 |
+| Envío de las imágenes del chat a Ventas como evidencia de devolución o de reclamo | SPEC-23 |
+| Generación o edición de imágenes por el asistente | SPEC-23 |
 | Atención con agente humano (handoff) | SPEC-05 |
 | Personalización o recomendación basada en el historial de compras o en el comportamiento de otros usuarios | SPEC-05, SPEC-07 |
 | Entrenamiento o *fine-tuning* de modelos propios | SPEC-05 |
@@ -103,7 +108,7 @@ Recopilado de la sección *Fuera de alcance* de las 22 specs, sin duplicados. Cu
 ### Catálogo y descubrimiento
 | Excluido | Fuente |
 |---|---|
-| Búsqueda por imagen | SPEC-06 |
+| Búsqueda por similitud visual (embeddings de imagen, búsqueda inversa). El asistente sí puede interpretar una imagen adjunta y convertirla en criterios de texto (SPEC-23) | SPEC-06, SPEC-23 |
 | Filtros por características técnicas avanzadas mientras Productos no las exponga | SPEC-06 |
 | Búsqueda semántica con embeddings propios | SPEC-06 |
 | Configuración de reglas de cross-sell (es de Productos) | SPEC-07 |
@@ -172,27 +177,29 @@ Recopilado de la sección *Fuera de alcance* de las 22 specs, sin duplicados. Cu
 | **Productos y Ofertas** | 🟡 Provisional: las specs de Productos definen las capacidades, pero las rutas son una propuesta del chatbot | Búsqueda, detalle, categorías, marcas, precios por canal, disponibilidad, promociones, evaluación, cupones, candidatos | A5 🟡 (rutas y payloads), A6 🟡 (quién agrega peso y volumen), A7 🟡 (búsqueda por texto libre) | EP-02 (grid de inicio), EP-03, EP-04, EP-05 (cupones y revalidación), EP-09 (variante deseada) |
 | **Ventas y Postventa** | ✅ Contrato publicado (v1.3.0) | Pedidos (crear, notificar pago, anular, detalle, listado), reclamos (crear, detalle, listado), devoluciones (evidencia, crear, detalle, listado) | A8, A9, A10, A13, A14 ✅ | EP-04 (409 por stock), EP-05, EP-06, EP-07, EP-08, EP-09 |
 | **Despacho y Entrega** | Cotización ✅ publicada · Seguimiento 🟡 | `POST /zonas/cotizar`; seguimiento por pedido (propuesto `GET /seguimiento?idPedido=`) | A11 🟡 (seguimiento por `idPedido`, con token de servicio y sin coordenadas); A12 🟡 (autenticación de la cotización); A4 🟡 | EP-05 (cotización), EP-07 (seguimiento) |
-| **Proveedor LLM** | Definido por configuración | Claude u OpenAI detrás de `LLMProvider` | — | EP-02 y todas las épicas conversacionales |
+| **Proveedor LLM** | Definido por configuración | Claude u OpenAI detrás de `LLMProvider`; para SPEC-23, `gpt-6-luna` (OpenAI) con entrada de imágenes ⚠️ soporte de visión sin verificar | — | EP-02 y todas las épicas conversacionales |
+| **Supabase Storage** | Propio del chatbot (plan gratuito) | Bucket privado detrás de `AttachmentStorage`; URLs firmadas emitidas por el backend | — | EP-02 (SPEC-23) |
 | **SMTP** | Configurable (Mailtrap en desarrollo) | Envío de correo | — | EP-06 |
 
 ## 7. Restricciones
 
 **Tecnología (README §1.5)**
 - Frontend: Next.js (App Router, solo como frontend, sin Route Handlers ni Server Actions hacia el backend), React, TypeScript, arquitectura hexagonal, TanStack Query, Zustand, React Hook Form + Zod, Tailwind CSS.
-- Backend: Python 3.12, FastAPI, arquitectura hexagonal, Pydantic v2, SQLAlchemy 2 + Alembic, httpx async, PyJWT (JWKS), APScheduler; PostgreSQL propio.
+- Backend: Python 3.12, FastAPI, arquitectura hexagonal, Pydantic v2, SQLAlchemy 2 + Alembic, httpx async, PyJWT (JWKS), APScheduler; PostgreSQL propio (en Supabase, plan gratuito) y Supabase Storage para las imágenes del chat.
 - Pruebas: pytest, respx, Prism (mock de Seguridad), Vitest + Testing Library, Playwright. Cada escenario DADO/CUANDO/ENTONCES debe tener al menos una prueba automatizada que lo referencie por nombre (README §5).
 - El stack de backend (Python/FastAPI) fue **aprobado por el profesor**, aunque los lineamientos del curso listan Java Spring Boot, .NET Core o Node.js (README §1.5).
 
 **Hitos (README §3)**
 - Hito 3 (demo 1): SPEC-05, 06, 09, 10, 11, 01, 02 y 03.
-- Hito 4 (integración): SPEC-04, 07, 08, 12, 13, 14, 15 y 16.
+- Hito 4 (integración): SPEC-04, 07, 08, 12, 13, 14, 15, 16 y 23 (SPEC-23 después del núcleo del Hito 3).
 - Hito 5–6: SPEC-17 a 22, endurecimiento de RNF y pruebas de performance.
 
 **Negocio y seguridad**
 - Único método de pago: **tarjeta simulada** con un simulador determinista; no hay pasarela real ni pago contra entrega (SPEC-14).
 - El SMS del OTP de celular es simulado (SPEC-04).
 - Sin acceso a bases de datos de otros módulos; toda integración es por API (README §1.3).
-- Datos sensibles (contraseña, OTP, tarjeta) nunca pasan por el LLM ni se persisten; de la tarjeta solo se guardan marca y últimos 4 dígitos (SPEC-05 · Req. 9, SPEC-14 · Req. 3).
+- Datos sensibles (contraseña, OTP, tarjeta) nunca pasan por el LLM ni se persisten; de la tarjeta solo se guardan marca y últimos 4 dígitos (SPEC-05 · Req. 9, SPEC-14 · Req. 3). Esta garantía cubre el texto: las imágenes adjuntas (SPEC-23) sí llegan al LLM y no se redactan automáticamente (riesgo R13).
+- Las imágenes del chat se envían al LLM solo en base64, nunca como URL, y se guardan en un bucket privado (SPEC-23).
 - Access token en LocalStorage con vida de 15 min (riesgo XSS aceptado por el equipo) y refresh token solo en cookie `httpOnly` (README §1.4).
 - Moneda PEN con 2 decimales; fechas en UTC en la API y en hora de Lima en la UI (README §5).
 
@@ -210,8 +217,9 @@ Recopilado de la sección *Fuera de alcance* de las 22 specs, sin duplicados. Cu
 | Registros por IP | 5 cada 10 min | SPEC-01 · RNF |
 | Plazo de devolución / de respuesta a reclamo | 7 días naturales / 15 días hábiles | SPEC-21 · Req. 1; SPEC-19 · Req. 2 |
 | Evidencia de devolución | hasta 3 archivos de 5 MB | SPEC-21 · Req. 3 |
+| Imágenes adjuntas al chat | hasta 3 por mensaje, JPG/PNG/WebP de 5 MB; 10 cargas por minuto; 10 pendientes por conversación; máx. 6 imágenes por turno del LLM (valores provisionales) | SPEC-23 · Req. 1, 4, 9 y RNF |
 | Timeouts de integración | Seguridad 5 s (registro), 3 s (introspección); Productos 4 s (catálogo), 3 s (inventario); Despacho 4 s; Ventas 5 s; LLM 15 s | SPEC-01, 14, 06, 10, 12, 18, 15, 05 |
-| Rendimiento del chat | primer fragmento p95 ≤ 2 s; turno completo p95 ≤ 6 s; acción directa p95 ≤ 1,5 s | SPEC-05 · RNF |
+| Rendimiento del chat | primer fragmento p95 ≤ 2 s; turno completo p95 ≤ 6 s; acción directa p95 ≤ 1,5 s. Turnos con imágenes: primer fragmento p95 ≤ 4 s y turno completo p95 ≤ 10 s (provisional) | SPEC-05 · RNF; SPEC-23 · RNF |
 | Rendimiento de compra | búsqueda p95 ≤ 800 ms; carrito p95 ≤ 900 ms; cotización p95 ≤ 600 ms; pago p95 ≤ 1 s; creación de pedido p95 ≤ 1,5 s | SPEC-06, 11, 12, 14, 15 · RNF |
 | Calidad del LLM | ≥ 120 frases etiquetadas; precisión de intención ≥ 90 % en CI | SPEC-05 · RNF |
 | Correo de confirmación | enviado en ≤ 60 s en el 95 % de los casos | SPEC-16 · RNF |
@@ -221,7 +229,7 @@ Recopilado de la sección *Fuera de alcance* de las 22 specs, sin duplicados. Cu
 1. Productos y Ofertas implementará endpoints equivalentes a los propuestos en `contratos-integracion.md` §3.2; mientras tanto se desarrolla contra mocks con datos semilla (A5).
 2. Seguridad entrega las credenciales reales de `modulo-chatbot` en Hito 4; hasta entonces se prueba con `client_secret=secreto-de-prueba` contra Prism (SPEC-14 · RNF).
 3. Despacho cubre al menos Lima y Callao; el selector de distrito se limita a esas zonas si Despacho no amplía la cobertura (SPEC-12 · RNF).
-4. La agrupación de las 22 specs en 8 casos de uso del backend es una propuesta pendiente de confirmar contra el código (README §1.2).
+4. La agrupación de las specs en 8 casos de uso del backend es una propuesta pendiente de confirmar contra el código (README §1.2).
 5. Mientras A6 siga abierto, el peso del carrito se calcula con `config/pesos_por_categoria.yaml` (SPEC-12 · Req. 4).
 6. El seguimiento de Despacho se implementa según el overview de Despacho (consulta por `idPedido` con token de servicio, sin coordenadas), no según su `api-contract.md` (SPEC-18 · Contexto, A11).
 7. Las estimaciones en puntos de este documento son relativas al equipo y se recalibran tras el primer ciclo.
@@ -240,6 +248,9 @@ Recopilado de la sección *Fuera de alcance* de las 22 specs, sin duplicados. Cu
 | R8 | **Credenciales reales de Seguridad solo en Hito 4:** la introspección y el token de servicio no se prueban contra el servicio real hasta ese hito. | Media / Medio | Pruebas contra Prism desde Hito 3. | EP-05, 06 |
 | R9 | **Costo y latencia del LLM:** el turno completo debe cumplir p95 ≤ 6 s y la precisión ≥ 90 %. | Media / Medio | Rate limit, contexto acotado (12 mensajes, 10 productos), modo degradado, evaluación en CI. | EP-02 |
 | R10 | **Dependencias entre hitos:** varias historias de Hito 3 solo se prueban de punta a punta con piezas de Hito 4 (grid de ofertas, revalidación de stock, carrito convertido) y el token de servicio de SPEC-18 se necesita en Hito 4. | Alta / Medio | Ver preguntas abiertas 2 y 3. | EP-02, 04, 05, 07 |
+| R11 | **Soporte de visión y costo de `gpt-6-luna` sin verificar (SPEC-23):** si el modelo no acepta imágenes o cada imagen cuesta más de lo previsto, las metas de latencia y costo de los turnos con imágenes no se cumplen. | Media / Medio | Indicador `LLM_VISION_ENABLED` para desactivar el análisis sin cambiar código, modo degradado, máximo de 6 imágenes por turno, validación con el modelo real (tarea `[INT]` de SPEC-23). | EP-02 |
+| R12 | **Límites del plan gratuito de Supabase (SPEC-23):** el almacenamiento y el ancho de banda de Storage pueden agotarse, y PostgreSQL 18 (del que depende `uuidv7()` nativo) no está confirmado en Supabase. | Media / Medio | Limpieza de adjuntos pendientes a las 24 h, imágenes normalizadas a 2048 px, límites de carga; si falta PostgreSQL 18, generar el UUID v7 en la aplicación. | EP-02 |
+| R13 | **Imágenes sensibles enviadas a OpenAI (SPEC-23):** una imagen puede mostrar rostros, documentos, tarjetas o direcciones, no se redacta automáticamente y OpenAI conserva las entradas de la API 30 días para monitoreo de abuso. | Media / Alto | Aviso de privacidad antes de la primera carga, eliminación de EXIF, el asistente no transcribe datos sensibles, riesgo residual documentado en `conversacion/privacidad.md`. | EP-02 |
 
 ## Preguntas abiertas
 
@@ -280,3 +291,12 @@ Cada pregunta trae una **propuesta** aplicada provisionalmente en este paquete d
 
 12. ✅ **Resuelta (24/09/2026). Aprobación del stack.** `README.md:144` pedía validar Python/FastAPI con el profesor.
     *Decisión:* el profesor aprobó Python/FastAPI. El riesgo R6 queda cerrado.
+
+13. **Soporte de visión y costo de `gpt-6-luna` (SPEC-23).** ⚠️ No está verificado que el modelo acepte imágenes ni cuánto cuesta cada una en tokens (`openspec/specs/adjuntos-imagenes-chat/spec.md`, pregunta abierta 1).
+    *Propuesta:* desarrollar detrás de `LLM_VISION_ENABLED` y `LLMProvider`, con modo degradado si falla; validar con el modelo real (tarea `[INT]` de SPEC-23) antes de habilitar las imágenes en producción. Las metas de latencia y costo son provisionales.
+
+14. **PostgreSQL 18 en Supabase.** El modelo de datos usa `uuidv7()` nativo de PostgreSQL 18 (`docs/modelo-datos.md`) y no está confirmado que el plan gratuito de Supabase lo ofrezca.
+    *Propuesta:* confirmarlo antes de crear las migraciones; si no está disponible, generar el UUID v7 en la aplicación o con una función propia, sin cambiar el modelo lógico.
+
+15. **Retención de las imágenes del chat.** SPEC-23 no fija un plazo de borrado de los adjuntos ni decide si las conversaciones anónimas eliminan sus imágenes al expirar.
+    *Propuesta:* decidirlo junto con la retención pendiente de los demás datos (`docs/modelo-datos.md`, Pendientes; `docs/conversacion/README.md`); una opción es alinearlo con el archivado automático de 90 días.

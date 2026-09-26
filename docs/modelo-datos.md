@@ -40,6 +40,8 @@ erDiagram
     PEDIDO_REF ||--o{ NOTIFICACION : dispara
     DEVOLUCION_REF |o--o{ EVIDENCIA : adjunta
     CONVERSACION ||--o{ EVIDENCIA : borrador
+    CONVERSACION ||--o{ ADJUNTO : "recibe (SPEC-23)"
+    MENSAJE |o--o{ ADJUNTO : "incluye al enviarse"
     CELULAR_VERIFICACION_LOCAL
     RECLAMO_REF
     OUTBOX
@@ -289,6 +291,31 @@ Referencia local de una solicitud de devolución/cambio registrada en Ventas (F3
 | `(conversacion_id)` | Cubre la FK completa (borrado en cascada) |
 | `(devolucion_id)` | Evidencias de una devolución enviada. Cubre la FK |
 
+### `adjunto`
+🧩 Nueva tabla (SPEC-23, ADR-0019). Referencia a una imagen que el cliente adjunta a un mensaje del chat para que el LLM la interprete. La base guarda solo **referencias**: los bytes viven en un bucket privado de Supabase Storage (puerto `AttachmentStorage`). No es la evidencia de devolución (`evidencia`), que aloja Ventas. Se crea al subir la imagen (estado `PENDIENTE`, sin mensaje) y se liga a un único mensaje al enviarlo (estado `ENVIADO`); son las únicas modificaciones de la fila.
+
+| Campo | Tipo | Nulo | Restricciones / notas |
+|---|---|---|---|
+| id | uuid | no | PK, `DEFAULT uuidv7()`. Es el `adjuntoId` de la API |
+| conversacion_id | uuid | no | FK → `conversacion.id` `ON DELETE CASCADE`. Define la pertenencia por `cliente_id` o `chat_sid` de la conversación, también para visitantes anónimos |
+| mensaje_id | uuid | sí | FK → `mensaje.id` `ON DELETE CASCADE`. Null mientras el estado es `PENDIENTE` |
+| estado | text | no | `DEFAULT 'PENDIENTE'`, `CHECK IN ('PENDIENTE','ENVIADO')` |
+| storage_key | text | no | `UNIQUE`. Clave aleatoria del objeto de la imagen normalizada en el bucket privado; no deriva del nombre original |
+| miniatura_key | text | no | `UNIQUE`. Clave del objeto de la miniatura |
+| mime_type | text | no | `CHECK IN ('image/jpeg','image/png','image/webp')`. Detectado por firma binaria |
+| size_bytes | integer | no | `CHECK (size_bytes BETWEEN 1 AND 5242880)` (5 MB). Tamaño de la imagen guardada |
+| width / height | integer | no | `CHECK (> 0)`. Dimensiones guardadas en píxeles (lado mayor máx. 2048 px, valor provisional) |
+| creado_en / actualizado_en | timestamptz | no | `creado_en` es la fecha de carga y la usa el job de limpieza |
+
+Restricción de tabla: `CHECK ((estado = 'ENVIADO') = (mensaje_id IS NOT NULL))`, porque un adjunto enviado siempre está ligado a un mensaje y uno pendiente nunca. El nombre original del archivo no se guarda. Como `mensaje` es de solo inserción, el ligado se hace desde `adjunto` (nunca se modifica el mensaje). El límite de 3 adjuntos por mensaje se valida en `AdjuntoService` (SPEC-23 · Requisito 4).
+
+| Índice | Consulta que lo usa |
+|---|---|
+| `(mensaje_id) WHERE mensaje_id IS NOT NULL` | Adjuntos de un mensaje al armar el historial (`GET /chat/conversaciones/{id}/mensajes`) y las imágenes del contexto del LLM. Cubre la FK |
+| `(conversacion_id, estado)` | Conteo de adjuntos `PENDIENTE` de la conversación para el tope de 10 y pertenencia al emitir URLs firmadas. Cubre la FK |
+| `(creado_en) WHERE estado = 'PENDIENTE'` | Job de limpieza de adjuntos no enviados a las 24 h |
+| `UNIQUE (storage_key)`, `UNIQUE (miniatura_key)` | Evitar que dos filas apunten al mismo objeto y ubicar la fila al reconciliar archivos huérfanos del bucket |
+
 ### `outbox`
 Tareas asíncronas con reintento (ADR-0011), procesadas por el worker de APScheduler.
 
@@ -313,5 +340,7 @@ Tareas asíncronas con reintento (ADR-0011), procesadas por el worker de APSched
 ## Pendientes
 
 - ⚠️ **Retención**: no hay plazo definido para `checkout.resumen` (incluye el documento), `celular_verificacion_local`, `intento_pago`, `notificacion.destinatario` ni `outbox.payload`, ni para borrar conversaciones autenticadas (ver `conversacion/privacidad.md`). Cuando se definan, cada plazo necesitará un job de purga y posiblemente un índice por `creado_en`.
+- ⚠️ **Retención de adjuntos del chat** (SPEC-23): no hay plazo definido para `adjunto` ni para los archivos del bucket (solo se limpian los pendientes a las 24 h). Falta decidir si se alinea con el archivado de 90 días y qué ocurre con las imágenes de conversaciones anónimas al expirar; el borrado de archivos requiere un job que reconcilie el bucket con la tabla.
+- ⚠️ **PostgreSQL 18 en Supabase**: las claves usan `uuidv7()` nativo de PostgreSQL 18 y no está confirmado que el plan gratuito de Supabase lo ofrezca. Si no, habrá que generar el UUID v7 en la aplicación o con una función propia; no se cambia el modelo por ahora.
 - **Búsqueda full-text a escala**: el índice GIN de `mensaje.busqueda` es global; la consulta filtra después por el `cliente_id` de la conversación. Es suficiente para el volumen del proyecto. Si creciera mucho, se puede desnormalizar `cliente_id` en `mensaje`.
 - **Modelo físico**: DDL, trigger `set_actualizado_en()` y migraciones Alembic se escriben en la fase de implementación del backend, a partir de este documento.

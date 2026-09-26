@@ -43,6 +43,10 @@ Aceptada
 - La redacción por patrones puede fallar en casos límite; las secuencias sin palabra identificadora no se tocan.
 - Sigue abierto qué ve el cliente en su propia burbuja cuando pega una tarjeta (`conversacion/README.md`, pregunta 15).
 
+## Enmienda (2026-09-26): las imágenes no pasan por `SensitiveDataFilter`
+
+Sin cambiar la decisión original, `SensitiveDataFilter` solo redacta **texto**. Las imágenes que el cliente adjunta al chat (SPEC-23) llegan al LLM en base64 sin redacción automática: pueden mostrar tarjetas, documentos, rostros o direcciones. Es un riesgo residual aceptado, mitigado con un aviso antes de la primera carga, la eliminación de EXIF y ubicación, la instrucción al asistente de no transcribir datos sensibles de una imagen y registros sin contenido de imagen. Los datos de tarjeta y documento siguen capturándose solo en sus formularios dedicados. Ver [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md).
+
 ## Referencias
 
 - `README.md` §1.3, principio 5 (línea 122)

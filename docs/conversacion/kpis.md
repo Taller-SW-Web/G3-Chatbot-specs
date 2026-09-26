@@ -39,7 +39,7 @@
 | **Correcciones del validador de salida** | Precios del texto que no coincidían con las herramientas | turnos con corrección en `fin` / turnos con precio en el texto | log de `OutputValidator` 🟠 | 🟠 | 0 en la demo; cualquier caso se revisa | Por hito |
 | **CSAT (propuesta)** | Satisfacción con la respuesta | 👍 / (👍 + 👎) | evento de valoración 🟠 (no existe en las specs) | 🟠 **Propuesta** | ≥ 80 % | Semanal |
 | **Costo por conversación** | Costo del LLM por conversación medible | Σ (`tokens_entrada` × precio de entrada + `tokens_salida` × precio de salida) / conversaciones | `mensaje.tokens_entrada`, `mensaje.tokens_salida` + tabla de precios del modelo en configuración 🟠 | ✅ tokens · 🟠 precio | Línea base en Hito 3; después, no superar la línea base en más de 20 % tras cambios de prompt o modelo | Semanal |
-| **Latencia percibida** | Tiempo hasta el primer fragmento y del turno completo | p95 de `mensaje.latencia_ms` (turno) y del primer evento `token` | `mensaje.latencia_ms` ✅; primer fragmento 🟠 (no hay campo) | ✅ / 🟠 | Las del RNF: ≤ 2 s y ≤ 6 s | Diaria durante la demo |
+| **Latencia percibida** | Tiempo hasta el primer fragmento y del turno completo | p95 de `mensaje.latencia_ms` (turno) y del primer evento `token` | `mensaje.latencia_ms` ✅; primer fragmento 🟠 (no hay campo) | ✅ / 🟠 | Las del RNF: ≤ 2 s y ≤ 6 s (en turnos de texto; los turnos con imágenes tienen metas propias en §4) | Diaria durante la demo |
 
 ### CSAT: propuesta (no está en las specs)
 
@@ -53,6 +53,8 @@ Se listan para tenerlas en un solo lugar; la definición vigente es la de cada s
 |---|---|---|
 | Primer fragmento por WebSocket | p95 ≤ 2 s | [SPEC-05 · RNF](../../openspec/specs/motor-conversacion/spec.md) |
 | Turno completo | p95 ≤ 6 s | SPEC-05 · RNF |
+| Turno con imágenes: primer fragmento / turno completo | p95 ≤ 4 s / ≤ 10 s (provisional, hasta medirlo con el modelo real) | [SPEC-23 · RNF](../../openspec/specs/adjuntos-imagenes-chat/spec.md) |
+| Carga de una imagen adjunta / emisión de URL firmada | p95 ≤ 3 s / ≤ 500 ms | SPEC-23 · RNF |
 | Acción directa por REST | p95 ≤ 1,5 s | SPEC-05 · RNF |
 | Conjunto de evaluación / precisión de intención | ≥ 120 frases / ≥ 90 % | SPEC-05 · RNF |
 | Timeout del LLM | 15 s (luego modo degradado) | SPEC-05 · Req. 10 |

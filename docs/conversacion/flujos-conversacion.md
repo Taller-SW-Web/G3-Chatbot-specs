@@ -173,6 +173,8 @@ Un mensaje de texto viaja por REST y la respuesta vuelve por WebSocket (SPEC-05 
 
 Fuentes: SPEC-05 · Req. 3, 4, 6, 7, 9 y `motor-conversacion/design.md`; README §1.3.
 
+> 🧩 Con imágenes adjuntas (SPEC-23) el envío lleva `adjuntoIds` y, al armar el turno, `InterpretarYResponderUseCase` lee las imágenes de los últimos 12 mensajes desde `AttachmentStorage` y las envía a `LLMProvider` en base64 (máx. 6 por turno). Si el modelo no admite imágenes o falla, `DegradedMode` avisa que la imagen no pudo analizarse y el texto se procesa igual.
+
 ```mermaid
 sequenceDiagram
     autonumber

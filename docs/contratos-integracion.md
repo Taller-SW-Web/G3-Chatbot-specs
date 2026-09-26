@@ -24,6 +24,7 @@ Revisión basada en los repos al 22/09/2026:
 | Backend del chatbot → validación del token del cliente | Validación **local** con el JWKS de Seguridad (`/auth/.well-known/jwks.json`), cacheado. Se verifica `iss=auth-service` y `tipo=acceso`, y que el claim `roles` contenga `CLIENTE`. |
 | Backend del chatbot → otros módulos (a nombre del sistema) | Token de servicio `client_credentials` con `client_id=modulo-chatbot` (`POST /auth/token`), cacheado hasta 60 s antes de su `exp`. |
 | Backend del chatbot → Seguridad (a nombre del cliente) | Se reenvía el token del cliente cuando el recurso es del titular (por ejemplo, `/usuarios/{id}/direcciones`). |
+| Backend del chatbot → Supabase Storage (imágenes del chat, SPEC-23) | Credencial de servicio de Supabase en variables de entorno del backend, nunca en el frontend; bucket **privado**. El frontend solo recibe URLs firmadas de corta vida emitidas por el backend. |
 | Refresh token | Nunca llega al JavaScript. El BFF lo guarda en una cookie `httpOnly; Secure; SameSite=Strict; Path=/api/v1/sesion`. |
 
 ---
@@ -40,8 +41,8 @@ Prefijo: `/api/v1`. Todas las respuestas de error usan `application/problem+json
 | POST | `/chat/conversaciones` | Opcional | Crea una conversación vacía y devuelve `conversacionId`. |
 | GET | `/chat/conversaciones` | Opcional* | Lista las conversaciones (propias o de la sesión anónima), ordenadas por `ultimo_mensaje_en` descendente, con `titulo` y vista previa del último mensaje. Paginado. |
 | GET | `/chat/conversaciones/buscar?q=` | Opcional* | Busca por texto en el título y los mensajes. |
-| GET | `/chat/conversaciones/{id}/mensajes` | Opcional* | Devuelve el historial paginado de una conversación. |
-| POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Envía `{ "texto": "..." }` o `{ "accion": { "tipo": "...", "payload": {...} } }`. Responde `202 {mensajeId}` de inmediato; la respuesta del asistente se transmite por WebSocket (ver abajo), salvo las acciones directas, que devuelven el bloque en la misma respuesta REST. |
+| GET | `/chat/conversaciones/{id}/mensajes` | Opcional* | Devuelve el historial paginado de una conversación. Cada mensaje con imágenes incluye `adjuntos[{adjuntoId, mimeType, ancho, alto, urlMiniatura, expiraEn}]` con URLs firmadas de corta vida (SPEC-23). |
+| POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Envía `{ "texto": "...", "adjuntoIds": ["..."] }` (`adjuntoIds` opcional, máx. 3; el texto es opcional si hay al menos un adjunto, ver 2.1.1) o `{ "accion": { "tipo": "...", "payload": {...} } }`. Responde `202 {mensajeId}` de inmediato; la respuesta del asistente se transmite por WebSocket (ver abajo), salvo las acciones directas, que devuelven el bloque en la misma respuesta REST. |
 
 \* Una conversación ligada a un cliente solo la puede listar o leer ese cliente. Las anónimas se listan o leen con la cookie `chat_sid`.
 
@@ -57,6 +58,17 @@ Prefijo: `/api/v1`. Todas las respuestas de error usan `application/problem+json
 Si el WebSocket no conecta, el frontend hace *polling* de `GET /chat/conversaciones/{id}/mensajes?desde=<mensajeId>` (ver SPEC-05 Req. 4).
 
 **Tipos de bloque de respuesta** (`Bloque.tipo`): `TEXTO`, `CARRUSEL_PRODUCTOS`, `DETALLE_PRODUCTO`, `SELECTOR_VARIANTE`, `CARRITO`, `ACCIONES_RAPIDAS`, `FORMULARIO` (`REGISTRO`, `LOGIN`, `OTP_MFA`, `OTP_CELULAR`, `DIRECCION`, `PAGO`, `RECLAMO`, `DEVOLUCION`), `RESUMEN_CHECKOUT`, `CONFIRMACION_PEDIDO`, `LISTA_PEDIDOS`, `ESTADO_PEDIDO`, `LISTA_PROMOCIONES`, `CONSTANCIA_RECLAMO`, `ESTADO_RECLAMO`, `CONSTANCIA_DEVOLUCION`, `ESTADO_DEVOLUCION`, `ERROR`.
+
+### 2.1.1 Adjuntos de imágenes (SPEC-23)
+🧩 Nuevo. Las imágenes se suben antes de enviar el mensaje y se guardan en un bucket privado propio del chatbot (no son la evidencia de devolución de 2.7, que se sube a Ventas). Sesión opcional: la pertenencia se controla por `cliente_id` o por la cookie `chat_sid` de la conversación.
+
+| Método | Ruta | Sesión | Descripción |
+|---|---|---|---|
+| POST | `/chat/conversaciones/{id}/adjuntos` | Opcional | Sube una imagen (`multipart/form-data`, campo `archivo`; `image/jpeg`, `image/png` o `image/webp`, máx. 5 MB). El backend valida el contenido real, elimina EXIF y ubicación, normaliza y guarda la imagen con su miniatura. Responde `201 {adjuntoId, mimeType, tamanioBytes, ancho, alto}`. Errores: `400 ADJUNTO_INVALIDO`, `404 RECURSO_NO_ENCONTRADO`, `422 LIMITE_ADJUNTOS`, `429 DEMASIADAS_SOLICITUDES`, `503 SERVICIO_NO_DISPONIBLE`. |
+| DELETE | `/chat/conversaciones/{id}/adjuntos/{adjuntoId}` | Opcional | Quita un adjunto `PENDIENTE` y elimina sus archivos. Un adjunto `ENVIADO` no se puede quitar (`409`). |
+| GET | `/chat/adjuntos/{adjuntoId}` | Opcional | Emite una URL firmada nueva `{urlMiniatura, urlImagen, expiraEn}` para un adjunto de una conversación del solicitante; `404 RECURSO_NO_ENCONTRADO` si pertenece a otro cliente. |
+
+Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por cliente o IP, 10 adjuntos pendientes por conversación (los no enviados se eliminan a las 24 h) y URLs firmadas de 5 minutos. Al LLM las imágenes viajan en base64 leídas por el backend, nunca como URL. Las imágenes del chat no se reenvían a Ventas.
 
 ### 2.2 Sesión e identidad (SPEC-01 a SPEC-04)
 | Método | Ruta | Proxy hacia Seguridad |
@@ -130,7 +142,9 @@ Si el WebSocket no conecta, el frontend hace *polling* de `GET /chat/conversacio
 | `PRODUCTO_NO_DISPONIBLE` | 409 | Producto o SKU inactivo. |
 | `LIMITE_CANTIDAD` | 422 | Más de 10 unidades por línea o más de 20 líneas. |
 | `SIN_COBERTURA` | 422 | El destino no tiene cobertura de Despacho. |
-| `EVIDENCIA_INVALIDA` | 400 | Archivo mayor a 5 MB o tipo no permitido. |
+| `EVIDENCIA_INVALIDA` | 400 | Archivo mayor a 5 MB o tipo no permitido (evidencia de devolución, SPEC-21). |
+| `ADJUNTO_INVALIDO` | 400 | Imagen adjunta al chat (SPEC-23) mayor a 5 MB, de tipo no permitido, con contenido que no es una imagen válida o con dimensiones fuera de rango. |
+| `LIMITE_ADJUNTOS` | 422 | Más de 3 adjuntos por mensaje o más de 10 adjuntos pendientes por conversación (SPEC-23). |
 | `DEVOLUCION_NO_ELEGIBLE` | 422 | El pedido no está `ENTREGADO`, está fuera de plazo, o falta evidencia obligatoria. |
 | `CUPON_INVALIDO` | 422 | Incluye `motivo`. |
 | `CARRITO_DESACTUALIZADO` | 409 | Cambió el precio, el stock o el cupón desde el resumen. |
@@ -265,5 +279,5 @@ Mejoras posibles: suscribirse a `pedido entregado` de Ventas y a `usuario.desact
 | A10 | ✅ Resuelto (23/09) | Ventas | Publicaron los cuatro endpoints que faltaban: `GET /api/v2/reclamos/{codigoSeguimiento}` (detalle), `GET /api/v2/reclamos?documento=&clienteId=&estado=` (listado), `GET /api/v2/devoluciones?clienteId=&estado=&tipo=` (listado) y, dentro de `GET /api/v2/devoluciones/{id}`, un bloque anidado `resolucion.reembolso` con el estado del extorno. SPEC-19, SPEC-20, SPEC-21 y SPEC-22 ya no tienen ningún requisito bloqueado. | SPEC-19, SPEC-20, SPEC-21, SPEC-22 |
 | A11 | 🟡 Abierto | Despacho | Unificar el seguimiento: por `idPedido`, con token de servicio y sin coordenadas. | SPEC-18 |
 | A12 | 🟡 Abierto | Despacho | Autenticación de la cotización para canales: pública o con API key. | SPEC-12 |
-| A13 | ✅ Resuelto (23/09) | Ventas | Ventas hostea la evidencia ellos mismos: `POST /api/v2/devoluciones/evidencias/upload` (multipart, ≤ 5 MB, `image/jpeg`, `image/png`, `image/webp` o `application/pdf`) devuelve la URL que luego se manda en el `POST /devoluciones`. El chatbot **no necesita su propio bucket ni adaptador de almacenamiento** — solo un proxy del formulario hacia ese endpoint. | SPEC-21 |
+| A13 | ✅ Resuelto (23/09) | Ventas | Ventas hostea la evidencia ellos mismos: `POST /api/v2/devoluciones/evidencias/upload` (multipart, ≤ 5 MB, `image/jpeg`, `image/png`, `image/webp` o `application/pdf`) devuelve la URL que luego se manda en el `POST /devoluciones`. El chatbot **no necesita su propio bucket ni adaptador de almacenamiento para la evidencia** — solo un proxy del formulario hacia ese endpoint. (Aclaración posterior: las imágenes adjuntas al chat, SPEC-23, son otro flujo y sí usan un bucket privado propio de Supabase Storage.) | SPEC-21 |
 | A14 | ✅ Resuelto (23/09) | Ventas | `contacto.tipoDocumento` y `contacto.numeroDocumento` son **siempre obligatorios** en la creación del pedido — no opcionales, se usan para emitir el comprobante y validar la entrega. Ventas confirmó por escrito las 4 expresiones regulares exactas (DNI, RUC con prefijo, CE, y **PASAPORTE**, que no estaba contemplado antes) y el código de error `400 DATO_INVALIDO` cuando no calzan. SPEC-12 · Requisito 1 ya tiene las reglas exactas. Aviso no urgente para otros canales: si Ventas exige el documento a todos, Marketplace y Retail probablemente necesiten las mismas reglas. | SPEC-12, SPEC-14, SPEC-15 |

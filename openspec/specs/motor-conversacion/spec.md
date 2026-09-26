@@ -21,6 +21,8 @@ El motor sigue usando un **LLM con tool calling** (Claude u OpenAI detrás de un
 - **REST** (`chatbot_router.py`) para crear conversaciones, listar, buscar, cargar el historial y ejecutar acciones con efecto.
 - **WebSocket** (`chatbot_ws_adapter.py`) **únicamente para el streaming de la respuesta del asistente** (efecto "escribiendo en vivo", token por token). Ninguna acción que cree, modifique o cobre algo se ejecuta por este canal: el mensaje del cliente se envía por REST, y la respuesta se transmite por WebSocket sobre esa misma conversación.
 
+Desde SPEC-23, el mensaje del cliente puede llevar **imágenes adjuntas** (`adjuntoIds`, cargadas antes por un endpoint dedicado). El backend las lee de su almacenamiento privado y las incluye en el contexto del LLM como contenido multimodal en base64; el motor las trata igual que el texto en la ventana de contexto. La carga, el almacenamiento, el análisis y las miniaturas de las imágenes se definen en [`adjuntos-imagenes-chat`](../adjuntos-imagenes-chat/spec.md) (SPEC-23).
+
 Los riesgos propios de un LLM se mantienen y exigen controles explícitos: inventar datos, ejecutar acciones no deseadas, prompt injection y filtración de datos sensibles.
 
 ## Alcance
@@ -34,14 +36,15 @@ Incluye:
 - Acciones directas desde botones, que no pasan por el LLM.
 - Respuesta en bloques estructurados (`TEXTO`, `CARRUSEL_PRODUCTOS`, etc.).
 - Memoria de trabajo por conversación: último carrusel, filtros vigentes, acción pendiente y borradores.
+- Mensajes con imágenes adjuntas: el contrato de envío acepta `adjuntoIds` y el contexto del LLM puede incluir imágenes (el detalle de la carga y el análisis está en SPEC-23).
 - Guardarraíles: dominio, veracidad, confirmación de acciones, datos sensibles, prompt injection y límites de uso.
-- Modo degradado sin LLM y sin WebSocket.
+- Modo degradado sin LLM, sin WebSocket y sin capacidad de visión.
 - Conjunto de evaluación de intenciones y métricas.
 
 ### Fuera de alcance
 
 - WhatsApp y otros canales de mensajería: el canal es solo esta aplicación web.
-- Voz (speech-to-text).
+- Voz (speech-to-text). Las imágenes adjuntas sí se admiten y las cubre SPEC-23 ([`adjuntos-imagenes-chat`](../adjuntos-imagenes-chat/spec.md)); el audio sigue fuera de alcance.
 - Atención con agente humano (handoff).
 - Personalización basada en el historial de compras.
 - Entrenamiento o *fine-tuning* de modelos propios.
@@ -142,6 +145,11 @@ El sistema DEBE (SHALL) enviar al LLM el mensaje, el contexto acotado de la conv
 - **CUANDO** se procesa
 - **ENTONCES** el asistente responde amablemente que solo ayuda con compras en la tienda deportiva y ofrece las acciones rápidas principales
 
+#### Scenario: Mensaje con imágenes adjuntas
+- **DADO** un mensaje con texto y `adjuntoIds` válidos (SPEC-23)
+- **CUANDO** `InterpretarYResponderUseCase` arma el turno
+- **ENTONCES** incluye las imágenes en el contexto del LLM como contenido multimodal (base64, nunca URLs), el LLM puede invocar las mismas herramientas del catálogo con los criterios que deduzca de la imagen y el ciclo LLM → herramienta → LLM mantiene el máximo de 5 iteraciones
+
 ### Requirement: Transmisión de la respuesta por WebSocket
 El sistema DEBE (SHALL) enviar el mensaje del cliente por REST y transmitir la respuesta del asistente por WebSocket en fragmentos, conservando el orden y permitiendo reconectar sin perder la respuesta.
 
@@ -151,6 +159,11 @@ El sistema DEBE (SHALL) enviar el mensaje del cliente por REST y transmitir la r
 - **DADO** una conversación abierta con el WebSocket conectado
 - **CUANDO** el cliente envía un mensaje con `POST /conversaciones/{id}/mensajes`
 - **ENTONCES** el backend responde `202 {mensajeId}` de inmediato y transmite por `chatbot_ws_adapter.py`, sobre el mismo `conversacionId`, los eventos `token` (fragmentos de texto), `bloque` (cuando un bloque estructurado queda listo) y `fin` (cierre del turno)
+
+#### Scenario: Envío con imágenes adjuntas
+- **DADO** una conversación abierta con el WebSocket conectado y adjuntos ya cargados (SPEC-23)
+- **CUANDO** el cliente envía `POST /conversaciones/{id}/mensajes` con `{texto, adjuntoIds}`
+- **ENTONCES** el backend responde `202 {mensajeId}` de inmediato y transmite la respuesta con los mismos eventos `token`, `bloque` y `fin`; el texto es opcional si hay al menos un adjunto
 
 #### Scenario: WebSocket no disponible
 - **DADO** que el navegador no logra conectar el WebSocket o se cae a mitad de una respuesta
@@ -273,8 +286,13 @@ El sistema DEBE (SHALL) seguir siendo útil cuando el LLM falla, excede el tiemp
 - **CUANDO** el cliente escribe "zapatillas"
 - **ENTONCES** se ejecuta `buscar_productos {q: "zapatillas"}` directamente con un intérprete simple de palabras clave
 
+#### Scenario: El LLM no puede analizar imágenes
+- **DADO** un mensaje con imágenes adjuntas y un modelo sin soporte de visión, o un LLM que falla o excede 15 s al procesarlas
+- **CUANDO** se procesa el turno
+- **ENTONCES** se responde con el aviso de que la imagen no pudo analizarse, procesando el texto del mensaje como un turno de texto normal, y el resto de la conversación sigue funcionando (SPEC-23 · Requisito 8)
+
 ### Requirement: Límites de uso
-El sistema DEBE (SHALL) limitar el uso para proteger el costo del LLM y la disponibilidad.
+El sistema DEBE (SHALL) limitar el uso para proteger el costo del LLM y la disponibilidad. Un mensaje con imágenes adjuntas cuenta como un mensaje para este límite; la carga de imágenes tiene además su propio límite por minuto (SPEC-23 · Requisito 9).
 
 *Trazabilidad: SPEC-05 · Requisito 11.*
 
@@ -319,11 +337,11 @@ El sistema DEBE (SHALL) presentarse siempre como un asistente virtual, con el no
 ## Requisitos no funcionales
 
 - **Rendimiento:** primer fragmento de respuesta por WebSocket en p95 ≤ 2 s; turno completo p95 ≤ 6 s. Las acciones directas por REST, p95 ≤ 1,5 s.
-- **Contexto:** se envían al LLM el prompt del sistema, el resumen de la conversación activa y sus últimos 12 mensajes (nunca de otras conversaciones). Los resultados de herramientas se truncan a lo necesario (máx. 10 productos, sin descripciones largas).
+- **Contexto:** se envían al LLM el prompt del sistema, el resumen de la conversación activa y sus últimos 12 mensajes (nunca de otras conversaciones). Los resultados de herramientas se truncan a lo necesario (máx. 10 productos, sin descripciones largas). Las imágenes adjuntas comparten esa misma ventana de 12 mensajes y se envían con un máximo por turno (SPEC-23).
 - **Calidad:** conjunto de evaluación versionado (`evals/intenciones.jsonl`) con al menos 120 frases etiquetadas, incluidas variantes peruanas. Precisión de intención ≥ 90 % en CI antes de cambiar el prompt o el modelo.
 - **Configuración:** proveedor, modelo, temperatura (≤ 0,3), `max_tokens` y timeouts por variables de entorno. La clave del LLM nunca va en el frontend.
 - **Observabilidad:** por turno se registran la conversación, la intención, las herramientas, la latencia, los tokens y el costo estimado, sin datos personales en el texto del log.
-- **Privacidad:** al LLM se envía el nombre de pila del cliente (si hay sesión), nunca el correo, el celular, la dirección completa ni el documento.
+- **Privacidad:** al LLM se envía el nombre de pila del cliente (si hay sesión), nunca el correo, el celular, la dirección completa ni el documento. Las imágenes adjuntas se envían solo en base64 y no pasan por `SensitiveDataFilter` (que actúa sobre texto); su riesgo residual se trata en SPEC-23.
 - **Escalabilidad del WebSocket:** el servidor soporta reconexión y múltiples conexiones por conversación (varias pestañas); el estado de la conversación vive en PostgreSQL, no en memoria del proceso, para permitir varias réplicas del backend.
 - **Idioma:** español neutro (variante peruana) con tono cercano y tuteo (el asistente trata de "tú" al cliente); moneda "S/"; sin emojis en exceso. La persona, el tono, la política de emojis y el microcopy canónico se detallan en [`docs/conversacion/persona-tono.md`](../../../docs/conversacion/persona-tono.md).
 

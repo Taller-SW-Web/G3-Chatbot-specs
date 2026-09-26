@@ -6,7 +6,8 @@
 
 | Componente | Uso | Estado |
 |---|---|---|
-| Proveedor LLM (Claude/OpenAI) | Interpretación y redacción | Definido por configuración |
+| Proveedor LLM (Claude/OpenAI) | Interpretación y redacción; con SPEC-23, también contenido multimodal (imágenes en base64) | Definido por configuración; soporte de visión sin verificar (SPEC-23) |
+| Supabase Storage (`AttachmentStorage`) | Lectura de las imágenes adjuntas al armar el turno (detalle en SPEC-23) | 🟡 Ver [`adjuntos-imagenes-chat`](../adjuntos-imagenes-chat/design.md) |
 | Todos los clientes de módulos | A través de las herramientas | Ver `contratos-integracion.md` |
 
 ## Frontend
@@ -18,7 +19,7 @@
 | `HomePage` | Banner de ofertas, grid de productos en oferta y el compositor de chat. |
 | `ChatPage` + `useChat` | Orquesta la vista de una conversación: envía mensajes por REST, escucha el WebSocket, renderiza `MessageList`. |
 | `MessageList` / `MessageRenderer` | Mapea `Bloque.tipo` al componente correspondiente; muestra el efecto de streaming token por token. |
-| `Composer` | Campo de texto (máx. 1000 caracteres), envío con Enter, deshabilitado mientras se espera. |
+| `Composer` | Campo de texto (máx. 1000 caracteres), envío con Enter, deshabilitado mientras se espera. Con SPEC-23 admite hasta 3 imágenes adjuntas (`AttachmentButton`, `AttachmentPreviewList`) y envía sus `adjuntoIds` junto con el texto. |
 | `QuickReplies` | Chips de acciones rápidas que envían `accion`. |
 | `TypingIndicator` | Indicador "escribiendo…" mientras llegan tokens por WebSocket. |
 | `DegradedBanner` | Aviso de modo degradado (sin LLM o sin WebSocket) y menú alternativo. |
@@ -33,18 +34,18 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `chatbot_router.py` (adaptador inbound REST) | `POST/GET /conversaciones`, `GET /conversaciones/buscar`, `GET/POST /conversaciones/{id}/mensajes`; invoca `ChatbotServicePort`. |
+| `chatbot_router.py` (adaptador inbound REST) | `POST/GET /conversaciones`, `GET /conversaciones/buscar`, `GET/POST /conversaciones/{id}/mensajes` (el `POST` acepta `adjuntoIds`, SPEC-23); invoca `ChatbotServicePort`. Los endpoints de adjuntos están en SPEC-23. |
 | `chatbot_ws_adapter.py` (adaptador inbound WebSocket) | Handshake con JWT, suscripción por `conversacionId`, emisión de los eventos `token`, `bloque` y `fin`; invoca `ChatbotServicePort` solo para transmitir, nunca para ejecutar acciones. |
 | `ChatbotServicePort` (puerto inbound) | Contrato único que exponen ambos adaptadores hacia los casos de uso. |
 | `GestionarConversacionUseCase` | Crear, listar, buscar y cargar historial; pertenencia por cliente o `chat_sid`. |
-| `InterpretarYResponderUseCase` | Arma el prompt, llama al LLM, ejecuta herramientas (máx. 5 iteraciones y 1 reintento por error de validación), ensambla los bloques y los transmite por el puerto de WebSocket. |
-| `LLMProvider` (puerto outbound) + `ClaudeProvider` / `OpenAIProvider` | Llamada con tools, streaming y timeouts. |
+| `InterpretarYResponderUseCase` | Arma el prompt, llama al LLM, ejecuta herramientas (máx. 5 iteraciones y 1 reintento por error de validación), ensambla los bloques y los transmite por el puerto de WebSocket. Con SPEC-23, incluye en el contexto las imágenes de los últimos 12 mensajes como contenido multimodal (base64). |
+| `LLMProvider` (puerto outbound) + `ClaudeProvider` / `OpenAIProvider` | Llamada con tools, streaming y timeouts. Con SPEC-23, acepta partes de contenido de texto e imagen y declara si el modelo admite visión. |
 | `ToolRegistry` | Nombre, descripción, esquema Pydantic, `requiere_sesion`, `requiere_confirmacion` y handler (un caso de uso). |
 | `ActionDispatcher` | Enruta las acciones de botones a los mismos handlers, sin pasar por `InterpretarYResponderUseCase`. |
 | `SensitiveDataFilter` | Redacta tarjetas (Luhn), secuencias de 6 dígitos tras pedir un OTP, patrones de contraseña y números de documento precedidos por una palabra que los identifique (DNI, RUC, CE, pasaporte). |
 | `OutputValidator` | Contrasta los precios y montos del texto transmitido con los resultados de las herramientas. |
-| `DegradedMode` | Intérprete de palabras clave y menú, activo también cuando el WebSocket falla. |
-| `RateLimiter` | Por cliente, IP y conversación. |
+| `DegradedMode` | Intérprete de palabras clave y menú, activo también cuando el WebSocket falla. Con SPEC-23 cubre además el fallo de visión: avisa que la imagen no pudo analizarse y procesa el texto sin ella. |
+| `RateLimiter` | Por cliente, IP y conversación. Un mensaje con imágenes cuenta como uno; el límite de cargas de imagen lo define SPEC-23. |
 | `conversacion_postgres_adapter.py` (outbound) | Persistencia de conversaciones y mensajes en PostgreSQL. |
 | `prompts/sistema.md` | Prompt del sistema versionado. |
 | `evals/` | Script `pytest -m evals` que mide la precisión de intención. |
@@ -69,4 +70,5 @@
 - [ ] `[BE]` `DegradedMode` y `RateLimiter`
 - [ ] `[BE]` Prompt del sistema v1 y resumen de conversación
 - [ ] `[QA]` Conjunto de evaluación de 120 frases y job de CI con umbral del 90 %
+- [ ] `[BE]` Aceptar `adjuntoIds` en `POST /conversaciones/{id}/mensajes` y admitir contenido multimodal en `LLMProvider` e `InterpretarYResponderUseCase` (el detalle de adjuntos está en [`adjuntos-imagenes-chat`](../adjuntos-imagenes-chat/design.md))
 - [ ] `[QA]` Pruebas de todos los escenarios (LLM y WebSocket mockeados); prueba de reconexión sin duplicar texto

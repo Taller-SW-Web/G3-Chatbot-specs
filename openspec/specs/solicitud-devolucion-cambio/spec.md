@@ -14,7 +14,7 @@ Permitir al cliente solicitar, desde el chat, el cambio o la devolución con ree
 
 - La solicitud solo se acepta sobre un pedido en estado `ENTREGADO` (confirmado por F1); si no lo está, responde `409`.
 - **Plazo: 7 días naturales desde la entrega.** Fuera de ese plazo, o si falta evidencia obligatoria, responde `400`.
-- El motivo es tipificado; si el motivo implica un defecto, **se exige evidencia** (fotos o PDF, como `{tipo: IMAGEN, url}`), subida primero a `POST /api/v2/devoluciones/evidencias/upload` — **Ventas hostea el archivo, el chatbot no necesita su propio bucket**.
+- El motivo es tipificado; si el motivo implica un defecto, **se exige evidencia** (fotos o PDF, como `{tipo: IMAGEN, url}`), subida primero a `POST /api/v2/devoluciones/evidencias/upload` — **Ventas hostea el archivo, el chatbot no necesita su propio bucket para la evidencia**. 🧩 Aclaración: las imágenes que el cliente adjunta al chat para que el asistente las interprete (SPEC-23) usan un bucket privado propio de Supabase Storage y no se reutilizan como evidencia; la evidencia se sigue subiendo a Ventas desde este formulario.
 - El Gestor evalúa el expediente vía `PATCH /devoluciones/{id}/resolucion`: `SOLICITADA → EN_EVALUACION → APROBADA/RECHAZADA`, y un rechazo sin `fundamento` responde `400`.
 - F3 nunca modifica el pedido en M1 directamente; solo lo consulta.
 - `GET /api/v2/devoluciones?clienteId=` permite listar y detectar duplicados (Requisito 5), ya sin bloqueo.

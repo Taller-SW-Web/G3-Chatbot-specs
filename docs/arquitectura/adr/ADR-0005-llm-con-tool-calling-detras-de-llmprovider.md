@@ -40,6 +40,10 @@ Aceptada
 - Los proveedores procesan datos fuera del Perú, un flujo transfronterizo que debe informarse (`privacidad.md` §3).
 - La salida del LLM es no determinista: cualquier cambio de prompt o modelo debe pasar la evaluación en CI.
 
+## Enmienda (2026-09-26): el contexto puede incluir imágenes
+
+Sin cambiar la decisión original, el contexto acotado que el backend envía al LLM puede incluir ahora **imágenes adjuntas** por el cliente, dentro de la misma ventana de los últimos 12 mensajes. `LLMProvider` admite partes de contenido de texto e imagen (base64, nunca URLs) y declara si el modelo admite visión; el modelo configurado es `gpt-6-luna`, cuyo soporte de visión y costo por imagen no están verificados. Las imágenes suman costo y latencia por turno (riesgo R9) y un flujo transfronterizo adicional. Ver [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md) y SPEC-23.
+
 ## Referencias
 
 - `openspec/specs/motor-conversacion/spec.md` Contexto (líneas 19-24), Req. 3, 6, 7 (líneas 107-228) y RNF (líneas 321-328)

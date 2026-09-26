@@ -36,6 +36,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 | D-13 | Modo degradado del LLM | SPEC-05 · Req. 10 | INT-CAT-01 (degradado) |
 | D-14 | Pide un humano y pregunta si es un bot | SPEC-05 · Req. 12 | INT-SIS-06, INT-SIS-07 |
 | D-15 | Límite de mensajes | SPEC-05 · Req. 11 | — |
+| D-16 | Búsqueda a partir de una imagen | SPEC-23 · Req. 2, 5, 6 | INT-CAT-01 (con imagen) |
 
 ---
 
@@ -402,3 +403,25 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 **Usuario:** hola?? responde
 `⟵ 429 DEMASIADAS_SOLICITUDES` *(no llega al LLM)*
 *(La app muestra:)* Vas muy rápido, espera un momento
+
+---
+
+## D-16 · Búsqueda a partir de una imagen
+
+- **Precondiciones:** el modelo configurado admite imágenes (`LLM_VISION_ENABLED=true`); María no ha confirmado antes el aviso de imágenes en este dispositivo.
+- **Referencias:** SPEC-23 · Req. 2 (Primera carga en el dispositivo), Req. 5 (Descripción de una imagen) y Req. 6 (Buscar algo parecido a una foto; Los resultados no prometen parecido exacto).
+- **Intenciones:** INT-CAT-01 (los criterios salen de la imagen).
+
+**Usuario:** *(pulsa el botón de adjuntar)*
+*(Pantalla de aviso:)* Las imágenes que adjuntes se envían a un asistente con IA y se guardan de forma privada. Evita fotos con rostros, documentos, tarjetas o datos personales. `[Política de privacidad]` `[Entendido, adjuntar]`
+
+**Usuario:** *(confirma el aviso, elige la foto de unas zapatillas blancas de correr y escribe)* busco algo así
+`⟶ tool: buscar_productos({categoria: "zapatillas", color: "blanco", uso: "running"})` *(criterios deducidos de la imagen; el backend valida los argumentos)*
+**Botleta:** Busqué zapatillas blancas para correr. Estas son algunas opciones
+`[CARRUSEL_PRODUCTOS]` resultados (precios y stock de Productos)
+
+**Usuario:** *(adjunta la foto de un paisaje)* ¿y esto?
+**Botleta:** Solo puedo ayudarte con compras en la tienda deportiva. ¿Qué te gustaría hacer?
+`[Buscar productos]` `[Ofertas]` `[Carrito]`
+
+> El texto de la respuesta con los criterios y la negativa por fuera de dominio son ilustrativos; SPEC-23 fija el comportamiento (indicar los criterios interpretados sin afirmar coincidencia idéntica y aplicar la regla de fuera de dominio de SPEC-05), no la redacción exacta. Con `LLM_VISION_ENABLED=false` el asistente responde "No pude analizar la imagen en este momento. Cuéntame con palabras qué buscas y te ayudo" (SPEC-23 · Req. 8).

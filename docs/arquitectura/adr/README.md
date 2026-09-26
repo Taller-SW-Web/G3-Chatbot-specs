@@ -7,6 +7,7 @@ Reglas:
 - **Los ADR no crean decisiones.** Si una decisión cambia comportamiento, primero se cambia la spec mediante un cambio de OpenSpec (`openspec/changes/`) y después se actualiza o reemplaza el ADR.
 - Lo que un ADR necesita y ningún documento decide se registra con estado **Propuesta** y se lista en sus preguntas abiertas.
 - Un ADR aceptado no se reescribe: si la decisión cambia, se crea uno nuevo y el anterior pasa a **Reemplazada por ADR-NNNN**.
+- Una enmienda fechada al final de un ADR aceptado (sección *Enmienda*) puede precisar su contexto sin reescribir la decisión original: ADR-0005 y ADR-0006 la usan para las imágenes de SPEC-23 (ADR-0019).
 - La fecha es la que consta en los documentos para esa decisión; cuando no consta, es la fecha de registro (2026-09-24).
 
 ## Índice
@@ -31,5 +32,6 @@ Reglas:
 | [ADR-0016](ADR-0016-direccion-en-checkoutpage-fuera-del-chat.md) | Dirección y documento solo en `CheckoutPage`, nunca por el chat ni el LLM | Aceptada | 2026-09-24 |
 | [ADR-0017](ADR-0017-mocks-y-urls-base-parametrizadas.md) | Integración contra mocks con URLs base parametrizadas | Aceptada | 2026-09-24 |
 | [ADR-0018](ADR-0018-agrupacion-del-nucleo-en-ocho-casos-de-uso.md) | Agrupación del núcleo del backend en 8 casos de uso | Propuesta | 2026-09-24 |
+| [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md) | Imágenes como entrada del LLM, con almacenamiento propio privado detrás de `AttachmentStorage` | Aceptada | 2026-09-26 |
 
 Las vistas que estas decisiones explican están en el [modelo C4](../c4.md).

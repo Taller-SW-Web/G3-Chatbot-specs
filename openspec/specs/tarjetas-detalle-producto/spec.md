@@ -2,6 +2,13 @@
 
 > Origen: SPEC-09 · Grupo: Descubrimiento · Requiere sesión: No · Depende de: [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`ofertas-promociones`](../ofertas-promociones/spec.md) (SPEC-08), [`validacion-stock`](../validacion-stock/spec.md) (SPEC-10), [`gestion-carrito`](../gestion-carrito/spec.md) (SPEC-11), Productos (SPEC-003 y 004 de Productos)
 
+## Responsables
+
+- **Sonny:** detalle del producto y sus variantes.
+- **Alonso:** herramienta `ver_detalle_producto`.
+- **David:** `ProductCard`, carrusel y selector de variante en el chat.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Presentar los productos de forma visual y accionable, y permitir ver el detalle y elegir la variante exacta (talla y color) para agregarla al carrito.

@@ -2,6 +2,12 @@
 
 > Origen: SPEC-03 · Grupo: Identidad · Requiere sesión: — · Depende de: Seguridad (SPEC-05, SPEC-06, SPEC-09 y SPEC-14 de Seguridad), [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`gestion-carrito`](../gestion-carrito/spec.md) (SPEC-11)
 
+## Responsables
+
+- **Sebastian:** login y MFA con Seguridad, `JwtValidator` (JWKS), refresh con cookie httpOnly, fusión de carritos anónimos y formularios de login y MFA en el chat.
+- **Sonny:** lógica del carrito que usa la fusión.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Autenticar al cliente desde el chat, con o sin MFA, y gestionar de forma segura su sesión (renovación y cierre), fusionando su carrito anónimo con el de su cuenta.

@@ -2,6 +2,12 @@
 
 > Origen: SPEC-15 · Grupo: Checkout · Requiere sesión: Sí · Depende de: [`direccion-cotizacion-envio`](../direccion-cotizacion-envio/spec.md) (SPEC-12), [`checkout-pago`](../checkout-pago/spec.md) (SPEC-14), Ventas (F1 y F2)
 
+## Responsables
+
+- **Sonny:** `VentasClient` (crear pedido, notificar pago, anulación), outbox (tabla y worker) e idempotencia.
+- **David:** conexión entre el checkout aprobado y la grabación del pedido.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Registrar en Ventas el pedido del cliente con un snapshot fiel de lo que confirmó, notificar el pago aprobado sin perderlo ante fallos, y liberar los pedidos cuyo pago no se completó.

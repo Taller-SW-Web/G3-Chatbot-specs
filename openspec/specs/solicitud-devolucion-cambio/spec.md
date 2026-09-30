@@ -2,6 +2,13 @@
 
 > Origen: SPEC-21 · Grupo: Postventa · Requiere sesión: Sí · Depende de: [`inicio-sesion`](../inicio-sesion/spec.md) (SPEC-03), [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`direccion-cotizacion-envio`](../direccion-cotizacion-envio/spec.md) (SPEC-12), [`consulta-estado-pedido`](../consulta-estado-pedido/spec.md) (SPEC-17), Ventas (F3)
 
+## Responsables
+
+- **David:** solicitud con evidencia y limpieza de evidencias.
+- **Alonso:** herramienta de devolución.
+- **Diego:** pestaña "Reembolsos" de `OrderHistoryPage`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Permitir al cliente solicitar, desde el chat, el cambio o la devolución con reembolso de un producto ya entregado, con evidencia cuando el motivo lo exige, y dejarle un código de seguimiento.

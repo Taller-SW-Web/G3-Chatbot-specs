@@ -2,6 +2,12 @@
 
 > Origen: SPEC-16 · Grupo: Checkout · Requiere sesión: Sí (compra) · Depende de: [`grabacion-pedido`](../grabacion-pedido/spec.md) (SPEC-15)
 
+## Responsables
+
+- **David:** `EmailSender`, plantillas y tarea `ENVIAR_CORREO` en el outbox.
+- **Sonny:** outbox que ejecuta la tarea.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Enviar al cliente, una sola vez por pedido, un correo con el detalle de su compra confirmada y el camino para hacerle seguimiento.

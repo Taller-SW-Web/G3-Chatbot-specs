@@ -2,6 +2,13 @@
 
 > Origen: SPEC-17 · Grupo: Seguimiento · Requiere sesión: Sí · Depende de: [`inicio-sesion`](../inicio-sesion/spec.md) (SPEC-03), [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), Ventas (F1), [`seguimiento-despacho`](../seguimiento-despacho/spec.md) (SPEC-18)
 
+## Responsables
+
+- **Sonny:** consulta del estado y la línea de tiempo en Ventas.
+- **Alonso:** herramienta de consulta de pedido.
+- **Diego:** pestaña "En proceso" de `OrderHistoryPage`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Responder "¿dónde está mi pedido?" con el estado actual en lenguaje claro y su línea de tiempo, solo para pedidos del cliente autenticado.

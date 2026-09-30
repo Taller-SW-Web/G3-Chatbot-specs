@@ -2,6 +2,12 @@
 
 > Origen: SPEC-10 · Grupo: Carrito · Requiere sesión: No · Depende de: Productos (SPEC-015 de Productos), [`tarjetas-detalle-producto`](../tarjetas-detalle-producto/spec.md) (SPEC-09) · La usan: [`gestion-carrito`](../gestion-carrito/spec.md) (SPEC-11), [`checkout-pago`](../checkout-pago/spec.md) (SPEC-14), [`grabacion-pedido`](../grabacion-pedido/spec.md) (SPEC-15)
 
+## Responsables
+
+- **Sonny:** `InventarioClient` y validación al agregar al carrito y antes del pedido.
+- **Alonso:** herramienta `consultar_disponibilidad`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Verificar contra el inventario real la disponibilidad de cada SKU antes de agregarlo o incrementarlo en el carrito, y de nuevo antes de crear el pedido.

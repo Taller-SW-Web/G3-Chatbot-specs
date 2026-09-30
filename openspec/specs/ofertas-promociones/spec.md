@@ -2,6 +2,13 @@
 
 > Origen: SPEC-08 · Grupo: Descubrimiento · Requiere sesión: No · Depende de: [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`tarjetas-detalle-producto`](../tarjetas-detalle-producto/spec.md) (SPEC-09), Productos (SPEC-005, 006 y 013 de Productos)
 
+## Responsables
+
+- **Sonny:** consulta de ofertas vigentes para el canal.
+- **Alonso:** herramienta de ofertas.
+- **Diego:** banner y grid de productos en oferta en `HomePage`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Mostrar al cliente las ofertas y promociones vigentes habilitadas para el canal Chatbot y reflejar los descuentos correctamente en las tarjetas y en el carrito.

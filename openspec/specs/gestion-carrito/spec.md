@@ -2,6 +2,14 @@
 
 > Origen: SPEC-11 · Grupo: Carrito · Requiere sesión: No · Depende de: [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`ofertas-promociones`](../ofertas-promociones/spec.md) (SPEC-08), [`tarjetas-detalle-producto`](../tarjetas-detalle-producto/spec.md) (SPEC-09), [`validacion-stock`](../validacion-stock/spec.md) (SPEC-10), [`inicio-sesion`](../inicio-sesion/spec.md) (SPEC-03) (fusión)
 
+## Responsables
+
+- **Sonny:** `GestionarCarrito` (agregar, quitar, cambiar cantidades).
+- **Alonso:** herramientas del carrito.
+- **David:** `CartWidget` en el chat.
+- **Diego:** `CartPage`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Permitir al cliente agregar, modificar, quitar y revisar productos en su carrito por conversación o por la UI, con totales correctos y actualizados.

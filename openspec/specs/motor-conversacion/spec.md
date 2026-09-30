@@ -2,6 +2,14 @@
 
 > Origen: SPEC-05 · Grupo: Transversal · Requiere sesión: No (algunas herramientas sí) · Depende de: proveedor LLM, [`inicio-sesion`](../inicio-sesion/spec.md) (SPEC-03) · Lo usan: todas las demás specs
 
+## Responsables
+
+- **Mathias:** `InterpretarYResponderUseCase` (ciclo de tool calling), prompt del sistema, evals en CI, WebSocket del backend y conversaciones múltiples (crear, listar, buscar, historial).
+- **Alonso:** `ToolRegistry`, `ActionDispatcher`, `SensitiveDataFilter`, `OutputValidator` y `DegradedMode`.
+- **David:** `ChatWindow`, `MessageBubble` y adaptador WebSocket del frontend (reconexión y polling de respaldo).
+- **Diego:** `Sidebar` (nuevo chat, buscar, historial) y vista `ChatPage`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Ofrecer una experiencia de conversación multi-chat (crear, listar, buscar y retomar), interpretar cada mensaje del cliente, enrutarlo a la capacidad correcta mediante herramientas, transmitir la respuesta en tiempo real y responder con bloques estructurados y verídicos, de forma segura y con degradación controlada cuando el LLM no está disponible.

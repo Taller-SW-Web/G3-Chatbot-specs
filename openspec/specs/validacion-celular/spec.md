@@ -2,6 +2,12 @@
 
 > Origen: SPEC-04 · Grupo: Identidad · Requiere sesión: Sí · Depende de: [`inicio-sesion`](../inicio-sesion/spec.md) (SPEC-03)
 
+## Responsables
+
+- **Sebastian:** OTP propio (`SmsSender` simulado) y formulario del OTP en el chat.
+- **Alonso:** herramienta `verificar_celular`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Garantizar, dentro del propio chatbot, que el cliente controla el celular que va a recibir su pedido, mediante un código OTP simulado, sin depender de un endpoint de Seguridad que no existe este ciclo.

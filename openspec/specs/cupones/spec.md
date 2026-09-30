@@ -2,6 +2,13 @@
 
 > Origen: SPEC-13 · Grupo: Checkout · Requiere sesión: Sí · Depende de: [`inicio-sesion`](../inicio-sesion/spec.md) (SPEC-03), [`gestion-carrito`](../gestion-carrito/spec.md) (SPEC-11), Productos (SPEC-005 y SPEC-006 de Productos), Ventas (F1)
 
+## Responsables
+
+- **David:** `CuponesClient`, aplicar y quitar cupón y recálculo del total.
+- **Alonso:** herramientas `aplicar_cupon` y `quitar_cupon`.
+- **Diego:** campo del cupón en `CheckoutPage`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Permitir al cliente aplicar un código de descuento a su carrito desde el chat y ver su efecto real en el total antes de pagar.

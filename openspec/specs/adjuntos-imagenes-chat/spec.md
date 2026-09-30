@@ -2,6 +2,12 @@
 
 > Origen: SPEC-23 · Grupo: Transversal · Requiere sesión: No · Depende de: [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`busqueda-filtrado`](../busqueda-filtrado/spec.md) (SPEC-06) · Se relaciona con: [`solicitud-devolucion-cambio`](../solicitud-devolucion-cambio/spec.md) (SPEC-21)
 
+## Responsables
+
+- **Mathias:** imágenes como entrada del LLM (base64), `AttachmentStorage` con Supabase Storage y URLs firmadas.
+- **David:** componente para adjuntar y previsualizar imágenes en el chat.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Permitir al cliente adjuntar imágenes a un mensaje del chat para que el asistente las interprete y responda en consecuencia (por ejemplo, "busco zapatillas como estas" o "este es el defecto"), guardándolas de forma privada, mostrándolas como miniaturas en el historial y sin frenar la conversación de texto cuando el análisis de imagen no está disponible.

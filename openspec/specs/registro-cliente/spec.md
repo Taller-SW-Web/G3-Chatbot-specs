@@ -2,6 +2,12 @@
 
 > Origen: SPEC-01 · Grupo: Identidad · Requiere sesión: No · Depende de: Seguridad (SPEC-01 y SPEC-07 de Seguridad), [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05)
 
+## Responsables
+
+- **Sebastian:** integración con Seguridad (registro) y `RegistroForm` dentro del chat.
+- **Alonso:** herramienta que muestra el formulario de registro en el chat.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Permitir que un cliente cree su cuenta sin salir del chat, mediante un formulario seguro, y guiarlo hacia la verificación de su correo.

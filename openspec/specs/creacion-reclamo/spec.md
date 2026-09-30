@@ -2,6 +2,12 @@
 
 > Origen: SPEC-19 · Grupo: Postventa · Requiere sesión: Sí · Depende de: [`inicio-sesion`](../inicio-sesion/spec.md) (SPEC-03), [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`consulta-estado-pedido`](../consulta-estado-pedido/spec.md) (SPEC-17), Ventas (F6)
 
+## Responsables
+
+- **David:** `GestionarPostventa` (crear reclamo), `VentasClient` (reclamos), idempotencia y `ContactFormWidget`.
+- **Alonso:** herramienta de reclamo con paso de confirmación.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Permitir al cliente reportar un problema con un pedido desde el chat, de forma guiada y con una confirmación explícita, y entregarle un código para hacer seguimiento.

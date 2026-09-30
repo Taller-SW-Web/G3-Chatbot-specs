@@ -2,6 +2,13 @@
 
 > Origen: SPEC-18 · Grupo: Seguimiento · Requiere sesión: Sí · Depende de: [`consulta-estado-pedido`](../consulta-estado-pedido/spec.md) (SPEC-17), Despacho (RT-04), Seguridad (token de servicio)
 
+## Responsables
+
+- **Sonny:** `DespachoClient` (seguimiento), consulta en paralelo con Ventas y degradación si Despacho no responde.
+- **Alonso:** herramienta de seguimiento.
+- **Diego:** hitos del despacho en `OrderHistoryPage`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Mostrar al cliente en qué punto del traslado está su paquete, con los hitos del despacho, sin exponer datos operativos ni personales.

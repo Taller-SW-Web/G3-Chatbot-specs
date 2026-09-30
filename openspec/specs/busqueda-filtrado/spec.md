@@ -2,6 +2,12 @@
 
 > Origen: SPEC-06 · Grupo: Descubrimiento · Requiere sesión: No · Depende de: [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`tarjetas-detalle-producto`](../tarjetas-detalle-producto/spec.md) (SPEC-09), Productos (SPEC-003, 004, 008, 011 y 013 de Productos)
 
+## Responsables
+
+- **Sonny:** `ProductosClient`, `GestionarCatalogo` (búsqueda y filtros) y mock de Productos.
+- **Alonso:** herramienta de búsqueda.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Traducir la petición del cliente en filtros de catálogo válidos y devolver los productos activos que la cumplen, con su precio vigente para el canal Chatbot.

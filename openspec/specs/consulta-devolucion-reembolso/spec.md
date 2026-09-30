@@ -2,6 +2,13 @@
 
 > Origen: SPEC-22 · Grupo: Postventa · Requiere sesión: Sí · Depende de: [`solicitud-devolucion-cambio`](../solicitud-devolucion-cambio/spec.md) (SPEC-21), [`consulta-estado-pedido`](../consulta-estado-pedido/spec.md) (SPEC-17), Ventas (F3 y F4)
 
+## Responsables
+
+- **David:** consulta del estado de la devolución y del reembolso.
+- **Alonso:** herramienta de consulta de devolución.
+- **Diego:** detalle del reembolso en `OrderHistoryPage`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Mostrar al cliente el estado de sus solicitudes de devolución o cambio, incluida la resolución final y, cuando aplique, el estado del reembolso de dinero — sin importar desde qué canal se originó la solicitud.

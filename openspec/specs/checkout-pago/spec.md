@@ -2,6 +2,13 @@
 
 > Origen: SPEC-14 · Grupo: Checkout · Requiere sesión: Sí · Depende de: [`inicio-sesion`](../inicio-sesion/spec.md) (SPEC-03), [`validacion-celular`](../validacion-celular/spec.md) (SPEC-04), [`validacion-stock`](../validacion-stock/spec.md) (SPEC-10), [`gestion-carrito`](../gestion-carrito/spec.md) (SPEC-11), [`direccion-cotizacion-envio`](../direccion-cotizacion-envio/spec.md) (SPEC-12), [`cupones`](../cupones/spec.md) (SPEC-13) · Se coordina con: [`grabacion-pedido`](../grabacion-pedido/spec.md) (SPEC-15) (grabación del pedido)
 
+## Responsables
+
+- **David:** `GestionarCheckout`, `PaymentSimulator` y job `ExpirarCheckouts`.
+- **Alonso:** herramienta `iniciar_checkout`.
+- **Diego:** `CheckoutPage` con `PaymentForm`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Llevar al cliente desde el carrito hasta un pago aprobado, mostrando un resumen fiel y cobrando exactamente el total confirmado, con un simulador de pasarela predecible para pruebas y demos.

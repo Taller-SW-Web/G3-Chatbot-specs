@@ -2,6 +2,12 @@
 
 > Origen: SPEC-12 · Grupo: Checkout · Requiere sesión: Sí · Depende de: [`inicio-sesion`](../inicio-sesion/spec.md) (SPEC-03), [`gestion-carrito`](../gestion-carrito/spec.md) (SPEC-11), Seguridad, Ventas (F1), Despacho (F-01)
 
+## Responsables
+
+- **David:** `DespachoClient` (cotización) y lógica de dirección y documento del comprador.
+- **Diego:** sección de dirección en `CheckoutPage`.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Que el cliente indique su dirección de entrega y su documento de identidad dentro del checkout, y conozca, antes de pagar, si hay cobertura, cuánto cuesta el envío y en cuántos días llega.

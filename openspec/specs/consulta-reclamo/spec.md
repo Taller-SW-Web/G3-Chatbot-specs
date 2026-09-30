@@ -2,6 +2,12 @@
 
 > Origen: SPEC-20 · Grupo: Postventa · Requiere sesión: Sí · Depende de: [`creacion-reclamo`](../creacion-reclamo/spec.md) (SPEC-19), Ventas (F6)
 
+## Responsables
+
+- **David:** consulta del estado y la respuesta del reclamo.
+- **Alonso:** herramienta de consulta de reclamo.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Permitir al cliente conocer el estado de sus reclamos y leer la respuesta del equipo de ventas desde el chat.

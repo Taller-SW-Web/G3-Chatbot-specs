@@ -2,6 +2,13 @@
 
 > Origen: SPEC-07 · Grupo: Descubrimiento · Requiere sesión: No · Depende de: [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`busqueda-filtrado`](../busqueda-filtrado/spec.md) (SPEC-06), [`tarjetas-detalle-producto`](../tarjetas-detalle-producto/spec.md) (SPEC-09), [`validacion-stock`](../validacion-stock/spec.md) (SPEC-10), Productos (SPEC-007 de Productos)
 
+## Responsables
+
+- **Sonny:** consulta al catálogo para la selección corta y el cross-sell.
+- **Alonso:** herramienta `recomendar_productos`.
+- **Mathias:** instrucciones de recomendación en el prompt del sistema.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Convertir una necesidad descrita en lenguaje natural en una selección corta y justificada de productos disponibles, y sugerir complementos cuando el cliente elige uno.

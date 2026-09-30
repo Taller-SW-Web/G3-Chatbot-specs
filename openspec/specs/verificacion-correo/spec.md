@@ -2,6 +2,11 @@
 
 > Origen: SPEC-02 · Grupo: Identidad · Requiere sesión: No · Depende de: [`registro-cliente`](../registro-cliente/spec.md) (SPEC-01), Seguridad (SPEC-02 de Seguridad)
 
+## Responsables
+
+- **Sebastian:** flujo de activación con Seguridad y página de destino del enlace en el frontend.
+- **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
+
 ## Purpose
 
 Que el cliente active su cuenta desde el enlace recibido y vuelva al chat listo para iniciar sesión, pudiendo pedir un nuevo enlace si el anterior venció.

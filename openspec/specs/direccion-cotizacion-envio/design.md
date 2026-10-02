@@ -8,7 +8,7 @@
 |---|---|---|
 | Seguridad | `GET /usuarios/{id}/direcciones` (para prellenar, token del titular) | ✅ |
 | Seguridad | `POST /usuarios/{id}/direcciones` (guardado opcional) | ✅ |
-| Despacho | `POST /api/v1/cotizaciones` con `Authorization: Bearer <service-token>`, scope `cotizaciones:calcular`, audience `api-despacho` | ✅ contrato real · 🟡 scope pendiente para `modulo-chatbot` |
+| Despacho | `POST /api/v1/cotizaciones` con `Authorization: Bearer <service-token>`, scope `cotizaciones:calcular`, audience `api-despacho` | ✅ contrato y scope concedido a `modulo-chatbot` (Seguridad #31) · credenciales reales en Hito 4 |
 | Productos | `POST /productos/datos-fisicos/consulta` (lo usa Despacho, no el chatbot) | 🟡 no consume el canal |
 | Ventas | Nombres de campo de `contacto` y `envio` usados por esta spec | ✅ `api-contract.md` §1.1 |
 
@@ -47,7 +47,7 @@
 
 ## Desglose para issues
 
-- [ ] `[INT]` Cerrar A12 con Despacho y dejar el scope `cotizaciones:calcular` pendente para `modulo-chatbot`
+- [ ] `[INT]` Obtener y configurar las credenciales reales de `modulo-chatbot` en Hito 4; el scope `cotizaciones:calcular` ya fue concedido (Seguridad #31)
 - [ ] `[BE]` `DocumentoValidator` y el campo `BuyerDocumentSection` en el snapshot
 - [ ] `[BE]` `EnvioService` y `DespachoClient` con el nuevo payload `destino + lineas` y el mapeo de errores
 - [ ] `[BE]` Endpoint `envio/cotizar` con los nombres de campo alineados a Ventas

@@ -6,9 +6,9 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Despacho | Seguimiento por pedido (propuesta: `GET /api/v1/seguimiento?idPedido=`) con token de servicio | 🟡 A11 |
+| Despacho | `GET /api/v1/seguimientos/pedidos/{idPedido}` con token de servicio, scope `seguimientos:leer`, audience `api-despacho` | ✅ contrato y scope concedido a `modulo-chatbot` (Seguridad #31); credenciales reales en Hito 4 |
 | Seguridad | `POST /auth/token` (`client_credentials`, `client_id=modulo-chatbot`) | ✅ |
-| Seguridad / Despacho | Rol `SERVICIO_INTEGRACION` en el token de servicio del chatbot | 🟡 A4 |
+| Seguridad / Despacho | Rol `SERVICIO_INTEGRACION` en el token de servicio del chatbot | 🟡 A4 pendiente; no confundir con los scopes concedidos en Seguridad #31 |
 
 ## Frontend
 
@@ -30,7 +30,7 @@
 
 ## Desglose para issues
 
-- [ ] `[INT]` Unificar con Despacho el endpoint de seguimiento por pedido y su autenticación (A11); gestionar el rol de servicio con Seguridad (A4)
+- [ ] `[INT]` Obtener y configurar las credenciales reales en Hito 4; gestionar con Seguridad el rol `SERVICIO_INTEGRACION` aún pendiente (A4)
 - [ ] `[BE]` `ServiceTokenProvider` (compartido con otros clientes; se construye en Hito 4 con SPEC-14, HU-CHK-14, y aquí solo se reutiliza)
 - [ ] `[BE]` `DespachoClient.seguimiento` y `SeguimientoMapper` con lista blanca
 - [ ] `[BE]` Endpoint de seguimiento y herramienta `consultar_seguimiento`

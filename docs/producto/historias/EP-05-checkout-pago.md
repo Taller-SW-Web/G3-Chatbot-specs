@@ -63,7 +63,7 @@
 
 | Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
 |---|---|---|---|---|---|---|
-| EP-05 | Must | 8 | Hito 4 | `SPEC-12 · Req. 4` | RN-CHK-05, RN-CHK-06, RN-CHK-07, RN-CHK-08 | Despacho ✅ contrato / 🟡 autenticación (A12); Productos 🟡 (A6: peso y volumen) |
+| EP-05 | Must | 8 | Hito 4 | `SPEC-12 · Req. 4` | RN-CHK-05, RN-CHK-06, RN-CHK-07, RN-CHK-08 | Despacho ✅ contrato y scope concedido (Seguridad #31; credenciales en Hito 4) |
 
 **Como** cliente, **quiero** saber si llegan a mi distrito, cuánto cuesta el envío y en cuántos días llega, **para** conocer el total real antes de pagar.
 
@@ -298,7 +298,7 @@ Tareas numeradas `T1…Tn` en el orden del "Desglose para issues" de cada `desig
 
 | Spec | Tarea → Historia |
 |---|---|
-| SPEC-12 | T1 `[INT]` cerrar scope `cotizaciones:calcular` con Seguridad → HU-CHK-04 · T2 `[BE]` DocumentoValidator → HU-CHK-01 · T3 `[BE]` EnvioService y DespachoClient con `destino + lineas` → HU-CHK-04 (relacionada: HU-CHK-05) · T4 `[BE]` endpoint `envio/cotizar` → HU-CHK-04 · T5 `[BE]` GuardarDireccionOpcional → HU-CHK-03 · T6 `[FE]` BuyerDocumentSection → HU-CHK-01 · T7 `[FE]` AddressSection → HU-CHK-02 · T8 `[FE]` ShippingQuote → HU-CHK-04 · T9 `[QA]` → HU-CHK-01 a HU-CHK-05 |
+| SPEC-12 | T1 `[INT]` configurar credenciales reales de `modulo-chatbot` en Hito 4 (scope ya concedido en Seguridad #31) → HU-CHK-04 · T2 `[BE]` DocumentoValidator → HU-CHK-01 · T3 `[BE]` EnvioService y DespachoClient con `destino + lineas` → HU-CHK-04 (relacionada: HU-CHK-05) · T4 `[BE]` endpoint `envio/cotizar` → HU-CHK-04 · T5 `[BE]` GuardarDireccionOpcional → HU-CHK-03 · T6 `[FE]` BuyerDocumentSection → HU-CHK-01 · T7 `[FE]` AddressSection → HU-CHK-02 · T8 `[FE]` ShippingQuote → HU-CHK-04 · T9 `[QA]` → HU-CHK-01 a HU-CHK-05 |
 | SPEC-13 | T1 `[INT]` endpoint de validación y motivos (A5) → HU-CHK-06 · T2 `[BE]` CuponService, CuponesClient, endpoints → HU-CHK-06 (relacionadas: HU-CHK-07, HU-CHK-08) · T3 `[BE]` revalidación → HU-CHK-09 · T4 `[BE]` rate limit y herramientas → HU-CHK-10 · T5 `[FE]` CouponInput y avisos → HU-CHK-06 · T6 `[QA]` → HU-CHK-06 a HU-CHK-10 |
 | SPEC-14 | T1 `[BE]` modelos `checkout` e `intento_pago` → HU-CHK-12 · T2 `[BE]` CheckoutService (guardas y revalidación) → HU-CHK-11 · T3 `[BE]` IntrospeccionClient → HU-CHK-14 · T4 `[BE]` `POST /checkout` → HU-CHK-12 · T5 `[BE]` CardValidator y PaymentSimulator → HU-CHK-15 (relacionada: HU-CHK-13) · T6 `[BE]` `POST /checkout/{id}/pago` → HU-CHK-15 · T7 `[BE]` job de expiración y exclusión de logs → HU-CHK-16 · T8 `[BE]` herramienta `iniciar_checkout` → HU-CHK-11 · T9 `[FE]` CheckoutPage y CheckoutDiffNotice → HU-CHK-12 · T10 `[FE]` PaymentForm → HU-CHK-13 · T11 `[QA]` → HU-CHK-11 a HU-CHK-16 |
 | SPEC-18 (adelantada) | T2 `[BE]` ServiceTokenProvider → HU-CHK-14 (se necesita en Hito 4 para la introspección y el worker de Ventas) |

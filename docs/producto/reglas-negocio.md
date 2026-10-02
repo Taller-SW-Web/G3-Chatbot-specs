@@ -137,7 +137,7 @@
 | RN-CHK-04 | Guardar la dirección en Seguridad es opcional; si el guardado falla, el checkout continúa y se informa al cliente. | SPEC-12 · Req. 3 | Chatbot |
 | RN-CHK-05 | La modalidad de envío es siempre `DELIVERY`; no hay retiro en tienda en este canal. | SPEC-12 · Req. 4 | Chatbot |
 | RN-CHK-06 | Un destino sin cobertura (`coberturaDisponible: false`) bloquea el pago (`422 SIN_COBERTURA`) hasta corregir el distrito. | SPEC-12 · Req. 4 | Despacho (cobertura) |
-| RN-CHK-07 | Si Productos no informa el peso de un SKU, se usa el peso por defecto de su categoría (`config/pesos_por_categoria.yaml`) y se registra su uso, mientras el acuerdo A6 siga abierto. | SPEC-12 · Req. 4 | Chatbot (regla provisional) |
+| RN-CHK-07 | El canal no calcula peso ni volumen del carrito; Despacho recibe `destino` + `lineas` y se encarga de validar los datos físicos con Productos cuando el cálculo los exige. No existe `config/pesos_por_categoria.yaml` en la integración real. | SPEC-12 · Req. 4 | Despacho / Productos |
 | RN-CHK-08 | Si el cotizador no responde en 4 s, no se asume ningún costo y el pago queda deshabilitado. | SPEC-12 · Req. 4 | Chatbot |
 | RN-CHK-09 | Una cotización vence a los 30 minutos y se invalida cuando cambian la dirección o el contenido del carrito; si vence antes de confirmar, se recotiza y se muestra el nuevo total. | SPEC-12 · Req. 5 | Chatbot |
 | RN-CHK-10 | El cupón se valida sin consumirse; el uso lo consumen Ventas y Productos al confirmar el pedido, y solo si el cupón forma parte del beneficio seleccionado. El chatbot nunca llama a una API de consumo. | SPEC-13 · Contexto y Req. 1 | Productos |

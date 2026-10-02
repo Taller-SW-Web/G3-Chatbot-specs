@@ -7,8 +7,10 @@
 | Módulo | Endpoint | Estado |
 |---|---|---|
 | Productos | Búsqueda de catálogo (ver SPEC-06) | 🟡 A5 |
-| Productos | `GET /recomendaciones/candidatos?productoId=&canal=CHATBOT` | 🟡 A5 |
+| Productos | `GET /recomendaciones` | 🟡 A5 · scope `recomendaciones:leer` pendiente |
 | Productos | `GET /inventario/disponibilidad?skus=` | 🟡 A5 |
+
+🧩 Hay que revisar el YAML real de Productos antes de cerrar el payload: el resumen del contrato confirma `GET /recomendaciones`, pero el detalle de filtros y respuesta puede variar incluso dentro del mismo módulo.
 
 ## Frontend
 
@@ -32,6 +34,6 @@
 - [ ] `[BE]` `config/actividades.yaml` (running, fútbol, fútbol sala, vóley, básquet, pádel, tenis, gimnasio, natación, ciclismo) con sus categorías
 - [ ] `[BE]` Herramienta `recomendar_productos` y `RecomendacionService`
 - [ ] `[BE]` `CrossSellService` más la integración con la confirmación del carrito
-- [ ] `[INT]` Cliente de la API de candidatos de Productos (A5)
+- [ ] `[INT]` Cliente real de la API de recomendaciones de Productos (A5)
 - [ ] `[FE]` Variante `recomendacion` de la tarjeta, `ClarifyingChips` y `CrossSellStrip`
 - [ ] `[QA]` 25 frases de necesidad en el conjunto de evaluación y pruebas de todos los escenarios

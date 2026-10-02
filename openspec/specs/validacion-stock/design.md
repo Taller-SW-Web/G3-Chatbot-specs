@@ -6,7 +6,9 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `GET /inventario/disponibilidad?skus=A,B,C` → `[{sku, available, estado}]` (agregado de ubicaciones) | 🟡 A5 |
+| Productos | `GET /inventario/disponibilidad?skus=A,B,C` → `[{ sku, location_id, on_hand, reserved, available, status }]` | 🟡 A5 · scope `inventario:disponibilidad:leer` pendiente |
+
+🧩 El contrato real usa `sku`, `location_id`, `on_hand`, `reserved`, `available` y `status`; el nombre del enum de `EstadoStock` hay que confirmar en el YAML en vivo antes de cerrar las condiciones de UI.
 
 ## Frontend
 
@@ -23,7 +25,7 @@
 | `InventarioClient.disponibilidad(skus)` | Timeout de 3 s, sin caché para las decisiones. |
 | `StockValidator.validar_adicion(sku, cantidadTotal)` | Devuelve OK o `STOCK_INSUFICIENTE` con el disponible. |
 | `StockValidator.validar_carrito(carrito)` | Validación masiva con resultado por línea. |
-| Herramienta `consultar_disponibilidad` | Esquema `{productoRef? | productoId?, talla?, color?}`. |
+| Herramienta `consultar_disponibilidad` | Esquema `{productoRef? | product_id?, talla?, color?}`. |
 | `SimilaresService` | Busca productos de la misma categoría y rango de precio ±20 % con stock. |
 
 ## Desglose para issues

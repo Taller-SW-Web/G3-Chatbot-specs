@@ -180,19 +180,26 @@ Errores de Seguridad: RFC 7807 con `code`. Lista completa: `TOKEN_INVALIDO`, `SC
 
 🧩 **Aviso directo de Seguridad (corrige lo asumido antes):** `POST /auth/login` **nunca** responde `CUENTA_NO_DISPONIBLE`. Una cuenta bloqueada, inactiva o sin verificar responde exactamente igual que una contraseña incorrecta: `401 CREDENCIALES_INVALIDAS`, a propósito, para no revelar el estado de la cuenta. El chatbot no puede distinguir la causa en el login (ver SPEC-03 Requisito 1); por eso SPEC-02 ofrece el reenvío de verificación en *todo* login fallido, no solo cuando "corresponde". `CUENTA_NO_DISPONIBLE` puede seguir existiendo como código en otros endpoints de Seguridad, pero no en el login.
 
-### 3.2 Productos y Ofertas — base `{PRO}/api/v1` 🟡 (las specs definen las capacidades; las rutas son una propuesta)
-| Endpoint propuesto | Uso | Spec origen en Productos |
-|---|---|---|
-| `GET /productos?estado=ACTIVO&q=&categoriaId=&marcaId=&precioMin=&precioMax=&canal=CHATBOT&pagina=&tamanio=` | Búsqueda de catálogo (solo productos activos) | SPEC-003 Req. 3 |
-| `GET /productos/{id}` (incluye variantes activas, atributos talla/color, imagen y SKU) | Detalle | SPEC-003, SPEC-004 |
-| `GET /categorias` · `GET /marcas` | Normalizar los filtros del LLM | SPEC-008, SPEC-011 |
-| `GET /precios?skus=&canal=CHATBOT` → `precioRegular`, `precioOferta`, `moneda`, `vigencia` | Precio para el canal | SPEC-013 |
-| `GET /inventario/disponibilidad?skus=` → `available` por SKU (agregado) | Validación de stock | SPEC-015 |
-| `GET /promociones?canal=CHATBOT&vigentes=true` | Ofertas vigentes | SPEC-006 Req. 8 |
-| `POST /promociones/evaluar` `{canal, lineas[{sku,cantidad}], cupon?}` → promoción seleccionada, importe original, descuento e importe resultante | Totales del carrito | SPEC-006 Req. 9 |
-| `POST /cupones/validar` `{codigo, canal, customerRef, lineas[]}` → `valido`, `motivo`, `descuento` e `importeResultante` (**sin consumir**) | Cupones | SPEC-005 Req. 5 |
-| `GET /recomendaciones/candidatos?productoId=&canal=CHATBOT` | Venta cruzada y complementos | SPEC-007 |
-| Peso (kg) y volumen (m³) por SKU | Cotizar el envío | ⚠️ **no está definido en ninguna spec de Productos** |
+### 3.2 Productos y Ofertas — base `{PRO}/api/v1` ✅ contrato real (scopes pendientes)
+
+> Todos los scopes de Productos están marcados como `pending-security-registration`, con audiencia `api-productos`, y ninguno está concedido todavía a `modulo-chatbot`.
+
+| Endpoint | Uso | Scope requerido | Estado |
+|---|---|---|---|
+| `GET /productos?q=&categoriaId=&marcaId=&canal=&pagina=&tamanio=&estado=&precioMin=&precioMax=` | Búsqueda y listado del catálogo | `catalogo:leer` | 🟡 `pending-security-registration` |
+| `GET /productos/{productoId}` | Detalle de producto con variantes | `catalogo:leer` | 🟡 `pending-security-registration` |
+| `GET /categorias` | Catálogo de categorías | `catalogo:leer` | 🟡 `pending-security-registration` |
+| `GET /marcas` | Catálogo de marcas | `catalogo:leer` | 🟡 `pending-security-registration` |
+| `GET /precios` | Precios por SKU/canal | `precios:leer` | 🟡 `pending-security-registration` |
+| `GET /precios/skus/{sku}` | Precio de un SKU | `precios:leer` | 🟡 `pending-security-registration` |
+| `GET /promociones` | Promociones vigentes | `promociones:leer` | 🟡 `pending-security-registration` |
+| `POST /promociones/evaluar` | Evaluación del carrito y cupones | `promociones:evaluar` | 🟡 `pending-security-registration` |
+| `POST /cupones/validar` | Validación de cupón sin consumir | `cupones:validar` | 🟡 `pending-security-registration` |
+| `GET /recomendaciones` | Recomendaciones / candidatos | `recomendaciones:leer` | 🟡 `pending-security-registration` |
+| `GET /inventario/disponibilidad?skus=A,B,C` | Disponibilidad de stock | `inventario:disponibilidad:leer` | 🟡 `pending-security-registration` |
+| `POST /productos/datos-fisicos/consulta` | Datos físicos por SKU (lo usa Despacho) | `productos:fisicos:leer` | 🟡 `pending-security-registration` |
+
+🧩 Payloads reales del contrato: `product_id`, `category_id`/`categoria_id`, `name`, `description`, `images`, `channel_id`, `lines`, `quantity`, `coupon_code`, `customer_ref`, `precio_regular`, `precio_oferta`, `currency` y paginación con `items`/`tamanio`.
 
 ### 3.3 Ventas y Postventa — bases `{VEN}/api/v1` (M1 · F1, F2) y `{VEN}/api/v2` (M2 · F3, F4, F5, F6) ✅ contrato publicado (v1.3.0)
 🧩 `api-contract.md` de Ventas pasó de 547 a 743 líneas el 23/09: agregó la subida de evidencia y los listados/consultas que faltaban de F3 y F6. M1 (pedidos) vive en `/api/v1`; M2 (postventa) vive en `/api/v2`.
@@ -224,8 +231,12 @@ Códigos esperados: `400` datos incompletos o inconsistentes, `403` el cliente n
 ### 3.4 Despacho y Entrega — base `{DES}/api/v1`
 | Endpoint | Uso | Estado |
 |---|---|---|
-| `POST /zonas/cotizar` `{distrito, codigoPostal?, pesoKg, volumenM3?}` → `coberturaDisponible`, `idZona`, `nombreZona`, `costoEnvio`, `moneda`, `plazoEstimadoDias` | Cotización (pública, con rate limit) | ✅ api-contract §2.1 |
-| Seguimiento por `idPedido` con token de servicio → `estadoEtiqueta`, `fechaProgramada`, `distrito` e `hitos[]` | Seguimiento del pedido | 🟡 el overview (RT-04) exige token de servicio y la consulta por pedido; el api-contract lo publica como `GET /tracking/{codigoRastreo}` **público y con coordenadas**. Asumimos lo del overview. Ruta propuesta: `GET /seguimiento?idPedido=` |
+| `POST /api/v1/cotizaciones` con `Auth: service-token`, scope `cotizaciones:calcular`, audience `api-despacho` → `destino`, `lineas[]`, `coberturaDisponible`, `tipoCotizacion`, `nombreZona`, `costoEnvio`, `moneda`, `plazoEstimadoDiasHabiles`, `fechaEstimadaEntrega` | Cotización real del pedido | ✅ contrato real · scope pendiente para `modulo-chatbot` |
+| `GET /api/v1/seguimientos/pedidos/{idPedido}` con token de servicio, scope `seguimientos:leer` | Seguimiento del pedido | 🟡 mismo estado que el issue abierto en Seguridad; no toca esta tarea |
+
+**Notas de integración**
+- El canal ya no manda `pesoKg` ni `volumenM3`; el payload real usa `destino` y, si aplica, `lineas` con `sku` + `cantidad`.
+- Los errores propios de Despacho son: `DESP_ERROR_DESTINO_REQUERIDO`, `DESP_ERROR_LINEAS_VACIAS`, `DESP_ERROR_CANTIDAD_INVALIDA`, `DESP_ERROR_PRODUCTO_NO_ENCONTRADO`, `DESP_ERROR_DATOS_FISICOS_INCOMPLETOS`, `DESP_ERROR_PRODUCTOS_NO_DISPONIBLE`, `DESP_ERROR_LIMITE_COTIZACION`.
 
 ---
 
@@ -271,8 +282,8 @@ Mejoras posibles: suscribirse a `pedido entregado` de Ventas y a `usuario.desact
 | A2 | ✅ Decidido — fuera de alcance del ciclo (23/09) | Seguridad | La validación de celular por un canal autorizado **no se va a construir este semestre**. Justificación de Seguridad: el SMS es simulado y el correo ya queda verificado por el registro. Se reevalúa en Hito 4 solo si abrimos un issue con un caso concreto. **Consecuencia de diseño:** SPEC-04 se reescribió como una verificación local y autocontenida del chatbot, sin depender de Seguridad. | SPEC-04 |
 | A3 | ✅ Concedido (23/09) | Seguridad | Scope `tokens:introspeccion` para `modulo-chatbot`, publicado en su kit §5. Credenciales reales recién en Hito 4; hasta entonces se prueba contra el mock. SPEC-14 ya lo usa como paso obligatorio antes de cada pago, siguiendo la propia regla de Seguridad ("si mueve dinero, introspeccionen"). | SPEC-14 |
 | A4 | 🟡 Abierto | Seguridad / Despacho | Emisión del rol `SERVICIO_INTEGRACION` al token de servicio del chatbot para consultar el seguimiento. | SPEC-18 |
-| A5 | 🟡 Abierto | Productos | Rutas y payloads concretos de catálogo, variantes, precios por canal, disponibilidad, promociones, evaluación, cupones y candidatos. | SPEC-06 a SPEC-13 |
-| A6 | 🟡 Abierto — replanteado | Productos / Despacho | No es solo "falta el dato del peso": hay que decidir **quién agrega el peso y volumen del carrito**. Opción 1 (preferida): Despacho recibe líneas (`sku` + `cantidad`) en `/zonas/cotizar` y le pregunta el peso a Productos él mismo, sacando el cálculo de cada canal. Opción 2: Productos expone un endpoint de "peso total" que cada canal consulta antes de cotizar. Mientras no se decida, SPEC-12 sigue usando `pesos_por_categoria.yaml` como parche local. | SPEC-12 |
+| A5 | 🟡 Abierto | Productos | El contrato real está definido en `api/openapi.yaml`; falta cerrar los scopes de seguridad y mapear los nombres reales del payload (`product_id`, `channel_id`, `lines`, `precio_regular`, etc.). | SPEC-06 a SPEC-13 |
+| A6 | ✅ Resuelto en el contrato real | Productos / Despacho | El canal ya no calcula ni envía peso/volumen; ahora Despacho recibe `destino` y `lineas`, y consulta datos físicos con Productos cuando hace falta. El chatbot no lleva `pesos_por_categoria.yaml` ni calcula peso localmente. | SPEC-12 |
 | A7 | 🟡 Abierto | Productos | Búsqueda por texto libre (`q`) sobre nombre, descripción y características. | SPEC-06, SPEC-07 |
 | A8 | ✅ Resuelto | Ventas | `api-contract.md` publicado: creación de pedido, notificación de pago (`POST /pagos/notificacion`) y listado por cliente. | SPEC-15, SPEC-17 |
 | A9 | ✅ Resuelto | Ventas | Anulación de un pedido `CREADO`/`PAGADO` por `PAGO_NO_COMPLETADO` iniciada por el canal: `POST /pedidos/{id}/anulaciones`, responde `200` directo. | SPEC-15 |

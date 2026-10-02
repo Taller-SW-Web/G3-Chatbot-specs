@@ -6,9 +6,11 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `GET /promociones?canal=CHATBOT&vigentes=true&categoriaId=&marcaId=` | 🟡 A5 |
-| Productos | `GET /precios?skus=&canal=CHATBOT` (`precioRegular`, `precioOferta` y vigencia) | 🟡 A5 |
-| Productos | `POST /promociones/evaluar` (lo usa SPEC-11) | 🟡 A5 |
+| Productos | `GET /promociones` | 🟡 A5 · scope `promociones:leer` pendiente |
+| Productos | `GET /precios` | 🟡 A5 · scope `precios:leer` pendiente |
+| Productos | `POST /promociones/evaluar` (lo usa SPEC-11) | 🟡 A5 · scope `promociones:evaluar` pendiente |
+
+🧩 El contrato real usa `precio_regular`, `precio_oferta`, `currency`, `channel_id`, `lines`, `quantity`, `coupon_code` y `customer_ref`; no se puede seguir usando nombres en español camelCase ni `canal`/`lineas`/`cupon`.
 
 ## Frontend
 
@@ -24,12 +26,12 @@
 |---|---|
 | Herramienta `consultar_promociones` | Esquema `{categoria?, marca?}`. |
 | `PromocionesService` | Consulta, filtra por modalidad `AUTOMATICA` y canal, y mapea a `PromocionResumen`. |
-| `PricingAdapter` | Normaliza `precioRegular`, `precioOferta` y `ahorroPct`. |
-| `EvaluacionClient` | Wrapper de `POST /promociones/evaluar` (lo usa SPEC-11). |
+| `PricingAdapter` | Normaliza `precio_regular`, `precio_oferta`, `currency` y `ahorroPct`. |
+| `EvaluacionClient` | Wrapper de `POST /promociones/evaluar` usando `channel_id`, `lines`, `coupon_code` y `customer_ref`. |
 
 ## Desglose para issues
 
-- [ ] `[INT]` Acordar con Productos los endpoints de promociones, precios y evaluación (A5)
+- [ ] `[INT]` Acordar con Productos los endpoints reales de promociones, precios y evaluación (A5)
 - [ ] `[BE]` Herramienta `consultar_promociones` y `PromocionesService`
 - [ ] `[BE]` `PricingAdapter` y `EvaluacionClient`
 - [ ] `[FE]` `PromotionList`, `PriceTag` y `CartDiscountLines`

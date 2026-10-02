@@ -6,9 +6,11 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `GET /precios?skus=&canal=CHATBOT` | 🟡 A5 |
-| Productos | `POST /promociones/evaluar {canal: CHATBOT, lineas[], cupon?}` | 🟡 A5 |
+| Productos | `GET /precios` | 🟡 A5 · scope `precios:leer` pendiente |
+| Productos | `POST /promociones/evaluar {channel_id, at, lines[], coupon_code, customer_ref}` | 🟡 A5 · scope `promociones:evaluar` pendiente |
 | Productos | Disponibilidad (SPEC-10) | 🟡 A5 |
+
+🧩 El carrito ya no debe armar `canal`, `lineas` ni `cupon`; el payload del contrato real usa `channel_id`, `lines`, `quantity`, `coupon_code` y `customer_ref`.
 
 ## Frontend
 

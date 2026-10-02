@@ -6,9 +6,11 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `GET /productos/{id}` con variantes activas, atributos identificadores, imagen y SKU | 🟡 A5 |
-| Productos | `GET /inventario/disponibilidad?skus=` | 🟡 A5 |
-| Productos | `GET /precios?skus=&canal=CHATBOT` | 🟡 A5 |
+| Productos | `GET /productos/{productoId}` | 🟡 A5 · scope `catalogo:leer` pendiente |
+| Productos | `GET /inventario/disponibilidad?skus=` | 🟡 A5 · scope pendiente |
+| Productos | `GET /precios` | 🟡 A5 · scope `precios:leer` pendiente |
+
+🧩 El contrato real usa `product_id`, `name`, `description`, `images`, `tiene_variantes`, `sku_base` y `variants`; ya no se asume `productoId`, `imagenUrl`, `descripcionBreve` ni un único `img`. Si `description` llega nulo, el frontend debe manejarlo con fallback.
 
 ## Frontend
 
@@ -25,10 +27,10 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| Herramienta `ver_detalle_producto` | Esquema `{productoRef? | productoId?}`. |
+| Herramienta `ver_detalle_producto` | Esquema `{productoRef? | product_id?}`. |
 | `CatalogoService.detalle()` | Une el producto, sus variantes, precios por SKU y la disponibilidad por SKU en `ProductoDetalle`. |
 | `VarianteResolver` | Mapea atributos en texto ("42", "negra") a los `valor_id` del producto y devuelve el SKU, las faltantes o las alternativas. |
-| DTOs `ProductoResumen`, `ProductoDetalle`, `VarianteDTO` | Contrato del bloque hacia el frontend. |
+| DTOs `ProductoResumen`, `ProductoDetalle`, `VarianteDTO` | Contrato del bloque hacia el frontend con nombres reales de Productos. |
 | `GET /api/v1/catalogo/productos/{id}` | Acceso directo desde la UI. |
 
 ## Desglose para issues

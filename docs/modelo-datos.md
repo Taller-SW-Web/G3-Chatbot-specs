@@ -24,6 +24,7 @@ Diagramas:
 | Importes | `numeric(12,2)` con `CHECK (col >= 0)`. |
 | Tiempos | `timestamptz` (UTC). Toda tabla tiene `creado_en NOT NULL DEFAULT now()`. Las tablas que se modifican tienen además `actualizado_en NOT NULL DEFAULT now()`, mantenido por el trigger `set_actualizado_en()` (no solo por el ORM, para que también se actualice en scripts y correcciones manuales). Las tablas de solo inserción (`mensaje`, `celular_verificacion_local`, `intento_pago`, `reclamo_ref`, `devolucion_ref`) no lo llevan. |
 | `jsonb` | Solo para snapshots y datos de forma variable que no se filtran ni se relacionan. Siempre con `CHECK (jsonb_typeof(col) = 'object')`. |
+| Snapshots de módulos externos | Cuando se guarda una copia del contrato de un módulo ajeno, se conserva el nombre real del campo externo (`product_id`, `precio_regular`, `channel_id`, etc.) en el `jsonb` y no se reescribe arbitrariamente al español local; solo se agrega una capa local si sí hace falta para la lógica del canal. |
 | Claves foráneas | Cada FK declara su `ON DELETE` y tiene un índice sobre la columna que referencia (Postgres no lo crea solo). |
 | Idempotencia | Las columnas `idempotency_key` son `text NOT NULL UNIQUE` (ADR-0012). |
 

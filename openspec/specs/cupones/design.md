@@ -6,9 +6,11 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `POST /cupones/validar {codigo, canal: CHATBOT, customerRef, lineas[{sku, cantidad}]}` | 🟡 A5 |
-| Productos | `POST /promociones/evaluar` con `cupon` (totales combinados) | 🟡 A5 |
+| Productos | `POST /cupones/validar {coupon_code, customer_ref, channel_id, lines[]}` | 🟡 A5 · scope `cupones:validar` pendiente |
+| Productos | `POST /promociones/evaluar` con `coupon_code` y `customer_ref` (totales combinados) | 🟡 A5 · scope `promociones:evaluar` pendiente |
 | Ventas | Campo `cupon` en `POST /pedidos` | ✅ A8 |
+
+🧩 El `code` de la respuesta de validación de cupones no es el `code` del chatbot; es el motivo tipificado del rechazo (`CodigoRechazoCupon`), y hay que distinguirlo del `code` HTTP genérico del canal.
 
 ## Frontend
 
@@ -31,7 +33,7 @@
 
 ## Desglose para issues
 
-- [ ] `[INT]` Acordar con Productos el endpoint de validación de cupones y el catálogo de motivos (A5)
+- [ ] `[INT]` Acordar con Productos el endpoint real de validación de cupones y el catálogo de motivos (A5)
 - [ ] `[BE]` `CuponService`, `CuponesClient` y los endpoints aplicar/quitar
 - [ ] `[BE]` Revalidación en `TotalesCalculator` y `CheckoutService`
 - [ ] `[BE]` Rate limit de intentos y herramientas LLM

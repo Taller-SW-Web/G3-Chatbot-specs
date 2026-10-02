@@ -52,7 +52,7 @@ El sistema DEBE (SHALL) autenticar al cliente contra Seguridad y, si no hay MFA,
 #### Scenario: Login exitoso sin MFA
 - **DADO** una cuenta activa sin MFA
 - **CUANDO** el cliente envía correo y contraseña válidos
-- **ENTONCES** el BFF recibe `accessToken` y `refreshToken`, fija la cookie `chat_rt` (`httpOnly; Secure; SameSite=Strict`), devuelve al frontend `{accessToken, expiresIn, usuario{id, nombreCompleto, correo}}`, y el chat saluda "Hola, María" y liga la conversación al `cliente_id`
+- **ENTONCES** el BFF recibe `accessToken` y `refreshToken`, fija la cookie `chat_rt` (`httpOnly; Secure; SameSite=Strict`), devuelve al frontend `{accessToken, expiresIn, usuario{id, nombreCompleto, correo}}`, y el chat saluda "Hola, María" y liga la conversación al `customer_id`
 
 #### Scenario: Credenciales inválidas o cuenta no disponible
 - **DADO** una contraseña incorrecta, o una cuenta bloqueada, inactiva o sin verificar
@@ -95,7 +95,7 @@ El sistema DEBE (SHALL) completar el login con OTP cuando Seguridad responde `mf
 - **ENTONCES** se solicita el código con `canal: SMS` y se muestra el celular enmascarado (en desarrollo el SMS es simulado por Seguridad)
 
 ### Requirement: Retoma de la acción pendiente
-El sistema DEBE (SHALL) ejecutar automáticamente, tras un login exitoso, la acción que el cliente intentaba antes de autenticarse (`conversacion.contexto.accionPendiente`).
+El sistema DEBE (SHALL) ejecutar automáticamente, tras un login exitoso, la acción que el cliente intentaba antes de autenticarse (`conversation.context.accionPendiente`).
 
 *Trazabilidad: SPEC-03 · Requisito 3.*
 
@@ -118,7 +118,7 @@ El sistema DEBE (SHALL) fusionar el carrito anónimo de la conversación con el 
 #### Scenario: Ambos carritos con ítems
 - **DADO** un carrito anónimo con 2 × SKU-A y un carrito del cliente con 1 × SKU-A y 1 × SKU-B
 - **CUANDO** se inicia sesión
-- **ENTONCES** el carrito resultante tiene 3 × SKU-A (sujeto a stock y al tope de 10, según SPEC-10 y SPEC-11) y 1 × SKU-B, el anónimo queda `FUSIONADO`, y el chat informa "Unimos los productos que agregaste con los de tu cuenta"
+- **ENTONCES** el carrito resultante tiene 3 × SKU-A (sujeto a stock y al tope de 10, según SPEC-10 y SPEC-11) y 1 × SKU-B, el anónimo queda `MERGED`, y el chat informa "Unimos los productos que agregaste con los de tu cuenta"
 
 #### Scenario: La fusión excede el stock
 - **DADO** que la suma de cantidades supera el stock disponible

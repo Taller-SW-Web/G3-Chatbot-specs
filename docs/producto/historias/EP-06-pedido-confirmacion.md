@@ -15,8 +15,8 @@
 **Como** cliente que confirmó su compra, **quiero** que mi pedido quede registrado en el sistema de ventas con exactamente lo que acepté, **para** que se prepare y se me entregue.
 
 **Criterios de aceptación**
-- `SPEC-15 · Req. 1 · Scenario: Pedido creado` — ante `201` se guarda `pedido_ref` (`CREADO`) y se habilita el formulario de pago.
-- `SPEC-15 · Req. 1 · Scenario: Ventas rechaza por stock` — ante `409` no se crea el checkout de pago, el carrito vuelve a `ACTIVO` y se muestra qué cambió.
+- `SPEC-15 · Req. 1 · Scenario: Pedido creado` — ante `201` se guarda `order_ref` (`CREATED`) y se habilita el formulario de pago.
+- `SPEC-15 · Req. 1 · Scenario: Ventas rechaza por stock` — ante `409` no se crea el checkout de pago, el carrito vuelve a `ACTIVE` y se muestra qué cambió.
 - `SPEC-15 · Req. 1 · Scenario: Datos incompletos` — ante `400` se registra un error interno y se pide revisar los datos.
 - `SPEC-15 · Req. 1 · Scenario: Ventas no disponible al crear` — tras 5 s se responde `503`, no se pide la tarjeta y se aclara que no hubo cobro.
 - `SPEC-15 · Req. 1 · Scenario: Reintento con la misma clave` — la misma `Idempotency-Key` devuelve el mismo `pedidoId`.
@@ -36,7 +36,7 @@
 **Como** cliente que pagó, **quiero** ver la confirmación de mi pedido y tener la garantía de que el pago se informará a ventas aunque haya fallas, **para** no perder mi compra ni pagar dos veces.
 
 **Criterios de aceptación**
-- `SPEC-15 · Req. 2 · Scenario: Notificación exitosa` — el outbox notifica el pago, `pedido_ref` pasa a `PAGADO_NOTIFICADO`, el carrito a `CONVERTIDO`, se encola el correo y se muestra `CONFIRMACION_PEDIDO`.
+- `SPEC-15 · Req. 2 · Scenario: Notificación exitosa` — el outbox notifica el pago, `order_ref` pasa a `PAID_NOTIFIED`, el carrito a `CONVERTED`, se encola el correo y se muestra `CONFIRMACION_PEDIDO`.
 - `SPEC-15 · Req. 2 · Scenario: Ventas cae después del cobro` — el worker reintenta 5 veces con backoff y el chat muestra "Pago aprobado. Estamos confirmando tu pedido…".
 - `SPEC-15 · Req. 2 · Scenario: Montos inconsistentes` — un `400` no se reintenta y se alerta para revisión.
 - `SPEC-15 · Req. 2 · Scenario: Pedido en un estado que no admite la notificación` — un `409` no se reintenta y se registra para revisión manual.
@@ -56,7 +56,7 @@
 **Como** negocio, **quiero** que los pedidos cuyo pago falló o expiró se anulen automáticamente en Ventas, **para** no dejar pedidos `CREADO` colgados que distorsionen stock y reportes.
 
 **Criterios de aceptación**
-- `SPEC-15 · Req. 3 · Scenario: Anulación directa` — el outbox `SOLICITAR_ANULACION` recibe `200` con `ANULADO` y `pedido_ref` pasa a `ANULADO`.
+- `SPEC-15 · Req. 3 · Scenario: Anulación directa` — el outbox `REQUEST_CANCELLATION` recibe `200` con `ANULADO` (valor de Ventas) y `order_ref` pasa a `CANCELLED`.
 - `SPEC-15 · Req. 3 · Scenario: Pedido ya avanzó de estado` — ante `409` se registra la alerta y no se reintenta.
 
 **Prioridad:** Must: completa los caminos de fallo de HU-CHK-15 y HU-CHK-16.
@@ -88,7 +88,7 @@
 **Como** cliente que compró, **quiero** recibir un correo con el detalle de mi pedido, **para** tener una constancia fuera del chat y un enlace para consultar su estado.
 
 **Criterios de aceptación**
-- `SPEC-16 · Req. 1 · Scenario: Correo enviado` — el worker envía el correo con el asunto y el detalle completo, y `notificacion` queda `ENVIADA`.
+- `SPEC-16 · Req. 1 · Scenario: Correo enviado` — el worker envía el correo con el asunto y el detalle completo, y `notification` queda `SENT`.
 - `SPEC-16 · Req. 1 · Scenario: Contenido fiel al pedido` — los importes coinciden con el snapshot enviado a Ventas y la tarjeta aparece enmascarada.
 
 **Prioridad:** Must: el curso exige notificaciones por correo del pedido al cliente.
@@ -106,8 +106,8 @@
 **Como** cliente, **quiero** recibir la confirmación una sola vez, aunque el sistema reintente por fallas del correo, **para** no confundirme con correos duplicados.
 
 **Criterios de aceptación**
-- `SPEC-16 · Req. 2 · Scenario: Reproceso del evento` — un correo ya `ENVIADA` no se reenvía (clave única `pedido_id + tipo`).
-- `SPEC-16 · Req. 2 · Scenario: Proveedor SMTP caído` — se reintenta hasta 3 veces (1, 5 y 15 min) y luego queda `FALLIDA` sin afectar el pedido.
+- `SPEC-16 · Req. 2 · Scenario: Reproceso del evento` — un correo ya `SENT` no se reenvía (clave única `(order_id, resend_number)`).
+- `SPEC-16 · Req. 2 · Scenario: Proveedor SMTP caído` — se reintenta hasta 3 veces (1, 5 y 15 min) y luego queda `FAILED` sin afectar el pedido.
 
 **Prioridad:** Must: sin idempotencia, los reintentos del outbox duplicarían correos.
 
@@ -141,7 +141,7 @@
 
 **Prioridad:** Should: comodidad posterior a la compra; la confirmación principal ya existe.
 
-**Notas:** el botón "Reenviar correo" vive en el detalle del pedido (SPEC-17). Ver la pregunta abierta sobre el tipo `REENVIO_CONFIRMACION` frente a la clave única de `notificacion` ([`alcance.md`](../alcance.md#preguntas-abiertas)).
+**Notas:** el botón "Reenviar correo" vive en el detalle del pedido (SPEC-17). Ver la pregunta abierta sobre el tipo `CONFIRMATION_RESEND` frente a la clave única de `notification` ([`alcance.md`](../alcance.md#preguntas-abiertas)).
 
 ---
 
@@ -152,4 +152,4 @@ Tareas numeradas `T1…Tn` en el orden del "Desglose para issues" de cada `desig
 | Spec | Tarea → Historia |
 |---|---|
 | SPEC-15 | T1 `[BE]` SnapshotBuilder → HU-PED-04 (relacionada: HU-PED-01) · T2 `[BE]` VentasClient → HU-PED-01 · T3 `[BE]` `PedidoService.crear_en_ventas` → HU-PED-01 · T4 `[BE]` tabla `outbox` y OutboxWorker → HU-PED-02 · T5 `[BE]` notificación de pago y cierre → HU-PED-02 · T6 `[BE]` anulación → HU-PED-03 · T7 `[FE]` OrderConfirmation y PendingConfirmation → HU-PED-02 · T8 `[QA]` → HU-PED-01 a HU-PED-04 |
-| SPEC-16 | T1 `[BE]` tabla `notificacion` e integración con el outbox → HU-PED-06 · T2 `[BE]` EmailSender SMTP y falso → HU-PED-05 · T3 `[BE]` plantillas → HU-PED-05 · T4 `[BE]` endpoint de reenvío → HU-PED-08 · T5 `[FE]` enlace profundo y botón "Reenviar correo" → HU-PED-08 · T6 `[QA]` → HU-PED-05 a HU-PED-08 |
+| SPEC-16 | T1 `[BE]` tabla `notification` e integración con el outbox → HU-PED-06 · T2 `[BE]` EmailSender SMTP y falso → HU-PED-05 · T3 `[BE]` plantillas → HU-PED-05 · T4 `[BE]` endpoint de reenvío → HU-PED-08 · T5 `[FE]` enlace profundo y botón "Reenviar correo" → HU-PED-08 · T6 `[QA]` → HU-PED-05 a HU-PED-08 |

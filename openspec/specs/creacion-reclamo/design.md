@@ -27,7 +27,7 @@
 | `POST /api/v1/reclamos` | Endpoint invocado por el botón; valida la pertenencia del pedido, detecta duplicados vía el listado real y registra con idempotencia. |
 | `ReclamoService` | Borradores, resolución del documento reutilizado, detección de duplicados y registro. |
 | `VentasClient.reclamos` | Cliente de Ventas para registrar, consultar y listar reclamos; normaliza `codigo` → `code`. |
-| Tabla `reclamo_ref` | Ver `modelo-datos.md`. |
+| Tabla `claim_ref` | Ver `modelo-datos.md`. |
 
 ## Desglose para issues
 

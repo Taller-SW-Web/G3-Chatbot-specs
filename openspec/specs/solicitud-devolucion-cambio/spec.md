@@ -110,7 +110,7 @@ El sistema DEBE (SHALL) permitir adjuntar hasta 3 archivos (`image/jpeg`, `image
 #### Scenario: Evidencia sin enviar la solicitud
 - **DADO** archivos subidos a un borrador que el cliente abandona sin enviar
 - **CUANDO** pasan 24 horas
-- **ENTONCES** el chatbot borra la referencia local (`evidencia`) de su propia base de datos; el archivo en sí vive en el almacenamiento de Ventas y su retención es responsabilidad de ellos, no del chatbot
+- **ENTONCES** el chatbot borra la referencia local (`evidence`) de su propia base de datos; el archivo en sí vive en el almacenamiento de Ventas y su retención es responsabilidad de ellos, no del chatbot
 
 ### Requirement: Confirmación explícita y registro
 El sistema DEBE (SHALL) registrar la solicitud en Ventas solo cuando el cliente pulsa "Enviar solicitud", con una `Idempotency-Key`, y mostrar la constancia con un código.
@@ -132,7 +132,7 @@ Payload real `POST {VEN}/api/v2/devoluciones`:
 #### Scenario: Solicitud registrada
 - **DADO** un formulario confirmado
 - **CUANDO** Ventas responde `201 {devolucionId: "DEV-2026-0042", pedidoId, tipo, estado: SOLICITADA, fechaRegistro}`
-- **ENTONCES** se guarda `devolucion_ref` con `devolucionId` como código visible (Ventas ya usa un identificador legible, no hace falta generar uno propio), se ligan las evidencias subidas y se muestra "Te avisaremos cuando el equipo de ventas revise tu solicitud"
+- **ENTONCES** se guarda `return_ref` con `devolucionId` como código visible (Ventas ya usa un identificador legible, no hace falta generar uno propio), se ligan las evidencias subidas y se muestra "Te avisaremos cuando el equipo de ventas revise tu solicitud"
 
 #### Scenario: Evidencia obligatoria faltante o plazo excedido
 - **DADO** un motivo `PRODUCTO_DEFECTUOSO` sin evidencia, o una solicitud fuera de los 7 días naturales

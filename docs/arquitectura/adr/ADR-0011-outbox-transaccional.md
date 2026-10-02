@@ -17,14 +17,14 @@ Aceptada
 
 ## Decisión
 
-- Toda notificación a otro sistema que no puede perderse se registra en la tabla **`outbox`**, **en la misma transacción** que el cambio de estado local (p. ej. el intento de pago aprobado). Tipos: `NOTIFICAR_PAGO_VENTAS`, `SOLICITAR_ANULACION`, `ENVIAR_CORREO`.
+- Toda notificación a otro sistema que no puede perderse se registra en la tabla **`outbox`**, **en la misma transacción** que el cambio de estado local (p. ej. el intento de pago aprobado). Tipos: `NOTIFY_SALES_PAYMENT`, `REQUEST_CANCELLATION`, `SEND_EMAIL`.
 - Un **`OutboxWorker`** (APScheduler) procesa las tareas pendientes:
-  - Backoff exponencial de 5 intentos (5 s, 15 s, 45 s, 2 min, 5 min); agotados, la tarea queda `FALLIDO` para revisión manual (`/admin/outbox-fallidos`, log `ERROR`).
+  - Backoff exponencial de 5 intentos (5 s, 15 s, 45 s, 2 min, 5 min); agotados, la tarea queda `FAILED` para revisión manual (`/admin/outbox-fallidos`, log `ERROR`).
   - Distingue errores reintentables (`5xx`, timeout) de no reintentables (`400`, `409`), que no se reintentan.
   - Llama a Ventas con el token de servicio ([ADR-0009](ADR-0009-token-de-servicio-con-servicetokenprovider.md)).
 - Idempotencia de la entrega:
   - notificación de pago con `transaccionId` como clave;
-  - correo deduplicado por `pedido_id + tipo + numero_reenvio` en `notificacion` (máx. 3 reintentos SMTP por notificación).
+  - correo deduplicado por `(order_id, resend_number)` en `notification` (máx. 3 reintentos SMTP por notificación).
 
 ## Alternativas consideradas
 
@@ -41,7 +41,7 @@ Aceptada
 
 **Negativas y riesgos aceptados**
 - Consistencia eventual: durante los reintentos el pedido sigue `CREADO` en Ventas.
-- Las tareas `FALLIDO` requieren revisión manual.
+- Las tareas `FAILED` requieren revisión manual.
 - No hay plazo de retención definido para `outbox.payload` (`privacidad.md` §2).
 - No está decidido si el worker corre como proceso aparte o dentro de la API ([C4, preguntas abiertas](../c4.md#preguntas-abiertas)).
 
@@ -50,5 +50,5 @@ Aceptada
 - `openspec/specs/grabacion-pedido/spec.md` Req. 2 y 3 (líneas 96-155) e idempotencia (línea 174)
 - `openspec/specs/grabacion-pedido/design.md` (`OutboxWorker`, alertas)
 - `openspec/specs/notificacion-confirmacion/spec.md` Req. 1 a 3 (líneas 31-75) y `design.md`
-- `docs/modelo-datos.md` tablas `outbox`, `notificacion`, `pedido_ref`
+- `docs/modelo-datos.md` tablas `outbox`, `notification`, `order_ref`
 - `docs/contratos-integracion.md` §5 (línea 243); `README.md` §1.5 (APScheduler)

@@ -22,7 +22,7 @@ Aceptada
   - El OTP es de 6 dígitos, con vigencia de 5 min, 3 intentos y 3 envíos cada 15 min (mismas reglas que SPEC-03).
   - Se envía por el puerto **`SmsSender`** con el adaptador **`SimulatedSmsSender`**, reemplazable.
   - Endpoints propios: `POST /api/v1/contacto/celular/solicitar-otp` y `/verificar-otp`.
-- La verificación se guarda en `celular_verificacion_local` ligada al cliente **y al número exacto**; si el celular del perfil cambia, deja de valer automáticamente.
+- La verificación se guarda en `local_phone_verification` ligada al cliente **y al número exacto**; si el celular del perfil cambia, deja de valer automáticamente.
 - `CheckoutGuard.exigir_celular_verificado()` bloquea el checkout (`403 CELULAR_NO_VERIFICADO`) mientras el celular vigente no tenga verificación local.
 
 ## Alternativas consideradas
@@ -48,4 +48,4 @@ Aceptada
 - `openspec/specs/validacion-celular/spec.md` Contexto (líneas 11-15), Alcance (líneas 20-23), Fuera de alcance (línea 31), Req. 1 y 2
 - `openspec/specs/validacion-celular/design.md`
 - `docs/contratos-integracion.md` §2.2 (líneas 74-75), §3.1 (línea 162) y §6, acuerdo A2 (línea 256)
-- `docs/modelo-datos.md` tabla `celular_verificacion_local`
+- `docs/modelo-datos.md` tabla `local_phone_verification`

@@ -22,11 +22,11 @@ Toda operación que crea algo en otro módulo o mueve dinero lleva una **`Idempo
 | Operación | Endpoint propio | Clave |
 |---|---|---|
 | Crear checkout y pedido en Ventas | `POST /checkout` | `checkout.idempotency_key` (única); se reenvía la misma a `POST /api/v1/pedidos` y se obtiene el mismo `pedidoId` |
-| Pago simulado | `POST /checkout/{id}/pago` | `intento_pago.idempotency_key` (única), una por intento |
+| Pago simulado | `POST /checkout/{id}/pago` | `payment_attempt.idempotency_key` (única), una por intento |
 | Notificación de pago a Ventas | Outbox | `transaccionId` |
-| Registrar reclamo | `POST /reclamos` | `reclamo_ref.idempotency_key` (única) |
-| Registrar devolución o cambio | `POST /devoluciones` | `devolucion_ref.idempotency_key` (única) |
-| Correo de confirmación | Outbox | Unicidad `pedido_id + tipo + numero_reenvio` en `notificacion` |
+| Registrar reclamo | `POST /reclamos` | `claim_ref.idempotency_key` (única) |
+| Registrar devolución o cambio | `POST /devoluciones` | `return_ref.idempotency_key` (única) |
+| Correo de confirmación | Outbox | Unicidad `(order_id, resend_number)` en `notification` |
 
 Dos solicitudes con la misma clave devuelven el mismo resultado sin duplicar el efecto.
 
@@ -53,4 +53,4 @@ Dos solicitudes con la misma clave devuelven el mismo resultado sin duplicar el 
 - `openspec/specs/grabacion-pedido/spec.md` (líneas 22, 94 y 174)
 - `openspec/specs/creacion-reclamo/spec.md` Req. 2 (líneas 63 y 95)
 - `openspec/specs/solicitud-devolucion-cambio/spec.md` Req. 4 (líneas 109 y 141)
-- `docs/modelo-datos.md` tablas `checkout`, `intento_pago`, `reclamo_ref`, `devolucion_ref`, `notificacion`
+- `docs/modelo-datos.md` tablas `checkout`, `payment_attempt`, `claim_ref`, `return_ref`, `notification`

@@ -98,8 +98,8 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 `⟵ sesión ✓ → celular verificado ✓ → carrito válido ✓ → (dirección y cotización en CheckoutPage) → sin cupón`
 **Botleta:** Te llevo a la pantalla de pago para que revises tu pedido.
 *(Pantalla `CheckoutPage`: dirección prellenada con "Usando tu dirección guardada · Cambiar", documento DNI por completar, "Envío a Miraflores: S/ 12.50 · llega en 1 día hábil aprox.", total S/ 302.40 y el botón `[Confirmar y pagar S/ 302.40]`.)*
-*(María completa `tipoDocumento: DNI`, `numeroDocumento: 72458912` y pulsa `[Confirmar y pagar S/ 302.40]` → `POST /checkout` con `Idempotency-Key` → pedido `CREADO` en Ventas, checkout `PENDIENTE_PAGO` con 15 min de vigencia.)*
-*(`CheckoutPage` muestra `[FORMULARIO/PAGO]`: "Total a pagar: S/ 302.40" y "Pago simulado – entorno académico. No uses tarjetas reales". María ingresa `4111 1111 1111 1111` y pulsa `[Pagar]` → introspección `activo: true` → simulador `APROBADO`.)*
+*(María completa `tipoDocumento: DNI`, `numeroDocumento: 72458912` y pulsa `[Confirmar y pagar S/ 302.40]` → `POST /checkout` con `Idempotency-Key` → pedido `CREADO` en Ventas, checkout `PENDING_PAYMENT` con 15 min de vigencia.)*
+*(`CheckoutPage` muestra `[FORMULARIO/PAGO]`: "Total a pagar: S/ 302.40" y "Pago simulado – entorno académico. No uses tarjetas reales". María ingresa `4111 1111 1111 1111` y pulsa `[Pagar]` → introspección `activo: true` → simulador `APPROVED`.)*
 *(El outbox notifica el pago a Ventas → `PAGADO`; la app vuelve al chat.)*
 **Botleta:** Tu pago fue aprobado y tu pedido quedó registrado.
 `[CONFIRMACION_PEDIDO]` PED-2026-00891 · total S/ 302.40 · tarjeta •••• 1111 · dirección · "Te enviaremos la confirmación a m****a@…"
@@ -204,7 +204,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 ## D-06 · Pago rechazado 3 veces
 
-- **Precondiciones:** checkout `PENDIENTE_PAGO` vigente con pedido `CREADO` en Ventas; `CheckoutPage` con `[FORMULARIO/PAGO]`.
+- **Precondiciones:** checkout `PENDING_PAYMENT` vigente con pedido `CREADO` en Ventas; `CheckoutPage` con `[FORMULARIO/PAGO]`.
 - **Referencias:** SPEC-14 · Req. 4 (Sesión sigue viva), SPEC-14 · Req. 5 (Pago rechazado con intentos restantes; Tercer intento fallido), SPEC-15 · Req. 3 (Anulación directa), SPEC-11 · Req. 4.
 - **Intenciones:** INT-CHK-03 (el pago ocurre en la UI, no por texto).
 
@@ -214,7 +214,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 *(Intento 2 · `4000 0000 0000 0069` → `402 PAGO_RECHAZADO {motivo: DENEGADA_POR_EMISOR, intentosRestantes: 1}`)*
 *(`CheckoutPage`, texto propuesto:)* Tu tarjeta fue rechazada por el banco emisor. Puedes intentar con otra tarjeta
 
-*(Intento 3 · `4000 0000 0000 0069` → rechazado; checkout `FALLIDO`, se encola `SOLICITAR_ANULACION`, carrito vuelve a `ACTIVO`.)*
+*(Intento 3 · `4000 0000 0000 0069` → rechazado; checkout `FAILED`, se encola `REQUEST_CANCELLATION`, carrito vuelve a `ACTIVE`.)*
 *(La app vuelve al chat.)*
 **Botleta:** No pudimos procesar el pago. Tu carrito sigue guardado
 `[Ver carrito]` `[Pagar]`

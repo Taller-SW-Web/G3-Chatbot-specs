@@ -77,7 +77,7 @@ El sistema DEBE (SHALL) mapear los términos del cliente a categorías y marcas 
 - **ENTONCES** se informa "No trabajamos la marca X" y se ofrecen las marcas disponibles de esa categoría (máx. 6 chips)
 
 ### Requirement: Refinamiento conversacional
-El sistema DEBE (SHALL) mantener los filtros vigentes en `conversacion.contexto.filtrosVigentes` y aplicar cambios incrementales.
+El sistema DEBE (SHALL) mantener los filtros vigentes en `conversation.context.filtrosVigentes` y aplicar cambios incrementales.
 
 *Trazabilidad: SPEC-06 · Requisito 3.*
 

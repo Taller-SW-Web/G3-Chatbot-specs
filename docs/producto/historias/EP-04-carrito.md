@@ -90,7 +90,7 @@
 
 **Prioridad:** Must: es literalmente el lineamiento "agregar productos al carrito mediante conversación".
 
-**Notas:** incluye la persistencia del carrito (tablas `carrito` e `item_carrito`), los endpoints REST y los hooks del frontend.
+**Notas:** incluye la persistencia del carrito (tablas `cart` e `cart_item`), los endpoints REST y los hooks del frontend.
 
 ---
 
@@ -143,11 +143,11 @@
 
 **Criterios de aceptación**
 - `SPEC-11 · Req. 4 · Scenario: Volver otro día con sesión` — al iniciar sesión se recupera el carrito con los totales recalculados.
-- `SPEC-11 · Req. 4 · Scenario: Carrito convertido` — tras el pago confirmado el carrito queda `CONVERTIDO` y el cliente empieza con uno vacío.
+- `SPEC-11 · Req. 4 · Scenario: Carrito convertido` — tras el pago confirmado el carrito queda `CONVERTED` y el cliente empieza con uno vacío.
 
 **Prioridad:** Must: el carrito persistente es parte del ciclo de compra.
 
-**Notas:** el escenario "Carrito convertido" se prueba de punta a punta en Hito 4 (HU-PED-02). Incluye el job que marca `ABANDONADO` los carritos anónimos con más de 7 días de inactividad.
+**Notas:** el escenario "Carrito convertido" se prueba de punta a punta en Hito 4 (HU-PED-02). Incluye el job que marca `ABANDONED` los carritos anónimos con más de 7 días de inactividad.
 
 ---
 
@@ -158,4 +158,4 @@ Tareas numeradas `T1…Tn` en el orden del "Desglose para issues" de cada `desig
 | Spec | Tarea → Historia |
 |---|---|
 | SPEC-10 | T1 `[INT]` consulta masiva de disponibilidad (A5) → HU-CAR-01 · T2 `[BE]` InventarioClient y StockValidator → HU-CAR-01 (relacionadas: HU-CAR-02, HU-CAR-03) · T3 `[BE]` SimilaresService y `consultar_disponibilidad` → HU-CAR-04 (relacionada: HU-CAR-01) · T4 `[FE]` StockConflictNotice y AvailabilityBadge → HU-CAR-01 · T5 `[QA]` → HU-CAR-01 a HU-CAR-04 |
-| SPEC-11 | T1 `[BE]` modelos `carrito` e `item_carrito` → HU-CAR-05 · T2 `[BE]` CarritoService → HU-CAR-05 · T3 `[BE]` TotalesCalculator → HU-CAR-07 · T4 `[BE]` endpoints REST → HU-CAR-05 · T5 `[BE]` herramientas y ResolverLineaCarrito → HU-CAR-06 · T6 `[BE]` job de limpieza → HU-CAR-08 · T7 `[FE]` CartPage y CartBadge → HU-CAR-07 · T8 `[FE]` CartBlock, UndoToast, ConfirmDialog → HU-CAR-06 · T9 `[FE]` hooks `useCart`/`useCartMutations` → HU-CAR-05 · T10 `[QA]` → HU-CAR-05 a HU-CAR-08 |
+| SPEC-11 | T1 `[BE]` modelos `cart` e `cart_item` → HU-CAR-05 · T2 `[BE]` CarritoService → HU-CAR-05 · T3 `[BE]` TotalesCalculator → HU-CAR-07 · T4 `[BE]` endpoints REST → HU-CAR-05 · T5 `[BE]` herramientas y ResolverLineaCarrito → HU-CAR-06 · T6 `[BE]` job de limpieza → HU-CAR-08 · T7 `[FE]` CartPage y CartBadge → HU-CAR-07 · T8 `[FE]` CartBlock, UndoToast, ConfirmDialog → HU-CAR-06 · T9 `[FE]` hooks `useCart`/`useCartMutations` → HU-CAR-05 · T10 `[QA]` → HU-CAR-05 a HU-CAR-08 |

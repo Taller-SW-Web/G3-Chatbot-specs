@@ -16,24 +16,26 @@ Cubrir los cuatro entregables del Hito 2 (25 %) con evidencia de commits de todo
 - Cada integrante trabaja en rama propia y abre PR, para que quede evidencia por autor.
 - Los modelos se definen sin generar migraciones. Solo Sebastian ejecuta `alembic revision --autogenerate`, una única vez, cuando los modelos estén en `main` (evita múltiples `heads`).
 - Los modelos deben importarse en `models/__init__.py` o en `env.py`; de lo contrario autogenerate no los detecta.
-- Snapshots de módulos externos: se guardan en `jsonb` con los nombres reales del contrato (`product_id`, `precio_regular`, `channel_id`), según `docs/modelo-datos.md`. Aplica a `item_carrito`, `pedido_ref`, `reclamo_ref` y `devolucion_ref`.
+- Snapshots de módulos externos: se guardan en `jsonb` con los nombres reales del contrato (`product_id`, `precio_regular`, `channel_id`), según `docs/modelo-datos.md`. Aplica a `cart_item`, `order_ref`, `claim_ref` y `return_ref`.
 - Buena práctica de versionado de migraciones: los identificadores de revisión son secuenciales y de cuatro dígitos. La primera es `0001` y cada migración siguiente suma uno (`0002`, `0003`, ...), generada con `--rev-id` explícito. Los archivos se nombran `NNNN_descripcion_corta.py` (`file_template = %%(rev)s_%%(slug)s` en `alembic.ini`, que hoy está vacío). Nunca se editan ni se renumeran migraciones ya mergeadas en `main`; un cambio nuevo es siempre una migración nueva.
+- Convención de nombres (acordada el 2026-10-02): todos los identificadores de la base (tablas, columnas, valores de enumeración, constraints e índices) van en inglés, según `docs/modelo-datos.md`. Las etiquetas de la interfaz siguen en español y las resuelve el frontend. Los valores que Ventas define en español (`CAMBIO`, `DEVOLUCION_DINERO`, `IMAGEN`) se guardan en inglés (`EXCHANGE`, `MONEY_REFUND`, `IMAGE`) y el adapter los traduce en ambos sentidos. El detalle está en `odd/tasks/db-english-naming.md`.
+- Los archivos vacíos de `models/` y `*_postgres_adapter.py` conservan hoy su nombre en español. Al implementarlos, renómbralos a inglés (por ejemplo `carrito.py` pasa a `cart.py`) y mantén el patrón de `conversation.py` y `attachment.py`.
 - Fuera de alcance: integración real con Productos y Despacho (scopes pendientes en Seguridad, Hito 4) y actualización de mocks (Hito 3).
 
 ## Tareas
 
 ### Fase 1: desbloqueo (Sebastian)
 
-- [ ] **H2-01** Confirmar la versión de PostgreSQL en el Supabase del equipo (`SELECT version();`) y decidir la generación de IDs: `server_default=text("uuidv7()")` si es PG18; si no, UUID v7 en la aplicación (por ejemplo `uuid6` o `uuid_utils`) o una función SQL propia. Luego dejar en `main` la `Base` declarativa, el engine/sesión y `env.py` de Alembic (incluye `alembic.ini` con `file_template = %%(rev)s_%%(slug)s` para el versionado `0001`, `0002`, ...), y documentar la decisión de IDs, la convención de `models/__init__.py` y la regla del snapshot `jsonb`.
+- [x] **H2-01** Confirmar la versión de PostgreSQL en el Supabase del equipo (`SELECT version();`) y decidir la generación de IDs: `server_default=text("uuidv7()")` si es PG18; si no, UUID v7 en la aplicación (por ejemplo `uuid6` o `uuid_utils`) o una función SQL propia. Luego dejar en `main` la `Base` declarativa, el engine/sesión y `env.py` de Alembic (incluye `alembic.ini` con `file_template = %%(rev)s_%%(slug)s` para el versionado `0001`, `0002`, ...), y documentar la decisión de IDs, la convención de `models/__init__.py` y la regla del snapshot `jsonb`.
 
 ### Fase 2: en paralelo (modelo + adapter + test, sin migración)
 
-- [ ] **H2-02** Sebastian: `celular_verificacion_local` (modelo + adapter; no existe tabla `cliente`, `cliente_id` es el `sub` del token); revisión técnica de los PR, empezando por los que tienen FKs entre sí (`carrito` → `item_carrito`, `checkout` → `intento_pago`).
-- [ ] **H2-03** Sonny: `carrito`, `item_carrito`, `pedido_ref`, `outbox` (SPEC-10, 11, 15).
-- [ ] **H2-04** David (BD): `checkout`, `intento_pago`, `reclamo_ref`, `devolucion_ref`, `notificacion` (SPEC-12, 14, 16, 19 a 22).
+- [x] **H2-02** Sebastian: `local_phone_verification` (modelo + adapter; no existe tabla `customer`, `customer_id` es el `sub` del token); revisión técnica de los PR, empezando por los que tienen FKs entre sí (`cart` → `cart_item`, `checkout` → `payment_attempt`).
+- [ ] **H2-03** Sonny: `cart`, `cart_item`, `order_ref`, `outbox` (SPEC-10, 11, 15).
+- [ ] **H2-04** David (BD): `checkout`, `payment_attempt`, `claim_ref`, `return_ref`, `notification` (SPEC-12, 14, 16, 19 a 22).
 - [ ] **H2-05** David (frontend): `MessageBubble` y `ProductCard` estáticos con datos mock, usando los tokens de Diego.
-- [ ] **H2-06** Alonso: `mensaje` y `evidencia`; configuración de pytest con un test por adapter.
-- [ ] **H2-07** Mathias: `conversacion` y `adjunto` (SPEC-23) con sus adapters; CI que ejecute pytest.
+- [ ] **H2-06** Alonso: `message` y `evidence`; configuración de pytest con un test por adapter.
+- [x] **H2-07** Mathias: `conversation` y `attachment` (SPEC-23) con sus adapters; CI que ejecute pytest (backend) y CI de frontend con pnpm.
 - [ ] **H2-08** Diego: tokens y tema Tailwind, componentes base (Button, Input, Card), enlace al Figma en el README y 3 propuestas de UX en `docs/`.
 - [ ] **H2-09** Nikol: checklist de evidencia del hito, casos de prueba iniciales y verificación de commits por integrante.
 
@@ -57,8 +59,24 @@ Cubrir los cuatro entregables del Hito 2 (25 %) con evidencia de commits de todo
 
 ## Progreso
 
-Ninguna tarea iniciada. Commits: pendiente de confirmación del usuario cuando corresponda.
+Estado al 2026-10-02, verificado contra `origin/development` del backend (refs locales, sin fetch).
+
+| Tarea | Estado | Evidencia |
+|---|---|---|
+| H2-01 | Hecha (pendiente confirmar documentación de IDs, `models/__init__.py` y regla `jsonb`) | `581065c`, PR #28 |
+| H2-02 | Hecha | `70818de`, PR #29; el test pasó a `test_local_phone_verification_adapter.py` con el renombre a inglés |
+| H2-07 | Implementada, pendiente de commit y PR | Rama `feature/h2-07-conversacion-adjunto`: modelos y adapters de `conversation` y `attachment`, 23 tests unitarios en verde, CI de backend (pip). CI de frontend con pnpm en `feature/ci-frontend-pnpm` |
+| H2-03 a H2-06, H2-08, H2-09 | No iniciadas | Los demás archivos de `persistence/` siguen con 0 bytes; no hay commits de David, Sonny, Diego y Alonso |
+| H2-10 | Pendiente | `versions/` vacía; depende de H2-03, 04, 06 y 07 |
+
+Criterios de aceptación: commits de los 4 integrantes 0/4; tablas con modelo y adapter 3/14 (`local_phone_verification` en `development`; `conversation` y `attachment` en la rama de H2-07); migración `0001` inexistente; README sin enlaces a mockups, sistema de diseño ni UX.
+
+Renombre a inglés del modelo de datos (2026-10-02): `docs/modelo-datos.md`, el resto de los specs y el diagrama `mer-logico` ya usan los nombres en inglés. El diagrama `mer-conceptual` se deja sin cambios por decisión del equipo.
+
+Nota: la rama de integración del backend es `development` (no `develop`) y solo existe en backend.
+
+Commits: pendiente de confirmación del usuario cuando corresponda.
 
 ## Siguiente paso
 
-Sebastian ejecuta H2-01.
+Mathias abre el PR de H2-07 hacia `development`. Sonny, David, Alonso y Diego inician sus tareas de la Fase 2 sobre `development`, usando los nombres en inglés de `docs/modelo-datos.md`.

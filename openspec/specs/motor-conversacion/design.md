@@ -60,7 +60,7 @@
 - [ ] `[FE]` `chatStore` (conversación activa, listado, mensajes, token) y puertos `ChatbotApiPort`/`WebSocketPort`
 - [ ] `[FE]` `Axios Adapter` (interceptor JWT) y `WebSocket Adapter` (reconexión y *fallback*)
 - [ ] `[FE]` `container.ts` y `apiConfig.ts`
-- [ ] `[BE]` Modelos `conversacion` y `mensaje` (con `titulo` derivado) y migraciones Alembic
+- [ ] `[BE]` Modelos `conversation` y `message` (con `title` derivado) y migraciones Alembic
 - [ ] `[BE]` `chatbot_router.py`: conversaciones, búsqueda y mensajes
 - [ ] `[BE]` `chatbot_ws_adapter.py`: handshake JWT, suscripción y eventos de streaming
 - [ ] `[BE]` `GestionarConversacionUseCase`

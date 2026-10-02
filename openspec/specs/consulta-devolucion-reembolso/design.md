@@ -21,7 +21,7 @@
 | Componente | Responsabilidad |
 |---|---|
 | `GET /api/v1/devoluciones` · `GET /api/v1/devoluciones/{id}` | Proxy directo a Ventas, con `clienteId` tomado del token (nunca del cliente). |
-| `DevolucionConsultaService` | Mapea los estados de F3, arma el mensaje del reembolso cuando el bloque existe, y usa `devolucion_ref` local solo como respaldo si Ventas no responde. |
+| `DevolucionConsultaService` | Mapea los estados de F3, arma el mensaje del reembolso cuando el bloque existe, y usa `return_ref` local solo como respaldo si Ventas no responde. |
 | Herramientas `listar_devoluciones` y `consultar_devolucion` | Uso desde el chat. |
 
 ## Desglose para issues

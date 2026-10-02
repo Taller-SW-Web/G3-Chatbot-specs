@@ -32,12 +32,12 @@
 | `TotalesCalculator` | Precios vigentes, evaluación de promociones, cupón, envío y avisos de cambios. |
 | `ResolverLineaCarrito` | Resuelve referencias por nombre u ordinal dentro del carrito. |
 | Herramientas LLM `agregar_al_carrito`, `ver_carrito`, `cambiar_cantidad`, `quitar_del_carrito` y `vaciar_carrito` | Mismos handlers que los endpoints. |
-| Tablas `carrito` e `item_carrito` | Ver `modelo-datos.md`. |
-| Job de limpieza | Marca como `ABANDONADO` los carritos anónimos con más de 7 días de inactividad. |
+| Tablas `cart` e `cart_item` | Ver `modelo-datos.md`. |
+| Job de limpieza | Marca como `ABANDONED` los carritos anónimos con más de 7 días de inactividad. |
 
 ## Desglose para issues
 
-- [ ] `[BE]` Modelos `carrito` e `item_carrito` con migraciones y restricciones (1..10, SKU único por carrito)
+- [ ] `[BE]` Modelos `cart` e `cart_item` con migraciones y restricciones (1..10, SKU único por carrito)
 - [ ] `[BE]` `CarritoService` (agregar, cambiar, quitar, vaciar) con bloqueo optimista
 - [ ] `[BE]` `TotalesCalculator` con precios, evaluación y avisos de cambios
 - [ ] `[BE]` Endpoints REST del carrito

@@ -73,7 +73,7 @@ El sistema DEBE (SHALL) permitir crear una nueva conversación en cualquier mome
 #### Scenario: Listado de conversaciones recientes
 - **DADO** un cliente autenticado con 8 conversaciones
 - **CUANDO** abre la barra lateral
-- **ENTONCES** `GET /api/v1/chat/conversaciones?pagina=1` devuelve las conversaciones ordenadas por `ultimo_mensaje_en` descendente, con un título derivado del primer mensaje del cliente (máx. 40 caracteres) y una vista previa del último mensaje
+- **ENTONCES** `GET /api/v1/chat/conversaciones?pagina=1` devuelve las conversaciones ordenadas por `last_message_at` descendente, con un título derivado del primer mensaje del cliente (máx. 40 caracteres) y una vista previa del último mensaje
 
 #### Scenario: Buscar chats
 - **DADO** el campo "Buscar chats"
@@ -88,7 +88,7 @@ El sistema DEBE (SHALL) permitir crear una nueva conversación en cualquier mome
 #### Scenario: Conversaciones anónimas y fusión al iniciar sesión
 - **DADO** un visitante anónimo con 2 conversaciones (cookie `chat_sid`)
 - **CUANDO** inicia sesión
-- **ENTONCES** esas conversaciones quedan ligadas a su `cliente_id` y aparecen en su listado junto con las que ya tenía
+- **ENTONCES** esas conversaciones quedan ligadas a su `customer_id` y aparecen en su listado junto con las que ya tenía
 
 ### Requirement: Pantalla de inicio
 El sistema DEBE (SHALL) mostrar, al abrir la app o al no tener ninguna conversación activa, una pantalla que combine un banner de ofertas, un grid de productos en oferta y el campo de conversación.

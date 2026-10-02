@@ -76,7 +76,7 @@ El sistema DEBE (SHALL) crear la sesión de checkout y el pedido en Ventas (SPEC
 #### Scenario: Confirmación sin cambios
 - **DADO** un resumen con total de S/ 312.40
 - **CUANDO** el cliente confirma
-- **ENTONCES** `POST /checkout` (con `Idempotency-Key`) revalida todo, crea el checkout en `PENDIENTE_PAGO` con `expira_en` a 15 min y el pedido `CREADO` en Ventas, marca el carrito `EN_CHECKOUT` y muestra dentro de `CheckoutPage` el formulario de tarjeta con "Total a pagar: S/ 312.40"
+- **ENTONCES** `POST /checkout` (con `Idempotency-Key`) revalida todo, crea el checkout en `PENDING_PAYMENT` con `expires_at` a 15 min y el pedido `CREADO` en Ventas, marca el carrito `IN_CHECKOUT` y muestra dentro de `CheckoutPage` el formulario de tarjeta con "Total a pagar: S/ 312.40"
 
 #### Scenario: El total cambió al confirmar
 - **DADO** que un precio o el costo de envío cambió desde que se mostró el resumen
@@ -114,7 +114,7 @@ El sistema DEBE (SHALL) introspeccionar el token del cliente contra Seguridad (`
 *Trazabilidad: SPEC-14 · Requisito 4.*
 
 #### Scenario: Sesión sigue viva
-- **DADO** un checkout `PENDIENTE_PAGO` y un cliente que va a pagar
+- **DADO** un checkout `PENDING_PAYMENT` y un cliente que va a pagar
 - **CUANDO** el backend introspecciona su token y Seguridad responde `200 {activo: true}`
 - **ENTONCES** continúa con la simulación del pago (Requisito 5)
 
@@ -133,19 +133,19 @@ El sistema DEBE (SHALL) procesar el pago con un simulador determinista según la
 
 | Tarjeta | Resultado |
 |---|---|
-| `4111 1111 1111 1111`, `5555 5555 5555 4444`, `3782 822463 10005` | APROBADO |
-| `4000 0000 0000 0002` | RECHAZADO · `FONDOS_INSUFICIENTES` |
-| `4000 0000 0000 0069` | RECHAZADO · `DENEGADA_POR_EMISOR` |
-| `4000 0000 0000 0119` | ERROR · `ERROR_PROCESAMIENTO` (se puede reintentar) |
-| `4000 0000 0000 3220` | APROBADO con latencia de 5 s (para probar la espera) |
-| Cualquier otra tarjeta válida por Luhn | APROBADO |
+| `4111 1111 1111 1111`, `5555 5555 5555 4444`, `3782 822463 10005` | APPROVED |
+| `4000 0000 0000 0002` | REJECTED · `INSUFFICIENT_FUNDS` |
+| `4000 0000 0000 0069` | REJECTED · `DECLINED_BY_ISSUER` |
+| `4000 0000 0000 0119` | ERROR · `PROCESSING_ERROR` (se puede reintentar) |
+| `4000 0000 0000 3220` | APPROVED con latencia de 5 s (para probar la espera) |
+| Cualquier otra tarjeta válida por Luhn | APPROVED |
 
 *Trazabilidad: SPEC-14 · Requisito 5.*
 
 #### Scenario: Pago aprobado
-- **DADO** un checkout `PENDIENTE_PAGO` vigente
+- **DADO** un checkout `PENDING_PAYMENT` vigente
 - **CUANDO** se paga con `4111 1111 1111 1111`
-- **ENTONCES** se registra un `intento_pago` `APROBADO` con `idTransaccion = SIM-<uuid>`, marca y `ultimos4`, el checkout pasa a `PAGO_APROBADO` y se dispara la notificación del pago a Ventas (SPEC-15)
+- **ENTONCES** se registra un `payment_attempt` `APPROVED` con `idTransaccion = SIM-<uuid>`, marca y `last4`, el checkout pasa a `PAYMENT_APPROVED` y se dispara la notificación del pago a Ventas (SPEC-15)
 
 #### Scenario: Pago rechazado con intentos restantes
 - **DADO** el primer intento
@@ -155,7 +155,7 @@ El sistema DEBE (SHALL) procesar el pago con un simulador determinista según la
 #### Scenario: Tercer intento fallido
 - **DADO** dos intentos rechazados
 - **CUANDO** el tercero también falla
-- **ENTONCES** el checkout pasa a `FALLIDO`, se solicita la anulación del pedido `CREADO` (SPEC-15), el carrito vuelve a `ACTIVO` y se informa "No pudimos procesar el pago. Tu carrito sigue guardado"
+- **ENTONCES** el checkout pasa a `FAILED`, se solicita la anulación del pedido `CREADO` (SPEC-15), el carrito vuelve a `ACTIVE` y se informa "No pudimos procesar el pago. Tu carrito sigue guardado"
 
 #### Scenario: Doble envío del pago
 - **DADO** dos solicitudes de pago con la misma `Idempotency-Key`
@@ -170,18 +170,18 @@ El sistema DEBE (SHALL) expirar los checkouts no pagados en 15 minutos.
 #### Scenario: Pago después de la expiración
 - **DADO** un checkout creado hace 16 minutos
 - **CUANDO** el cliente intenta pagar
-- **ENTONCES** se responde `410 CHECKOUT_EXPIRADO`, se solicita la anulación del pedido `CREADO`, el carrito vuelve a `ACTIVO` y se ofrece "Volver a intentar", que genera un checkout nuevo con la revalidación completa
+- **ENTONCES** se responde `410 CHECKOUT_EXPIRADO`, se solicita la anulación del pedido `CREADO`, el carrito vuelve a `ACTIVE` y se ofrece "Volver a intentar", que genera un checkout nuevo con la revalidación completa
 
 #### Scenario: Abandono
 - **DADO** un checkout sin actividad por 15 minutos
 - **CUANDO** lo detecta el job de expiración (cada minuto)
-- **ENTONCES** se marca `EXPIRADO` y se encola la anulación del pedido `CREADO`
+- **ENTONCES** se marca `EXPIRED` y se encola la anulación del pedido `CREADO`
 
 ## Requisitos no funcionales
 
 - **Seguridad (datos de tarjeta):** el PAN, el CVV y el vencimiento nunca se escriben en la BD, en logs, en trazas ni en el contexto del LLM. El body del endpoint de pago se excluye del logging del middleware. Se usa HTTPS obligatorio.
 - **Seguridad (autorización):** antes del pago se verifica que el checkout pertenece al `sub` del token. 🧩 **Acuerdo A3, concedido (23/09/2026):** Seguridad otorgó el scope `tokens:introspeccion` a `modulo-chatbot`, publicado en su kit §5 — es exactamente el caso que su propia regla marca como obligatorio ("si la operación mueve dinero, introspeccionen"). El backend DEBE llamar a `POST /auth/introspeccion` con el token del cliente justo antes de procesar el pago (Requisito 4) y rechazar si `activo: false`. Las credenciales reales (`client_secret` de `modulo-chatbot`) las entrega Seguridad recién en el Hito 4; hasta entonces se prueba contra el mock con `client_secret=secreto-de-prueba`.
-- **Idempotencia:** hay claves únicas en `checkout.idempotency_key` e `intento_pago.idempotency_key`.
+- **Idempotencia:** hay claves únicas en `checkout.idempotency_key` e `payment_attempt.idempotency_key`.
 - **Rendimiento:** el pago simulado (salvo la tarjeta de latencia) tarda p95 ≤ 1 s de extremo a extremo; el botón muestra "Procesando…" y queda deshabilitado.
 - **Transparencia:** el formulario indica "Pago simulado – entorno académico. No uses tarjetas reales".
 - **Accesibilidad:** los campos tienen el `autocomplete` adecuado (`cc-number`, `cc-exp`, `cc-csc`, `cc-name`) y los errores se anuncian.

@@ -4,7 +4,7 @@
 
 ## Responsables
 
-- **David:** `EmailSender`, plantillas y tarea `ENVIAR_CORREO` en el outbox.
+- **David:** `EmailSender`, plantillas y tarea `SEND_EMAIL` en el outbox.
 - **Sonny:** outbox que ejecuta la tarea.
 - **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
 
@@ -35,14 +35,14 @@ Incluye:
 ## Requirements
 
 ### Requirement: Envío de la confirmación
-El sistema DEBE (SHALL) encolar y enviar el correo de confirmación al correo de la cuenta cuando el pedido pasa a `PAGADO_NOTIFICADO`.
+El sistema DEBE (SHALL) encolar y enviar el correo de confirmación al correo de la cuenta cuando el pedido pasa a `PAID_NOTIFIED`.
 
 *Trazabilidad: SPEC-16 · Requisito 1.*
 
 #### Scenario: Correo enviado
 - **DADO** un pedido con el pago notificado a Ventas
-- **CUANDO** el worker procesa `ENVIAR_CORREO`
-- **ENTONCES** se envía a `maria@ejemplo.com` el asunto "Confirmamos tu pedido PED-2026-00891" con el detalle completo, y `notificacion` queda en `ENVIADA`
+- **CUANDO** el worker procesa `SEND_EMAIL`
+- **ENTONCES** se envía a `maria@ejemplo.com` el asunto "Confirmamos tu pedido PED-2026-00891" con el detalle completo, y `notification` queda en `SENT`
 
 #### Scenario: Contenido fiel al pedido
 - **DADO** un pedido con cupón y envío
@@ -55,14 +55,14 @@ El sistema DEBE (SHALL) enviar como máximo un correo de confirmación por pedid
 *Trazabilidad: SPEC-16 · Requisito 2.*
 
 #### Scenario: Reproceso del evento
-- **DADO** un correo ya `ENVIADA` para el pedido
+- **DADO** un correo ya `SENT` para el pedido
 - **CUANDO** el worker recibe otra vez la tarea
-- **ENTONCES** no se envía un segundo correo (clave única `pedido_id + tipo`)
+- **ENTONCES** no se envía un segundo correo (clave única `(order_id, resend_number)`)
 
 #### Scenario: Proveedor SMTP caído
 - **DADO** que el SMTP falla
 - **CUANDO** se intenta el envío
-- **ENTONCES** se reintenta hasta 3 veces (1 min, 5 min y 15 min); si falla, queda `FALLIDA` con `ultimo_error`, y el pedido y el chat no se ven afectados
+- **ENTONCES** se reintenta hasta 3 veces (1 min, 5 min y 15 min); si falla, queda `FAILED` con `last_error`, y el pedido y el chat no se ven afectados
 
 ### Requirement: El correo no bloquea la compra
 El sistema DEBE (SHALL) confirmar la compra en el chat aunque el correo falle o se demore.
@@ -75,9 +75,9 @@ El sistema DEBE (SHALL) confirmar la compra en el chat aunque el correo falle o 
 - **ENTONCES** el mensaje dice "Te enviaremos la confirmación a m****a@…", sin prometer que ya llegó
 
 #### Scenario: El cliente pide reenviar el correo
-- **DADO** un pedido con el correo `ENVIADA` o `FALLIDA`
+- **DADO** un pedido con el correo `SENT` o `FAILED`
 - **CUANDO** el cliente escribe "no me llegó el correo"
-- **ENTONCES** se sugiere revisar spam y se ofrece "Reenviar", que crea un reenvío (máx. 2 por pedido, tipo `REENVIO_CONFIRMACION`)
+- **ENTONCES** se sugiere revisar spam y se ofrece "Reenviar", que crea un reenvío (máx. 2 por pedido, tipo `CONFIRMATION_RESEND`)
 
 ## Requisitos no funcionales
 

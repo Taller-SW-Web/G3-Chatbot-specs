@@ -67,7 +67,7 @@ El sistema DEBE (SHALL) generar y enviar un OTP de 6 dígitos por un adaptador S
 #### Scenario: Verificación exitosa
 - **DADO** un código enviado por el simulador
 - **CUANDO** el cliente ingresa el código correcto
-- **ENTONCES** se guarda localmente `{cliente_id, celular, verificado_en}`, el chat muestra "¡Listo! Tu celular quedó verificado" y se ejecuta la `accionPendiente`
+- **ENTONCES** se guarda localmente `{customer_id, phone, verified_at}`, el chat muestra "¡Listo! Tu celular quedó verificado" y se ejecuta la `accionPendiente`
 
 #### Scenario: Código incorrecto
 - **DADO** un código erróneo
@@ -101,7 +101,7 @@ El sistema DEBE (SHALL) orientar al cliente si el celular registrado no es el su
 
 ## Requisitos no funcionales
 
-- **Seguridad:** el código OTP nunca pasa por el LLM ni se guarda en la tabla `mensaje`; el formulario lo envía directo al endpoint. El celular se muestra enmascarado (`+51 9****4321`).
+- **Seguridad:** el código OTP nunca pasa por el LLM ni se guarda en la tabla `message`; el formulario lo envía directo al endpoint. El celular se muestra enmascarado (`+51 9****4321`).
 - **Pruebas:** el `SimulatedSmsSender` propio expone el código generado únicamente por un mecanismo de prueba (variable de entorno `MODO_QA=true` que devuelve el código en la respuesta, o un log accesible solo en el entorno de pruebas), nunca en producción ni en una respuesta normal al cliente.
 - **Autocontención:** esta capacidad no depende de ningún endpoint de Seguridad más allá de leer el celular vigente (`GET /auth/me`, ya usado por SPEC-03). Si Seguridad no responde, el checkout queda bloqueado con "No pudimos confirmar tu celular ahora" (no se omite la verificación), pero el envío y la verificación del OTP en sí no dependen de Seguridad en absoluto.
 - **Reemplazo futuro:** el adaptador `SmsSender` se implementa detrás de una interfaz, para poder sustituirlo por el mecanismo de Seguridad sin tocar el resto del flujo, si en el Hito 4 deciden construirlo (ver acuerdo A2 actualizado).

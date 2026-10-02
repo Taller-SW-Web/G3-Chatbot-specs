@@ -11,7 +11,7 @@ Aceptada
 ## Contexto
 
 - El canal maneja contraseñas (SPEC-01, SPEC-03), códigos OTP (SPEC-03, SPEC-04), datos de tarjeta (SPEC-14) y documentos de identidad (SPEC-12).
-- Todo lo que llega al LLM sale del Perú hacia el proveedor (`privacidad.md` §3) y todo lo que se persiste en `mensaje` queda en el historial.
+- Todo lo que llega al LLM sale del Perú hacia el proveedor (`privacidad.md` §3) y todo lo que se persiste en `message` queda en el historial.
 - El cliente puede escribir esos datos en el chat aunque se le pida no hacerlo.
 
 ## Decisión

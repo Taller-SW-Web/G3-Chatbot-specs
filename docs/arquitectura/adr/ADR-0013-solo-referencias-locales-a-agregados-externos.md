@@ -18,14 +18,14 @@ Aceptada
 
 - La base PostgreSQL del chatbot guarda **solo sus propios agregados**: conversaciones, mensajes, carrito, checkout, intentos de pago simulados, verificación local del celular, notificaciones y outbox.
 - De otros módulos guarda **identificadores (referencias)**, no copias de sus datos maestros:
-  - `pedido_ref` (`pedido_id` de Ventas y un `estado_local` propio de la integración: `PAGO_PENDIENTE_NOTIFICAR`, `ANULACION_SOLICITADA`…);
-  - `reclamo_ref` y `devolucion_ref`, con el código visible y la clave de idempotencia;
-  - `producto_id` y `sku` en `item_carrito`;
-  - `cliente_id` = `sub` del token;
-  - `evidencia.url` tal como la devuelve Ventas (sin bucket propio).
-- 🧩 Aclaración (SPEC-23, [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md)): "sin bucket propio" vale para la **evidencia de devolución**, que hostea Ventas. Las imágenes que el cliente adjunta al chat para que el LLM las interprete (SPEC-23) **sí** usan un bucket privado propio de Supabase Storage y la tabla `adjunto` guarda solo referencias a sus objetos. Esas imágenes nunca se reenvían a Ventas como evidencia.
-- Los **snapshots** mínimos se permiten solo para mostrar información o reintentar: `checkout.resumen` (enviado a Ventas), `item_carrito` (nombre, variante, imagen) y `carrito.envio_snapshot`.
-- El estado vigente siempre se consulta al módulo dueño; `devolucion_ref` sirve de respaldo solo si Ventas no responde (SPEC-22).
+  - `order_ref` (`order_id` de Ventas y un `local_status` propio de la integración: `PAYMENT_PENDING_NOTIFICATION`, `CANCELLATION_REQUESTED`…);
+  - `claim_ref` y `return_ref`, con el código visible y la clave de idempotencia;
+  - `product_id` y `sku` en `cart_item`;
+  - `customer_id` = `sub` del token;
+  - `evidence.url` tal como la devuelve Ventas (sin bucket propio).
+- 🧩 Aclaración (SPEC-23, [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md)): "sin bucket propio" vale para la **evidencia de devolución**, que hostea Ventas. Las imágenes que el cliente adjunta al chat para que el LLM las interprete (SPEC-23) **sí** usan un bucket privado propio de Supabase Storage y la tabla `attachment` guarda solo referencias a sus objetos. Esas imágenes nunca se reenvían a Ventas como evidencia.
+- Los **snapshots** mínimos se permiten solo para mostrar información o reintentar: `checkout.summary` (enviado a Ventas), `cart_item` (nombre, variante, imagen) y `cart.shipping_snapshot`.
+- El estado vigente siempre se consulta al módulo dueño; `return_ref` sirve de respaldo solo si Ventas no responde (SPEC-22).
 
 ## Alternativas consideradas
 
@@ -42,12 +42,12 @@ Aceptada
 
 **Negativas y riesgos aceptados**
 - Casi toda consulta depende de la disponibilidad del módulo dueño.
-- Los snapshots (sobre todo `checkout.resumen`, con documento y dirección) no tienen plazo de retención definido (`conversacion/README.md`, pregunta 10).
-- `carrito.direccion_id` se describe como referencia a una dirección de Seguridad, aunque la dirección ahora se captura en campos libres ([ADR-0016](ADR-0016-direccion-en-checkoutpage-fuera-del-chat.md)); conviene revisar ese campo al refinar el modelo de datos.
+- Los snapshots (sobre todo `checkout.summary`, con documento y dirección) no tienen plazo de retención definido (`conversacion/README.md`, pregunta 10).
+- `cart.address_id` se describe como referencia a una dirección de Seguridad, aunque la dirección ahora se captura en campos libres ([ADR-0016](ADR-0016-direccion-en-checkoutpage-fuera-del-chat.md)); conviene revisar ese campo al refinar el modelo de datos.
 
 ## Referencias
 
-- `docs/modelo-datos.md` introducción (líneas 5-8) y tablas `pedido_ref`, `reclamo_ref`, `devolucion_ref`, `evidencia`, `carrito`
+- `docs/modelo-datos.md` introducción y tablas `order_ref`, `claim_ref`, `return_ref`, `evidence`, `cart`
 - `README.md` §1.3, principio 6 (línea 123)
 - `docs/contratos-integracion.md` §6, acuerdo A13 (línea 267)
 - `openspec/specs/consulta-devolucion-reembolso/design.md` (`DevolucionConsultaService`)

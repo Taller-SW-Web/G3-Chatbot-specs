@@ -25,7 +25,7 @@ Mostrar al cliente el estado de sus solicitudes de devolución o cambio, incluid
 - `GET /api/v2/devoluciones?clienteId=&estado=&tipo=&pagina=&tamano=` — listado paginado, **con `estadoReembolso` resumido en cada fila**.
 - `GET /api/v2/devoluciones/{id}` — detalle que, cuando la resolución fue `DEVOLUCION_DINERO` y ya se procesó, incluye el bloque anidado `resolucion.reembolso{reembolsoId, estado, monto, moneda, transaccionPasarelaId, fechaEjecucion}`.
 
-Una mejora sobre el diseño anterior: como el listado es por `clienteId` directamente contra Ventas, el chatbot ya no depende de su propio `devolucion_ref` para mostrar el historial — **trae todas las solicitudes del cliente, incluidas las registradas desde otros canales** (Marketplace, Retail), no solo las de este chat.
+Una mejora sobre el diseño anterior: como el listado es por `clienteId` directamente contra Ventas, el chatbot ya no depende de su propio `return_ref` para mostrar el historial — **trae todas las solicitudes del cliente, incluidas las registradas desde otros canales** (Marketplace, Retail), no solo las de este chat.
 
 ## Alcance
 
@@ -124,7 +124,7 @@ El sistema DEBE (SHALL) informar la indisponibilidad de Ventas sin mostrar estad
 #### Scenario: Ventas no disponible
 - **DADO** que Ventas no responde
 - **CUANDO** se consulta una solicitud
-- **ENTONCES** se muestra "No puedo consultar tus devoluciones ahora" con "Reintentar", y el código y la fecha de registro si existen en `devolucion_ref` local (solo para las que se originaron en este canal)
+- **ENTONCES** se muestra "No puedo consultar tus devoluciones ahora" con "Reintentar", y el código y la fecha de registro si existen en `return_ref` local (solo para las que se originaron en este canal)
 
 ## Requisitos no funcionales
 

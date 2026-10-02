@@ -72,7 +72,7 @@
 **Como** cliente, **quiero** enviar mi solicitud con una confirmación explícita y recibir su código, **para** hacerle seguimiento.
 
 **Criterios de aceptación**
-- `SPEC-21 · Req. 4 · Scenario: Solicitud registrada` — ante `201` se guarda `devolucion_ref` con el `devolucionId` como código y se ligan las evidencias.
+- `SPEC-21 · Req. 4 · Scenario: Solicitud registrada` — ante `201` se guarda `return_ref` con el `devolucionId` como código y se ligan las evidencias.
 - `SPEC-21 · Req. 4 · Scenario: Evidencia obligatoria faltante o plazo excedido` — el `400` de Ventas se muestra con su motivo.
 - ``SPEC-21 · Req. 4 · Scenario: Pedido no `ENTREGADO` `` — el `409` de Ventas se informa como "solo después de la entrega".
 - `SPEC-21 · Req. 4 · Scenario: Doble envío` — la misma `Idempotency-Key` registra una sola solicitud.
@@ -165,7 +165,7 @@
 **Como** cliente, **quiero** que el chat me avise si no puede consultar mis devoluciones y me muestre lo que sabe localmente, **para** no ver estados inventados.
 
 **Criterios de aceptación**
-- `SPEC-22 · Req. 4 · Scenario: Ventas no disponible` — se informa con "Reintentar" y se muestran código y fecha si existen en `devolucion_ref` (solo solicitudes de este canal).
+- `SPEC-22 · Req. 4 · Scenario: Ventas no disponible` — se informa con "Reintentar" y se muestran código y fecha si existen en `return_ref` (solo solicitudes de este canal).
 
 **Prioridad:** Could (ver nota de la épica).
 

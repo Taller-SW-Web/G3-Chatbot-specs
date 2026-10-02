@@ -39,7 +39,7 @@ Prefijo: `/api/v1`. Todas las respuestas de error usan `application/problem+json
 | Método | Ruta | Sesión | Descripción |
 |---|---|---|---|
 | POST | `/chat/conversaciones` | Opcional | Crea una conversación vacía y devuelve `conversacionId`. |
-| GET | `/chat/conversaciones` | Opcional* | Lista las conversaciones (propias o de la sesión anónima), ordenadas por `ultimo_mensaje_en` descendente, con `titulo` y vista previa del último mensaje. Paginado. |
+| GET | `/chat/conversaciones` | Opcional* | Lista las conversaciones (propias o de la sesión anónima), ordenadas por `last_message_at` descendente, con `titulo` y vista previa del último mensaje. Paginado. |
 | GET | `/chat/conversaciones/buscar?q=` | Opcional* | Busca por texto en el título y los mensajes. |
 | GET | `/chat/conversaciones/{id}/mensajes` | Opcional* | Devuelve el historial paginado de una conversación. Cada mensaje con imágenes incluye `adjuntos[{adjuntoId, mimeType, ancho, alto, urlMiniatura, expiraEn}]` con URLs firmadas de corta vida (SPEC-23). |
 | POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Envía `{ "texto": "...", "adjuntoIds": ["..."] }` (`adjuntoIds` opcional, máx. 3; el texto es opcional si hay al menos un adjunto, ver 2.1.1) o `{ "accion": { "tipo": "...", "payload": {...} } }`. Responde `202 {mensajeId}` de inmediato; la respuesta del asistente se transmite por WebSocket (ver abajo), salvo las acciones directas, que devuelven el bloque en la misma respuesta REST. |
@@ -60,12 +60,12 @@ Si el WebSocket no conecta, el frontend hace *polling* de `GET /chat/conversacio
 **Tipos de bloque de respuesta** (`Bloque.tipo`): `TEXTO`, `CARRUSEL_PRODUCTOS`, `DETALLE_PRODUCTO`, `SELECTOR_VARIANTE`, `CARRITO`, `ACCIONES_RAPIDAS`, `FORMULARIO` (`REGISTRO`, `LOGIN`, `OTP_MFA`, `OTP_CELULAR`, `DIRECCION`, `PAGO`, `RECLAMO`, `DEVOLUCION`), `RESUMEN_CHECKOUT`, `CONFIRMACION_PEDIDO`, `LISTA_PEDIDOS`, `ESTADO_PEDIDO`, `LISTA_PROMOCIONES`, `CONSTANCIA_RECLAMO`, `ESTADO_RECLAMO`, `CONSTANCIA_DEVOLUCION`, `ESTADO_DEVOLUCION`, `ERROR`.
 
 ### 2.1.1 Adjuntos de imágenes (SPEC-23)
-🧩 Nuevo. Las imágenes se suben antes de enviar el mensaje y se guardan en un bucket privado propio del chatbot (no son la evidencia de devolución de 2.7, que se sube a Ventas). Sesión opcional: la pertenencia se controla por `cliente_id` o por la cookie `chat_sid` de la conversación.
+🧩 Nuevo. Las imágenes se suben antes de enviar el mensaje y se guardan en un bucket privado propio del chatbot (no son la evidencia de devolución de 2.7, que se sube a Ventas). Sesión opcional: la pertenencia se controla por `customer_id` o por la cookie `chat_sid` de la conversación.
 
 | Método | Ruta | Sesión | Descripción |
 |---|---|---|---|
 | POST | `/chat/conversaciones/{id}/adjuntos` | Opcional | Sube una imagen (`multipart/form-data`, campo `archivo`; `image/jpeg`, `image/png` o `image/webp`, máx. 5 MB). El backend valida el contenido real, elimina EXIF y ubicación, normaliza y guarda la imagen con su miniatura. Responde `201 {adjuntoId, mimeType, tamanioBytes, ancho, alto}`. Errores: `400 ADJUNTO_INVALIDO`, `404 RECURSO_NO_ENCONTRADO`, `422 LIMITE_ADJUNTOS`, `429 DEMASIADAS_SOLICITUDES`, `503 SERVICIO_NO_DISPONIBLE`. |
-| DELETE | `/chat/conversaciones/{id}/adjuntos/{adjuntoId}` | Opcional | Quita un adjunto `PENDIENTE` y elimina sus archivos. Un adjunto `ENVIADO` no se puede quitar (`409`). |
+| DELETE | `/chat/conversaciones/{id}/adjuntos/{adjuntoId}` | Opcional | Quita un adjunto `PENDING` y elimina sus archivos. Un adjunto `SENT` no se puede quitar (`409`). |
 | GET | `/chat/adjuntos/{adjuntoId}` | Opcional | Emite una URL firmada nueva `{urlMiniatura, urlImagen, expiraEn}` para un adjunto de una conversación del solicitante; `404 RECURSO_NO_ENCONTRADO` si pertenece a otro cliente. |
 
 Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por cliente o IP, 10 adjuntos pendientes por conversación (los no enviados se eliminan a las 24 h) y URLs firmadas de 5 minutos. Al LLM las imágenes viajan en base64 leídas por el backend, nunca como URL. Las imágenes del chat no se reenvían a Ventas.
@@ -225,6 +225,7 @@ Notas que siguen vigentes sobre este contrato:
 - Los estados de pedido usan guion bajo y sin tildes: `EN_PREPARACION`, no "EN PREPARACIÓN".
 - El formato de error de Ventas usa la clave `codigo` (no `code`); `VentasClient` lo normaliza al `code` interno del chatbot.
 - Las reglas de `contacto.tipoDocumento`/`numeroDocumento` (DNI, RUC, CE, PASAPORTE) ya están en su propio contrato, idénticas a las de `SPEC-12` · Requisito 1.
+- La base de datos del chatbot guarda los valores de enumeración en inglés (`EXCHANGE`, `MONEY_REFUND`, `IMAGE`); el adapter los traduce en ambos sentidos a los literales de Ventas (`CAMBIO`, `DEVOLUCION_DINERO`, `IMAGEN`). Ver [`modelo-datos.md`](modelo-datos.md).
 
 Códigos esperados: `400` datos incompletos o inconsistentes, `403` el cliente no es dueño del pedido, `404` inexistente, `409` sin stock, transición inválida o pedido en un estado que no admite la operación.
 

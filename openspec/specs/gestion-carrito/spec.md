@@ -120,7 +120,7 @@ El sistema DEBE (SHALL) mostrar el bloque `CARRITO` recalculando en cada lectura
 - **ENTONCES** se muestran el subtotal con precios vigentes y la nota "No pudimos calcular promociones en este momento", y el checkout queda bloqueado hasta que la evaluación responda (para no cobrar un total distinto)
 
 ### Requirement: Persistencia y ciclo de vida
-El sistema DEBE (SHALL) persistir el carrito: el anónimo por conversación (expira a los 7 días de inactividad) y el de cliente como único carrito `ACTIVO` por cliente, conservándose entre sesiones y dispositivos.
+El sistema DEBE (SHALL) persistir el carrito: el anónimo por conversación (expira a los 7 días de inactividad) y el de cliente como único carrito `ACTIVE` por cliente, conservándose entre sesiones y dispositivos.
 
 *Trazabilidad: SPEC-11 · Requisito 4.*
 
@@ -132,14 +132,14 @@ El sistema DEBE (SHALL) persistir el carrito: el anónimo por conversación (exp
 #### Scenario: Carrito convertido
 - **DADO** un pedido pagado (SPEC-15)
 - **CUANDO** se confirma
-- **ENTONCES** el carrito queda `CONVERTIDO` y el cliente empieza con uno vacío
+- **ENTONCES** el carrito queda `CONVERTED` y el cliente empieza con uno vacío
 
 ## Requisitos no funcionales
 
 - **Concurrencia:** bloqueo optimista (`version`) en el carrito; dos operaciones simultáneas no pierden cambios (una reintenta).
 - **Rendimiento:** la lectura del carrito con recálculo (hasta 20 líneas) tarda p95 ≤ 900 ms; las operaciones de agregar o modificar, p95 ≤ 700 ms sin LLM.
 - **Precisión:** cálculos con `Decimal` y redondeo a 2 decimales solo al presentar, igual que Productos.
-- **Auditoría:** cada cambio del carrito queda como mensaje de tipo `HERRAMIENTA` en la conversación.
+- **Auditoría:** cada cambio del carrito queda como mensaje con rol `TOOL` en la conversación.
 
 ## Criterio de completitud
 

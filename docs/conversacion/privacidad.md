@@ -19,26 +19,26 @@
 
 | Dato | Origen | Dónde se guarda | Retención definida | ¿Llega al LLM? |
 |---|---|---|---|---|
-| Texto de los mensajes del cliente (puede contener datos personales que el cliente escriba) | Chat | `mensaje.texto` (redactado si hay tarjeta, OTP o contraseña), `conversacion.titulo`, `conversacion.resumen`, `conversacion.busqueda` | Anónimas: expiran a los 7 días de inactividad. Autenticadas: se **archivan** (no se borran) a los 90 días sin actividad. **Sin plazo de borrado** ⚠️ | Sí: últimos 12 mensajes + resumen de la conversación activa (SPEC-05 · RNF *Contexto*) |
+| Texto de los mensajes del cliente (puede contener datos personales que el cliente escriba) | Chat | `message.content` (redactado si hay tarjeta, OTP o contraseña), `conversation.title`, `conversation.summary`, `conversation.title_search_vector`, `message.search_vector` | Anónimas: expiran a los 7 días de inactividad. Autenticadas: se **archivan** (no se borran) a los 90 días sin actividad. **Sin plazo de borrado** ⚠️ | Sí: últimos 12 mensajes + resumen de la conversación activa (SPEC-05 · RNF *Contexto*) |
 | Nombre de pila | Seguridad (`GET /auth/me`) | No se persiste aparte | — | **Sí, es el único dato de identidad permitido** (SPEC-05 · RNF *Privacidad*) |
-| Identificador del cliente (`sub`) | Token | `cliente_id` en varias tablas | Ligado a cada tabla ⚠️ | No (la identidad sale del token, SPEC-05 · Req. 6) |
-| Cookie de sesión anónima `chat_sid` | Navegador | `conversacion.sid_anonimo` (hash) | 7 días de inactividad | No |
+| Identificador del cliente (`sub`) | Token | `customer_id` en varias tablas | Ligado a cada tabla ⚠️ | No (la identidad sale del token, SPEC-05 · Req. 6) |
+| Cookie de sesión anónima `chat_sid` | Navegador | `conversation.anonymous_sid` (hash) | 7 días de inactividad | No |
 | Access token | Seguridad | LocalStorage del navegador (riesgo XSS aceptado) | 15 min | No |
 | Refresh token | Seguridad | Cookie `httpOnly` | Rotación de Seguridad | No |
-| Correo | Seguridad | `notificacion.destinatario`; enmascarado en el chat | **No definida** ⚠️ | No |
-| Celular | Seguridad | `celular_verificacion_local.celular` (completo); enmascarado en el chat | **No definida** ⚠️ | No |
+| Correo | Seguridad | `notification.recipient`; enmascarado en el chat | **No definida** ⚠️ | No |
+| Celular | Seguridad | `local_phone_verification.phone` (completo); enmascarado en el chat | **No definida** ⚠️ | No |
 | Contraseña, OTP | Formularios | **Nunca** (van directo al endpoint) | — | **Nunca** (SPEC-05 · Req. 9; SPEC-01 y SPEC-04 · RNF) |
-| Datos de tarjeta (PAN, CVV, vencimiento) | `FORMULARIO/PAGO` | **Nunca**; solo `intento_pago.marca` y `ultimos4` | `intento_pago`: **no definida** ⚠️ | **Nunca** (SPEC-14 · RNF) |
-| Documento de identidad, teléfono y correo del comprador | `CheckoutPage` | `checkout.resumen.contacto` (snapshot enviado a Ventas) | **No definida** ⚠️ | No (SPEC-12 · RNF *Privacidad*) |
-| Dirección de entrega y destinatario | `CheckoutPage` | `checkout.resumen`, `carrito.envio_snapshot` (solo distrito), bloque `CONFIRMACION_PEDIDO` en `mensaje.bloques` | **No definida** ⚠️ | No (SPEC-12 · RNF) |
+| Datos de tarjeta (PAN, CVV, vencimiento) | `FORMULARIO/PAGO` | **Nunca**; solo `payment_attempt.brand` y `last4` | `payment_attempt`: **no definida** ⚠️ | **Nunca** (SPEC-14 · RNF) |
+| Documento de identidad, teléfono y correo del comprador | `CheckoutPage` | `checkout.summary.contacto` (snapshot enviado a Ventas) | **No definida** ⚠️ | No (SPEC-12 · RNF *Privacidad*) |
+| Dirección de entrega y destinatario | `CheckoutPage` | `checkout.summary`, `cart.shipping_snapshot` (solo distrito), bloque `CONFIRMACION_PEDIDO` en `message.blocks` | **No definida** ⚠️ | No (SPEC-12 · RNF) |
 | Nombre de quien recibió el pedido (`recibidoPor`) | Despacho | Bloque `ESTADO_PEDIDO` | Como el mensaje | **No**: llega solo al bloque del frontend (SPEC-18 · RNF *Privacidad*) |
-| Descripción de reclamo o devolución | Chat / formulario | Borrador en `conversacion.contexto`; se envía a Ventas | Borrador: 24 h si Ventas falla (SPEC-19 · Req. 4; SPEC-21 · Req. 4) | Sí, si el cliente la escribe en el chat (la extrae `preparar_reclamo`) |
-| Evidencia (fotos o PDF) | Formulario | Solo la URL en `evidencia`; el archivo lo hospeda Ventas | Referencias de borradores: 24 h (SPEC-21 · Req. 3) | **No** (SPEC-21 · RNF). La evidencia de devolución no llega al LLM; las imágenes que el cliente adjunta al chat sí (fila siguiente) |
-| Imágenes adjuntas al chat (pueden mostrar rostros, documentos, tarjetas, direcciones o ubicación) | Chat (compositor) | Archivo en un bucket **privado** de Supabase Storage (imagen normalizada y miniatura, sin EXIF ni ubicación) y solo referencias en `adjunto` (SPEC-23) | Pendientes sin enviar: 24 h. Enviadas: **sin plazo definido** ⚠️ (pregunta abierta de SPEC-23) | **Sí**: las imágenes de los últimos 12 mensajes (máx. 6 por turno) se envían en base64, nunca como URL (SPEC-23 · Req. 5). OpenAI conserva las entradas de la API 30 días para monitoreo de abuso |
-| Métricas por turno (tokens, latencia, herramienta) | Backend | `mensaje`, logs | **No definida** ⚠️ | No |
+| Descripción de reclamo o devolución | Chat / formulario | Borrador en `conversation.context`; se envía a Ventas | Borrador: 24 h si Ventas falla (SPEC-19 · Req. 4; SPEC-21 · Req. 4) | Sí, si el cliente la escribe en el chat (la extrae `preparar_reclamo`) |
+| Evidencia (fotos o PDF) | Formulario | Solo la URL en `evidence`; el archivo lo hospeda Ventas | Referencias de borradores: 24 h (SPEC-21 · Req. 3) | **No** (SPEC-21 · RNF). La evidencia de devolución no llega al LLM; las imágenes que el cliente adjunta al chat sí (fila siguiente) |
+| Imágenes adjuntas al chat (pueden mostrar rostros, documentos, tarjetas, direcciones o ubicación) | Chat (compositor) | Archivo en un bucket **privado** de Supabase Storage (imagen normalizada y miniatura, sin EXIF ni ubicación) y solo referencias en `attachment` (SPEC-23) | Pendientes sin enviar: 24 h. Enviadas: **sin plazo definido** ⚠️ (pregunta abierta de SPEC-23) | **Sí**: las imágenes de los últimos 12 mensajes (máx. 6 por turno) se envían en base64, nunca como URL (SPEC-23 · Req. 5). OpenAI conserva las entradas de la API 30 días para monitoreo de abuso |
+| Métricas por turno (tokens, latencia, herramienta) | Backend | `message`, logs | **No definida** ⚠️ | No |
 | Outbox (payloads de notificación de pago y correo) | Backend | `outbox.payload` | **No definida** ⚠️ | No |
 
-**Retenciones faltantes (⚠️):** mensajes de conversaciones autenticadas y archivadas, `checkout.resumen` (con el documento), `celular_verificacion_local`, `intento_pago`, `notificacion`, `outbox` y logs. **Propuesta:** definir un plazo por tabla con el criterio "lo necesario para la finalidad" (p. ej., borrar mensajes de conversaciones archivadas al cumplir un plazo; conservar los snapshots de compra solo mientras se necesiten para postventa) y documentarlo en `modelo-datos.md` mediante un cambio de OpenSpec. Ver [pregunta abierta 10](README.md#preguntas-abiertas).
+**Retenciones faltantes (⚠️):** mensajes de conversaciones autenticadas y archivadas, `checkout.summary` (con el documento), `local_phone_verification`, `payment_attempt`, `notification`, `outbox` y logs. **Propuesta:** definir un plazo por tabla con el criterio "lo necesario para la finalidad" (p. ej., borrar mensajes de conversaciones archivadas al cumplir un plazo; conservar los snapshots de compra solo mientras se necesiten para postventa) y documentarlo en `modelo-datos.md` mediante un cambio de OpenSpec. Ver [pregunta abierta 10](README.md#preguntas-abiertas).
 
 ## 3. Qué recibe el proveedor LLM
 
@@ -72,7 +72,7 @@ El pago es **simulado** (SPEC-14), pero el diseño aplica igual las reglas de un
 
 - **Nunca se acepta el número de tarjeta (PAN) en el chat.** Toda secuencia de 13 a 19 dígitos que pase Luhn se reemplaza por `[tarjeta oculta]` **antes** de persistir el mensaje o enviarlo al LLM, y el asistente responde "Por tu seguridad, ingresa los datos de tu tarjeta solo en la pantalla de pago" (SPEC-05 · Req. 9; [diálogo D-12](dialogos-ejemplo.md#d-12--número-de-tarjeta-pegado-en-el-chat)).
 - La tarjeta se captura solo en `FORMULARIO/PAGO` y se envía directo a `POST /checkout/{id}/pago`; el PAN, el CVV y el vencimiento no se escriben en BD, logs, trazas ni prompts, y el body del endpoint se excluye del logging (SPEC-14 · Req. 3 y RNF).
-- Solo persisten la marca y los últimos 4 dígitos (`intento_pago`).
+- Solo persisten la marca y los últimos 4 dígitos (`payment_attempt`).
 - El formulario avisa "Pago simulado – entorno académico. No uses tarjetas reales" (SPEC-14 · RNF).
 - Pendiente: si la burbuja del cliente en su propia pantalla debe mostrarse ya redactada ([pregunta abierta 15](README.md#preguntas-abiertas)).
 
@@ -114,7 +114,7 @@ Basado en el deber de información de la Ley 29733 (contenido exacto **a verific
 2. Muestra el enlace o correo de ese canal (**pendiente**: no existe aún, [pregunta abierta 4](README.md#preguntas-abiertas)).
 3. No promete plazos ni borra nada por su cuenta.
 
-Los plazos de respuesta y el procedimiento los fija el reglamento (**a verificar**). Como el chatbot guarda datos propios (conversaciones, snapshots de checkout, verificación de celular), el equipo del canal debe poder ubicarlos y borrarlos por `cliente_id` cuando la tienda lo solicite.
+Los plazos de respuesta y el procedimiento los fija el reglamento (**a verificar**). Como el chatbot guarda datos propios (conversaciones, snapshots de checkout, verificación de celular), el equipo del canal debe poder ubicarlos y borrarlos por `customer_id` cuando la tienda lo solicite.
 
 ## 7. Enmascaramiento en logs
 
@@ -122,15 +122,15 @@ Los plazos de respuesta y el procedimiento los fija el reglamento (**a verificar
 |---|---|---|
 | El log por turno no lleva datos personales en el texto | ✅ Spec | SPEC-05 · RNF *Observabilidad* |
 | Los logs no contienen el contenido de las imágenes, su base64, las URLs firmadas ni los nombres originales de los archivos | ✅ Spec | SPEC-23 · RNF *Observabilidad* |
-| La contraseña nunca va a logs, `mensaje` ni contexto del LLM | ✅ Spec | SPEC-01 · RNF |
+| La contraseña nunca va a logs, `message` ni contexto del LLM | ✅ Spec | SPEC-01 · RNF |
 | El token de verificación de correo no se registra | ✅ Spec | SPEC-02 · RNF |
 | El body del pago se excluye del logging | ✅ Spec | SPEC-14 · RNF |
 | Cupones enmascarados (`RU***`) | ✅ Spec | SPEC-13 · RNF |
 | Descripción de reclamo truncada a 50 caracteres | ✅ Spec (⚠️ 50 caracteres aún pueden incluir datos personales) | SPEC-19 · RNF |
 | Correo y celular enmascarados en el chat | ✅ Spec | SPEC-01, SPEC-04 · RNF |
 | El correo de confirmación no incluye documento ni celular completo | ✅ Spec | SPEC-16 · RNF |
-| Correos, celulares y documentos enmascarados también en logs técnicos y de errores (`ultimo_error`, `outbox`) | 🟠 Propuesta | — |
-| Registrar `cliente_id` y `correlationId`, nunca nombres ni correos | 🟠 Propuesta | — |
+| Correos, celulares y documentos enmascarados también en logs técnicos y de errores (`last_error`, `outbox`) | 🟠 Propuesta | — |
+| Registrar `customer_id` y `correlationId`, nunca nombres ni correos | 🟠 Propuesta | — |
 
 ## 8. Riesgos del LLM (OWASP Top 10 LLM 2025)
 

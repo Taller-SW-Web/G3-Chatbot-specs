@@ -94,7 +94,7 @@ El sistema DEBE (SHALL) informar la indisponibilidad de Ventas sin mostrar infor
 #### Scenario: Ventas no disponible
 - **DADO** que Ventas no responde
 - **CUANDO** se consulta un reclamo
-- **ENTONCES** se muestra "No puedo consultar tus reclamos ahora" con "Reintentar", y el código y la fecha de registro si existen en `reclamo_ref` local
+- **ENTONCES** se muestra "No puedo consultar tus reclamos ahora" con "Reintentar", y el código y la fecha de registro si existen en `claim_ref` local
 
 ## Requisitos no funcionales
 

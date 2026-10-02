@@ -30,7 +30,7 @@
 | `POST /api/v1/sesion/mfa/solicitar` · `/verificar` | Usa el `challengeToken` de la cookie; al verificar, abre la sesión igual que el login. |
 | `POST /api/v1/sesion/refresh` · `/logout` | Rotación y borrado de las cookies. |
 | `GET /api/v1/sesion/perfil` | Proxy de `/auth/me` (incluye `celularVerificado`, que usa SPEC-04). |
-| `JwtValidator` (dependencia FastAPI `get_cliente_actual`) | JWKS cacheado; exige el rol `CLIENTE`; expone `cliente_id = sub`. |
+| `JwtValidator` (dependencia FastAPI `get_cliente_actual`) | JWKS cacheado; exige el rol `CLIENTE`; expone `customer_id = sub`. |
 | `SesionService.post_login()` | Liga la conversación, fusiona los carritos y ejecuta la `accionPendiente`. |
 | Herramientas LLM `solicitar_login` y `cerrar_sesion` | Devuelven el bloque `FORMULARIO/LOGIN` o ejecutan el logout. |
 

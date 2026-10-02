@@ -34,7 +34,7 @@
 **Como** cliente, **quiero** enviar mi reclamo con una confirmación explícita y recibir un código con la fecha límite de respuesta, **para** hacerle seguimiento.
 
 **Criterios de aceptación**
-- `SPEC-19 · Req. 2 · Scenario: Reclamo registrado` — se guarda `reclamo_ref` y se muestra la constancia con `codigoSeguimiento` y `fechaLimiteSLA`.
+- `SPEC-19 · Req. 2 · Scenario: Reclamo registrado` — se guarda `claim_ref` y se muestra la constancia con `codigoSeguimiento` y `fechaLimiteSLA`.
 - `SPEC-19 · Req. 2 · Scenario: Cliente sin documento registrado` — el formulario pide el documento con el mismo validador de SPEC-12.
 - `SPEC-19 · Req. 2 · Scenario: Doble envío` — la misma `Idempotency-Key` registra un solo reclamo.
 - `SPEC-19 · Req. 2 · Scenario: El cliente cancela` — no se registra nada y el borrador se descarta.
@@ -123,7 +123,7 @@
 **Como** cliente, **quiero** que el chat me avise si no puede consultar mis reclamos y me muestre lo que sabe localmente, **para** no ver información inventada.
 
 **Criterios de aceptación**
-- `SPEC-20 · Req. 3 · Scenario: Ventas no disponible` — se informa con "Reintentar" y se muestran código y fecha si existen en `reclamo_ref`.
+- `SPEC-20 · Req. 3 · Scenario: Ventas no disponible` — se informa con "Reintentar" y se muestran código y fecha si existen en `claim_ref`.
 
 **Prioridad:** Could (igual que HU-RCL-05).
 

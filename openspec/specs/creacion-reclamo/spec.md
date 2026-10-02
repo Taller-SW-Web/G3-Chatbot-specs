@@ -90,7 +90,7 @@ Payload real `POST {VEN}/api/v2/reclamos`:
 #### Scenario: Reclamo registrado
 - **DADO** un formulario confirmado, con el documento tomado del último pedido del cliente
 - **CUANDO** Ventas responde `201 {reclamoId, codigoSeguimiento, estado: REGISTRADO, motivo, plazoDiasHabiles: 15, fechaLimiteSLA, respuestaVisibleCliente: null}`
-- **ENTONCES** se guarda `reclamo_ref` y se muestra la constancia con el `codigoSeguimiento`, la fecha, el pedido, el motivo, "Recibirás respuesta antes del {fechaLimiteSLA}" y el texto "Guarda este código para consultar tu reclamo"
+- **ENTONCES** se guarda `claim_ref` y se muestra la constancia con el `codigoSeguimiento`, la fecha, el pedido, el motivo, "Recibirás respuesta antes del {fechaLimiteSLA}" y el texto "Guarda este código para consultar tu reclamo"
 
 #### Scenario: Cliente sin documento registrado
 - **DADO** un cliente cuyo único pedido previo no tiene documento guardado (caso raro, de datos migrados) o que nunca compró antes
@@ -130,7 +130,7 @@ El sistema DEBE (SHALL) informar con claridad si el reclamo no pudo registrarse,
 #### Scenario: Ventas no disponible
 - **DADO** que Ventas no responde al registrar
 - **CUANDO** se envía
-- **ENTONCES** se muestra "No pudimos registrar tu reclamo en este momento. Guardamos tu borrador por 24 horas" con "Reintentar", y el borrador queda en `conversacion.contexto`
+- **ENTONCES** se muestra "No pudimos registrar tu reclamo en este momento. Guardamos tu borrador por 24 horas" con "Reintentar", y el borrador queda en `conversation.context`
 
 #### Scenario: Pedido no válido para reclamar
 - **DADO** que Ventas rechaza con `400` (por ejemplo, datos incompletos)

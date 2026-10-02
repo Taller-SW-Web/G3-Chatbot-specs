@@ -4,7 +4,7 @@
 
 ## (a) Máquina de estados global de la conversación
 
-Estados de la **experiencia** del cliente, no de la tabla `conversacion` (cuyos estados son `ACTIVA`, `ARCHIVADA` y `CERRADA`, ver [`modelo-datos.md`](../modelo-datos.md)). "Degradado" y "Limitado" se superponen a la sesión: al salir de ellos se vuelve al estado de sesión anterior.
+Estados de la **experiencia** del cliente, no de la tabla `conversation` (cuyos estados son `ACTIVE`, `ARCHIVED` y `CLOSED`, ver [`modelo-datos.md`](../modelo-datos.md)). "Degradado" y "Limitado" se superponen a la sesión: al salir de ellos se vuelve al estado de sesión anterior.
 
 Fuentes: SPEC-05 · Req. 1, 2, 4, 10, 11, 12; SPEC-03 · Req. 1, 3, 5, 6.
 
@@ -114,18 +114,18 @@ flowchart TD
     I -- "Total cambió" --> I1["409 CARRITO_DESACTUALIZADO<br/>nuevo resumen"]
     I1 --> H
     I -- "Ventas sin respuesta en 5 s" --> I2["503 · sin cobro"]
-    I -- "OK" --> J["Checkout PENDIENTE_PAGO, expira en 15 min<br/>Pedido CREADO en Ventas<br/>FORMULARIO/PAGO"]
+    I -- "OK" --> J["Checkout PENDING_PAYMENT, expira en 15 min<br/>Pedido CREADO en Ventas<br/>FORMULARIO/PAGO"]
     J --> K{"Pagar: introspección de sesión"}
     K -- "activo false" --> K1["401 · cierra sesión"]
     K -- "Sin respuesta en 3 s" --> K2["503 · no se cobra"]
     K -- "activo true" --> L{"¿Más de 15 min?"}
-    L -- "Sí" --> L1["410 CHECKOUT_EXPIRADO<br/>anulación · carrito ACTIVO<br/>Volver a intentar"]
+    L -- "Sí" --> L1["410 CHECKOUT_EXPIRADO<br/>anulación · carrito ACTIVE<br/>Volver a intentar"]
     L -- "No" --> M{"Simulador"}
-    M -- "APROBADO" --> N["PAGO_APROBADO · outbox notifica a Ventas<br/>CONFIRMACION_PEDIDO · correo en cola"]
-    M -- "RECHAZADO o ERROR" --> O{"¿Intento 3?"}
+    M -- "APPROVED" --> N["PAYMENT_APPROVED · outbox notifica a Ventas<br/>CONFIRMACION_PEDIDO · correo en cola"]
+    M -- "REJECTED o ERROR" --> O{"¿Intento 3?"}
     O -- "No" --> O1["402 PAGO_RECHAZADO<br/>intentosRestantes · formulario limpio"]
     O1 --> K
-    O -- "Sí" --> O2["FALLIDO · anulación PAGO_NO_COMPLETADO<br/>carrito ACTIVO<br/>'No pudimos procesar el pago. Tu carrito sigue guardado'"]
+    O -- "Sí" --> O2["FAILED · anulación PAGO_NO_COMPLETADO<br/>carrito ACTIVE<br/>'No pudimos procesar el pago. Tu carrito sigue guardado'"]
 ```
 
 ## (d) Postventa: estado, seguimiento, reclamo y devolución

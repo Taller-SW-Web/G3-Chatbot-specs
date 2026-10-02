@@ -42,7 +42,7 @@ Cada pregunta trae una **propuesta** aplicada provisionalmente en estos document
    *Propuesta:* redactarla con el contenido mínimo de [`privacidad.md` §5](privacidad.md#5-aviso-de-privacidad-y-consentimiento) y definir quién es el responsable del tratamiento (la tienda, el Marketplace o cada canal) y quién inscribe el banco de datos.
 
 4. **Derechos ARCO desde el chat.**
-   *Propuesta:* fuera de alcance del chat; el asistente redirige al canal de privacidad de la tienda (pendiente, ligado a la pregunta 2). El equipo del canal debe poder ubicar y borrar sus datos propios por `cliente_id`.
+   *Propuesta:* fuera de alcance del chat; el asistente redirige al canal de privacidad de la tienda (pendiente, ligado a la pregunta 2). El equipo del canal debe poder ubicar y borrar sus datos propios por `customer_id`.
 
 5. **Transferencia internacional al proveedor LLM.**
    *Propuesta:* elegir el proveedor y su configuración (sin uso para entrenamiento, retención mínima), informarlo en la política, incluido que las imágenes adjuntas al chat (SPEC-23) también se envían al proveedor y este las conserva 30 días para monitoreo de abuso, y validarlo con asesoría (ver [`privacidad.md` §3](privacidad.md#3-qué-recibe-el-proveedor-llm)).
@@ -59,7 +59,7 @@ Cada pregunta trae una **propuesta** aplicada provisionalmente en estos document
 9. **CSAT con 👍/👎.** No está en las specs.
    *Propuesta:* una pregunta opcional al final de una compra, reclamo o devolución ([`kpis.md` §3](kpis.md#csat-propuesta-no-está-en-las-specs)); si se aprueba, cambio en SPEC-05.
 
-10. **Retención de datos incompleta.** Solo están definidos: archivado de conversaciones a los 90 días (sin borrado), expiración de anónimas a los 7 días y purga de borradores de evidencia a las 24 h. Faltan plazos para las imágenes adjuntas al chat enviadas (SPEC-23; solo se limpian los pendientes a las 24 h), mensajes archivados, `checkout.resumen` (con documento), `celular_verificacion_local`, `intento_pago`, `notificacion`, `outbox` y logs.
+10. **Retención de datos incompleta.** Solo están definidos: archivado de conversaciones a los 90 días (sin borrado), expiración de anónimas a los 7 días y purga de borradores de evidencia a las 24 h. Faltan plazos para las imágenes adjuntas al chat enviadas (SPEC-23; solo se limpian los pendientes a las 24 h), mensajes archivados, `checkout.summary` (con documento), `local_phone_verification`, `payment_attempt`, `notification`, `outbox` y logs.
     *Propuesta:* definir un plazo por tabla en `modelo-datos.md` mediante un cambio de OpenSpec ([`privacidad.md` §2](privacidad.md#2-inventario-de-datos-personales)).
 
 11. ✅ **Resuelta (24/09/2026). Texto de confirmación del correo inconsistente.** SPEC-15 · Req. 2 dice "Te enviamos la confirmación a m****a@…" y SPEC-16 · Req. 3 dice "Te enviaremos la confirmación a m****a@…, sin prometer que ya llegó".

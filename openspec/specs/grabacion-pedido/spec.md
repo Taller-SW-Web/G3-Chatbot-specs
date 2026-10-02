@@ -29,7 +29,7 @@ Incluye:
 - Construcción del snapshot: `contacto` (incluye documento, SPEC-12), `items`, `cupon`, `envio` y `pago` (totales proyectados).
 - Notificación del pago aprobado mediante `POST /pagos/notificacion`, con reintentos por outbox.
 - Solicitud de anulación de los pedidos `CREADO`/`PAGADO` con pago fallido o checkout expirado.
-- Referencia local (`pedido_ref`) y cierre del carrito.
+- Referencia local (`order_ref`) y cierre del carrito.
 - Bloque `CONFIRMACION_PEDIDO` en el chat.
 
 ### Fuera de alcance
@@ -77,12 +77,12 @@ Payload real `POST {VEN}/api/v1/pedidos`:
 #### Scenario: Pedido creado
 - **DADO** un checkout confirmado y revalidado (SPEC-14)
 - **CUANDO** Ventas responde `201 {pedidoId, estado: CREADO, total, moneda, canal, fechaCreacion}`
-- **ENTONCES** se guarda `pedido_ref` (`CREADO`) ligada al checkout y se habilita el formulario de pago
+- **ENTONCES** se guarda `order_ref` (`CREATED`) ligada al checkout y se habilita el formulario de pago
 
 #### Scenario: Ventas rechaza por stock
 - **DADO** un SKU que se agotó entre la revalidación y la creación
 - **CUANDO** Ventas responde `409 Conflict`
-- **ENTONCES** no se crea el checkout de pago, el carrito vuelve a `ACTIVO`, se ejecuta la revalidación de SPEC-10 y se muestra al cliente qué cambió
+- **ENTONCES** no se crea el checkout de pago, el carrito vuelve a `ACTIVE`, se ejecuta la revalidación de SPEC-10 y se muestra al cliente qué cambió
 
 #### Scenario: Datos incompletos
 - **DADO** un snapshot al que le falta el documento o la dirección (por un error de validación en el frontend que no se detectó antes)
@@ -121,13 +121,13 @@ Payload real `POST {VEN}/api/v1/pedidos/{pedidoId}/pagos/notificacion`:
 
 #### Scenario: Notificación exitosa
 - **DADO** un pago aprobado
-- **CUANDO** se registra en el outbox (`NOTIFICAR_PAGO_VENTAS`) en la misma transacción que el intento de pago y el worker lo envía y recibe `200 {pedidoId, nuevoEstado: PAGADO, transaccionId, fechaTransicion}`
-- **ENTONCES** `pedido_ref` pasa a `PAGADO_NOTIFICADO`, el checkout a `CONFIRMADO` y el carrito a `CONVERTIDO`, se encola el correo (SPEC-16) y el chat muestra `CONFIRMACION_PEDIDO` con el número de pedido, el total, la tarjeta `•••• 1111`, la dirección y "Te enviaremos la confirmación a m****a@…" (SPEC-16: sin prometer que ya llegó)
+- **CUANDO** se registra en el outbox (`NOTIFY_SALES_PAYMENT`) en la misma transacción que el intento de pago y el worker lo envía y recibe `200 {pedidoId, nuevoEstado: PAGADO, transaccionId, fechaTransicion}`
+- **ENTONCES** `order_ref` pasa a `PAID_NOTIFIED`, el checkout a `CONFIRMED` y el carrito a `CONVERTED`, se encola el correo (SPEC-16) y el chat muestra `CONFIRMACION_PEDIDO` con el número de pedido, el total, la tarjeta `•••• 1111`, la dirección y "Te enviaremos la confirmación a m****a@…" (SPEC-16: sin prometer que ya llegó)
 
 #### Scenario: Ventas cae después del cobro
 - **DADO** un pago aprobado y Ventas sin responder
 - **CUANDO** falla la notificación
-- **ENTONCES** el worker reintenta con backoff exponencial (5 intentos: 5 s, 15 s, 45 s, 2 min y 5 min); el chat muestra "Pago aprobado. Estamos confirmando tu pedido PED-…"; si se agotan los intentos, el registro queda `FALLIDO` para revisión manual
+- **ENTONCES** el worker reintenta con backoff exponencial (5 intentos: 5 s, 15 s, 45 s, 2 min y 5 min); el chat muestra "Pago aprobado. Estamos confirmando tu pedido PED-…"; si se agotan los intentos, el registro queda `FAILED` para revisión manual
 
 #### Scenario: Montos inconsistentes
 - **DADO** que el monto notificado no coincide con el total del pedido
@@ -140,7 +140,7 @@ Payload real `POST {VEN}/api/v1/pedidos/{pedidoId}/pagos/notificacion`:
 - **ENTONCES** Ventas responde `409 Conflict`; el worker registra la inconsistencia para revisión manual y **no reintenta** (reintentar no resolvería el conflicto)
 
 ### Requirement: Anular los pedidos no pagados
-El sistema DEBE (SHALL) solicitar a Ventas la anulación de un pedido `CREADO` o `PAGADO` cuando el checkout termina en `FALLIDO` (3 rechazos) o `EXPIRADO`, con el motivo `PAGO_NO_COMPLETADO`.
+El sistema DEBE (SHALL) solicitar a Ventas la anulación de un pedido `CREADO` o `PAGADO` cuando el checkout termina en `FAILED` (3 rechazos) o `EXPIRED`, con el motivo `PAGO_NO_COMPLETADO`.
 
 Payload real `POST {VEN}/api/v1/pedidos/{pedidoId}/anulaciones`:
 ```json
@@ -150,9 +150,9 @@ Payload real `POST {VEN}/api/v1/pedidos/{pedidoId}/anulaciones`:
 *Trazabilidad: SPEC-15 · Requisito 3.*
 
 #### Scenario: Anulación directa
-- **DADO** un checkout `FALLIDO` o `EXPIRADO` con un pedido `CREADO`
-- **CUANDO** se procesa el outbox `SOLICITAR_ANULACION`
-- **ENTONCES** Ventas responde `200 {pedidoId, estadoPedido: ANULADO, autorizacionRequerida: false, solicitudReembolsoGenerada: false}` (no `202`, porque `PAGO_NO_COMPLETADO` sobre `CREADO`/`PAGADO` no requiere autorización del Gestor) y `pedido_ref` pasa a `ANULADO`
+- **DADO** un checkout `FAILED` o `EXPIRED` con un pedido `CREADO`
+- **CUANDO** se procesa el outbox `REQUEST_CANCELLATION`
+- **ENTONCES** Ventas responde `200 {pedidoId, estadoPedido: ANULADO, autorizacionRequerida: false, solicitudReembolsoGenerada: false}` (no `202`, porque `PAGO_NO_COMPLETADO` sobre `CREADO`/`PAGADO` no requiere autorización del Gestor) y `order_ref` pasa a `CANCELLED` (el adapter traduce el `ANULADO` de Ventas al valor local)
 
 #### Scenario: Pedido ya avanzó de estado
 - **DADO** que Ventas responde `409 Conflict` porque el pedido ya está `DESPACHADO` o `ENTREGADO`

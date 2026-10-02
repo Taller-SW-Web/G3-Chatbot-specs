@@ -22,7 +22,7 @@ Decisiones tomadas:
 - Las imágenes se guardan en un **bucket privado de Supabase Storage** detrás de un puerto `AttachmentStorage`. La base de datos del chatbot guarda solo referencias. El proveedor del modelo no actúa como almacenamiento: OpenAI conserva las entradas de la API durante 30 días para monitoreo de abuso, por lo que ese plazo no reemplaza una política de retención propia.
 - Las imágenes del chat **no son la evidencia de SPEC-21**: la evidencia sigue subiéndose a Ventas desde el formulario de devolución y las imágenes del chat nunca se reenvían a Ventas. Un cliente que adjunta la foto de un defecto en el chat recibe orientación del asistente, pero para registrar la solicitud debe usar el formulario de SPEC-21.
 - El sistema **no ofrece búsqueda por similitud visual**: el LLM interpreta la imagen y la convierte en criterios de texto para las herramientas de búsqueda existentes (SPEC-06).
-- Los clientes anónimos también pueden adjuntar imágenes: SPEC-05 no exige sesión para conversar, y la pertenencia se controla igual que en las conversaciones (por `cliente_id` o por la cookie `chat_sid`).
+- Los clientes anónimos también pueden adjuntar imágenes: SPEC-05 no exige sesión para conversar, y la pertenencia se controla igual que en las conversaciones (por `customer_id` o por la cookie `chat_sid`).
 
 ## Alcance
 
@@ -109,7 +109,7 @@ El sistema DEBE (SHALL) recibir cada imagen por un endpoint del backend, validar
 #### Scenario: Carga exitosa
 - **DADO** una imagen `image/png` válida de 1,5 MB
 - **CUANDO** el frontend la envía a `POST /api/v1/chat/conversaciones/{id}/adjuntos`
-- **ENTONCES** el backend verifica el tipo por su firma binaria, elimina EXIF y ubicación, normaliza las dimensiones, guarda la imagen y una miniatura en el bucket privado, crea el adjunto con estado `PENDIENTE` y responde `201 {adjuntoId, mimeType, tamanioBytes, ancho, alto}`
+- **ENTONCES** el backend verifica el tipo por su firma binaria, elimina EXIF y ubicación, normaliza las dimensiones, guarda la imagen y una miniatura en el bucket privado, crea el adjunto con estado `PENDING` y responde `201 {adjuntoId, mimeType, tamanioBytes, ancho, alto}`
 
 #### Scenario: Archivo cuyo contenido no coincide con su extensión
 - **DADO** un archivo ejecutable renombrado como `foto.jpg`, o un `Content-Type` declarado `image/jpeg` cuyo contenido no es una imagen válida
@@ -142,9 +142,9 @@ El sistema DEBE (SHALL) aceptar en `POST /api/v1/chat/conversaciones/{id}/mensaj
 *Trazabilidad: SPEC-23 · Requisito 4.*
 
 #### Scenario: Mensaje con texto y dos imágenes
-- **DADO** dos adjuntos `PENDIENTE` de la conversación
+- **DADO** dos adjuntos `PENDING` de la conversación
 - **CUANDO** el cliente envía `{texto: "busco unas así", adjuntoIds: ["...", "..."]}`
-- **ENTONCES** el backend aplica `SensitiveDataFilter` al texto, guarda el mensaje, cambia los adjuntos a `ENVIADO` ligándolos al mensaje, responde `202 {mensajeId}` y transmite la respuesta por WebSocket con los mismos eventos `token`, `bloque` y `fin`
+- **ENTONCES** el backend aplica `SensitiveDataFilter` al texto, guarda el mensaje, cambia los adjuntos a `SENT` ligándolos al mensaje, responde `202 {mensajeId}` y transmite la respuesta por WebSocket con los mismos eventos `token`, `bloque` y `fin`
 
 #### Scenario: Adjunto que no corresponde
 - **DADO** un `adjuntoId` inexistente, ya enviado o de otra conversación
@@ -162,7 +162,7 @@ El sistema DEBE (SHALL) aceptar en `POST /api/v1/chat/conversaciones/{id}/mensaj
 - **ENTONCES** el backend responde `400 VALIDACION`
 
 #### Scenario: Adjuntos que el cliente no envía
-- **DADO** adjuntos `PENDIENTE` de una conversación que el cliente abandona sin enviar
+- **DADO** adjuntos `PENDING` de una conversación que el cliente abandona sin enviar
 - **CUANDO** pasan 24 horas desde su carga
 - **ENTONCES** el job de limpieza elimina la fila del adjunto y sus archivos (imagen y miniatura) del bucket
 
@@ -267,7 +267,7 @@ El sistema DEBE (SHALL) responder de forma controlada cuando el modelo configura
 - **ENTONCES** se aplica el modo degradado de SPEC-05 · Requisito 10, con el aviso de que la imagen no pudo analizarse, y el mensaje y sus miniaturas permanecen en el historial
 
 #### Scenario: No se puede leer la imagen del almacenamiento
-- **DADO** un adjunto `ENVIADO` cuyo archivo no está disponible en el bucket al armar el turno
+- **DADO** un adjunto `SENT` cuyo archivo no está disponible en el bucket al armar el turno
 - **CUANDO** el backend intenta leerlo
 - **ENTONCES** omite esa imagen, responde con el aviso de que no pudo analizarla y continúa con el texto y las demás imágenes
 
@@ -292,7 +292,7 @@ El sistema DEBE (SHALL) limitar la carga de imágenes por cliente o IP para prot
 - **ENTONCES** se aplica el límite de 20 mensajes por minuto de SPEC-05 · Requisito 11 y el backend responde `429 DEMASIADAS_SOLICITUDES`
 
 #### Scenario: Adjuntos pendientes acumulados
-- **DADO** un cliente con 10 adjuntos `PENDIENTE` sin enviar en una misma conversación
+- **DADO** un cliente con 10 adjuntos `PENDING` sin enviar en una misma conversación
 - **CUANDO** intenta subir otro
 - **ENTONCES** el backend responde `422 LIMITE_ADJUNTOS` hasta que envíe el mensaje o quite alguno
 
@@ -309,7 +309,7 @@ El sistema DEBE (SHALL) conservar las referencias y los archivos de los adjuntos
 #### Scenario: Se borra una conversación
 - **DADO** una conversación que se elimina por una política de retención, por la limpieza de anónimas o por una operación administrativa (la edición y el borrado desde la UI siguen fuera de alcance en SPEC-05)
 - **CUANDO** se elimina
-- **ENTONCES** las filas de `adjunto` se eliminan en cascada y un job elimina de `AttachmentStorage` los archivos huérfanos (imagen y miniatura); si el borrado del archivo falla, se reintenta y se registra sin bloquear la eliminación de la conversación
+- **ENTONCES** las filas de `attachment` se eliminan en cascada y un job elimina de `AttachmentStorage` los archivos huérfanos (imagen y miniatura); si el borrado del archivo falla, se reintenta y se registra sin bloquear la eliminación de la conversación
 
 #### Scenario: Los adjuntos no se copian a Ventas
 - **DADO** un cliente que pide una devolución tras adjuntar una foto del defecto en el chat
@@ -326,7 +326,7 @@ El sistema DEBE (SHALL) conservar las referencias y los archivos de los adjuntos
   - Las claves de almacenamiento (`storage_key`) son aleatorias, no derivan del nombre original ni contienen datos personales.
   - TTL de las URLs firmadas: 5 minutos por defecto (`ATTACHMENT_SIGNED_URL_TTL_SECONDS`, configurable); nunca se envía una URL, ni firmada ni pública, al LLM.
   - El texto que aparece dentro de una imagen se trata como dato, no como instrucción (SPEC-05 · Requisito 9).
-  - La pertenencia de cada adjunto se verifica por la conversación (`cliente_id` o `chat_sid`) en cada carga, envío y emisión de URL.
+  - La pertenencia de cada adjunto se verifica por la conversación (`customer_id` o `chat_sid`) en cada carga, envío y emisión de URL.
 - **Rendimiento:** la carga de cada imagen (validación, normalización y guardado) tarda p95 ≤ 3 s; la emisión de una URL firmada, p95 ≤ 500 ms. Un turno con imágenes tarda p95 ≤ 10 s hasta el evento `fin`, y el primer fragmento p95 ≤ 4 s (valores provisionales hasta medirlos con el modelo real; los objetivos de SPEC-05 para turnos de texto no cambian).
 - **Contexto y costo:** las imágenes comparten la ventana de los últimos 12 mensajes con el texto. Se envían al LLM como máximo las 6 imágenes más recientes de esa ventana (parámetro configurable) para acotar el costo en tokens. El costo de tokens por imagen se registra por turno.
 - **Observabilidad:** por turno se registran la conversación, la cantidad de imágenes, el tamaño total, la latencia, los tokens y el costo estimado. Los registros NO DEBEN (SHALL NOT) contener el contenido de las imágenes, su base64, las URLs firmadas ni los nombres originales de los archivos.

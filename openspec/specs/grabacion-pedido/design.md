@@ -22,11 +22,11 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `PedidoService.crear_en_ventas()` | Arma y valida el snapshot con los nombres de campo reales de Ventas, lo envía y guarda `pedido_ref`. |
+| `PedidoService.crear_en_ventas()` | Arma y valida el snapshot con los nombres de campo reales de Ventas, lo envía y guarda `order_ref`. |
 | `SnapshotBuilder` | Construye `contacto` (con documento, SPEC-12), `items`, `cupon`, `envio` y `pago` a partir del carrito, los totales y el perfil. |
 | `VentasClient` | `crear()`, `notificarPago()`, `anular()`, `obtener()` y `listar()`; token de servicio o del cliente según la operación; timeout de 5 s; normaliza `codigo` → `code`. |
-| `OutboxWorker` | Procesa `NOTIFICAR_PAGO_VENTAS`, `SOLICITAR_ANULACION` y `ENVIAR_CORREO` con backoff; distingue errores reintentables (`5xx`, timeout) de no reintentables (`400`, `409`). |
-| Tabla `pedido_ref` y `outbox` | Ver `modelo-datos.md`. |
+| `OutboxWorker` | Procesa `NOTIFY_SALES_PAYMENT`, `REQUEST_CANCELLATION` y `SEND_EMAIL` con backoff; distingue errores reintentables (`5xx`, timeout) de no reintentables (`400`, `409`). |
+| Tabla `order_ref` y `outbox` | Ver `modelo-datos.md`. |
 | Alertas | Log estructurado de nivel `ERROR` más un endpoint interno `/admin/outbox-fallidos` para revisión. |
 
 ## Desglose para issues

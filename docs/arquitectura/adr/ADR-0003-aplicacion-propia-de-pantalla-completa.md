@@ -29,7 +29,7 @@ El canal es una **aplicación web propia, solo web, de uso mobile-first y de pan
 ## Consecuencias
 
 **Positivas**
-- El modelo de datos soporta varias conversaciones por cliente, cada una con su memoria de trabajo (`conversacion.contexto`).
+- El modelo de datos soporta varias conversaciones por cliente, cada una con su memoria de trabajo (`conversation.context`).
 - Carrito, checkout e historial tienen pantallas completas donde se capturan datos sensibles fuera del chat ([ADR-0006](ADR-0006-datos-sensibles-fuera-del-llm.md), [ADR-0016](ADR-0016-direccion-en-checkoutpage-fuera-del-chat.md)).
 - El canal controla sus cabeceras de seguridad (CSP) porque no se ejecuta dentro de una página ajena.
 

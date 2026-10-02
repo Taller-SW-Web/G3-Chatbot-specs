@@ -38,7 +38,7 @@
 
 ## Desglose para issues
 
-- [ ] `[BE]` Modelos `checkout` e `intento_pago` con claves de idempotencia
+- [ ] `[BE]` Modelos `checkout` e `payment_attempt` con claves de idempotencia
 - [ ] `[BE]` `CheckoutService`: guardas de precondición y revalidación completa
 - [ ] `[BE]` `IntrospeccionClient` y el paso obligatorio de introspección antes del pago
 - [ ] `[BE]` Endpoint `POST /checkout` (crea el checkout y llama a SPEC-15)

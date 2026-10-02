@@ -17,13 +17,13 @@ Aceptada
 
 ## Decisión
 
-- El pago se procesa con un **simulador determinista** (`PaymentSimulator`) que implementa el puerto outbound **`PaymentGateway`**. Una tabla de tarjetas de prueba define el resultado (`APROBADO`, `RECHAZADO` con motivo, `ERROR`, latencia), y el adaptador es reemplazable por una pasarela real.
+- El pago se procesa con un **simulador determinista** (`PaymentSimulator`) que implementa el puerto outbound **`PaymentGateway`**. Una tabla de tarjetas de prueba define el resultado (`APPROVED`, `REJECTED` con motivo, `ERROR`, latencia), y el adaptador es reemplazable por una pasarela real.
 - **Solo tarjeta.** Se retira el pago contra entrega del wireframe.
 - **Reglas tipo PCI** aunque el pago sea simulado:
   - la tarjeta se captura solo en `PaymentForm` dentro de `CheckoutPage` y se envía directo a `POST /checkout/{id}/pago`, nunca por el chat;
   - un número de tarjeta pegado en el chat se redacta ([ADR-0006](ADR-0006-datos-sensibles-fuera-del-llm.md));
   - el PAN, el CVV y el vencimiento no se escriben en BD, logs, trazas ni prompts, y el body del endpoint se excluye del logging;
-  - solo persisten la marca y los últimos 4 dígitos (`intento_pago`);
+  - solo persisten la marca y los últimos 4 dígitos (`payment_attempt`);
   - HTTPS obligatorio y aviso "Pago simulado – entorno académico. No uses tarjetas reales".
 - Controles previos al cobro:
   - introspección de la sesión con Seguridad ([ADR-0009](ADR-0009-token-de-servicio-con-servicetokenprovider.md));
@@ -56,4 +56,4 @@ Aceptada
 - `openspec/specs/checkout-pago/design.md` (`PaymentSimulator`, línea 34; `ExpirarCheckouts`, línea 35)
 - `README.md` §2, nota del checkout (línea 166)
 - `docs/conversacion/privacidad.md` §4
-- `docs/modelo-datos.md` tabla `intento_pago`
+- `docs/modelo-datos.md` tabla `payment_attempt`

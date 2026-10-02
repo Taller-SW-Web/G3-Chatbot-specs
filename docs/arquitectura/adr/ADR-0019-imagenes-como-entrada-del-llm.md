@@ -21,7 +21,7 @@ Aceptada
 ## Decisión
 
 - **Imágenes como partes de contenido.** `LLMProvider` admite mensajes multimodales (partes de texto e imagen). El backend lee la imagen de su almacenamiento y la envía al LLM **en base64**; nunca una URL, ni pública ni firmada.
-- **Almacenamiento propio y privado.** Las imágenes se guardan en un bucket privado de Supabase Storage detrás de un nuevo puerto outbound **`AttachmentStorage`** (`guardar`, `leer`, `eliminar`, `url_firmada`), con `SupabaseAttachmentStorage` como adaptador. La base de datos guarda solo referencias en la tabla `adjunto` (claves de almacenamiento, tipo, tamaño y dimensiones), nunca los bytes.
+- **Almacenamiento propio y privado.** Las imágenes se guardan en un bucket privado de Supabase Storage detrás de un nuevo puerto outbound **`AttachmentStorage`** (`guardar`, `leer`, `eliminar`, `url_firmada`), con `SupabaseAttachmentStorage` como adaptador. La base de datos guarda solo referencias en la tabla `attachment` (claves de almacenamiento, tipo, tamaño y dimensiones), nunca los bytes.
 - **Carga previa por el backend.** El cliente sube cada imagen a un endpoint del backend, que valida el tipo por su firma binaria, elimina EXIF y ubicación, acota las dimensiones y genera una miniatura. El mensaje se envía después con `adjuntoIds`.
 - **Miniaturas por URL firmada.** El historial muestra las miniaturas mediante URLs firmadas de corta vida (5 minutos por defecto) emitidas por el backend con pertenencia verificada.
 - **Mismo contexto que el texto.** Las imágenes comparten la ventana de los últimos 12 mensajes, con un máximo de imágenes por turno para acotar el costo.

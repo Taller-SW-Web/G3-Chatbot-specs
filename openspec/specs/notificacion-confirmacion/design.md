@@ -24,12 +24,12 @@
 | `NotificacionService` | Encola, deduplica y gestiona los reenvíos. |
 | `EmailSender` (interfaz) + `SmtpEmailSender` | Envío; implementación falsa para las pruebas. |
 | Plantillas Jinja2 `confirmacion_pedido.html` y `.txt` | Contenido del correo. |
-| Tarea de outbox `ENVIAR_CORREO` | La procesa `OutboxWorker`. |
+| Tarea de outbox `SEND_EMAIL` | La procesa `OutboxWorker`. |
 | `POST /api/v1/pedidos/{id}/reenviar-confirmacion` | Reenvío con límite de 2. |
 
 ## Desglose para issues
 
-- [ ] `[BE]` Tabla `notificacion` e integración con el outbox
+- [ ] `[BE]` Tabla `notification` e integración con el outbox
 - [ ] `[BE]` `EmailSender` SMTP más un sender falso para las pruebas
 - [ ] `[BE]` Plantillas HTML y texto con los datos del snapshot
 - [ ] `[BE]` Endpoint de reenvío con límite

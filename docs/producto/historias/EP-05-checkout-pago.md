@@ -208,7 +208,7 @@
 **Como** cliente, **quiero** confirmar el resumen final y que el sistema revalide todo en ese momento, **para** pagar exactamente el total que acepté.
 
 **Criterios de aceptación**
-- `SPEC-14 · Req. 2 · Scenario: Confirmación sin cambios` — se crea el checkout `PENDIENTE_PAGO` (vence en 15 min) y el pedido `CREADO`, y se muestra el formulario de tarjeta con el total.
+- `SPEC-14 · Req. 2 · Scenario: Confirmación sin cambios` — se crea el checkout `PENDING_PAYMENT` (vence en 15 min) y el pedido `CREADO`, y se muestra el formulario de tarjeta con el total.
 - `SPEC-14 · Req. 2 · Scenario: El total cambió al confirmar` — se responde `409 CARRITO_DESACTUALIZADO`, se resaltan los cambios y no se crea el pedido hasta una nueva confirmación.
 - `SPEC-14 · Req. 2 · Scenario: Doble clic en confirmar` — la misma `Idempotency-Key` devuelve el mismo checkout y un único pedido.
 
@@ -265,9 +265,9 @@
 **Como** cliente, **quiero** pagar con mi tarjeta y saber de inmediato si se aprobó o por qué se rechazó, con opción de reintentar, **para** completar mi compra.
 
 **Criterios de aceptación**
-- `SPEC-14 · Req. 5 · Scenario: Pago aprobado` — se registra el intento `APROBADO` con `SIM-<uuid>`, el checkout pasa a `PAGO_APROBADO` y se dispara la notificación a Ventas.
+- `SPEC-14 · Req. 5 · Scenario: Pago aprobado` — se registra el intento `APPROVED` con `SIM-<uuid>`, el checkout pasa a `PAYMENT_APPROVED` y se dispara la notificación a Ventas.
 - `SPEC-14 · Req. 5 · Scenario: Pago rechazado con intentos restantes` — se responde `402 PAGO_RECHAZADO` con el motivo y los intentos restantes, y el formulario se limpia.
-- `SPEC-14 · Req. 5 · Scenario: Tercer intento fallido` — el checkout pasa a `FALLIDO`, se pide la anulación, el carrito vuelve a `ACTIVO` y se informa.
+- `SPEC-14 · Req. 5 · Scenario: Tercer intento fallido` — el checkout pasa a `FAILED`, se pide la anulación, el carrito vuelve a `ACTIVE` y se informa.
 - `SPEC-14 · Req. 5 · Scenario: Doble envío del pago` — la misma `Idempotency-Key` simula una sola vez.
 
 **Prioridad:** Must: el curso exige el pago con tarjeta (simulado) en este canal.
@@ -285,8 +285,8 @@
 **Como** cliente, **quiero** que un pago que dejé a medias caduque de forma ordenada y pueda volver a intentarlo, **para** no quedar con un pedido colgado ni perder mi carrito.
 
 **Criterios de aceptación**
-- `SPEC-14 · Req. 6 · Scenario: Pago después de la expiración` — a los 16 minutos se responde `410 CHECKOUT_EXPIRADO`, se pide la anulación, el carrito vuelve a `ACTIVO` y se ofrece "Volver a intentar".
-- `SPEC-14 · Req. 6 · Scenario: Abandono` — el job de cada minuto marca `EXPIRADO` y encola la anulación.
+- `SPEC-14 · Req. 6 · Scenario: Pago después de la expiración` — a los 16 minutos se responde `410 CHECKOUT_EXPIRADO`, se pide la anulación, el carrito vuelve a `ACTIVE` y se ofrece "Volver a intentar".
+- `SPEC-14 · Req. 6 · Scenario: Abandono` — el job de cada minuto marca `EXPIRED` y encola la anulación.
 
 **Prioridad:** Must: sin expiración quedarían pedidos `CREADO` sin pagar en Ventas.
 
@@ -300,5 +300,5 @@ Tareas numeradas `T1…Tn` en el orden del "Desglose para issues" de cada `desig
 |---|---|
 | SPEC-12 | T1 `[INT]` configurar credenciales reales de `modulo-chatbot` en Hito 4 (scope ya concedido en Seguridad #31) → HU-CHK-04 · T2 `[BE]` DocumentoValidator → HU-CHK-01 · T3 `[BE]` EnvioService y DespachoClient con `destino + lineas` → HU-CHK-04 (relacionada: HU-CHK-05) · T4 `[BE]` endpoint `envio/cotizar` → HU-CHK-04 · T5 `[BE]` GuardarDireccionOpcional → HU-CHK-03 · T6 `[FE]` BuyerDocumentSection → HU-CHK-01 · T7 `[FE]` AddressSection → HU-CHK-02 · T8 `[FE]` ShippingQuote → HU-CHK-04 · T9 `[QA]` → HU-CHK-01 a HU-CHK-05 |
 | SPEC-13 | T1 `[INT]` endpoint de validación y motivos (A5) → HU-CHK-06 · T2 `[BE]` CuponService, CuponesClient, endpoints → HU-CHK-06 (relacionadas: HU-CHK-07, HU-CHK-08) · T3 `[BE]` revalidación → HU-CHK-09 · T4 `[BE]` rate limit y herramientas → HU-CHK-10 · T5 `[FE]` CouponInput y avisos → HU-CHK-06 · T6 `[QA]` → HU-CHK-06 a HU-CHK-10 |
-| SPEC-14 | T1 `[BE]` modelos `checkout` e `intento_pago` → HU-CHK-12 · T2 `[BE]` CheckoutService (guardas y revalidación) → HU-CHK-11 · T3 `[BE]` IntrospeccionClient → HU-CHK-14 · T4 `[BE]` `POST /checkout` → HU-CHK-12 · T5 `[BE]` CardValidator y PaymentSimulator → HU-CHK-15 (relacionada: HU-CHK-13) · T6 `[BE]` `POST /checkout/{id}/pago` → HU-CHK-15 · T7 `[BE]` job de expiración y exclusión de logs → HU-CHK-16 · T8 `[BE]` herramienta `iniciar_checkout` → HU-CHK-11 · T9 `[FE]` CheckoutPage y CheckoutDiffNotice → HU-CHK-12 · T10 `[FE]` PaymentForm → HU-CHK-13 · T11 `[QA]` → HU-CHK-11 a HU-CHK-16 |
+| SPEC-14 | T1 `[BE]` modelos `checkout` e `payment_attempt` → HU-CHK-12 · T2 `[BE]` CheckoutService (guardas y revalidación) → HU-CHK-11 · T3 `[BE]` IntrospeccionClient → HU-CHK-14 · T4 `[BE]` `POST /checkout` → HU-CHK-12 · T5 `[BE]` CardValidator y PaymentSimulator → HU-CHK-15 (relacionada: HU-CHK-13) · T6 `[BE]` `POST /checkout/{id}/pago` → HU-CHK-15 · T7 `[BE]` job de expiración y exclusión de logs → HU-CHK-16 · T8 `[BE]` herramienta `iniciar_checkout` → HU-CHK-11 · T9 `[FE]` CheckoutPage y CheckoutDiffNotice → HU-CHK-12 · T10 `[FE]` PaymentForm → HU-CHK-13 · T11 `[QA]` → HU-CHK-11 a HU-CHK-16 |
 | SPEC-18 (adelantada) | T2 `[BE]` ServiceTokenProvider → HU-CHK-14 (se necesita en Hito 4 para la introspección y el worker de Ventas) |

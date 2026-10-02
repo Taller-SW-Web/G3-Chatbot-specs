@@ -22,15 +22,15 @@
 | Componente | Responsabilidad |
 |---|---|
 | `POST /api/v1/contacto/celular/solicitar-otp` | Genera el código, lo guarda con vigencia de 5 min y lo envía por `SmsSender`. |
-| `POST /api/v1/contacto/celular/verificar-otp` | Valida el código, guarda `celular_verificado_local` y ejecuta la `accionPendiente`. |
+| `POST /api/v1/contacto/celular/verificar-otp` | Valida el código, guarda `local_phone_verification` y ejecuta la `accionPendiente`. |
 | `SmsSender` (interfaz) + `SimulatedSmsSender` | Adaptador propio, reemplazable. |
-| `CheckoutGuard.exigir_celular_verificado()` | Compara el `celular` vigente en `GET /auth/me` contra `celular_verificado_local.celular` del cliente; exige coincidencia exacta y vigencia. |
+| `CheckoutGuard.exigir_celular_verificado()` | Compara el `celular` vigente en `GET /auth/me` contra `local_phone_verification.phone` del cliente; exige coincidencia exacta y vigencia. |
 | Herramienta LLM `verificar_celular` | Devuelve el estado o el bloque de formulario. |
-| Tabla `celular_verificacion_local` | Ver `modelo-datos.md`. |
+| Tabla `local_phone_verification` | Ver `modelo-datos.md`. |
 
 ## Desglose para issues
 
-- [ ] `[BE]` Tabla `celular_verificacion_local` y migración
+- [ ] `[BE]` Tabla `local_phone_verification` y migración
 - [ ] `[BE]` `SmsSender` (interfaz) y `SimulatedSmsSender`
 - [ ] `[BE]` Endpoints `contacto/celular/solicitar-otp` y `/verificar-otp`, totalmente propios
 - [ ] `[BE]` `CheckoutGuard` comparando el celular vigente contra la verificación local

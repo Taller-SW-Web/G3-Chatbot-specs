@@ -52,7 +52,7 @@ El sistema DEBE (SHALL) mostrar el formulario de registro como un bloque `FORMUL
 #### Scenario: Acción protegida sin sesión
 - **DADO** un visitante sin sesión con productos en el carrito
 - **CUANDO** pide "quiero pagar"
-- **ENTONCES** el chat informa que necesita una cuenta y ofrece las acciones rápidas "Iniciar sesión" y "Crear cuenta", y guarda en `conversacion.contexto.accionPendiente` la acción `INICIAR_CHECKOUT` para retomarla después
+- **ENTONCES** el chat informa que necesita una cuenta y ofrece las acciones rápidas "Iniciar sesión" y "Crear cuenta", y guarda en `conversation.context.accionPendiente` la acción `INICIAR_CHECKOUT` para retomarla después
 
 ### Requirement: Validación en cliente
 El sistema DEBE (SHALL) validar en el frontend el formato de todos los campos antes de enviarlos, usando la política obtenida de `GET /sesion/politica-contrasena` (cacheada durante la sesión del navegador), y mostrar los errores junto a cada campo.
@@ -117,7 +117,7 @@ El sistema DEBE (SHALL) mapear cada `code` de Seguridad a un mensaje claro, sin 
 
 ## Requisitos no funcionales
 
-- **Seguridad:** la contraseña viaja solo por HTTPS del formulario al BFF y de ahí a Seguridad. Nunca se registra en logs, en la tabla `mensaje` ni en el contexto del LLM. El BFF aplica un rate limit de 5 registros por IP cada 10 minutos.
+- **Seguridad:** la contraseña viaja solo por HTTPS del formulario al BFF y de ahí a Seguridad. Nunca se registra en logs, en la tabla `message` ni en el contexto del LLM. El BFF aplica un rate limit de 5 registros por IP cada 10 minutos.
 - **Privacidad:** el correo se muestra enmascarado en los mensajes del chat.
 - **Accesibilidad:** el formulario se puede recorrer con el teclado, usa `label` asociados, anuncia los errores con `aria-live` y tiene contraste AA.
 - **Rendimiento:** el BFF añade menos de 150 ms a la latencia de Seguridad (p95).

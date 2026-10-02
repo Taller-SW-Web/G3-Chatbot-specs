@@ -32,7 +32,7 @@
 | `DevolucionService` | Orquesta la elegibilidad, el borrador, la evidencia, la detección de duplicados y el registro. |
 | `VentasClient.devoluciones` | Cliente de Ventas para subir evidencia, registrar, consultar y listar devoluciones. |
 | Job de limpieza local | Borra las referencias de evidencia de borradores no enviados tras 24 h (no toca el archivo en Ventas). |
-| Tablas `devolucion_ref` y `evidencia` | Ver `modelo-datos.md`. |
+| Tablas `return_ref` y `evidence` | Ver `modelo-datos.md`. |
 
 ## Desglose para issues
 

@@ -12,7 +12,7 @@ El Canal Chatbot es el canal de venta conversacional del Marketplace Multicanal 
 |---|---|---|---|
 | **Visitante anónimo** | Sin token; conversaciones ligadas a la cookie `chat_sid` | Conversar, buscar, ver recomendaciones y ofertas, ver detalle, armar un carrito anónimo (expira a los 7 días de inactividad), registrarse e iniciar sesión | SPEC-05, SPEC-06 a 11 (Requiere sesión: No) |
 | **Cliente registrado sin verificar** | Cuenta `PENDIENTE_VERIFICACION` en Seguridad | Verificar el correo y pedir reenvío del enlace; no puede iniciar sesión | SPEC-01 · Req. 3, SPEC-02 |
-| **Cliente autenticado** | Token con rol `CLIENTE` (`sub` = `cliente_id`) | Todo lo anterior, más: carrito persistente, dirección y cotización, cupones, consulta de pedidos, reclamos, devoluciones y reembolsos | SPEC-03, SPEC-05 · Req. 6 |
+| **Cliente autenticado** | Token con rol `CLIENTE` (`sub` = `customer_id`) | Todo lo anterior, más: carrito persistente, dirección y cotización, cupones, consulta de pedidos, reclamos, devoluciones y reembolsos | SPEC-03, SPEC-05 · Req. 6 |
 | **Cliente autenticado con celular verificado** | Verificación local vigente para el celular actual del perfil | Iniciar el checkout y pagar | SPEC-04 · Req. 1, SPEC-14 · Req. 1 |
 | **Usuario sin rol `CLIENTE`** (p. ej., vendedor) | Token sin `CLIENTE` | Nada: se cierra su sesión con "Esta cuenta no puede comprar desde este canal" | SPEC-03 · Req. 1 |
 
@@ -268,14 +268,14 @@ Cada pregunta trae una **propuesta** aplicada provisionalmente en este paquete d
 4. ✅ **Resuelta (24/09/2026). ¿Qué significa "el chat lo guía a elegir la dirección" si la dirección se captura en `CheckoutPage`?** `openspec/specs/checkout-pago/spec.md:54-57` (escenario "Falta una precondición") describe un paso conversacional, mientras SPEC-12 fija la captura en campos libres dentro de `CheckoutPage` y excluye un paso separado de selección de direcciones.
    *Decisión:* cuando falta la dirección, se navega a `CheckoutPage` con la sección de dirección enfocada. Se corrigió SPEC-14 · Req. 1 (texto del requisito y escenario "Falta una precondición").
 
-5. ✅ **Resuelta (24/09/2026). ¿Cómo conviven el reenvío del correo (`REENVIO_CONFIRMACION`) y la clave única de `notificacion`?** `openspec/specs/notificacion-confirmacion/spec.md:74` crea reenvíos de tipo `REENVIO_CONFIRMACION` (máx. 2), pero `docs/modelo-datos.md:137-138` define `tipo` solo como `CONFIRMACION_PEDIDO` y la unicidad `pedido_id + tipo` impediría un segundo reenvío.
-   *Decisión (provisional, se refinará con el modelo de datos):* se agregó `REENVIO_CONFIRMACION` al enum de `notificacion.tipo` y un campo `numero_reenvio` (0–2) que forma parte de la clave única; `intentos` sigue contando solo reintentos SMTP.
+5. ✅ **Resuelta (24/09/2026). ¿Cómo conviven el reenvío del correo (`CONFIRMATION_RESEND`) y la clave única de `notification`?** `openspec/specs/notificacion-confirmacion/spec.md:74` crea reenvíos de tipo `CONFIRMATION_RESEND` (máx. 2), pero `docs/modelo-datos.md` (tabla `notification`) define `type` solo como `ORDER_CONFIRMATION` y la unicidad `order_id + type` impediría un segundo reenvío.
+   *Decisión (provisional, se refinará con el modelo de datos):* se agregó `CONFIRMATION_RESEND` al enum de `notification.type` y un campo `resend_number` (0–2) que forma parte de la clave única; `attempts` sigue contando solo reintentos SMTP.
 
 6. ✅ **Resuelta (24/09/2026). ¿El listado de devoluciones de Ventas acepta el filtro `pedidoId`?** `openspec/specs/solicitud-devolucion-cambio/spec.md:151` consulta `GET /api/v2/devoluciones?clienteId=&pedidoId=&estado=`, pero el contrato confirmado (`docs/contratos-integracion.md:199` y A10 en la línea 264) solo publica `clienteId`, `estado` y `tipo`.
    *Decisión:* se consulta por `clienteId` y se filtra por `pedidoId` en el backend del chatbot hasta que Ventas publique el filtro. Se corrigió SPEC-21.
 
-7. ✅ **Resuelta (24/09/2026). ¿Se admite PDF como evidencia en el modelo local?** SPEC-21 · Req. 3 permite `application/pdf`, pero `docs/modelo-datos.md:176` define `evidencia.tipo` solo como `IMAGEN`.
-   *Decisión (provisional, se refinará con el modelo de datos):* `evidencia.tipo` guarda el valor que devuelva Ventas sin `CHECK` local. Queda pendiente confirmar con Ventas el valor para PDF.
+7. ✅ **Resuelta (24/09/2026). ¿Se admite PDF como evidencia en el modelo local?** SPEC-21 · Req. 3 permite `application/pdf`, pero `docs/modelo-datos.md` (tabla `evidence`) define `evidence.type` solo como `IMAGE`.
+   *Decisión (provisional, se refinará con el modelo de datos):* `evidence.type` guarda el valor normalizado en inglés (hoy `IMAGE`) sin `CHECK` local; el adapter lo traduce desde y hacia el literal de Ventas (`IMAGEN`). Queda pendiente confirmar con Ventas el valor para PDF.
 
 8. **¿Qué zonas cubre Despacho?** `openspec/specs/direccion-cotizacion-envio/spec.md:167` limita el ubigeo a Lima y Callao "si Despacho solo cubre esas zonas", sin confirmarlo.
    *Propuesta:* arrancar con Lima y Callao y ampliar cuando Despacho publique su cobertura.

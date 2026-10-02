@@ -4,7 +4,7 @@
   "source": "mcp-excalidraw-server",
   "elements": [
     {
-      "id": "mensaje",
+      "id": "message",
       "type": "rectangle",
       "x": 0,
       "y": 0,
@@ -43,7 +43,7 @@
       "versionNonce": 88738408
     },
     {
-      "id": "mensaje__h",
+      "id": "message__h",
       "type": "rectangle",
       "x": 0,
       "y": 0,
@@ -53,7 +53,7 @@
       "backgroundColor": "#a5d8ff",
       "boundElements": [
         {
-          "id": "mensaje__h-label",
+          "id": "message__h-label",
           "type": "text"
         }
       ],
@@ -80,11 +80,11 @@
       "versionNonce": 853877506
     },
     {
-      "id": "mensaje__b",
+      "id": "message__b",
       "type": "text",
       "x": 14,
       "y": 50,
-      "width": 297,
+      "width": 288,
       "height": 244,
       "angle": 0,
       "autoResize": true,
@@ -102,26 +102,26 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id                uuid\nFK  conversacion_id   uuid\n    rol               text\n    texto             text?\n    bloques           jsonb?\n    herramienta       text?\n    argumentos        jsonb?\n    resultado_codigo  text?\n    tokens_entrada    integer?\n    tokens_salida     integer?\n    latencia_ms       integer?\n    busqueda          tsvector\n    creado_en         timestamptz",
+      "originalText": "PK  id               uuid\nFK  conversation_id  uuid\n    role             text\n    content          text?\n    blocks           jsonb?\n    tool_name        text?\n    arguments        jsonb?\n    result_code      text?\n    input_tokens     integer?\n    output_tokens    integer?\n    latency_ms       integer?\n    search_vector    tsvector\n    created_at       timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 252963964,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id                uuid\nFK  conversacion_id   uuid\n    rol               text\n    texto             text?\n    bloques           jsonb?\n    herramienta       text?\n    argumentos        jsonb?\n    resultado_codigo  text?\n    tokens_entrada    integer?\n    tokens_salida     integer?\n    latencia_ms       integer?\n    busqueda          tsvector\n    creado_en         timestamptz",
-      "textAlign": "center",
+      "text": "PK  id               uuid\nFK  conversation_id  uuid\n    role             text\n    content          text?\n    blocks           jsonb?\n    tool_name        text?\n    arguments        jsonb?\n    result_code      text?\n    input_tokens     integer?\n    output_tokens    integer?\n    latency_ms       integer?\n    search_vector    tsvector\n    created_at       timestamptz",
+      "textAlign": "left",
       "updated": 1790397165835,
       "version": 1,
       "versionNonce": 1330998854,
       "verticalAlign": "middle"
     },
     {
-      "id": "conversacion",
+      "id": "conversation",
       "type": "rectangle",
       "x": 560,
       "y": 0,
-      "width": 342.79999999999995,
+      "width": 361,
       "height": 269,
       "angle": 0,
       "backgroundColor": "#ffffff",
@@ -164,17 +164,17 @@
       "versionNonce": 1959291449
     },
     {
-      "id": "conversacion__h",
+      "id": "conversation__h",
       "type": "rectangle",
       "x": 560,
       "y": 0,
-      "width": 342.79999999999995,
+      "width": 361,
       "height": 40,
       "angle": 0,
       "backgroundColor": "#a5d8ff",
       "boundElements": [
         {
-          "id": "conversacion__h-label",
+          "id": "conversation__h-label",
           "type": "text"
         }
       ],
@@ -201,11 +201,11 @@
       "versionNonce": 1248034855
     },
     {
-      "id": "conversacion__b",
+      "id": "conversation__b",
       "type": "text",
       "x": 574,
       "y": 50,
-      "width": 306,
+      "width": 324,
       "height": 207,
       "angle": 0,
       "autoResize": true,
@@ -223,22 +223,22 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id                 uuid\n    cliente_id         uuid?\n    sid_anonimo        text?\n    titulo             text?\n    estado             text\n    contexto           jsonb\n    resumen            text?\n    titulo_busqueda    tsvector\n    ultimo_mensaje_en  timestamptz\n    creado_en          timestamptz\n    actualizado_en     timestamptz",
+      "originalText": "PK  id                   uuid\n    customer_id          uuid?\n    anonymous_sid        text?\n    title                text?\n    status               text\n    context              jsonb\n    summary              text?\n    title_search_vector  tsvector\n    last_message_at      timestamptz\n    created_at           timestamptz\n    updated_at           timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 283521889,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id                 uuid\n    cliente_id         uuid?\n    sid_anonimo        text?\n    titulo             text?\n    estado             text\n    contexto           jsonb\n    resumen            text?\n    titulo_busqueda    tsvector\n    ultimo_mensaje_en  timestamptz\n    creado_en          timestamptz\n    actualizado_en     timestamptz",
-      "textAlign": "center",
+      "text": "PK  id                   uuid\n    customer_id          uuid?\n    anonymous_sid        text?\n    title                text?\n    status               text\n    context              jsonb\n    summary              text?\n    title_search_vector  tsvector\n    last_message_at      timestamptz\n    created_at           timestamptz\n    updated_at           timestamptz",
+      "textAlign": "left",
       "updated": 1790397165835,
       "version": 1,
       "versionNonce": 296453765,
       "verticalAlign": "middle"
     },
     {
-      "id": "evidencia",
+      "id": "evidence",
       "type": "rectangle",
       "x": 1120,
       "y": 0,
@@ -277,7 +277,7 @@
       "versionNonce": 1208834685
     },
     {
-      "id": "evidencia__h",
+      "id": "evidence__h",
       "type": "rectangle",
       "x": 1120,
       "y": 0,
@@ -287,7 +287,7 @@
       "backgroundColor": "#a5d8ff",
       "boundElements": [
         {
-          "id": "evidencia__h-label",
+          "id": "evidence__h-label",
           "type": "text"
         }
       ],
@@ -314,11 +314,11 @@
       "versionNonce": 870020789
     },
     {
-      "id": "evidencia__b",
+      "id": "evidence__b",
       "type": "text",
       "x": 1134,
       "y": 50,
-      "width": 360,
+      "width": 315,
       "height": 169,
       "angle": 0,
       "autoResize": true,
@@ -336,22 +336,22 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id                       uuid\nFK  devolucion_id            text?\nFK  conversacion_id          uuid\n    tipo                     text\n    url                      text\n    nombre_archivo_original  text\n    tamanio_bytes            integer\n    creado_en                timestamptz\n    actualizado_en           timestamptz",
+      "originalText": "PK  id                  uuid\nFK  return_id           text?\nFK  conversation_id     uuid\n    type                text\n    url                 text\n    original_file_name  text\n    size_bytes          integer\n    created_at          timestamptz\n    updated_at          timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 1600489019,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id                       uuid\nFK  devolucion_id            text?\nFK  conversacion_id          uuid\n    tipo                     text\n    url                      text\n    nombre_archivo_original  text\n    tamanio_bytes            integer\n    creado_en                timestamptz\n    actualizado_en           timestamptz",
-      "textAlign": "center",
+      "text": "PK  id                  uuid\nFK  return_id           text?\nFK  conversation_id     uuid\n    type                text\n    url                 text\n    original_file_name  text\n    size_bytes          integer\n    created_at          timestamptz\n    updated_at          timestamptz",
+      "textAlign": "left",
       "updated": 1790397165835,
       "version": 1,
       "versionNonce": 897580695,
       "verticalAlign": "middle"
     },
     {
-      "id": "devolucion_ref",
+      "id": "return_ref",
       "type": "rectangle",
       "x": 1680,
       "y": 0,
@@ -386,7 +386,7 @@
       "versionNonce": 698708485
     },
     {
-      "id": "devolucion_ref__h",
+      "id": "return_ref__h",
       "type": "rectangle",
       "x": 1680,
       "y": 0,
@@ -396,7 +396,7 @@
       "backgroundColor": "#d0bfff",
       "boundElements": [
         {
-          "id": "devolucion_ref__h-label",
+          "id": "return_ref__h-label",
           "type": "text"
         }
       ],
@@ -423,7 +423,7 @@
       "versionNonce": 1710137179
     },
     {
-      "id": "devolucion_ref__b",
+      "id": "return_ref__b",
       "type": "text",
       "x": 1694,
       "y": 50,
@@ -445,22 +445,22 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  devolucion_id    text\nUK  codigo           text\n    pedido_id        text\n    cliente_id       uuid\n    tipo_solicitado  text\nUK  idempotency_key  text\n    creado_en        timestamptz",
+      "originalText": "PK  return_id        text\nUK  code             text\n    order_id         text\n    customer_id      uuid\n    requested_type   text\nUK  idempotency_key  text\n    created_at       timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 1344402451,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  devolucion_id    text\nUK  codigo           text\n    pedido_id        text\n    cliente_id       uuid\n    tipo_solicitado  text\nUK  idempotency_key  text\n    creado_en        timestamptz",
-      "textAlign": "center",
+      "text": "PK  return_id        text\nUK  code             text\n    order_id         text\n    customer_id      uuid\n    requested_type   text\nUK  idempotency_key  text\n    created_at       timestamptz",
+      "textAlign": "left",
       "updated": 1790397165835,
       "version": 1,
       "versionNonce": 832507463,
       "verticalAlign": "middle"
     },
     {
-      "id": "item_carrito",
+      "id": "cart_item",
       "type": "rectangle",
       "x": 0,
       "y": 457,
@@ -495,7 +495,7 @@
       "versionNonce": 688434245
     },
     {
-      "id": "item_carrito__h",
+      "id": "cart_item__h",
       "type": "rectangle",
       "x": 0,
       "y": 457,
@@ -505,7 +505,7 @@
       "backgroundColor": "#a5d8ff",
       "boundElements": [
         {
-          "id": "item_carrito__h-label",
+          "id": "cart_item__h-label",
           "type": "text"
         }
       ],
@@ -532,7 +532,7 @@
       "versionNonce": 1311873211
     },
     {
-      "id": "item_carrito__b",
+      "id": "cart_item__b",
       "type": "text",
       "x": 14,
       "y": 507,
@@ -554,26 +554,26 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id                   uuid\nFK  carrito_id           uuid\n    producto_id          text\n    sku                  text\n    nombre               text\n    variante_desc        text?\n    imagen_url           text?\n    cantidad             integer\n    precio_unitario_ref  numeric(12,2)\n    creado_en            timestamptz\n    actualizado_en       timestamptz",
+      "originalText": "PK  id                   uuid\nFK  cart_id              uuid\n    product_id           text\n    sku                  text\n    name                 text\n    variant_description  text?\n    image_url            text?\n    quantity             integer\n    unit_price_ref       numeric(12,2)\n    created_at           timestamptz\n    updated_at           timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 1661175539,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id                   uuid\nFK  carrito_id           uuid\n    producto_id          text\n    sku                  text\n    nombre               text\n    variante_desc        text?\n    imagen_url           text?\n    cantidad             integer\n    precio_unitario_ref  numeric(12,2)\n    creado_en            timestamptz\n    actualizado_en       timestamptz",
-      "textAlign": "center",
+      "text": "PK  id                   uuid\nFK  cart_id              uuid\n    product_id           text\n    sku                  text\n    name                 text\n    variant_description  text?\n    image_url            text?\n    quantity             integer\n    unit_price_ref       numeric(12,2)\n    created_at           timestamptz\n    updated_at           timestamptz",
+      "textAlign": "left",
       "updated": 1790397165835,
       "version": 1,
       "versionNonce": 1995273807,
       "verticalAlign": "middle"
     },
     {
-      "id": "carrito",
+      "id": "cart",
       "type": "rectangle",
       "x": 560,
       "y": 457,
-      "width": 333.59999999999997,
+      "width": 343,
       "height": 269,
       "angle": 0,
       "backgroundColor": "#ffffff",
@@ -612,17 +612,17 @@
       "versionNonce": 810180069
     },
     {
-      "id": "carrito__h",
+      "id": "cart__h",
       "type": "rectangle",
       "x": 560,
       "y": 457,
-      "width": 333.59999999999997,
+      "width": 343,
       "height": 40,
       "angle": 0,
       "backgroundColor": "#a5d8ff",
       "boundElements": [
         {
-          "id": "carrito__h-label",
+          "id": "cart__h-label",
           "type": "text"
         }
       ],
@@ -649,11 +649,11 @@
       "versionNonce": 1977215035
     },
     {
-      "id": "carrito__b",
+      "id": "cart__b",
       "type": "text",
       "x": 574,
       "y": 507,
-      "width": 297,
+      "width": 306,
       "height": 207,
       "angle": 0,
       "autoResize": true,
@@ -671,22 +671,22 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id                uuid\n    cliente_id        uuid?\nFK  conversacion_id   uuid?\n    estado            text\n    cupon_codigo      text?\n    direccion_id      uuid?\n    envio_snapshot    jsonb?\n    totales_snapshot  jsonb?\n    version           integer\n    creado_en         timestamptz\n    actualizado_en    timestamptz",
+      "originalText": "PK  id                 uuid\n    customer_id        uuid?\nFK  conversation_id    uuid?\n    status             text\n    coupon_code        text?\n    address_id         uuid?\n    shipping_snapshot  jsonb?\n    totals_snapshot    jsonb?\n    version            integer\n    created_at         timestamptz\n    updated_at         timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 572803955,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id                uuid\n    cliente_id        uuid?\nFK  conversacion_id   uuid?\n    estado            text\n    cupon_codigo      text?\n    direccion_id      uuid?\n    envio_snapshot    jsonb?\n    totales_snapshot  jsonb?\n    version           integer\n    creado_en         timestamptz\n    actualizado_en    timestamptz",
-      "textAlign": "center",
+      "text": "PK  id                 uuid\n    customer_id        uuid?\nFK  conversation_id    uuid?\n    status             text\n    coupon_code        text?\n    address_id         uuid?\n    shipping_snapshot  jsonb?\n    totals_snapshot    jsonb?\n    version            integer\n    created_at         timestamptz\n    updated_at         timestamptz",
+      "textAlign": "left",
       "updated": 1790397165835,
       "version": 1,
       "versionNonce": 1523939623,
       "verticalAlign": "middle"
     },
     {
-      "id": "celular_verificacion_local",
+      "id": "local_phone_verification",
       "type": "rectangle",
       "x": 1120,
       "y": 457,
@@ -716,7 +716,7 @@
       "versionNonce": 1229462754
     },
     {
-      "id": "celular_verificacion_local__h",
+      "id": "local_phone_verification__h",
       "type": "rectangle",
       "x": 1120,
       "y": 457,
@@ -726,7 +726,7 @@
       "backgroundColor": "#a5d8ff",
       "boundElements": [
         {
-          "id": "celular_verificacion_local__h-label",
+          "id": "local_phone_verification__h-label",
           "type": "text"
         }
       ],
@@ -753,11 +753,11 @@
       "versionNonce": 1604341370
     },
     {
-      "id": "celular_verificacion_local__b",
+      "id": "local_phone_verification__b",
       "type": "text",
       "x": 1134,
       "y": 507,
-      "width": 270,
+      "width": 252,
       "height": 94,
       "angle": 0,
       "autoResize": true,
@@ -775,22 +775,22 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id             uuid\n    cliente_id     uuid\n    celular        text\n    verificado_en  timestamptz\n    creado_en      timestamptz",
+      "originalText": "PK  id           uuid\n    customer_id  uuid\n    phone        text\n    verified_at  timestamptz\n    created_at   timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 631039140,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id             uuid\n    cliente_id     uuid\n    celular        text\n    verificado_en  timestamptz\n    creado_en      timestamptz",
-      "textAlign": "center",
+      "text": "PK  id           uuid\n    customer_id  uuid\n    phone        text\n    verified_at  timestamptz\n    created_at   timestamptz",
+      "textAlign": "left",
       "updated": 1790397165836,
       "version": 1,
       "versionNonce": 684244588,
       "verticalAlign": "middle"
     },
     {
-      "id": "reclamo_ref",
+      "id": "claim_ref",
       "type": "rectangle",
       "x": 1680,
       "y": 457,
@@ -820,7 +820,7 @@
       "versionNonce": 1281043086
     },
     {
-      "id": "reclamo_ref__h",
+      "id": "claim_ref__h",
       "type": "rectangle",
       "x": 1680,
       "y": 457,
@@ -830,7 +830,7 @@
       "backgroundColor": "#d0bfff",
       "boundElements": [
         {
-          "id": "reclamo_ref__h-label",
+          "id": "claim_ref__h-label",
           "type": "text"
         }
       ],
@@ -857,7 +857,7 @@
       "versionNonce": 1677005012
     },
     {
-      "id": "reclamo_ref__b",
+      "id": "claim_ref__b",
       "type": "text",
       "x": 1694,
       "y": 507,
@@ -879,22 +879,22 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  reclamo_id       text\nUK  codigo           text\n    pedido_id        text\n    cliente_id       uuid\nUK  idempotency_key  text\n    creado_en        timestamptz",
+      "originalText": "PK  claim_id         text\nUK  code             text\n    order_id         text\n    customer_id      uuid\nUK  idempotency_key  text\n    created_at       timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 2022369336,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  reclamo_id       text\nUK  codigo           text\n    pedido_id        text\n    cliente_id       uuid\nUK  idempotency_key  text\n    creado_en        timestamptz",
-      "textAlign": "center",
+      "text": "PK  claim_id         text\nUK  code             text\n    order_id         text\n    customer_id      uuid\nUK  idempotency_key  text\n    created_at       timestamptz",
+      "textAlign": "left",
       "updated": 1790397165836,
       "version": 1,
       "versionNonce": 646319508,
       "verticalAlign": "middle"
     },
     {
-      "id": "intento_pago",
+      "id": "payment_attempt",
       "type": "rectangle",
       "x": 0,
       "y": 876,
@@ -929,7 +929,7 @@
       "versionNonce": 386116894
     },
     {
-      "id": "intento_pago__h",
+      "id": "payment_attempt__h",
       "type": "rectangle",
       "x": 0,
       "y": 876,
@@ -939,7 +939,7 @@
       "backgroundColor": "#a5d8ff",
       "boundElements": [
         {
-          "id": "intento_pago__h-label",
+          "id": "payment_attempt__h-label",
           "type": "text"
         }
       ],
@@ -966,7 +966,7 @@
       "versionNonce": 641034500
     },
     {
-      "id": "intento_pago__b",
+      "id": "payment_attempt__b",
       "type": "text",
       "x": 14,
       "y": 926,
@@ -988,15 +988,15 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id               uuid\nFK  checkout_id      uuid\nUK  idempotency_key  text\n    resultado        text\n    motivo           text?\n    id_transaccion   text?\n    marca            text\n    ultimos4         text\n    monto            numeric(12,2)\n    creado_en        timestamptz",
+      "originalText": "PK  id               uuid\nFK  checkout_id      uuid\nUK  idempotency_key  text\n    result           text\n    reason           text?\n    transaction_id   text?\n    brand            text\n    last4            text\n    amount           numeric(12,2)\n    created_at       timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 1509895720,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id               uuid\nFK  checkout_id      uuid\nUK  idempotency_key  text\n    resultado        text\n    motivo           text?\n    id_transaccion   text?\n    marca            text\n    ultimos4         text\n    monto            numeric(12,2)\n    creado_en        timestamptz",
-      "textAlign": "center",
+      "text": "PK  id               uuid\nFK  checkout_id      uuid\nUK  idempotency_key  text\n    result           text\n    reason           text?\n    transaction_id   text?\n    brand            text\n    last4            text\n    amount           numeric(12,2)\n    created_at       timestamptz",
+      "textAlign": "left",
       "updated": 1790397165836,
       "version": 1,
       "versionNonce": 546793924,
@@ -1007,7 +1007,7 @@
       "type": "rectangle",
       "x": 560,
       "y": 876,
-      "width": 342.79999999999995,
+      "width": 352,
       "height": 269,
       "angle": 0,
       "backgroundColor": "#ffffff",
@@ -1050,7 +1050,7 @@
       "type": "rectangle",
       "x": 560,
       "y": 876,
-      "width": 342.79999999999995,
+      "width": 352,
       "height": 40,
       "angle": 0,
       "backgroundColor": "#a5d8ff",
@@ -1087,7 +1087,7 @@
       "type": "text",
       "x": 574,
       "y": 926,
-      "width": 306,
+      "width": 315,
       "height": 207,
       "angle": 0,
       "autoResize": true,
@@ -1105,22 +1105,22 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id               uuid\nFK  carrito_id       uuid\n    cliente_id       uuid\n    estado           text\n    resumen          jsonb\n    total            numeric(12,2)\n    intentos_pago    integer\n    expira_en        timestamptz\nUK  idempotency_key  text\n    creado_en        timestamptz\n    actualizado_en   timestamptz",
+      "originalText": "PK  id                uuid\nFK  cart_id           uuid\n    customer_id       uuid\n    status            text\n    summary           jsonb\n    total             numeric(12,2)\n    payment_attempts  integer\n    expires_at        timestamptz\nUK  idempotency_key   text\n    created_at        timestamptz\n    updated_at        timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 1797310949,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id               uuid\nFK  carrito_id       uuid\n    cliente_id       uuid\n    estado           text\n    resumen          jsonb\n    total            numeric(12,2)\n    intentos_pago    integer\n    expira_en        timestamptz\nUK  idempotency_key  text\n    creado_en        timestamptz\n    actualizado_en   timestamptz",
-      "textAlign": "center",
+      "text": "PK  id                uuid\nFK  cart_id           uuid\n    customer_id       uuid\n    status            text\n    summary           jsonb\n    total             numeric(12,2)\n    payment_attempts  integer\n    expires_at        timestamptz\nUK  idempotency_key   text\n    created_at        timestamptz\n    updated_at        timestamptz",
+      "textAlign": "left",
       "updated": 1790397165836,
       "version": 1,
       "versionNonce": 2048683735,
       "verticalAlign": "middle"
     },
     {
-      "id": "pedido_ref",
+      "id": "order_ref",
       "type": "rectangle",
       "x": 1120,
       "y": 876,
@@ -1159,7 +1159,7 @@
       "versionNonce": 1821977758
     },
     {
-      "id": "pedido_ref__h",
+      "id": "order_ref__h",
       "type": "rectangle",
       "x": 1120,
       "y": 876,
@@ -1169,7 +1169,7 @@
       "backgroundColor": "#d0bfff",
       "boundElements": [
         {
-          "id": "pedido_ref__h-label",
+          "id": "order_ref__h-label",
           "type": "text"
         }
       ],
@@ -1196,11 +1196,11 @@
       "versionNonce": 1165771216
     },
     {
-      "id": "pedido_ref__b",
+      "id": "order_ref__b",
       "type": "text",
       "x": 1134,
       "y": 926,
-      "width": 297,
+      "width": 279,
       "height": 132,
       "angle": 0,
       "autoResize": true,
@@ -1218,22 +1218,22 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  pedido_id       text\n    cliente_id      uuid\nFK  checkout_id     uuid\n    estado_local    text\n    total           numeric(12,2)\n    creado_en       timestamptz\n    actualizado_en  timestamptz",
+      "originalText": "PK  order_id      text\n    customer_id   uuid\nFK  checkout_id   uuid\n    local_status  text\n    total         numeric(12,2)\n    created_at    timestamptz\n    updated_at    timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 1861522712,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  pedido_id       text\n    cliente_id      uuid\nFK  checkout_id     uuid\n    estado_local    text\n    total           numeric(12,2)\n    creado_en       timestamptz\n    actualizado_en  timestamptz",
-      "textAlign": "center",
+      "text": "PK  order_id      text\n    customer_id   uuid\nFK  checkout_id   uuid\n    local_status  text\n    total         numeric(12,2)\n    created_at    timestamptz\n    updated_at    timestamptz",
+      "textAlign": "left",
       "updated": 1790397165836,
       "version": 1,
       "versionNonce": 982707746,
       "verticalAlign": "middle"
     },
     {
-      "id": "notificacion",
+      "id": "notification",
       "type": "rectangle",
       "x": 1680,
       "y": 876,
@@ -1268,7 +1268,7 @@
       "versionNonce": 2080479739
     },
     {
-      "id": "notificacion__h",
+      "id": "notification__h",
       "type": "rectangle",
       "x": 1680,
       "y": 876,
@@ -1278,7 +1278,7 @@
       "backgroundColor": "#a5d8ff",
       "boundElements": [
         {
-          "id": "notificacion__h-label",
+          "id": "notification__h-label",
           "type": "text"
         }
       ],
@@ -1305,11 +1305,11 @@
       "versionNonce": 622725351
     },
     {
-      "id": "notificacion__b",
+      "id": "notification__b",
       "type": "text",
       "x": 1694,
       "y": 926,
-      "width": 288,
+      "width": 279,
       "height": 207,
       "angle": 0,
       "autoResize": true,
@@ -1327,15 +1327,15 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id              uuid\nFK  pedido_id       text\n    tipo            text\n    numero_reenvio  integer\n    destinatario    text\n    estado          text\n    intentos        integer\n    ultimo_error    text?\n    enviada_en      timestamptz?\n    creado_en       timestamptz\n    actualizado_en  timestamptz",
+      "originalText": "PK  id             uuid\nFK  order_id       text\n    type           text\n    resend_number  integer\n    recipient      text\n    status         text\n    attempts       integer\n    last_error     text?\n    sent_at        timestamptz?\n    created_at     timestamptz\n    updated_at     timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 514823969,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id              uuid\nFK  pedido_id       text\n    tipo            text\n    numero_reenvio  integer\n    destinatario    text\n    estado          text\n    intentos        integer\n    ultimo_error    text?\n    enviada_en      timestamptz?\n    creado_en       timestamptz\n    actualizado_en  timestamptz",
-      "textAlign": "center",
+      "text": "PK  id             uuid\nFK  order_id       text\n    type           text\n    resend_number  integer\n    recipient      text\n    status         text\n    attempts       integer\n    last_error     text?\n    sent_at        timestamptz?\n    created_at     timestamptz\n    updated_at     timestamptz",
+      "textAlign": "left",
       "updated": 1790397165836,
       "version": 1,
       "versionNonce": 413578053,
@@ -1413,7 +1413,7 @@
       "type": "text",
       "x": 14,
       "y": 1345,
-      "width": 324,
+      "width": 297,
       "height": 207,
       "angle": 0,
       "autoResize": true,
@@ -1431,15 +1431,15 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id                  uuid\n    tipo                text\n    payload             jsonb\n    estado              text\n    intentos            integer\n    proximo_intento_en  timestamptz\n    ultimo_intento_en   timestamptz?\n    ultimo_error        text?\n    procesado_en        timestamptz?\n    creado_en           timestamptz\n    actualizado_en      timestamptz",
+      "originalText": "PK  id               uuid\n    type             text\n    payload          jsonb\n    status           text\n    attempts         integer\n    next_attempt_at  timestamptz\n    last_attempt_at  timestamptz?\n    last_error       text?\n    processed_at     timestamptz?\n    created_at       timestamptz\n    updated_at       timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 2070681014,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id                  uuid\n    tipo                text\n    payload             jsonb\n    estado              text\n    intentos            integer\n    proximo_intento_en  timestamptz\n    ultimo_intento_en   timestamptz?\n    ultimo_error        text?\n    procesado_en        timestamptz?\n    creado_en           timestamptz\n    actualizado_en      timestamptz",
-      "textAlign": "center",
+      "text": "PK  id               uuid\n    type             text\n    payload          jsonb\n    status           text\n    attempts         integer\n    next_attempt_at  timestamptz\n    last_attempt_at  timestamptz?\n    last_error       text?\n    processed_at     timestamptz?\n    created_at       timestamptz\n    updated_at       timestamptz",
+      "textAlign": "left",
       "updated": 1790397165836,
       "version": 1,
       "versionNonce": 58042000,
@@ -1456,7 +1456,7 @@
       "elbowed": false,
       "endArrowhead": "crowfoot_one",
       "endBinding": {
-        "elementId": "conversacion",
+        "elementId": "conversation",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1472,7 +1472,7 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
@@ -1485,7 +1485,7 @@
       "seed": 80565598,
       "startArrowhead": "crowfoot_many",
       "startBinding": {
-        "elementId": "mensaje",
+        "elementId": "message",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1508,7 +1508,7 @@
       "elbowed": false,
       "endArrowhead": "crowfoot_one",
       "endBinding": {
-        "elementId": "conversacion",
+        "elementId": "conversation",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1524,11 +1524,11 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
-          -201.20835782399513,
+          -183.00835782399508,
           6.506056498733699
         ]
       ],
@@ -1537,7 +1537,7 @@
       "seed": 1126452272,
       "startArrowhead": "crowfoot_many",
       "startBinding": {
-        "elementId": "evidencia",
+        "elementId": "evidence",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1560,7 +1560,7 @@
       "elbowed": false,
       "endArrowhead": "crowfoot_one",
       "endBinding": {
-        "elementId": "devolucion_ref",
+        "elementId": "return_ref",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1576,7 +1576,7 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
@@ -1589,7 +1589,7 @@
       "seed": 2075486814,
       "startArrowhead": "crowfoot_many",
       "startBinding": {
-        "elementId": "evidencia",
+        "elementId": "evidence",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1612,7 +1612,7 @@
       "elbowed": false,
       "endArrowhead": "crowfoot_one",
       "endBinding": {
-        "elementId": "conversacion",
+        "elementId": "conversation",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1628,7 +1628,7 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
@@ -1641,7 +1641,7 @@
       "seed": 2097765615,
       "startArrowhead": "crowfoot_many",
       "startBinding": {
-        "elementId": "carrito",
+        "elementId": "cart",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1664,7 +1664,7 @@
       "elbowed": false,
       "endArrowhead": "crowfoot_one",
       "endBinding": {
-        "elementId": "carrito",
+        "elementId": "cart",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1680,7 +1680,7 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
@@ -1693,7 +1693,7 @@
       "seed": 772810364,
       "startArrowhead": "crowfoot_many",
       "startBinding": {
-        "elementId": "item_carrito",
+        "elementId": "cart_item",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1716,7 +1716,7 @@
       "elbowed": false,
       "endArrowhead": "crowfoot_one",
       "endBinding": {
-        "elementId": "carrito",
+        "elementId": "cart",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1732,7 +1732,7 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
@@ -1784,7 +1784,7 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
@@ -1797,7 +1797,7 @@
       "seed": 120420271,
       "startArrowhead": "crowfoot_many",
       "startBinding": {
-        "elementId": "intento_pago",
+        "elementId": "payment_attempt",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1836,11 +1836,11 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
-          -201.2373184788288,
+          -192.03731847882875,
           13.768487760524977
         ]
       ],
@@ -1849,7 +1849,7 @@
       "seed": 1289025305,
       "startArrowhead": "crowfoot_one",
       "startBinding": {
-        "elementId": "pedido_ref",
+        "elementId": "order_ref",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1872,7 +1872,7 @@
       "elbowed": false,
       "endArrowhead": "crowfoot_one",
       "endBinding": {
-        "elementId": "pedido_ref",
+        "elementId": "order_ref",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1888,7 +1888,7 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
@@ -1901,7 +1901,7 @@
       "seed": 919458507,
       "startArrowhead": "crowfoot_many",
       "startBinding": {
-        "elementId": "notificacion",
+        "elementId": "notification",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -1944,7 +1944,7 @@
       "strokeStyle": "solid",
       "strokeWidth": 2,
       "text": "Modelo logico - Canal Chatbot (PostgreSQL 18)",
-      "textAlign": "center",
+      "textAlign": "left",
       "updated": 1790397165836,
       "version": 1,
       "versionNonce": 420483429,
@@ -1973,22 +1973,22 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "Leyenda\nPK  clave primaria   FK  clave foranea   UK  unica\ntipo?  columna que admite NULL\nAzul: tabla propia   Violeta: referencia a agregado de Ventas\nLinea continua: FK obligatoria   Linea punteada: FK opcional (NULL)\nPata de gallo = muchos   Barra = uno\nSin FK: reclamo_ref / devolucion_ref.pedido_id (pedido puede venir de otro canal),\ncelular_verificacion_local y outbox. Indices y CHECKs: ver docs/modelo-datos.md",
+      "originalText": "Leyenda\nPK  clave primaria   FK  clave foranea   UK  unica\ntipo?  columna que admite NULL\nAzul: tabla propia   Violeta: referencia a agregado de Ventas\nLinea continua: FK obligatoria   Linea punteada: FK opcional (NULL)\nPata de gallo = muchos   Barra = uno\nSin FK: claim_ref / return_ref.order_id (pedido puede venir de otro canal),\nlocal_phone_verification y outbox. Indices y CHECKs: ver docs/modelo-datos.md",
       "roughness": 1,
       "roundness": null,
       "seed": 218854366,
       "strokeColor": "#343a40",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "Leyenda\nPK  clave primaria   FK  clave foranea   UK  unica\ntipo?  columna que admite NULL\nAzul: tabla propia   Violeta: referencia a agregado de Ventas\nLinea continua: FK obligatoria   Linea punteada: FK opcional (NULL)\nPata de gallo = muchos   Barra = uno\nSin FK: reclamo_ref / devolucion_ref.pedido_id (pedido puede venir de otro canal),\ncelular_verificacion_local y outbox. Indices y CHECKs: ver docs/modelo-datos.md",
-      "textAlign": "center",
+      "text": "Leyenda\nPK  clave primaria   FK  clave foranea   UK  unica\ntipo?  columna que admite NULL\nAzul: tabla propia   Violeta: referencia a agregado de Ventas\nLinea continua: FK obligatoria   Linea punteada: FK opcional (NULL)\nPata de gallo = muchos   Barra = uno\nSin FK: claim_ref / return_ref.order_id (pedido puede venir de otro canal),\nlocal_phone_verification y outbox. Indices y CHECKs: ver docs/modelo-datos.md",
+      "textAlign": "left",
       "updated": 1790397165836,
       "version": 1,
       "versionNonce": 1207046614,
       "verticalAlign": "middle"
     },
     {
-      "id": "mensaje__h-label",
+      "id": "message__h-label",
       "type": "text",
       "x": 10,
       "y": 10,
@@ -1998,7 +1998,7 @@
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "mensaje__h",
+      "containerId": "message__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2010,14 +2010,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "mensaje",
+      "originalText": "message",
       "roughness": 1,
       "roundness": null,
       "seed": 1065597157,
       "strokeColor": "#1971c2",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "mensaje",
+      "text": "message",
       "textAlign": "center",
       "updated": 1790397165835,
       "version": 1,
@@ -2025,17 +2025,17 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "conversacion__h-label",
+      "id": "conversation__h-label",
       "type": "text",
       "x": 570,
       "y": 10,
-      "width": 322.79999999999995,
+      "width": 341.0,
       "height": 20,
       "angle": 0,
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "conversacion__h",
+      "containerId": "conversation__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2047,14 +2047,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "conversacion",
+      "originalText": "conversation",
       "roughness": 1,
       "roundness": null,
       "seed": 655146518,
       "strokeColor": "#1971c2",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "conversacion",
+      "text": "conversation",
       "textAlign": "center",
       "updated": 1790397165835,
       "version": 1,
@@ -2062,7 +2062,7 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "evidencia__h-label",
+      "id": "evidence__h-label",
       "type": "text",
       "x": 1130,
       "y": 10,
@@ -2072,7 +2072,7 @@
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "evidencia__h",
+      "containerId": "evidence__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2084,14 +2084,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "evidencia",
+      "originalText": "evidence",
       "roughness": 1,
       "roundness": null,
       "seed": 1277201840,
       "strokeColor": "#1971c2",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "evidencia",
+      "text": "evidence",
       "textAlign": "center",
       "updated": 1790397165835,
       "version": 1,
@@ -2099,7 +2099,7 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "devolucion_ref__h-label",
+      "id": "return_ref__h-label",
       "type": "text",
       "x": 1690,
       "y": 10,
@@ -2109,7 +2109,7 @@
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "devolucion_ref__h",
+      "containerId": "return_ref__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2121,14 +2121,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "devolucion_ref",
+      "originalText": "return_ref",
       "roughness": 1,
       "roundness": null,
       "seed": 141299756,
       "strokeColor": "#6741d9",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "devolucion_ref",
+      "text": "return_ref",
       "textAlign": "center",
       "updated": 1790397165835,
       "version": 1,
@@ -2136,7 +2136,7 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "item_carrito__h-label",
+      "id": "cart_item__h-label",
       "type": "text",
       "x": 10,
       "y": 467,
@@ -2146,7 +2146,7 @@
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "item_carrito__h",
+      "containerId": "cart_item__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2158,14 +2158,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "item_carrito",
+      "originalText": "cart_item",
       "roughness": 1,
       "roundness": null,
       "seed": 1795968906,
       "strokeColor": "#1971c2",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "item_carrito",
+      "text": "cart_item",
       "textAlign": "center",
       "updated": 1790397165835,
       "version": 1,
@@ -2173,17 +2173,17 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "carrito__h-label",
+      "id": "cart__h-label",
       "type": "text",
       "x": 570,
       "y": 467,
-      "width": 313.59999999999997,
+      "width": 323.0,
       "height": 20,
       "angle": 0,
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "carrito__h",
+      "containerId": "cart__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2195,14 +2195,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "carrito",
+      "originalText": "cart",
       "roughness": 1,
       "roundness": null,
       "seed": 1965887626,
       "strokeColor": "#1971c2",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "carrito",
+      "text": "cart",
       "textAlign": "center",
       "updated": 1790397165835,
       "version": 1,
@@ -2210,7 +2210,7 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "celular_verificacion_local__h-label",
+      "id": "local_phone_verification__h-label",
       "type": "text",
       "x": 1130,
       "y": 467,
@@ -2220,7 +2220,7 @@
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "celular_verificacion_local__h",
+      "containerId": "local_phone_verification__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2232,14 +2232,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "celular_verificacion_local",
+      "originalText": "local_phone_verification",
       "roughness": 1,
       "roundness": null,
       "seed": 793323243,
       "strokeColor": "#1971c2",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "celular_verificacion_local",
+      "text": "local_phone_verification",
       "textAlign": "center",
       "updated": 1790397165836,
       "version": 1,
@@ -2247,7 +2247,7 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "reclamo_ref__h-label",
+      "id": "claim_ref__h-label",
       "type": "text",
       "x": 1690,
       "y": 467,
@@ -2257,7 +2257,7 @@
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "reclamo_ref__h",
+      "containerId": "claim_ref__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2269,14 +2269,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "reclamo_ref",
+      "originalText": "claim_ref",
       "roughness": 1,
       "roundness": null,
       "seed": 626968339,
       "strokeColor": "#6741d9",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "reclamo_ref",
+      "text": "claim_ref",
       "textAlign": "center",
       "updated": 1790397165836,
       "version": 1,
@@ -2284,7 +2284,7 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "intento_pago__h-label",
+      "id": "payment_attempt__h-label",
       "type": "text",
       "x": 10,
       "y": 886,
@@ -2294,7 +2294,7 @@
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "intento_pago__h",
+      "containerId": "payment_attempt__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2306,14 +2306,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "intento_pago",
+      "originalText": "payment_attempt",
       "roughness": 1,
       "roundness": null,
       "seed": 1950498115,
       "strokeColor": "#1971c2",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "intento_pago",
+      "text": "payment_attempt",
       "textAlign": "center",
       "updated": 1790397165836,
       "version": 1,
@@ -2325,7 +2325,7 @@
       "type": "text",
       "x": 570,
       "y": 886,
-      "width": 322.79999999999995,
+      "width": 332.0,
       "height": 20,
       "angle": 0,
       "autoResize": true,
@@ -2358,7 +2358,7 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "pedido_ref__h-label",
+      "id": "order_ref__h-label",
       "type": "text",
       "x": 1130,
       "y": 886,
@@ -2368,7 +2368,7 @@
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "pedido_ref__h",
+      "containerId": "order_ref__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2380,14 +2380,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "pedido_ref",
+      "originalText": "order_ref",
       "roughness": 1,
       "roundness": null,
       "seed": 2072357073,
       "strokeColor": "#6741d9",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "pedido_ref",
+      "text": "order_ref",
       "textAlign": "center",
       "updated": 1790397165836,
       "version": 1,
@@ -2395,7 +2395,7 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "notificacion__h-label",
+      "id": "notification__h-label",
       "type": "text",
       "x": 1690,
       "y": 886,
@@ -2405,7 +2405,7 @@
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "notificacion__h",
+      "containerId": "notification__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2417,14 +2417,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "notificacion",
+      "originalText": "notification",
       "roughness": 1,
       "roundness": null,
       "seed": 1341781846,
       "strokeColor": "#1971c2",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "notificacion",
+      "text": "notification",
       "textAlign": "center",
       "updated": 1790397165836,
       "version": 1,
@@ -2469,7 +2469,7 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "adjunto",
+      "id": "attachment",
       "type": "rectangle",
       "x": 282,
       "y": -450,
@@ -2508,7 +2508,7 @@
       "versionNonce": 358847449
     },
     {
-      "id": "adjunto__h",
+      "id": "attachment__h",
       "type": "rectangle",
       "x": 282,
       "y": -450,
@@ -2518,7 +2518,7 @@
       "backgroundColor": "#a5d8ff",
       "boundElements": [
         {
-          "id": "adjunto__h-label",
+          "id": "attachment__h-label",
           "type": "text"
         }
       ],
@@ -2545,7 +2545,7 @@
       "versionNonce": 1317455099
     },
     {
-      "id": "adjunto__h-label",
+      "id": "attachment__h-label",
       "type": "text",
       "x": 292,
       "y": -440,
@@ -2555,7 +2555,7 @@
       "autoResize": true,
       "backgroundColor": "transparent",
       "boundElements": null,
-      "containerId": "adjunto__h",
+      "containerId": "attachment__h",
       "fillStyle": "solid",
       "fontFamily": 2,
       "fontSize": 18,
@@ -2567,14 +2567,14 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "adjunto",
+      "originalText": "attachment",
       "roughness": 1,
       "roundness": null,
       "seed": 1819981258,
       "strokeColor": "#1971c2",
       "strokeStyle": "solid",
       "strokeWidth": 1,
-      "text": "adjunto",
+      "text": "attachment",
       "textAlign": "center",
       "updated": 1790397165835,
       "version": 1,
@@ -2582,11 +2582,11 @@
       "verticalAlign": "middle"
     },
     {
-      "id": "adjunto__b",
+      "id": "attachment__b",
       "type": "text",
       "x": 296,
       "y": -400,
-      "width": 297,
+      "width": 288,
       "height": 225.0,
       "angle": 0,
       "autoResize": true,
@@ -2604,15 +2604,15 @@
       "link": null,
       "locked": false,
       "opacity": 100,
-      "originalText": "PK  id                uuid\nFK  conversacion_id   uuid\nFK  mensaje_id        uuid?\n    estado            text\nUK  storage_key       text\nUK  miniatura_key     text\n    mime_type         text\n    size_bytes        integer\n    width             integer\n    height            integer\n    creado_en         timestamptz\n    actualizado_en    timestamptz",
+      "originalText": "PK  id               uuid\nFK  conversation_id  uuid\nFK  message_id       uuid?\n    status           text\nUK  storage_key      text\nUK  thumbnail_key    text\n    mime_type        text\n    size_bytes       integer\n    width            integer\n    height           integer\n    created_at       timestamptz\n    updated_at       timestamptz",
       "roughness": 1,
       "roundness": null,
       "seed": 1537941229,
       "strokeColor": "#1e1e1e",
       "strokeStyle": "solid",
       "strokeWidth": 2,
-      "text": "PK  id                uuid\nFK  conversacion_id   uuid\nFK  mensaje_id        uuid?\n    estado            text\nUK  storage_key       text\nUK  miniatura_key     text\n    mime_type         text\n    size_bytes        integer\n    width             integer\n    height            integer\n    creado_en         timestamptz\n    actualizado_en    timestamptz",
-      "textAlign": "center",
+      "text": "PK  id               uuid\nFK  conversation_id  uuid\nFK  message_id       uuid?\n    status           text\nUK  storage_key      text\nUK  thumbnail_key    text\n    mime_type        text\n    size_bytes       integer\n    width            integer\n    height           integer\n    created_at       timestamptz\n    updated_at       timestamptz",
+      "textAlign": "left",
       "updated": 1790397165835,
       "version": 1,
       "versionNonce": 559646867,
@@ -2629,7 +2629,7 @@
       "elbowed": false,
       "endArrowhead": "crowfoot_one",
       "endBinding": {
-        "elementId": "conversacion",
+        "elementId": "conversation",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -2645,7 +2645,7 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
@@ -2658,7 +2658,7 @@
       "seed": 1585296689,
       "startArrowhead": "crowfoot_many",
       "startBinding": {
-        "elementId": "adjunto",
+        "elementId": "attachment",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -2681,7 +2681,7 @@
       "elbowed": false,
       "endArrowhead": "crowfoot_one",
       "endBinding": {
-        "elementId": "mensaje",
+        "elementId": "message",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4
@@ -2697,7 +2697,7 @@
       "opacity": 100,
       "points": [
         [
-          0,
+          0.0,
           0
         ],
         [
@@ -2710,7 +2710,7 @@
       "seed": 1830267900,
       "startArrowhead": "crowfoot_many",
       "startBinding": {
-        "elementId": "adjunto",
+        "elementId": "attachment",
         "fixedPoint": null,
         "focus": 0,
         "gap": 4

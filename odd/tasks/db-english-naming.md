@@ -1,6 +1,6 @@
 # Nombres de la base de datos en inglés
 
-Decisión del equipo (2026-10-02): todos los identificadores de la base de datos pasan a inglés: tablas, columnas, valores de enumeración, constraints e índices. Los cambios van directo a `main` de `G3-Chatbot-specs`; el backend se ajusta en `feature/h2-07-conversacion-adjunto`.
+Decisión del equipo (2026-10-02): todos los identificadores de la base de datos pasan a inglés: tablas, columnas, valores de enumeración, constraints e índices. Los cambios van directo a `main` de `G3-Chatbot-specs`; el backend se ajusta en `development` y el frontend en `main`.
 
 ## Alcance y restricciones
 
@@ -117,8 +117,8 @@ Ruta: escritores delegados, uno por vez (dispara el trigger de 4+ archivos y 2+ 
 
 ## Progreso
 
-N1, N2, N4 y N5 hechas y verificadas; N3 reducida por decisión del usuario a `mer-logico` (`mer-conceptual` queda sin cambios, con nombres mezclados). Verificación: barrido de nombres viejos en specs sin apariciones fuera de excepciones justificadas; `pytest tests/unit` con 23 passed; `Base.metadata` lista `attachment`, `conversation` y `local_phone_verification`; `mer-logico.excalidraw` válido y SVG re-exportado. Decisión tomada: unicidad de `notification` = `(order_id, resend_number)`. Quedan abiertas las inconsistencias de N2 (ver informe) y el renombre de los archivos vacíos de modelos y adapters, que cada responsable hace al implementarlos. Commits: pendiente de confirmación del usuario. Espejo en Engram: pendiente (`ambiguous_project`).
+N1, N2, N4 y N5 hechas y verificadas; N3 reducida por decisión del usuario a `mer-logico` (`mer-conceptual` queda sin cambios, con nombres mezclados). Verificación: barrido de nombres viejos en specs sin apariciones fuera de excepciones justificadas; `pytest tests/unit` con 23 passed; `Base.metadata` lista `attachment`, `conversation` y `local_phone_verification`; `mer-logico.excalidraw` válido y SVG re-exportado. Decisión tomada: unicidad de `notification` = `(order_id, resend_number)`. Quedan abiertas las inconsistencias de N2 (ver informe) y el renombre de los archivos vacíos de modelos y adapters, que cada responsable hace al implementarlos. Commits: specs `e095041` (`main`), backend `cd76f00` y `2b65b7b` (`development`). Espejo en Engram: pendiente (`ambiguous_project`).
 
 ## Siguiente paso
 
-Resolver las inconsistencias abiertas, confirmar el commit en specs (directo a `main`) y en backend y frontend (ramas propias), y pedir confirmación aparte para el push.
+Sin pendientes de esta feature: las inconsistencias de N2 quedaron resueltas con el usuario y los cambios están publicados. Queda abierto el renombre de los archivos vacíos de modelos y adapters, que hace cada responsable al implementarlos.

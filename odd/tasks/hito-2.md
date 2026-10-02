@@ -41,13 +41,13 @@ Cubrir los cuatro entregables del Hito 2 (25 %) con evidencia de commits de todo
 
 ### Fase 3: cierre (Sebastian)
 
-- [ ] **H2-10** Generar la migración inicial con `alembic revision --autogenerate --rev-id 0001 -m "initial schema"`, probarla contra Supabase (`alembic upgrade head` y `alembic downgrade base`) y hacer push.
+- [ ] **H2-10** Generar la migración inicial con `alembic revision --autogenerate --rev-id 0001 -m "initial schema"`, agregar a mano en esa migración la función `set_updated_at()` y un trigger `BEFORE UPDATE` en cada tabla con `updated_at` (`conversation`, `attachment`, `cart`, `cart_item`, `checkout`, `order_ref`, `notification`, `evidence`, `outbox`), porque autogenerate no detecta funciones ni triggers (regla de la fila Tiempos en `docs/modelo-datos.md`), y su `downgrade` debe eliminarlos; probarla contra Supabase (`alembic upgrade head` y `alembic downgrade base`) y hacer push.
 
 ## Criterios de aceptación
 
 - Los cuatro integrantes sin commits (David, Sonny, Diego, Alonso) tienen al menos un commit propio mergeado en `main`.
 - Las 14 tablas de `docs/modelo-datos.md` tienen modelo y adapter con contenido, y cada adapter tiene al menos un test.
-- Existe una sola migración inicial, con revisión `0001`, que crea todas las tablas del modelo y se puede revertir con `alembic downgrade base`.
+- Existe una sola migración inicial, con revisión `0001`, que crea todas las tablas del modelo y los triggers de `updated_at`, y se puede revertir con `alembic downgrade base`.
 - El README enlaza los mockups, el sistema de diseño y las 3 propuestas de UX.
 
 ## Riesgos
@@ -65,18 +65,18 @@ Estado al 2026-10-02, verificado contra `origin/development` del backend (refs l
 |---|---|---|
 | H2-01 | Hecha (pendiente confirmar documentación de IDs, `models/__init__.py` y regla `jsonb`) | `581065c`, PR #28 |
 | H2-02 | Hecha | `70818de`, PR #29; el test pasó a `test_local_phone_verification_adapter.py` con el renombre a inglés |
-| H2-07 | Implementada, pendiente de commit y PR | Rama `feature/h2-07-conversacion-adjunto`: modelos y adapters de `conversation` y `attachment`, 23 tests unitarios en verde, CI de backend (pip). CI de frontend con pnpm en `feature/ci-frontend-pnpm` |
+| H2-07 | Hecha | Backend `development`: `cd76f00` (modelos, adapters y tests de `conversation` y `attachment`, 23 tests en verde) y `2b65b7b` (CI con pip). Frontend `main`: `cb49bfc` (CI con pnpm, activo cuando exista `package.json` con lockfile) |
 | H2-03 a H2-06, H2-08, H2-09 | No iniciadas | Los demás archivos de `persistence/` siguen con 0 bytes; no hay commits de David, Sonny, Diego y Alonso |
 | H2-10 | Pendiente | `versions/` vacía; depende de H2-03, 04, 06 y 07 |
 
-Criterios de aceptación: commits de los 4 integrantes 0/4; tablas con modelo y adapter 3/14 (`local_phone_verification` en `development`; `conversation` y `attachment` en la rama de H2-07); migración `0001` inexistente; README sin enlaces a mockups, sistema de diseño ni UX.
+Criterios de aceptación: commits de los 4 integrantes 0/4; tablas con modelo y adapter 3/14 (`local_phone_verification`, `conversation` y `attachment` en `development`); migración `0001` inexistente; README sin enlaces a mockups, sistema de diseño ni UX.
 
 Renombre a inglés del modelo de datos (2026-10-02): `docs/modelo-datos.md`, el resto de los specs y el diagrama `mer-logico` ya usan los nombres en inglés. El diagrama `mer-conceptual` se deja sin cambios por decisión del equipo.
 
 Nota: la rama de integración del backend es `development` (no `develop`) y solo existe en backend.
 
-Commits: pendiente de confirmación del usuario cuando corresponda.
+Commits de la convención de nombres en inglés: specs `e095041` (`main`).
 
 ## Siguiente paso
 
-Mathias abre el PR de H2-07 hacia `development`. Sonny, David, Alonso y Diego inician sus tareas de la Fase 2 sobre `development`, usando los nombres en inglés de `docs/modelo-datos.md`.
+Sonny, David, Alonso y Diego inician sus tareas de la Fase 2 sobre `development`, usando los nombres en inglés de `docs/modelo-datos.md`.

@@ -1,6 +1,6 @@
 # H2-07: modelos y adapters de `conversation` y `attachment`, más CI
 
-Feature de Mathias dentro del Hito 2 (ver `hito-2.md`). Repo: `G3-Chatbot-backend`, rama `feature/h2-07-conversacion-adjunto` creada desde `origin/development`.
+Feature de Mathias dentro del Hito 2 (ver `hito-2.md`). Repo: `G3-Chatbot-backend`, rama `development` (sin ramas intermedias, por decisión del equipo).
 
 ## Objetivo
 
@@ -48,8 +48,8 @@ Ruta: escritor delegado único (dispara el trigger de 2+ archivos no triviales).
 
 ## Progreso
 
-T1 a T4 implementadas por un escritor delegado y verificadas: `PYTHONPATH=. python -m pytest tests/unit` da 23 passed (re-ejecutado por el orquestador, Python 3.14 local; el CI usa 3.12). `Base.metadata` lista `attachment`, `local_phone_verification` y `conversation`. Cambios sin stagear en la rama. Commit: pendiente de confirmación del usuario. Espejo en Engram: pendiente (`ambiguous_project`).
+T1 a T4 implementadas por un escritor delegado y verificadas: `PYTHONPATH=. python -m pytest tests/unit` da 23 passed (re-ejecutado por el orquestador, Python 3.14 local; el CI usa 3.12). `Base.metadata` lista `attachment`, `local_phone_verification` y `conversation`. Publicada en `development` (`cd76f00`, `2b65b7b`); CI de frontend en `main` del frontend (`cb49bfc`). Espejo en Engram: pendiente (`ambiguous_project`).
 
 ## Siguiente paso
 
-Confirmar el commit, abrir PR hacia `development` y marcar el avance en `hito-2.md`.
+Ninguno: H2-07 está publicada y marcada en `hito-2.md`.

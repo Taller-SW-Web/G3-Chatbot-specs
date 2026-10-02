@@ -80,7 +80,7 @@ graph LR
 - **Valor de negocio:** cubre el lineamiento "grabación del pedido y pago con tarjeta" y la parte de cupones del lineamiento de ofertas. Es la operación más sensible del canal.
 - **Specs:** SPEC-12 Dirección, documento y envío · SPEC-13 Cupones · SPEC-14 Checkout y pago simulado.
 - **Hito:** Hito 4.
-- **Dependencias:** EP-01 (sesión y celular verificado), EP-04 (carrito válido), EP-06 (creación del pedido); Seguridad ✅ (A3, credenciales reales desde Hito 4); Ventas ✅ (A8, A9, A14); Despacho ✅ contrato de cotización / 🟡 autenticación (A12); Productos 🟡 (A5, A6).
+- **Dependencias:** EP-01 (sesión y celular verificado), EP-04 (carrito válido), EP-06 (creación del pedido); Seguridad ✅ (A3, credenciales reales desde Hito 4); Ventas ✅ (A8, A9, A14); Despacho ✅ contrato y scopes (Seguridad #31, credenciales reales desde Hito 4); Productos 🟡 (A5: scopes sujetos a confirmación del PO; A6 resuelto).
 - **Historias:** [historias/EP-05-checkout-pago.md](historias/EP-05-checkout-pago.md)
 
 ## EP-06 · Grabación y confirmación del pedido
@@ -98,7 +98,7 @@ graph LR
 - **Valor de negocio:** cubre el lineamiento "consulta del estado de un pedido" y reduce consultas a soporte.
 - **Specs:** SPEC-17 Consulta de estado · SPEC-18 Seguimiento del despacho.
 - **Hito:** Hito 5–6.
-- **Dependencias:** EP-06 (pedidos existentes); Ventas ✅ (A8); Despacho 🟡 (A11) y Seguridad/Despacho 🟡 (A4) para SPEC-18.
+- **Dependencias:** EP-06 (pedidos existentes); Ventas ✅ (A8); Despacho ✅ (A11, contrato y scopes concedidos en Seguridad #31); Seguridad/Despacho 🟡 (A4: rol `SERVICIO_INTEGRACION`; credenciales reales en Hito 4) para SPEC-18.
 - **Historias:** [historias/EP-07-seguimiento.md](historias/EP-07-seguimiento.md)
 
 ## EP-08 · Reclamos
@@ -150,7 +150,7 @@ graph LR
 | Tipo | `historia`, `habilitadora`, `FE`, `BE`, `INT`, `QA` |
 | Spec | `spec:SPEC-01` … `spec:SPEC-23` |
 | Módulo externo | `modulo:seguridad`, `modulo:productos`, `modulo:ventas`, `modulo:despacho`, `modulo:llm`, `modulo:smtp` |
-| Acuerdo | `acuerdo:A4`, `acuerdo:A5`, `acuerdo:A6`, `acuerdo:A7`, `acuerdo:A11`, `acuerdo:A12` (solo los abiertos) |
+| Acuerdo | `acuerdo:A4`, `acuerdo:A5`, `acuerdo:A6`, `acuerdo:A7` (solo los abiertos) |
 | Contrato | `contrato:provisional` cuando la historia consume al menos un endpoint 🟡 |
 | MoSCoW | `moscow:must`, `moscow:should`, `moscow:could` (se conserva aunque cambie la prioridad operativa) |
 

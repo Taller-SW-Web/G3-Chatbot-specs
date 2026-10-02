@@ -13,7 +13,7 @@ Aceptada
 - Varias llamadas del chatbot no tienen un token de cliente disponible o no deben usarlo:
   - el `OutboxWorker` notifica pagos y solicita anulaciones a Ventas en segundo plano (SPEC-15);
   - la introspección previa al pago se hace con credenciales del módulo (SPEC-14, acuerdo A3);
-  - el seguimiento de Despacho exige token de servicio (SPEC-18, A4 y A11 abiertos).
+  - el seguimiento de Despacho exige token de servicio (SPEC-18; A11 resuelto el 02/10 y rol `SERVICIO_INTEGRACION` aún pendiente por A4).
 - El `ServiceTokenProvider` figuraba en el desglose de SPEC-18 (Hito 5–6), pero SPEC-14 y SPEC-15, del Hito 4, ya lo necesitaban.
 - La validación del token del cliente se hace en local con el JWKS de Seguridad.
 

@@ -8,7 +8,7 @@
 |---|---|---|
 | Ventas | `GET /api/v1/pedidos?clienteId=&estado=&desde=&hasta=&pagina=&tamano=` | ✅ `api-contract.md` §1.4 |
 | Ventas | `GET /api/v1/pedidos/{id}` (detalle, estado e historial) | ✅ §1.3 |
-| Despacho | Seguimiento por pedido (SPEC-18) | 🟡 A11 |
+| Despacho | `GET /api/v1/seguimientos/pedidos/{idPedido}` (SPEC-18), scope `seguimientos:leer` concedido | ✅ contrato y scope (Seguridad #31); rol `SERVICIO_INTEGRACION` y credenciales reales pendientes |
 
 ## Frontend
 

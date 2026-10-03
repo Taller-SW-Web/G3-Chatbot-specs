@@ -79,6 +79,9 @@ El chatbot **no entrena un clasificador de intenciones (NLU)**: el LLM recibe el
 |---|---|---|---|---|---|---|
 | INT-CNV-01 | Empezar una conversación nueva | `nueva_conversacion` | — | No | No | SPEC-05 · Req. 1 |
 | INT-CNV-02 | Buscar entre conversaciones anteriores | `buscar_conversaciones` | `q`* (término) | No | No | SPEC-05 · Req. 1 |
+| INT-CNV-03 | Acciones rápidas fijas | `VER_OFERTAS`, `RASTREAR_PEDIDO`, `AYUDA_DEVOLUCION` (ActionDispatcher, sin LLM) | — | No | Según acción | SPEC-05 · Req. 14 |
+
+Las acciones fijas son controles de UI y no intenciones que el LLM deba inferir. "Preguntar en el chat" desde una tarjeta abre una conversación nueva con un primer mensaje contextual y continúa por las intenciones/herramientas de pedidos, seguimiento, reclamos o devoluciones existentes (SPEC-05 · Req. 13).
 
 **Frases de ejemplo**
 
@@ -430,7 +433,7 @@ No invocan herramientas de negocio (salvo donde se indica); su comportamiento lo
 |---|---|---|---|
 | INT-SIS-01 | Saludo | Si es la primera respuesta de la conversación, presentación de una línea; si no, saludo breve. Pregunta abierta corta + acciones rápidas principales | SPEC-05 · Req. 12 |
 | INT-SIS-02 | Despedida o agradecimiento | Texto de despedida de la guía; no se cierra la conversación (no existe el estado "cerrada" por el cliente) | Propuesta |
-| INT-SIS-03 | Ayuda / "¿qué puedes hacer?" | Resumen de 1 frase de lo que hace el canal + acciones rápidas (Buscar productos, Ofertas, Carrito, Mis pedidos) | SPEC-05 · Req. 3 (charla y ayuda) |
+| INT-SIS-03 | Ayuda / "¿qué puedes hacer?" | Resumen de 1 frase de lo que hace el canal + acciones rápidas principales: "Ver ofertas", "Rastrear pedido" y "Ayuda con devolución" | SPEC-05 · Req. 3, 14 |
 | INT-SIS-04 | Fuera de dominio | Rechazo amable: solo ayuda con compras en la tienda deportiva + acciones rápidas principales | SPEC-05 · Req. 3 |
 | INT-SIS-05 | Mensaje ambiguo | Una sola pregunta aclaratoria + acciones rápidas, sin herramientas | SPEC-05 · Req. 3 y Req. 5 |
 | INT-SIS-06 | "¿Eres un bot / humano?" | Texto canónico: es un asistente virtual, no una persona; sin herramientas | SPEC-05 · Req. 12 |

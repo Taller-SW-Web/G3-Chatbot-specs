@@ -116,6 +116,11 @@ Los textos marcados **Spec** son obligatorios y se copian tal cual (con variable
 | Aviso de privacidad | "Conversas con un asistente virtual con IA. No compartas contraseñas ni datos de tarjeta en el chat." + enlace "Política de privacidad" | Spec | SPEC-05 · Req. 12 |
 | "¿Eres humano?" | "Soy {ASSISTANT_NAME}, un asistente virtual, no una persona. Puedo ayudarte a buscar productos, comprar y revisar tus pedidos." | Spec | SPEC-05 · Req. 12 |
 | Pedir un humano | "En este canal no hay asesores humanos, pero puedo ayudarte con tu compra o tus pedidos. Si tienes un problema con un pedido, puedes crear un reclamo." + [Crear un reclamo] [Mis pedidos] | Spec | SPEC-05 · Req. 12 |
+| Acciones rápidas fijas | [Ver ofertas] [Rastrear pedido] [Ayuda con devolución] | Spec | SPEC-05 · Req. 14 |
+| Preguntar desde una tarjeta | "Preguntar en el chat" | Spec | SPEC-05 · Req. 13 |
+| Perfil no disponible en "Mi cuenta" | "No pudimos cargar tus datos en este momento" + [Reintentar] | Spec | SPEC-03 · Req. 7 |
+| Nota de documento en checkout | "El documento del comprobante puede ser distinto al de tu cuenta." | Spec | SPEC-12 · Req. 1 |
+| Botón del compositor de imágenes | "Agregar imagen" | Spec | SPEC-23 · Req. 1 |
 | Fuera de dominio | "Solo puedo ayudarte con compras en la tienda deportiva: productos, ofertas, tu carrito y tus pedidos." + acciones rápidas principales | Propuesta (sentido fijado por la spec) | SPEC-05 · Req. 3 |
 | No entendí (general) | "No te entendí bien. ¿Buscas un producto, revisar tu carrito o consultar un pedido?" + chips | Propuesta | SPEC-05 · Req. 3 (mensaje ambiguo) |
 | No entendí la cantidad | "No entendí la cantidad, ¿cuántas unidades quieres?" | Spec | SPEC-05 · Req. 6 |

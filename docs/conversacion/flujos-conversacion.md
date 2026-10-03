@@ -211,3 +211,31 @@ sequenceDiagram
     Note over UC,LLM: Si el LLM no responde en 15 s, DegradedMode responde por REST con el menú
     Note over FE,WS: Si el WebSocket no conecta, 2 reintentos y luego polling cada 2 s
 ```
+
+## (f) Cuenta, búsqueda y accesos contextuales
+
+Fuentes: SPEC-03 · Req. 7; SPEC-04 · Req. 3; SPEC-05 · Req. 1, 13 y 14; SPEC-17, SPEC-18, SPEC-20 y SPEC-22.
+
+```mermaid
+flowchart TD
+    A["Pie de Sidebar"] --> B{"¿Con sesión?"}
+    B -- "Sí · Mi cuenta" --> C["AccountPage<br/>perfil de solo lectura"]
+    B -- "No · Iniciar sesión" --> D["AuthModal"]
+    C --> E["Pedidos / Reclamos / Cerrar sesión"]
+    C --> F["Verificar celular<br/>OTP en AccountPage"]
+    A --> G["Buscar chats"]
+    G --> H["SearchChatsPage<br/>campo enfocado + recientes"]
+    H --> I{"¿Coincidencias?"}
+    I -- "Sí" --> J["Resultados resaltados<br/>abrir ChatPage"]
+    I -- "No" --> K["Sin resultados para {término}"]
+    A --> L["Historial de pedidos"]
+    L -- "Con sesión" --> M["OrderHistoryPage"]
+    L -- "Sin sesión" --> N["AuthModal<br/>pendingNavigation = /pedidos"]
+    N --> M
+    P["Tarjeta: Preguntar en el chat"] --> Q["Conversación nueva<br/>mensaje contextual"]
+    Q --> R["Herramienta de la capacidad<br/>pedido / seguimiento / reclamo / devolución"]
+    S["FixedQuickActions"] --> T{"Acción elegida"}
+    T -- "Ver ofertas" --> U["consultar_promociones"]
+    T -- "Rastrear pedido" --> V["Login si hace falta<br/>listar/consultar pedido"]
+    T -- "Ayuda con devolución" --> W["Login si hace falta<br/>preparar_devolucion"]
+```

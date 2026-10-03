@@ -1,6 +1,6 @@
 # EP-09 · Devoluciones y reembolsos — Historias de usuario
 
-> Specs: [SPEC-21](../../../openspec/specs/solicitud-devolucion-cambio/spec.md), [SPEC-22](../../../openspec/specs/consulta-devolucion-reembolso/spec.md) · Área `DEV` · 9 historias · 31 puntos
+> Specs: [SPEC-21](../../../openspec/specs/solicitud-devolucion-cambio/spec.md), [SPEC-22](../../../openspec/specs/consulta-devolucion-reembolso/spec.md) · Área `DEV` · 10 historias · 33 puntos
 >
 > Los criterios de aceptación **remiten** a los escenarios de la spec, que son la única fuente de verdad del comportamiento. Aquí solo se resume cada uno en una línea.
 >
@@ -170,6 +170,20 @@
 **Prioridad:** Could (ver nota de la épica).
 
 ---
+
+## HU-DEV-10 · Preguntar en el chat desde mi solicitud
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-09 | Could | 2 | Hito 5–6 | `SPEC-05 · Req. 13` | RN-CNV-31 | Ventas ✅ |
+
+**Como** cliente que está viendo una tarjeta de devolución o cambio, **quiero** preguntar en el chat desde ella, **para** consultar el estado de mi solicitud sin escribir su código.
+
+**Criterios de aceptación**
+- `SPEC-05 · Req. 13 · Scenario: Desde una solicitud de devolución o cambio` — se abre una conversación nueva con el identificador contextual y se invoca `consultar_devolucion`.
+- `SPEC-05 · Req. 13 · Scenario: La respuesta no está prearmada` — estado, fechas e importes provienen de Ventas; ante indisponibilidad se muestra el aviso de SPEC-22.
+
+**Prioridad:** Could: acceso directo a la consulta existente de postventa.
 
 ## Asignación del desglose (`design.md`) a historias
 

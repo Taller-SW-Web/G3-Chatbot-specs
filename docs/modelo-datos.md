@@ -170,7 +170,7 @@ Un carrito puede originar varios checkouts: si uno expira o falla, el cliente re
 | cart_id | uuid | no | FK → `cart.id` `ON DELETE RESTRICT` |
 | customer_id | uuid | no | |
 | status | text | no | `DEFAULT 'PENDING_PAYMENT'`, `CHECK IN ('PENDING_PAYMENT','PAYMENT_APPROVED','CONFIRMED','FAILED','EXPIRED')` |
-| summary | jsonb | no | Snapshot enviado a Ventas: líneas, descuentos, cupón, envío, dirección, `contacto` (incluye `tipoDocumento` y `numeroDocumento`, exigidos por Ventas — ver `contratos-integracion.md` A14) y totales |
+| summary | jsonb | no | Snapshot enviado a Ventas: líneas, descuentos, cupón, envío, dirección, `contacto` (incluye `tipoDocumento` y `numeroDocumento`, exigidos por Ventas — ver `contratos-integracion.md` A14) y totales. Para `AccountPage`, el BFF puede leer el último documento, pero entrega solo `tipo` y `numeroEnmascarado` |
 | total | numeric(12,2) | no | `CHECK (>= 0)` |
 | payment_attempts | integer | no | `DEFAULT 0`, `CHECK (payment_attempts BETWEEN 0 AND 3)`. Desnormalización deliberada de `count(payment_attempt)`: el `CHECK` hace cumplir el máximo de 3 intentos incluso con peticiones concurrentes |
 | expires_at | timestamptz | no | Creación + 15 min |
@@ -178,6 +178,8 @@ Un carrito puede originar varios checkouts: si uno expira o falla, el cliente re
 | created_at / updated_at | timestamptz | no | |
 
 🧩 Cambio: se elimina `checkout.order_id`. La relación vive solo en `order_ref.checkout_id`, para no tener dos fuentes de verdad.
+
+🧩 `AccountPage` no añade columnas ni una tabla de perfil: `ultimoDocumento` es una proyección enmascarada del `summary.contacto` del checkout más reciente del cliente. El número completo permanece solo en el snapshot del pedido y no se envía al frontend desde el perfil.
 
 | Índice | Consulta que lo usa |
 |---|---|

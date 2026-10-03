@@ -20,7 +20,7 @@ Actores externos que **no** usan el canal pero deciden sobre sus datos: el Gesto
 
 ## 3. Canal
 
-- **Incluido:** aplicación **web**, mobile-first, de pantalla completa (patrón tipo ChatGPT/WhatsApp Web), con frontend Next.js (App Router, solo como frontend) + React + TypeScript y backend FastAPI propio (BFF). Pantallas: Inicio, Barra lateral, Conversación, Carrito, Checkout e Historial de pedidos (README §2).
+- **Incluido:** aplicación **web**, mobile-first, de pantalla completa (patrón tipo ChatGPT/WhatsApp Web), con frontend Next.js (App Router, solo como frontend) + React + TypeScript y backend FastAPI propio (BFF). Pantallas: Inicio, Buscar chats, Mi cuenta, Barra lateral, Conversación, Carrito, Checkout e Historial de pedidos (README §2). La edición del perfil sigue fuera del canal.
 - **Excluido explícitamente:**
   - WhatsApp y otros canales de mensajería (SPEC-05 · Fuera de alcance).
   - Voz / speech-to-text (SPEC-05 · Fuera de alcance). Las imágenes adjuntas al chat sí están dentro del canal desde SPEC-23; el audio no.
@@ -36,11 +36,12 @@ Agrupadas por épica (ver [`epicas.md`](epicas.md)). Una línea por capacidad.
 - Registro con formulario seguro dentro del chat, con validación de política de contraseña y celular `+51` ([SPEC-01](../../openspec/specs/registro-cliente/spec.md)).
 - Verificación de correo por enlace de un solo uso (24 h) y reenvío limitado a 3 por hora ([SPEC-02](../../openspec/specs/verificacion-correo/spec.md)).
 - Login con MFA opcional, renovación silenciosa del token (15 min), retoma de la acción pendiente, fusión del carrito y logout ([SPEC-03](../../openspec/specs/inicio-sesion/spec.md)).
+- Pantalla "Mi cuenta" de solo lectura con datos del perfil, estado local del celular, último documento enmascarado y accesos a pedidos, reclamos y cierre de sesión (SPEC-03 · Req. 7); no permite editar datos del perfil.
 - Verificación local del celular por OTP simulado (6 dígitos, 5 min, 3 intentos) antes del primer pago ([SPEC-04](../../openspec/specs/validacion-celular/spec.md)).
 
 **EP-02 · Motor de conversación**
-- Conversaciones múltiples (crear, listar, buscar, retomar), pantalla de inicio, interpretación con herramientas, streaming por WebSocket con *fallback* a *polling*, acciones directas, guardarraíles, modo degradado, límites de uso y presentación del asistente virtual con aviso de privacidad ([SPEC-05](../../openspec/specs/motor-conversacion/spec.md)).
-- Adjuntar hasta 3 imágenes por mensaje (JPG, PNG o WebP de hasta 5 MB) para que el asistente las interprete con visión, con aviso de privacidad previo, almacenamiento privado, miniaturas con URLs firmadas en el historial, degradación si el análisis falla y límites de uso ([SPEC-23](../../openspec/specs/adjuntos-imagenes-chat/spec.md), Hito 4). Las imágenes se convierten en criterios de texto para la búsqueda existente; no hay búsqueda por similitud visual.
+- Conversaciones múltiples (crear, listar, buscar en una pantalla propia, retomar), pantalla de inicio, interpretación con herramientas, streaming por WebSocket con *fallback* a *polling*, botones "Preguntar en el chat", acciones rápidas fijas, guardarraíles, modo degradado, límites de uso y presentación del asistente virtual con aviso de privacidad ([SPEC-05](../../openspec/specs/motor-conversacion/spec.md)).
+- Adjuntar hasta 3 imágenes por mensaje (JPG, PNG o WebP de hasta 5 MB) desde galería o cámara para que el asistente las interprete con visión, con aviso de privacidad previo, almacenamiento privado, miniaturas con URLs firmadas en el historial, degradación si el análisis falla y límites de uso ([SPEC-23](../../openspec/specs/adjuntos-imagenes-chat/spec.md), Hito 4). Las imágenes se convierten en criterios de texto para la búsqueda existente; no hay búsqueda por similitud visual ni se reutilizan como evidencia de devolución o reclamo.
 
 **EP-03 · Descubrimiento de productos**
 - Búsqueda con filtros combinados, sinónimos locales, refinamiento y paginación de 10 en 10 ([SPEC-06](../../openspec/specs/busqueda-filtrado/spec.md)).
@@ -53,7 +54,7 @@ Agrupadas por épica (ver [`epicas.md`](epicas.md)). Una línea por capacidad.
 - Carrito conversacional con límites de 10 unidades por línea y 20 líneas, totales recalculados y persistencia ([SPEC-11](../../openspec/specs/gestion-carrito/spec.md)).
 
 **EP-05 · Checkout y pago**
-- Documento del comprador (DNI, RUC, CE, PASAPORTE), dirección con campos libres y cotización de envío con Despacho ([SPEC-12](../../openspec/specs/direccion-cotizacion-envio/spec.md)).
+- Documento del comprador (DNI, RUC, CE, PASAPORTE) con nota informativa, dirección con campos libres y cotización de envío con Despacho ([SPEC-12](../../openspec/specs/direccion-cotizacion-envio/spec.md)).
 - Un cupón por carrito, validado sin consumir y revalidado ante cambios ([SPEC-13](../../openspec/specs/cupones/spec.md)).
 - Checkout de 15 minutos, introspección de sesión y pago simulado con tarjeta, con hasta 3 intentos ([SPEC-14](../../openspec/specs/checkout-pago/spec.md)).
 
@@ -62,16 +63,16 @@ Agrupadas por épica (ver [`epicas.md`](epicas.md)). Una línea por capacidad.
 - Correo de confirmación único por pedido, con reintentos y reenvío manual ([SPEC-16](../../openspec/specs/notificacion-confirmacion/spec.md)).
 
 **EP-07 · Seguimiento de pedidos**
-- Consulta del estado y línea de tiempo de los pedidos del cliente (de cualquier canal) ([SPEC-17](../../openspec/specs/consulta-estado-pedido/spec.md)).
-- Seguimiento del despacho por etapas, sin GPS ni datos del repartidor ([SPEC-18](../../openspec/specs/seguimiento-despacho/spec.md)).
+- Consulta del estado y línea de tiempo de los pedidos del cliente (de cualquier canal), con "Preguntar en el chat" desde las tarjetas ([SPEC-17](../../openspec/specs/consulta-estado-pedido/spec.md)).
+- Seguimiento del despacho por etapas, sin GPS ni datos del repartidor, con "Preguntar en el chat" ([SPEC-18](../../openspec/specs/seguimiento-despacho/spec.md)).
 
 **EP-08 · Reclamos** (extensión)
 - Registro guiado de reclamos o quejas sobre un pedido, con detección de duplicados ([SPEC-19](../../openspec/specs/creacion-reclamo/spec.md)).
-- Consulta del estado y de la respuesta textual de Ventas ([SPEC-20](../../openspec/specs/consulta-reclamo/spec.md)).
+- Consulta del estado y de la respuesta textual de Ventas, con "Preguntar en el chat" desde las tarjetas ([SPEC-20](../../openspec/specs/consulta-reclamo/spec.md)).
 
 **EP-09 · Devoluciones y reembolsos** (extensión)
 - Solicitud de cambio o devolución dentro de 7 días naturales, con evidencia de hasta 3 archivos de 5 MB ([SPEC-21](../../openspec/specs/solicitud-devolucion-cambio/spec.md)).
-- Consulta de solicitudes de todos los canales y del estado del reembolso ([SPEC-22](../../openspec/specs/consulta-devolucion-reembolso/spec.md)).
+- Consulta de solicitudes de todos los canales y del estado del reembolso, con "Preguntar en el chat" desde las tarjetas ([SPEC-22](../../openspec/specs/consulta-devolucion-reembolso/spec.md)).
 
 ## 5. Fuera de alcance (consolidado)
 

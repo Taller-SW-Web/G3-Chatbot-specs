@@ -1,6 +1,6 @@
 # EP-02 · Motor de conversación — Historias de usuario
 
-> Specs: [SPEC-05](../../../openspec/specs/motor-conversacion/spec.md), [SPEC-23](../../../openspec/specs/adjuntos-imagenes-chat/spec.md) · Área `CNV` · 19 historias · 94 puntos
+> Specs: [SPEC-05](../../../openspec/specs/motor-conversacion/spec.md), [SPEC-23](../../../openspec/specs/adjuntos-imagenes-chat/spec.md) · Área `CNV` · 21 historias · 102 puntos
 >
 > Los criterios de aceptación **remiten** a los escenarios de la spec, que son la única fuente de verdad del comportamiento. Aquí solo se resume cada uno en una línea.
 
@@ -22,7 +22,7 @@
 
 **Prioridad:** Must: es la base de la aplicación de chat (`AppShell`, `Sidebar`, persistencia).
 
-**Notas:** incluye el esqueleto de la app (`AppShell` con las rutas `/`, `/chat/[id]`, `/carrito`, `/checkout` y `/pedidos`), `chatStore`, los puertos y la inyección de dependencias.
+**Notas:** incluye el esqueleto de la app (`AppShell` con las rutas `/`, `/buscar`, `/cuenta`, `/chat/[id]`, `/carrito`, `/checkout` y `/pedidos`), `chatStore`, los puertos y la inyección de dependencias.
 
 ---
 
@@ -35,7 +35,10 @@
 **Como** cliente con varias conversaciones, **quiero** buscar un término en mis chats, **para** encontrar rápido una conversación anterior.
 
 **Criterios de aceptación**
-- `SPEC-05 · Req. 1 · Scenario: Buscar chats` — la búsqueda devuelve las conversaciones cuyo título o mensajes contienen el término, con la coincidencia resaltada.
+- `SPEC-05 · Req. 1 · Scenario: Buscar chats` — "Buscar chats" abre `SearchChatsPage` con el campo enfocado y recientes con título, vista previa y fecha.
+- `SPEC-05 · Req. 1 · Scenario: Buscar por texto` — se muestran coincidencias en título o mensajes, resaltadas, y se puede abrir una conversación.
+- `SPEC-05 · Req. 1 · Scenario: Búsqueda sin resultados` — aparece "Sin resultados para {término}".
+- `SPEC-05 · Req. 1 · Scenario: Historial de pedidos desde la barra lateral` — abre pedidos o conserva `/pedidos` como navegación pendiente hasta completar login.
 
 **Prioridad:** Should: mejora la navegación, pero no bloquea la compra.
 
@@ -47,10 +50,10 @@
 |---|---|---|---|---|---|---|
 | EP-02 | Must | 5 | Hito 3 | `SPEC-05 · Req. 2` | RN-CNV-04 | Productos 🟡 (A5) |
 
-**Como** visitante que abre la app, **quiero** ver ofertas destacadas y un campo para escribir en la misma pantalla, **para** empezar a comprar sin registrarme ni navegar menús.
+**Como** visitante que abre la app, **quiero** ver ofertas destacadas, un campo para escribir y accesos rápidos en la misma pantalla, **para** empezar a comprar o consultar sin buscar comandos.
 
 **Criterios de aceptación**
-- `SPEC-05 · Req. 2 · Scenario: Primera apertura` — se muestran el banner (SPEC-08), un grid de hasta 4 productos en oferta (SPEC-06, `soloOfertas=true`) y el campo de chat, sin sesión.
+- `SPEC-05 · Req. 2 · Scenario: Primera apertura` — se muestran banner, grid de hasta 4 productos en oferta, campo de chat y las tres acciones rápidas fijas, sin sesión.
 - `SPEC-05 · Req. 2 · Scenario: Promociones no disponibles` — sin promociones (Hito 3, falla o lista vacía) el banner se oculta y el grid y el chat se muestran igual, sin error.
 - `SPEC-05 · Req. 2 · Scenario: Escribir desde la pantalla de inicio` — la conversación se crea al enviar el primer mensaje y la app navega a `ChatPage`.
 - `SPEC-05 · Req. 2 · Scenario: Agregar directo desde el grid de ofertas` — el botón "+" ejecuta la acción directa `AGREGAR_AL_CARRITO` sin abrir una conversación.
@@ -256,6 +259,10 @@
 - `SPEC-23 · Req. 1 · Scenario: Tipo o tamaño no permitido detectado en el cliente` — un archivo que no es JPG, PNG o WebP, o de más de 5 MB, se rechaza antes de subirlo con un mensaje claro.
 - `SPEC-23 · Req. 1 · Scenario: Quitar una imagen antes de enviar` — la imagen desaparece del compositor y el backend elimina el adjunto pendiente.
 - `SPEC-23 · Req. 1 · Scenario: Mensaje solo con imagen` — el envío se permite sin texto cuando hay al menos un adjunto.
+- `SPEC-23 · Req. 1 · Scenario: Elegir el origen de la imagen` — "Agregar imagen" abre una hoja con Galería y Tomar foto.
+- `SPEC-23 · Req. 1 · Scenario: Tomar una foto con la cámara` — la foto se valida como una imagen de galería y se muestra como miniatura removible.
+- `SPEC-23 · Req. 1 · Scenario: Dispositivo sin cámara o permiso denegado` — no bloquea el uso de Galería ni el envío de texto.
+- `SPEC-23 · Req. 1 · Scenario: Foto de cámara mayor de 5 MB` — se rechaza con el mensaje de tamaño actual, sin compresión en cliente.
 - `SPEC-23 · Req. 2 · Scenario: Primera carga en el dispositivo` — el aviso de privacidad con enlace a la política aparece antes de abrir el selector de archivos.
 - `SPEC-23 · Req. 2 · Scenario: Cargas posteriores` — tras confirmar el aviso, el selector se abre directamente.
 - `SPEC-23 · Req. 2 · Scenario: El cliente cierra el aviso sin confirmar` — no se abre el selector y el envío de texto no se ve afectado.
@@ -380,6 +387,45 @@
 **Notas:** habilitadora. El plazo de retención de los adjuntos está pendiente (pregunta abierta en [`alcance.md`](../alcance.md#preguntas-abiertas)). Incluye el job de limpieza de pendientes y de huérfanos.
 
 ---
+
+## HU-CNV-20 · Preguntar en el chat desde mis tarjetas
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-02 | Should | 3 | Hito 5–6 | `SPEC-05 · Req. 13` | RN-CNV-31 | Ventas, Despacho |
+
+**Como** cliente que está revisando un pedido, seguimiento, reclamo o devolución, **quiero** abrir una conversación contextual desde su tarjeta, **para** consultar el estado sin copiar el identificador ni volver a explicar el tema.
+
+**Criterios de aceptación**
+- `SPEC-05 · Req. 13 · Scenario: Desde una tarjeta de pedido` — se crea una conversación nueva, se envía el primer mensaje contextual y se obtiene `ESTADO_PEDIDO` con `consultar_pedido`.
+- `SPEC-05 · Req. 13 · Scenario: Desde el seguimiento de un pedido` — el primer mensaje identifica el `pedidoId` y se responde con `consultar_seguimiento`.
+- `SPEC-05 · Req. 13 · Scenario: Desde una solicitud de devolución o cambio` — se identifica la solicitud y se responde con `consultar_devolucion`.
+- `SPEC-05 · Req. 13 · Scenario: Desde un reclamo` — se identifica el reclamo y se responde con `consultar_reclamo`.
+- `SPEC-05 · Req. 13 · Scenario: La respuesta no está prearmada` — datos y disponibilidad provienen de las herramientas de los módulos dueños.
+
+**Prioridad:** Should: facilita consultas desde postventa y no altera las pantallas ni las herramientas existentes.
+
+---
+
+## HU-CNV-21 · Usar acciones rápidas fijas en Inicio y Conversación
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-02 | Should | 5 | Hito 5–6 | `SPEC-05 · Req. 14` | RN-CNV-32 | Productos, Ventas, Despacho |
+
+**Como** cliente, **quiero** tener siempre a mano "Ver ofertas", "Rastrear pedido" y "Ayuda con devolución", **para** iniciar los flujos frecuentes con una pulsación.
+
+**Criterios de aceptación**
+- `SPEC-05 · Req. 14 · Scenario: "Ver ofertas" desde la pantalla de inicio` — crea la conversación y ejecuta directamente la consulta de promociones.
+- `SPEC-05 · Req. 14 · Scenario: "Rastrear pedido" con sesión` — presenta el único pedido en curso o una lista para elegir.
+- `SPEC-05 · Req. 14 · Scenario: "Ayuda con devolución" con sesión` — inicia la selección del pedido y el formulario elegible.
+- `SPEC-05 · Req. 14 · Scenario: Acción que requiere sesión, sin sesión` — guarda la acción pendiente y retoma tras login.
+- `SPEC-05 · Req. 14 · Scenario: Convivencia con las acciones de una respuesta` — conserva los chips contextuales separados de las acciones fijas.
+- `SPEC-05 · Req. 14 · Scenario: Mientras el asistente responde` — las acciones fijas quedan deshabilitadas hasta terminar el turno.
+
+**Prioridad:** Should: acelera flujos frecuentes, pero cada flujo sigue disponible por conversación y navegación.
+
+**Notas:** default de diseño: `FixedQuickActions` ejecuta acciones directas registradas en historial; `QuickReplies` sigue representando las sugerencias de una respuesta.
 
 ## Asignación del desglose (`design.md`) a historias
 

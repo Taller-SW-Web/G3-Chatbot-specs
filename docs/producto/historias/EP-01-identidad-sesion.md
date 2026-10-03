@@ -1,6 +1,6 @@
 # EP-01 · Identidad y sesión — Historias de usuario
 
-> Specs: [SPEC-01](../../../openspec/specs/registro-cliente/spec.md), [SPEC-02](../../../openspec/specs/verificacion-correo/spec.md), [SPEC-03](../../../openspec/specs/inicio-sesion/spec.md), [SPEC-04](../../../openspec/specs/validacion-celular/spec.md) · Área `IDE` · 14 historias · 50 puntos
+> Specs: [SPEC-01](../../../openspec/specs/registro-cliente/spec.md), [SPEC-02](../../../openspec/specs/verificacion-correo/spec.md), [SPEC-03](../../../openspec/specs/inicio-sesion/spec.md), [SPEC-04](../../../openspec/specs/validacion-celular/spec.md) · Área `IDE` · 15 historias · 55 puntos
 >
 > Los criterios de aceptación **remiten** a los escenarios de la spec, que son la única fuente de verdad del comportamiento (DADO/CUANDO/ENTONCES). Aquí solo se resume cada uno en una línea.
 
@@ -258,6 +258,26 @@
 **Prioridad:** Should: mejora la experiencia, pero el flujo obligatorio ya se cubre con HU-IDE-12 y HU-IDE-13.
 
 ---
+
+## HU-IDE-15 · Consultar mi cuenta sin editar mi perfil
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-01 | Should | 5 | Hito 4 | `SPEC-03 · Req. 7`; `SPEC-04 · Req. 3` | RN-IDE-22 | Seguridad (`GET /auth/me`) |
+
+**Como** cliente autenticado, **quiero** consultar mis datos, el estado de mi celular y mis accesos de cuenta desde una pantalla propia, **para** encontrar lo que necesito sin editar datos fuera del canal.
+
+**Criterios de aceptación**
+- `SPEC-03 · Req. 7 · Scenario: Abrir "Mi cuenta" con sesión` — el pie de la barra lateral abre la pantalla de solo lectura con nombre, correo verificado, celular enmascarado y accesos.
+- `SPEC-03 · Req. 7 · Scenario: Documento del último pedido` — se muestra el tipo y número enmascarado del documento del checkout más reciente del canal.
+- `SPEC-03 · Req. 7 · Scenario: Datos que se editan fuera del canal` — nombre/correo, celular, contraseña/MFA y direcciones se muestran como información no editable.
+- `SPEC-03 · Req. 7 · Scenario: Accesos desde "Mi cuenta"` — pedidos, reclamos y cierre de sesión llevan a sus capacidades existentes.
+- `SPEC-03 · Req. 7 · Scenario: Perfil no disponible` — se ofrece reintentar y se mantiene disponible el cierre de sesión.
+- `SPEC-04 · Req. 3 · Scenario: Verificación iniciada desde "Mi cuenta"` — se completa el OTP en la misma pantalla y el estado se actualiza sin navegar.
+
+**Prioridad:** Should: reúne accesos frecuentes, sin añadir edición del perfil ni bloquear compra o postventa.
+
+**Notas:** el backend devuelve el documento enmascarado desde el último `checkout.summary.contacto`; nunca se envía el número completo al frontend desde esta pantalla.
 
 ## Asignación del desglose (`design.md`) a historias
 

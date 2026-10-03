@@ -1,6 +1,6 @@
 # EP-08 · Reclamos — Historias de usuario
 
-> Specs: [SPEC-19](../../../openspec/specs/creacion-reclamo/spec.md), [SPEC-20](../../../openspec/specs/consulta-reclamo/spec.md) · Área `RCL` · 7 historias · 22 puntos
+> Specs: [SPEC-19](../../../openspec/specs/creacion-reclamo/spec.md), [SPEC-20](../../../openspec/specs/consulta-reclamo/spec.md) · Área `RCL` · 8 historias · 24 puntos
 >
 > Los criterios de aceptación **remiten** a los escenarios de la spec, que son la única fuente de verdad del comportamiento. Aquí solo se resume cada uno en una línea.
 >
@@ -128,6 +128,20 @@
 **Prioridad:** Could (igual que HU-RCL-05).
 
 ---
+
+## HU-RCL-08 · Preguntar en el chat desde mi reclamo
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-08 | Could | 2 | Hito 5–6 | `SPEC-05 · Req. 13` | RN-CNV-31 | Ventas ✅ |
+
+**Como** cliente que está viendo una tarjeta de reclamo, **quiero** preguntar en el chat desde ella, **para** consultar su estado y respuesta sin escribir el código.
+
+**Criterios de aceptación**
+- `SPEC-05 · Req. 13 · Scenario: Desde un reclamo` — se abre una conversación nueva con el código contextual y se invoca `consultar_reclamo`.
+- `SPEC-05 · Req. 13 · Scenario: La respuesta no está prearmada` — estado y respuesta provienen de Ventas; ante indisponibilidad se muestra el aviso de SPEC-20.
+
+**Prioridad:** Could: atajo de navegación a la consulta de reclamo existente.
 
 ## Asignación del desglose (`design.md`) a historias
 

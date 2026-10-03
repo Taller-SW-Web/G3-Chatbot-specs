@@ -97,7 +97,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 `⟶ tool: iniciar_checkout({})`
 `⟵ sesión ✓ → celular verificado ✓ → carrito válido ✓ → (dirección y cotización en CheckoutPage) → sin cupón`
 **Botleta:** Te llevo a la pantalla de pago para que revises tu pedido.
-*(Pantalla `CheckoutPage`: dirección prellenada con "Usando tu dirección guardada · Cambiar", documento DNI por completar, "Envío a Miraflores: S/ 12.50 · llega en 1 día hábil aprox.", total S/ 302.40 y el botón `[Confirmar y pagar S/ 302.40]`.)*
+*(Pantalla `CheckoutPage`: dirección prellenada con "Usando tu dirección guardada · Cambiar", documento DNI por completar con la nota "El documento del comprobante puede ser distinto al de tu cuenta.", "Envío a Miraflores: S/ 12.50 · llega en 1 día hábil aprox.", total S/ 302.40 y el botón `[Confirmar y pagar S/ 302.40]`.)*
 *(María completa `tipoDocumento: DNI`, `numeroDocumento: 72458912` y pulsa `[Confirmar y pagar S/ 302.40]` → `POST /checkout` con `Idempotency-Key` → pedido `CREADO` en Ventas, checkout `PENDING_PAYMENT` con 15 min de vigencia.)*
 *(`CheckoutPage` muestra `[FORMULARIO/PAGO]`: "Total a pagar: S/ 302.40" y "Pago simulado – entorno académico. No uses tarjetas reales". María ingresa `4111 1111 1111 1111` y pulsa `[Pagar]` → introspección `activo: true` → simulador `APPROVED`.)*
 *(El outbox notifica el pago a Ventas → `PAGADO`; la app vuelve al chat.)*

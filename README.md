@@ -233,6 +233,10 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 - **Idempotencia:** toda operación que crea algo en otro módulo o mueve dinero (pedido, pago, reclamo, solicitud de devolución) lleva un `Idempotency-Key`.
 - **Contratos provisionales:** donde el otro módulo aún no publicó su contrato, la spec lo marca como **(provisional)**. La lista completa está en [`docs/contratos-integracion.md`](docs/contratos-integracion.md) §6.
 - **Criterios de aceptación:** cada escenario DADO/CUANDO/ENTONCES debe tener al menos una prueba automatizada que lo referencie por nombre.
+- **Idioma de los nombres:**
+  - Código (backend y frontend): todos los directorios y archivos de código van en inglés.
+  - Base de datos: tablas, columnas, valores de enumeración, constraints, índices y archivos de migración van en inglés (ver `odd/tasks/db-english-naming.md`).
+  - Specs: los directorios y archivos de SPEC siguen en español (`openspec/specs/gestion-carrito`, `docs/conversacion/`), igual que la prosa de los documentos.
 
 ---
 

@@ -25,19 +25,19 @@ El prototipo web ya contiene seis elementos de navegación e interacción que no
 
 ## Questions to Confirm
 
-Se aplican provisionalmente los defaults indicados, pero se requiere confirmar cada punto con el equipo:
+Decisiones confirmadas con el equipo:
 
-1. **Ubicación de "Mi cuenta":** por defecto, requisito 7 de SPEC-03; no se crea una capacidad nueva y se mantienen 23 specs.
-2. **Origen del documento en "Mi cuenta":** por defecto, último documento usado en un checkout de este canal (`checkout.summary.contacto`). La nota de checkout conserva literalmente "El documento del comprobante puede ser distinto al de tu cuenta.", aunque Seguridad no guarda un documento de perfil.
-3. **Visibilidad del correo:** por defecto, se muestra completo en `AccountPage`; el enmascaramiento sigue aplicando a mensajes del chat.
-4. **Enlace al perfil externo:** por defecto, los cuatro datos editables fuera del canal son informativos; solo enlazan al perfil externo si existe una URL configurada.
-5. **Destino de "Mis reclamos":** por defecto, la lista de SPEC-20. Si se aprueba una pestaña "Reclamos" en el historial, se ajustará el destino.
-6. **"Preguntar en el chat":** por defecto, siempre crea una conversación nueva.
-7. **Acciones rápidas fijas:** por defecto, son acciones directas de la UI, registradas en el historial; no se envían como texto al LLM aunque el prototipo visual las presente como acciones del cliente.
-8. **Acciones rápidas principales:** por defecto, se consideran las tres acciones fijas. Las sugerencias contextuales que devuelve una respuesta siguen siendo `QuickReplies` separados.
-9. **Retoma de navegación sin conversación:** propuesta por defecto: guardar `pendingNavigation = /pedidos` en estado transitorio de aplicación, fuera de `conversation.context.accionPendiente`, y limpiarlo tras el login y la navegación. Confirmar persistencia y ciclo de vida.
-10. **Fotos mayores de 5 MB:** por defecto, se rechazan con el mensaje de tamaño existente; no se comprimen en el cliente.
-11. **Nombre del botón de adjuntar:** por defecto, "Agregar imagen", como en el prototipo.
+1. **Ubicación de "Mi cuenta":** requisito 7 de SPEC-03; no se crea una capacidad nueva y se mantienen 23 specs.
+2. **Origen del documento en "Mi cuenta":** primero consultar el perfil de Seguridad (si tiene documento, aunque sea enmascarado, se muestra eso).
+3. **Visibilidad del correo:** se muestra completo en `AccountPage`; el enmascaramiento sigue aplicando a mensajes del chat.
+4. **Enlace al perfil externo:** los cuatro datos editables fuera del canal son informativos; solo enlazan al perfil externo si existe una URL configurada.
+5. **Destino de "Mis reclamos":** la lista de SPEC-20. Si se aprueba una pestaña "Reclamos" en el historial, se ajustará el destino.
+6. **"Preguntar en el chat":** siempre crea una conversación nueva, con la referencia del pedido, reclamo o solicitud de devolución o cambio ya incluida en el primer mensaje del cliente.
+7. **Acciones rápidas fijas:** son acciones directas de la UI, registradas en el historial; no se envían como texto al LLM aunque el prototipo visual las presente como acciones del cliente.
+8. **Acciones rápidas principales:** se consideran las tres acciones fijas. Las sugerencias contextuales que devuelve una respuesta siguen siendo `QuickReplies` separados.
+9. **Retoma de navegación sin conversación:** se guarda `pendingNavigation = /pedidos` en estado transitorio de aplicación, fuera de `conversation.context.accionPendiente`, y se limpia tras el login y la navegación.
+10. **Fotos mayores de 5 MB:** se rechazan con el mensaje de tamaño existente; no se comprimen en el cliente.
+11. **Nombre del botón de adjuntar:** "Agregar imagen", como en el prototipo.
 
 ## Out of Scope
 

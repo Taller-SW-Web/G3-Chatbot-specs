@@ -1,6 +1,6 @@
 # EP-07 · Seguimiento de pedidos — Historias de usuario
 
-> Specs: [SPEC-17](../../../openspec/specs/consulta-estado-pedido/spec.md), [SPEC-18](../../../openspec/specs/seguimiento-despacho/spec.md) · Área `SGT` · 8 historias · 28 puntos
+> Specs: [SPEC-17](../../../openspec/specs/consulta-estado-pedido/spec.md), [SPEC-18](../../../openspec/specs/seguimiento-despacho/spec.md) · Área `SGT` · 9 historias · 30 puntos
 >
 > Los criterios de aceptación **remiten** a los escenarios de la spec, que son la única fuente de verdad del comportamiento. Aquí solo se resume cada uno en una línea.
 
@@ -145,6 +145,21 @@
 **Notas:** habilitadora. El `ServiceTokenProvider` de este desglose se adelanta a HU-CHK-14 (Hito 4); aquí solo se reutiliza.
 
 ---
+
+## HU-SGT-09 · Preguntar en el chat desde mi pedido o seguimiento
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-07 | Should | 2 | Hito 5–6 | `SPEC-05 · Req. 13` | RN-CNV-31 | — |
+
+**Como** cliente que está viendo su pedido o seguimiento, **quiero** preguntar en el chat desde la tarjeta, **para** recibir una respuesta actual basada en los servicios de pedidos y despacho.
+
+**Criterios de aceptación**
+- `SPEC-05 · Req. 13 · Scenario: Desde una tarjeta de pedido` — la conversación nueva consulta el pedido y muestra `ESTADO_PEDIDO`.
+- `SPEC-05 · Req. 13 · Scenario: Desde el seguimiento de un pedido` — se consulta el seguimiento por su pedido.
+- `SPEC-05 · Req. 13 · Scenario: La respuesta no está prearmada` — se usan datos de herramientas y se respeta la degradación de SPEC-17/18.
+
+**Prioridad:** Should: atajo a consultas ya disponibles en pedido y seguimiento.
 
 ## Asignación del desglose (`design.md`) a historias
 

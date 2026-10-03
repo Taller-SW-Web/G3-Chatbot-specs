@@ -11,16 +11,16 @@
 
 | Épica | Nombre | Grupo (README) | Specs | Área | Hito | Historias | Puntos |
 |---|---|---|---|---|---|---|---|
-| EP-01 | Identidad y sesión | Identidad | SPEC-01, 02, 03, 04 | `IDE` | Hito 3 (01–03) · Hito 4 (04) | 14 | 50 |
-| EP-02 | Motor de conversación | Transversal | SPEC-05, 23 | `CNV` | Hito 3 (05) · Hito 4 (23) | 19 | 94 |
+| EP-01 | Identidad y sesión | Identidad | SPEC-01, 02, 03, 04 | `IDE` | Hito 3 (01–03) · Hito 4 (04) | 15 | 55 |
+| EP-02 | Motor de conversación | Transversal | SPEC-05, 23 | `CNV` | Hito 3 (05) · Hito 4 (23) · Hito 5–6 (accesos desde tarjetas) | 21 | 102 |
 | EP-03 | Descubrimiento de productos | Descubrimiento | SPEC-06, 07, 08, 09 | `CAT` | Hito 3 (06, 09) · Hito 4 (07, 08) | 16 | 61 |
 | EP-04 | Carrito y stock | Carrito | SPEC-10, 11 | `CAR` | Hito 3 | 8 | 36 |
 | EP-05 | Checkout y pago | Checkout | SPEC-12, 13, 14 | `CHK` | Hito 4 | 16 | 65 |
 | EP-06 | Grabación y confirmación del pedido | Checkout | SPEC-15, 16 | `PED` | Hito 4 | 8 | 32 |
-| EP-07 | Seguimiento de pedidos | Seguimiento | SPEC-17, 18 | `SGT` | Hito 5–6 | 8 | 28 |
-| EP-08 | Reclamos | Postventa | SPEC-19, 20 | `RCL` | Hito 5–6 | 7 | 22 |
-| EP-09 | Devoluciones y reembolsos | Postventa | SPEC-21, 22 | `DEV` | Hito 5–6 | 9 | 31 |
-| | **Total** | | **23 specs** | | | **105** | **419** |
+| EP-07 | Seguimiento de pedidos | Seguimiento | SPEC-17, 18 | `SGT` | Hito 5–6 | 9 | 30 |
+| EP-08 | Reclamos | Postventa | SPEC-19, 20 | `RCL` | Hito 5–6 | 8 | 24 |
+| EP-09 | Devoluciones y reembolsos | Postventa | SPEC-21, 22 | `DEV` | Hito 5–6 | 10 | 33 |
+| | **Total** | | **23 specs** | | | **111** | **438** |
 
 ```mermaid
 graph LR
@@ -40,7 +40,7 @@ graph LR
 
 ## EP-01 · Identidad y sesión
 
-- **Objetivo:** que el cliente cree su cuenta, verifique su correo, inicie sesión (con MFA si corresponde), mantenga la sesión viva y valide su celular antes de pagar, sin salir del chat.
+- **Objetivo:** que el cliente cree su cuenta, verifique su correo, inicie sesión (con MFA si corresponde), mantenga la sesión viva, consulte su información en "Mi cuenta" y valide su celular antes de pagar, sin salir del canal.
 - **Valor de negocio:** habilita todas las acciones protegidas (pago, pedidos, postventa) y cubre el lineamiento "validación del número celular y correo del cliente". Sin esta épica no hay compra.
 - **Specs:** SPEC-01 Registro · SPEC-02 Verificación de correo · SPEC-03 Inicio de sesión, MFA y sesión · SPEC-04 Validación local de celular.
 - **Hito:** Hito 3 (SPEC-01 a 03) y Hito 4 (SPEC-04).
@@ -49,10 +49,10 @@ graph LR
 
 ## EP-02 · Motor de conversación
 
-- **Objetivo:** ofrecer la aplicación de chat de pantalla completa (conversaciones múltiples, pantalla de inicio, streaming), interpretar cada mensaje con herramientas de forma segura y verídica y, desde SPEC-23, permitir adjuntar imágenes para que el asistente las interprete.
+- **Objetivo:** ofrecer la aplicación de chat de pantalla completa (conversaciones múltiples, búsqueda propia, pantalla de inicio, streaming), consultar desde tarjetas, mostrar acciones rápidas fijas, interpretar cada mensaje con herramientas de forma segura y verídica y, desde SPEC-23, permitir adjuntar imágenes desde galería o cámara.
 - **Valor de negocio:** es la base transversal que usan las demás specs y cubre el lineamiento "consulta conversacional de productos mediante lenguaje natural". Las imágenes permiten mostrar lo que se busca o el problema que se tiene en lugar de describirlo (el audio sigue fuera de alcance).
 - **Specs:** SPEC-05 Motor de conversación · SPEC-23 Adjuntos de imágenes en el chat.
-- **Hito:** Hito 3 (SPEC-05) y Hito 4 (SPEC-23, después del núcleo del Hito 3).
+- **Hito:** Hito 3 (núcleo de SPEC-05), Hito 4 (SPEC-23, después del núcleo del Hito 3) y Hito 5–6 (accesos desde las tarjetas de pedidos y postventa).
 - **Dependencias:** proveedor LLM (configuración); SPEC-03 para ligar conversaciones al cliente; SPEC-08 para el grid de ofertas del inicio (ver [preguntas abiertas](alcance.md#preguntas-abiertas)). SPEC-23 depende de SPEC-05 (motor, `LLMProvider`, ventana de contexto, modo degradado y límites de uso) y de SPEC-06 (búsqueda de productos con los criterios que el LLM deduce de la imagen); se relaciona con SPEC-21 (EP-09) sin compartir datos: las imágenes del chat no son la evidencia de devolución. Requiere un bucket privado de Supabase Storage y un modelo con soporte de visión ⚠️ (`gpt-6-luna`, sin verificar).
 - **Historias:** [historias/EP-02-conversacion.md](historias/EP-02-conversacion.md)
 

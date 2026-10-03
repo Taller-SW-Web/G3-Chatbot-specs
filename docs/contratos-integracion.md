@@ -46,6 +46,8 @@ Prefijo: `/api/v1`. Todas las respuestas de error usan `application/problem+json
 
 \* Una conversación ligada a un cliente solo la puede listar o leer ese cliente. Las anónimas se listan o leen con la cookie `chat_sid`.
 
+🧩 Tipos directos propuestos para las acciones rápidas fijas (sin LLM, registrados en el historial): `VER_OFERTAS` → `consultar_promociones`; `RASTREAR_PEDIDO` → identificación y consulta de pedido/seguimiento; `AYUDA_DEVOLUCION` → `preparar_devolucion`. Las dos últimas requieren sesión y conservan la acción pendiente para retomar después del login.
+
 **WebSocket** — `wss://<host>/api/v1/chat/ws?conversacionId=<id>`, autenticado con el mismo `accessToken` (query param o subprotocolo). Se usa **únicamente para transmitir la respuesta del asistente**; el cliente nunca envía mensajes por este canal. Eventos emitidos:
 
 | Evento | Payload | Cuándo |
@@ -81,7 +83,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | POST | `/sesion/mfa/verificar` | `POST /auth/otp/verificar` |
 | POST | `/sesion/refresh` | `POST /auth/refresh` |
 | POST | `/sesion/logout` | `POST /auth/logout` |
-| GET | `/sesion/perfil` | `GET /auth/me` |
+| GET | `/sesion/perfil` | `GET /auth/me`; agrega `celularVerificado` desde la verificación local y `ultimoDocumento` opcional `{ tipo, numeroEnmascarado }` desde el checkout más reciente del canal (null si no hay documento) |
 | GET | `/sesion/politica-contrasena` | `GET /password/politica` |
 | POST | `/contacto/celular/solicitar-otp` | ✅ propio del chatbot (SPEC-04), no depende de Seguridad — ver acuerdo A2 |
 | POST | `/contacto/celular/verificar-otp` | ✅ ídem |

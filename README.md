@@ -157,12 +157,16 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 
 | Pantalla | Contenido | Specs relacionadas |
 |---|---|---|
-| **Inicio** (`HomePage`, ruta `/`) | Banner de ofertas, grid de "Productos en oferta", campo de chat en la parte inferior. Combina catálogo y conversación en una sola vista de entrada. | SPEC-06, 08, 09, 05 |
-| **Barra lateral** (`Sidebar`, overlay) | "Nuevo chat", "Buscar chats", "Historial" de conversaciones, lista de recientes, perfil del usuario con acceso a configuración | SPEC-05 |
-| **Conversación** (`ChatPage`, ruta `/chat/[id]`) | Historial de mensajes de una conversación, tarjetas de producto inline, entrada de texto | SPEC-05 a 09 |
+| **Inicio** (`HomePage`, ruta `/`) | Banner de ofertas, grid de "Productos en oferta", campo de chat en la parte inferior y acciones rápidas fijas "Ver ofertas", "Rastrear pedido" y "Ayuda con devolución". | SPEC-06, 08, 09, 05 |
+| **Barra lateral** (`Sidebar`, overlay) | "Nuevo chat", acceso a "Buscar chats", "Historial de pedidos", lista de conversaciones recientes y pie con `SesionIndicator` para abrir "Mi cuenta" o iniciar sesión | SPEC-03, 05, 17 |
+| **Buscar chats** (`SearchChatsPage`, ruta `/buscar`) | Pantalla completa con búsqueda enfocada, recientes con título, vista previa y fecha, resultados resaltados y estado sin coincidencias | SPEC-05 |
+| **Mi cuenta** (`AccountPage`, ruta `/cuenta`) | Pantalla completa de solo lectura con perfil, celular enmascarado y estado de verificación, último documento enmascarado, accesos a pedidos/reclamos y cierre de sesión | SPEC-03, 04, 17, 20 |
+| **Conversación** (`ChatPage`, ruta `/chat/[id]`) | Historial de mensajes, tarjetas inline con "Preguntar en el chat", entrada de texto, adjuntos y tres acciones rápidas fijas | SPEC-05 a 09, 17, 18, 20, 22, 23 |
 | **Carrito** (`CartPage`, ruta `/carrito`, pantalla completa vía ícono con badge) | Líneas, cantidades, subtotal, botón de pago | SPEC-10, 11, 13 |
-| **Checkout** (`CheckoutPage`, ruta `/checkout`) | Total a pagar, dirección de envío (campos libres), método de pago (**solo tarjeta**) | SPEC-12, 14 |
-| **Historial de pedidos** (`OrderHistoryPage`, ruta `/pedidos`, pestañas) | "En proceso", "Entregados", "Reembolsos" | SPEC-17, 18, 21, 22 |
+| **Checkout** (`CheckoutPage`, ruta `/checkout`) | Total a pagar, documento con nota informativa, dirección de envío (campos libres), método de pago (**solo tarjeta**) | SPEC-12, 14 |
+| **Historial de pedidos** (`OrderHistoryPage`, ruta `/pedidos`, pestañas) | "En proceso", "Entregados", "Reembolsos"; las tarjetas permiten "Preguntar en el chat" | SPEC-17, 18, 21, 22 |
+
+🧩 Totales vigentes tras este cambio: **23 specs, 112 requisitos, 352 escenarios, 111 historias, 438 puntos y 168 reglas de negocio**. Se recalculan desde las specs, historias y catálogo de reglas.
 
 > 🧩 El wireframe de checkout mostraba también "Efectivo / Pago contra entrega"; se retira porque el curso pide explícitamente **simulación de pago con tarjeta** para este canal (ver SPEC-14, sección *Fuera de alcance*).
 > 🧩 La pestaña "Reembolsos" del historial se cubre con las specs nuevas SPEC-21 y SPEC-22, coordinadas con F3 (Devoluciones y cambios) y F4 (Reembolsos y extornos) de Ventas y Postventa.

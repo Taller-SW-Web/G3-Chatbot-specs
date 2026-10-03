@@ -11,16 +11,16 @@
 
 | Área | Épica | Reglas |
 |---|---|---|
-| `IDE` | Identidad y sesión | 21 |
-| `CNV` | Motor de conversación | 29 |
+| `IDE` | Identidad y sesión | 22 |
+| `CNV` | Motor de conversación | 33 |
 | `CAT` | Descubrimiento de productos | 17 |
 | `CAR` | Carrito y stock | 16 |
-| `CHK` | Checkout y pago | 26 |
+| `CHK` | Checkout y pago | 27 |
 | `PED` | Grabación y confirmación del pedido | 14 |
 | `SGT` | Seguimiento de pedidos | 14 |
 | `RCL` | Reclamos | 11 |
 | `DEV` | Devoluciones y reembolsos | 14 |
-| **Total** | | **162** |
+| **Total** | | **168** |
 
 ---
 
@@ -49,6 +49,7 @@
 | RN-IDE-19 | No se puede iniciar el checkout si el celular vigente del perfil (`GET /auth/me`) no tiene una verificación local registrada para ese número exacto; un cambio de número invalida la verificación previa. | SPEC-04 · Req. 1 | Chatbot |
 | RN-IDE-20 | El OTP de celular tiene 6 dígitos, vence a los 5 minutos, admite 3 intentos y como máximo 3 envíos cada 15 minutos; el envío es simulado por un adaptador propio. | SPEC-04 · Req. 2 | Chatbot |
 | RN-IDE-21 | El número celular no se puede cambiar desde el chat; el cambio se hace en el perfil de cuenta, fuera del canal. | SPEC-04 · Req. 3 | Seguridad |
+| RN-IDE-22 | "Mi cuenta" es de solo lectura; el último documento se proyecta enmascarado desde `checkout.summary.contacto`, el celular se muestra enmascarado con el estado de verificación local y ningún dato se envía al LLM. | SPEC-03 · Req. 7; SPEC-04 · Req. 3 | Chatbot |
 
 ## RN-CNV — Motor de conversación
 
@@ -83,6 +84,10 @@
 | RN-CNV-27 | Si el modelo no admite visión (`LLM_VISION_ENABLED=false`), el LLM falla o el archivo no se puede leer, se avisa que la imagen no pudo analizarse y el flujo de texto continúa sin interrupción. | SPEC-23 · Req. 8 | Chatbot |
 | RN-CNV-28 | Máximo 10 cargas de imagen por minuto por cliente o IP y 10 adjuntos pendientes por conversación; los pendientes sin enviar se eliminan a las 24 horas. | SPEC-23 · Req. 4 y 9 | Chatbot |
 | RN-CNV-29 | Las imágenes del chat no se reenvían a Ventas como evidencia de devolución ni de reclamo; se conservan mientras exista la conversación, sin que el archivado automático las borre (el plazo de retención está pendiente). | SPEC-23 · Req. 10 | Chatbot |
+| RN-CNV-30 | "Buscar chats" abre `SearchChatsPage` (`/buscar`) y "Historial de pedidos" abre `OrderHistoryPage`; si falta sesión, la navegación pendiente a `/pedidos` se conserva fuera del contexto de una conversación y se consume después del login. | SPEC-05 · Req. 1; SPEC-03 · Req. 3 | Chatbot |
+| RN-CNV-31 | "Preguntar en el chat" abre siempre una conversación nueva con el identificador contextual; la respuesta y sus datos provienen de la herramienta de la capacidad correspondiente. | SPEC-05 · Req. 13 | Chatbot |
+| RN-CNV-32 | Las acciones rápidas fijas "Ver ofertas", "Rastrear pedido" y "Ayuda con devolución" están visibles en Inicio y Conversación, se ejecutan directamente y se registran en historial; las dos acciones protegidas requieren sesión y continúan tras login. | SPEC-05 · Req. 14 | Chatbot |
+| RN-CNV-33 | Galería y cámara usan las mismas validaciones de formato, tamaño y cantidad; la cámara se abre con el selector nativo, no se persiste un permiso propio y una foto mayor de 5 MB se rechaza sin compresión. | SPEC-23 · Req. 1 y RNF (Privacidad) | Chatbot |
 
 ## RN-CAT — Descubrimiento de productos
 
@@ -157,6 +162,7 @@
 | RN-CHK-24 | El simulador es determinista: `4111 1111 1111 1111`, `5555 5555 5555 4444` y `3782 822463 10005` aprueban; `…0002` rechaza por `FONDOS_INSUFICIENTES`; `…0069` rechaza por `DENEGADA_POR_EMISOR`; `…0119` devuelve `ERROR_PROCESAMIENTO` (reintentable); `…3220` aprueba con 5 s de latencia; cualquier otra tarjeta válida por Luhn aprueba. | SPEC-14 · Req. 5 | Chatbot |
 | RN-CHK-25 | Cada checkout admite como máximo 3 intentos de pago; al tercer fallo pasa a `FAILED`, se solicita la anulación del pedido y el carrito vuelve a `ACTIVE`. | SPEC-14 · Req. 5 | Chatbot |
 | RN-CHK-26 | Un checkout no pagado expira a los 15 minutos (`410 CHECKOUT_EXPIRADO`); un job revisa cada minuto, marca `EXPIRED` y encola la anulación del pedido. | SPEC-14 · Req. 6 | Chatbot |
+| RN-CHK-27 | `BuyerDocumentSection` muestra "El documento del comprobante puede ser distinto al de tu cuenta."; el documento ingresado se usa solo en el pedido actual y no modifica el perfil. | SPEC-12 · Req. 1 | Chatbot |
 
 ## RN-PED — Grabación y confirmación del pedido
 

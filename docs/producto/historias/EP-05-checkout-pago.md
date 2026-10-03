@@ -21,6 +21,7 @@
 - `SPEC-12 · Req. 1 · Scenario: Pasaporte válido` — un pasaporte alfanumérico de 6 a 12 caracteres se acepta.
 - `SPEC-12 · Req. 1 · Scenario: Documento inválido o vacío` — el error aparece junto al campo y el pago no se habilita.
 - `SPEC-12 · Req. 1 · Scenario: Cliente recurrente` — el campo se prellena con el último documento usado en el canal y queda editable.
+- `SPEC-12 · Req. 1 · Scenario: Nota sobre el documento del comprobante` — se muestra la nota fija y el documento no modifica el perfil.
 
 **Prioridad:** Must: Ventas no crea el pedido sin el documento (A14).
 

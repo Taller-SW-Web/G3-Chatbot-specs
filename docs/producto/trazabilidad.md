@@ -36,9 +36,10 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-IDE-12](historias/EP-01-identidad-sesion.md#hu-ide-12--verificar-mi-celular-antes-del-primer-pago) | Verificar mi celular antes del primer pago | `SPEC-04 · Req. 1` | RN-IDE-19 | `POST /checkout` (`403 CELULAR_NO_VERIFICADO`) | SEG `GET /auth/me` | Hito 4 | Must | 3 |
 | [HU-IDE-13](historias/EP-01-identidad-sesion.md#hu-ide-13--recibir-y-validar-el-código-de-mi-celular) | Recibir y validar el código de mi celular | `SPEC-04 · Req. 2` | RN-IDE-20 | `POST /contacto/celular/solicitar-otp`, `POST /contacto/celular/verificar-otp` | — (SMS simulado propio) | Hito 4 | Must | 5 |
 | [HU-IDE-14](historias/EP-01-identidad-sesion.md#hu-ide-14--recibir-orientación-si-el-celular-no-es-el-mío-o-verificarlo-por-iniciativa-propia) | Recibir orientación si el celular no es el mío o verificarlo por iniciativa propia | `SPEC-04 · Req. 3` | RN-IDE-21 | `POST /chat/conversaciones/{id}/mensajes` (herramienta `verificar_celular`) | SEG `GET /auth/me` | Hito 4 | Should | 2 |
+| [HU-IDE-15](historias/EP-01-identidad-sesion.md#hu-ide-15--consultar-mi-cuenta-sin-editar-mi-perfil) | Consultar mi cuenta sin editar mi perfil | `SPEC-03 · Req. 7`; `SPEC-04 · Req. 3` | RN-IDE-22 | `GET /sesion/perfil`, `GET /pedidos`, `GET /reclamos` | SEG `GET /auth/me` | Hito 4 | Should | 5 |
 | [HU-CNV-01](historias/EP-02-conversacion.md#hu-cnv-01--iniciar-conversaciones-nuevas-y-retomar-las-anteriores) | Iniciar conversaciones nuevas y retomar las anteriores | `SPEC-05 · Req. 1` (escenarios 1, 2, 4 y 5) | RN-CNV-01, RN-CNV-02, RN-CNV-03 | `POST /chat/conversaciones`, `GET /chat/conversaciones`, `GET /chat/conversaciones/{id}/mensajes` | — | Hito 3 | Must | 5 |
 | [HU-CNV-02](historias/EP-02-conversacion.md#hu-cnv-02--buscar-entre-mis-conversaciones) | Buscar entre mis conversaciones | `SPEC-05 · Req. 1` (escenario 3) | — | `GET /chat/conversaciones/buscar` | — | Hito 3 | Should | 2 |
-| [HU-CNV-03](historias/EP-02-conversacion.md#hu-cnv-03--ver-ofertas-y-empezar-a-conversar-desde-la-pantalla-de-inicio) | Ver ofertas y empezar a conversar desde la pantalla de inicio | `SPEC-05 · Req. 2` | RN-CNV-04 | `POST /chat/conversaciones`, `GET /catalogo/promociones`, `GET /catalogo/productos?soloOfertas=true` | PRO `GET /promociones`, `GET /productos` 🟡 | Hito 3 | Must | 5 |
+| [HU-CNV-03](historias/EP-02-conversacion.md#hu-cnv-03--ver-ofertas-y-empezar-a-conversar-desde-la-pantalla-de-inicio) | Ver ofertas y empezar a conversar desde la pantalla de inicio | `SPEC-05 · Req. 2` | RN-CNV-04, RN-CNV-32 | `POST /chat/conversaciones`, `GET /catalogo/promociones`, `GET /catalogo/productos?soloOfertas=true` | PRO `GET /promociones`, `GET /productos` 🟡 | Hito 3 | Must | 5 |
 | [HU-CNV-04](historias/EP-02-conversacion.md#hu-cnv-04--pedir-lo-que-necesito-en-lenguaje-natural) | Pedir lo que necesito en lenguaje natural | `SPEC-05 · Req. 3` | RN-CNV-05, RN-CNV-06 | `POST /chat/conversaciones/{id}/mensajes` | Proveedor LLM | Hito 3 | Must | 8 |
 | [HU-CNV-05](historias/EP-02-conversacion.md#hu-cnv-05--ver-la-respuesta-del-asistente-en-tiempo-real) | Ver la respuesta del asistente en tiempo real | `SPEC-05 · Req. 4` | RN-CNV-07 | `POST /chat/conversaciones/{id}/mensajes`, WS `/chat/ws`, `GET /chat/conversaciones/{id}/mensajes?desde=` | Proveedor LLM (streaming) | Hito 3 | Must | 8 |
 | [HU-CNV-06](historias/EP-02-conversacion.md#hu-cnv-06--referirme-a-productos-mostrados-antes) | Referirme a productos mostrados antes | `SPEC-05 · Req. 5` | RN-CNV-08 | `POST /chat/conversaciones/{id}/mensajes` | Proveedor LLM | Hito 3 | Must | 3 |
@@ -55,6 +56,8 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-CNV-17](historias/EP-02-conversacion.md#hu-cnv-17--ver-mis-imágenes-en-el-historial) | Ver mis imágenes en el historial | `SPEC-23 · Req. 7` | RN-CNV-26 | `GET /chat/adjuntos/{adjuntoId}`, `GET /chat/conversaciones/{id}/mensajes` | Supabase Storage (URLs firmadas) | Hito 4 | Should | 5 |
 | [HU-CNV-18](historias/EP-02-conversacion.md#hu-cnv-18--seguir-conversando-aunque-falle-el-análisis-de-imágenes) | Seguir conversando aunque falle el análisis de imágenes | `SPEC-23 · Req. 8` | RN-CNV-27 | `POST /chat/conversaciones/{id}/mensajes` (respuesta REST) | Proveedor LLM | Hito 4 | Should | 3 |
 | [HU-CNV-19](historias/EP-02-conversacion.md#hu-cnv-19--limitar-el-uso-de-imágenes-y-conservar-sus-referencias-habilitadora) | Limitar el uso de imágenes y conservar sus referencias (Habilitadora) | `SPEC-23 · Req. 9–10` | RN-CNV-28, RN-CNV-29 | `POST /chat/conversaciones/{id}/adjuntos` (`429`, `422`) | — | Hito 4 | Should | 5 |
+| [HU-CNV-20](historias/EP-02-conversacion.md#hu-cnv-20--preguntar-en-el-chat-desde-mis-tarjetas) | Preguntar en el chat desde mis tarjetas | `SPEC-05 · Req. 13` | RN-CNV-31 | `POST /chat/conversaciones`, `POST /chat/conversaciones/{id}/mensajes` | Módulos dueños consultados por herramientas | Hito 5–6 | Should | 3 |
+| [HU-CNV-21](historias/EP-02-conversacion.md#hu-cnv-21--usar-acciones-rápidas-fijas-en-inicio-y-conversación) | Usar acciones rápidas fijas en Inicio y Conversación | `SPEC-05 · Req. 14` | RN-CNV-32 | `POST /chat/conversaciones/{id}/mensajes` (`accion`) | PRO promociones; VEN pedidos/postventa; DES seguimiento | Hito 5–6 | Should | 5 |
 | [HU-CAT-01](historias/EP-03-descubrimiento.md#hu-cat-01--buscar-productos-combinando-filtros) | Buscar productos combinando filtros | `SPEC-06 · Req. 1` | RN-CAT-01, RN-CAT-02, RN-CAT-05 | `GET /catalogo/productos` | PRO `GET /productos`, `GET /precios` 🟡 | Hito 3 | Must | 5 |
 | [HU-CAT-02](historias/EP-03-descubrimiento.md#hu-cat-02--ser-entendido-aunque-use-sinónimos-o-escriba-mal-la-marca) | Ser entendido aunque use sinónimos o escriba mal la marca | `SPEC-06 · Req. 2` | RN-CAT-03, RN-CAT-04 | `GET /catalogo/productos` | PRO `GET /categorias`, `GET /marcas` 🟡 | Hito 3 | Must | 5 |
 | [HU-CAT-03](historias/EP-03-descubrimiento.md#hu-cat-03--refinar-la-búsqueda-conversando-o-con-chips) | Refinar la búsqueda conversando o con chips | `SPEC-06 · Req. 3` | — | `GET /catalogo/productos` | PRO `GET /productos` 🟡 | Hito 3 | Should | 5 |
@@ -79,7 +82,7 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-CAR-06](historias/EP-04-carrito.md#hu-car-06--cambiar-cantidades-y-quitar-productos) | Cambiar cantidades y quitar productos | `SPEC-11 · Req. 2` | RN-CAR-10, RN-CAR-11 | `PATCH /carrito/items/{itemId}`, `DELETE /carrito/items/{itemId}`, `DELETE /carrito` | — | Hito 3 | Must | 5 |
 | [HU-CAR-07](historias/EP-04-carrito.md#hu-car-07--ver-mi-carrito-con-totales-actualizados) | Ver mi carrito con totales actualizados | `SPEC-11 · Req. 3` | RN-CAR-12, RN-CAR-13, RN-CAR-14 | `GET /carrito` | PRO `GET /precios`, `POST /promociones/evaluar` 🟡 | Hito 3 | Must | 8 |
 | [HU-CAR-08](historias/EP-04-carrito.md#hu-car-08--recuperar-mi-carrito-en-otra-sesión-o-dispositivo) | Recuperar mi carrito en otra sesión o dispositivo | `SPEC-11 · Req. 4` | RN-CAR-15, RN-CAR-16 | `GET /carrito` | — | Hito 3 | Must | 3 |
-| [HU-CHK-01](historias/EP-05-checkout-pago.md#hu-chk-01--ingresar-mi-documento-de-identidad-al-pagar) | Ingresar mi documento de identidad al pagar | `SPEC-12 · Req. 1` | RN-CHK-01, RN-CHK-02 | `POST /checkout` (snapshot `contacto`) | VEN `POST /api/v1/pedidos` (`400 DATO_INVALIDO`) | Hito 4 | Must | 5 |
+| [HU-CHK-01](historias/EP-05-checkout-pago.md#hu-chk-01--ingresar-mi-documento-de-identidad-al-pagar) | Ingresar mi documento de identidad al pagar | `SPEC-12 · Req. 1` | RN-CHK-01, RN-CHK-02, RN-CHK-27 | `POST /checkout` (snapshot `contacto`) | VEN `POST /api/v1/pedidos` (`400 DATO_INVALIDO`) | Hito 4 | Must | 5 |
 | [HU-CHK-02](historias/EP-05-checkout-pago.md#hu-chk-02--ingresar-o-reutilizar-mi-dirección-de-entrega) | Ingresar o reutilizar mi dirección de entrega | `SPEC-12 · Req. 2` | RN-CHK-03 | `GET /direcciones` | SEG `GET /usuarios/{id}/direcciones` | Hito 4 | Must | 3 |
 | [HU-CHK-03](historias/EP-05-checkout-pago.md#hu-chk-03--guardar-mi-dirección-para-la-próxima-compra) | Guardar mi dirección para la próxima compra | `SPEC-12 · Req. 3` | RN-CHK-04 | `POST /checkout` | SEG `POST /usuarios/{id}/direcciones` | Hito 4 | Should | 2 |
 | [HU-CHK-04](historias/EP-05-checkout-pago.md#hu-chk-04--conocer-el-costo-y-el-plazo-del-envío-antes-de-pagar) | Conocer el costo y el plazo del envío antes de pagar | `SPEC-12 · Req. 4` | RN-CHK-05, RN-CHK-06, RN-CHK-07, RN-CHK-08 | `POST /envio/cotizar` | DES `POST /api/v1/cotizaciones` (`destino` + `lineas`) | Hito 4 | Must | 8 |
@@ -111,6 +114,7 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-SGT-06](historias/EP-07-seguimiento.md#hu-sgt-06--enterarme-de-entregas-fallidas-o-reprogramadas) | Enterarme de entregas fallidas o reprogramadas | `SPEC-18 · Req. 2` | RN-SGT-11 | `GET /pedidos/{pedidoId}/seguimiento` | DES `GET /seguimiento?idPedido=` 🟡 | Hito 5–6 | Should | 3 |
 | [HU-SGT-07](historias/EP-07-seguimiento.md#hu-sgt-07--recibir-respuestas-honestas-sobre-la-ubicación-del-repartidor) | Recibir respuestas honestas sobre la ubicación del repartidor | `SPEC-18 · Req. 3` | RN-SGT-11 | `GET /pedidos/{pedidoId}/seguimiento` | DES `GET /seguimiento?idPedido=` 🟡 | Hito 5–6 | Should | 2 |
 | [HU-SGT-08](historias/EP-07-seguimiento.md#hu-sgt-08--consultar-despacho-con-credenciales-de-servicio-y-degradar-ante-fallos-habilitadora) | Consultar Despacho con credenciales de servicio y degradar ante fallos (Habilitadora) | `SPEC-18 · Req. 4` | RN-SGT-13, RN-SGT-14 | `GET /pedidos/{pedidoId}/seguimiento` | SEG `POST /auth/token`; DES `GET /seguimiento?idPedido=` 🟡 | Hito 5–6 | Should | 3 |
+| [HU-SGT-09](historias/EP-07-seguimiento.md#hu-sgt-09--preguntar-en-el-chat-desde-mi-pedido-o-seguimiento) | Preguntar en el chat desde mi pedido o seguimiento | `SPEC-05 · Req. 13` | RN-CNV-31 | `POST /chat/conversaciones/{id}/mensajes` | VEN pedido; DES seguimiento | Hito 5–6 | Should | 2 |
 | [HU-RCL-01](historias/EP-08-reclamos.md#hu-rcl-01--describir-mi-problema-y-revisar-el-reclamo-antes-de-enviarlo) | Describir mi problema y revisar el reclamo antes de enviarlo | `SPEC-19 · Req. 1` | RN-RCL-01, RN-RCL-02, RN-RCL-03 | `POST /chat/conversaciones/{id}/mensajes` (herramienta `preparar_reclamo`) | VEN `GET /api/v1/pedidos?clienteId=` | Hito 5–6 | Should | 5 |
 | [HU-RCL-02](historias/EP-08-reclamos.md#hu-rcl-02--registrar-mi-reclamo-y-recibir-un-código) | Registrar mi reclamo y recibir un código | `SPEC-19 · Req. 2` | RN-RCL-04, RN-RCL-05, RN-RCL-06, RN-CHK-01 | `POST /reclamos` | VEN `POST /api/v2/reclamos` | Hito 5–6 | Should | 5 |
 | [HU-RCL-03](historias/EP-08-reclamos.md#hu-rcl-03--evitar-reclamos-duplicados) | Evitar reclamos duplicados | `SPEC-19 · Req. 3` | RN-RCL-07 | `POST /reclamos` | VEN `GET /api/v2/reclamos?clienteId=&estado=` | Hito 5–6 | Should | 3 |
@@ -118,6 +122,7 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-RCL-05](historias/EP-08-reclamos.md#hu-rcl-05--listar-y-abrir-mis-reclamos) | Listar y abrir mis reclamos | `SPEC-20 · Req. 1` | RN-RCL-11 | `GET /reclamos`, `GET /reclamos/{codigoSeguimiento}` | VEN `GET /api/v2/reclamos`, `GET /api/v2/reclamos/{codigoSeguimiento}` | Hito 5–6 | Could | 3 |
 | [HU-RCL-06](historias/EP-08-reclamos.md#hu-rcl-06--leer-el-estado-y-la-respuesta-de-mi-reclamo) | Leer el estado y la respuesta de mi reclamo | `SPEC-20 · Req. 2` | RN-RCL-09, RN-RCL-10 | `GET /reclamos/{codigoSeguimiento}` | VEN `GET /api/v2/reclamos/{codigoSeguimiento}` | Hito 5–6 | Could | 3 |
 | [HU-RCL-07](historias/EP-08-reclamos.md#hu-rcl-07--saber-cuándo-no-se-pueden-consultar-mis-reclamos) | Saber cuándo no se pueden consultar mis reclamos | `SPEC-20 · Req. 3` | — | `GET /reclamos`, `GET /reclamos/{codigoSeguimiento}` | VEN `GET /api/v2/reclamos` | Hito 5–6 | Could | 1 |
+| [HU-RCL-08](historias/EP-08-reclamos.md#hu-rcl-08--preguntar-en-el-chat-desde-mi-reclamo) | Preguntar en el chat desde mi reclamo | `SPEC-05 · Req. 13` | RN-CNV-31 | `POST /chat/conversaciones/{id}/mensajes` | VEN `GET /api/v2/reclamos/{codigoSeguimiento}` | Hito 5–6 | Could | 2 |
 | [HU-DEV-01](historias/EP-09-devoluciones.md#hu-dev-01--saber-si-mi-pedido-es-elegible-para-cambio-o-devolución) | Saber si mi pedido es elegible para cambio o devolución | `SPEC-21 · Req. 1` | RN-DEV-01, RN-DEV-02 | `GET /pedidos/{pedidoId}` | VEN `GET /api/v1/pedidos/{id}` | Hito 5–6 | Could | 3 |
 | [HU-DEV-02](historias/EP-09-devoluciones.md#hu-dev-02--elegir-los-productos-el-tipo-y-el-motivo-de-la-solicitud) | Elegir los productos, el tipo y el motivo de la solicitud | `SPEC-21 · Req. 2` | RN-DEV-03, RN-DEV-04, RN-DEV-07 | `POST /chat/conversaciones/{id}/mensajes` (herramienta `preparar_devolucion`), `GET /catalogo/disponibilidad` | PRO `GET /inventario/disponibilidad` 🟡 | Hito 5–6 | Could | 5 |
 | [HU-DEV-03](historias/EP-09-devoluciones.md#hu-dev-03--adjuntar-evidencia-fotográfica-o-en-pdf) | Adjuntar evidencia fotográfica o en PDF | `SPEC-21 · Req. 3` | RN-DEV-05, RN-DEV-06 | `POST /evidencias` | VEN `POST /api/v2/devoluciones/evidencias/upload` | Hito 5–6 | Could | 5 |
@@ -127,6 +132,7 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-DEV-07](historias/EP-09-devoluciones.md#hu-dev-07--ver-el-estado-de-mi-solicitud) | Ver el estado de mi solicitud | `SPEC-22 · Req. 2` | RN-DEV-11, RN-DEV-12 | `GET /devoluciones/{devolucionId}` | VEN `GET /api/v2/devoluciones/{id}` | Hito 5–6 | Could | 3 |
 | [HU-DEV-08](historias/EP-09-devoluciones.md#hu-dev-08--ver-el-estado-de-mi-reembolso) | Ver el estado de mi reembolso | `SPEC-22 · Req. 3` | RN-DEV-12, RN-DEV-14 | `GET /devoluciones/{devolucionId}` | VEN `GET /api/v2/devoluciones/{id}` | Hito 5–6 | Could | 3 |
 | [HU-DEV-09](historias/EP-09-devoluciones.md#hu-dev-09--saber-cuándo-no-se-pueden-consultar-mis-devoluciones) | Saber cuándo no se pueden consultar mis devoluciones | `SPEC-22 · Req. 4` | — | `GET /devoluciones/{devolucionId}` | VEN `GET /api/v2/devoluciones/{id}` | Hito 5–6 | Could | 1 |
+| [HU-DEV-10](historias/EP-09-devoluciones.md#hu-dev-10--preguntar-en-el-chat-desde-mi-solicitud) | Preguntar en el chat desde mi solicitud | `SPEC-05 · Req. 13` | RN-CNV-31 | `POST /chat/conversaciones/{id}/mensajes` | VEN `GET /api/v2/devoluciones/{id}` | Hito 5–6 | Could | 2 |
 | `SPEC-23 · Req. 1` | Adjuntar imágenes desde el compositor | HU-CNV-14 |
 | `SPEC-23 · Req. 2` | Aviso de privacidad antes de la primera carga | HU-CNV-14 |
 | `SPEC-23 · Req. 3` | Carga previa de la imagen mediante el backend | HU-CNV-15 |
@@ -140,7 +146,7 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 
 ## 3. Verificación de cobertura de requisitos
 
-Cada uno de los **109 requisitos** de las 23 specs está cubierto por al menos una historia.
+Cada uno de los **112 requisitos** de las 23 specs está cubierto por al menos una historia.
 
 | Requisito | Nombre | Historia(s) |
 |---|---|---|
@@ -157,11 +163,12 @@ Cada uno de los **109 requisitos** de las 23 specs está cubierto por al menos u
 | `SPEC-03 · Req. 4` | Fusión del carrito anónimo | HU-IDE-09 |
 | `SPEC-03 · Req. 5` | Renovación y validación de la sesión | HU-IDE-10 |
 | `SPEC-03 · Req. 6` | Cierre de sesión | HU-IDE-11 |
+| `SPEC-03 · Req. 7` | Pantalla "Mi cuenta" | HU-IDE-15 |
 | `SPEC-04 · Req. 1` | Exigir el celular verificado antes del checkout | HU-IDE-12 |
 | `SPEC-04 · Req. 2` | Envío y verificación del código | HU-IDE-13 |
-| `SPEC-04 · Req. 3` | El celular es incorrecto | HU-IDE-14 |
+| `SPEC-04 · Req. 3` | El celular es incorrecto | HU-IDE-14, HU-IDE-15 |
 | `SPEC-05 · Req. 1` | Conversaciones múltiples | HU-CNV-01, HU-CNV-02 |
-| `SPEC-05 · Req. 2` | Pantalla de inicio | HU-CNV-03 |
+| `SPEC-05 · Req. 2` | Pantalla de inicio | HU-CNV-03, HU-CNV-21 |
 | `SPEC-05 · Req. 3` | Interpretación de la intención mediante herramientas | HU-CNV-04 |
 | `SPEC-05 · Req. 4` | Transmisión de la respuesta por WebSocket | HU-CNV-05 |
 | `SPEC-05 · Req. 5` | Referencias al contexto conversacional | HU-CNV-06 |
@@ -172,6 +179,8 @@ Cada uno de los **109 requisitos** de las 23 specs está cubierto por al menos u
 | `SPEC-05 · Req. 10` | Modo degradado | HU-CNV-11 |
 | `SPEC-05 · Req. 11` | Límites de uso | HU-CNV-12 |
 | `SPEC-05 · Req. 12` | Presentación del asistente y aviso de privacidad | HU-CNV-13 |
+| `SPEC-05 · Req. 13` | Consultar en el chat desde una tarjeta | HU-CNV-20, HU-SGT-09, HU-RCL-08, HU-DEV-10 |
+| `SPEC-05 · Req. 14` | Acciones rápidas fijas | HU-CNV-21 |
 | `SPEC-06 · Req. 1` | Búsqueda con filtros combinados | HU-CAT-01 |
 | `SPEC-06 · Req. 2` | Normalización de categoría y marca | HU-CAT-02 |
 | `SPEC-06 · Req. 3` | Refinamiento conversacional | HU-CAT-03 |
@@ -244,11 +253,11 @@ Cada uno de los **109 requisitos** de las 23 specs está cubierto por al menos u
 | `SPEC-22 · Req. 3` | Mostrar el estado del reembolso de dinero | HU-DEV-08 |
 | `SPEC-22 · Req. 4` | Tolerancia a fallos | HU-DEV-09 |
 
-**Resultado:** 109 de 109 requisitos cubiertos (100 %). Requisitos sin historia: ninguno.
+**Resultado:** 112 de 112 requisitos cubiertos (100 %). Requisitos sin historia: ninguno.
 
-Requisitos repartidos en más de una historia: `SPEC-05 · Req. 1` (HU-CNV-01 y HU-CNV-02) y `SPEC-16 · Req. 3` (HU-PED-07 y HU-PED-08). Historias que cubren más de un requisito: HU-IDE-02 (`SPEC-01 · Req. 2–3`), HU-IDE-05 (`SPEC-02 · Req. 2–3`), HU-CNV-14 (`SPEC-23 · Req. 1–2`), HU-CNV-15 (`SPEC-23 · Req. 3–4`), HU-CNV-16 (`SPEC-23 · Req. 5–6`) y HU-CNV-19 (`SPEC-23 · Req. 9–10`).
+Requisitos repartidos en más de una historia: `SPEC-05 · Req. 1` (HU-CNV-01 y HU-CNV-02), `SPEC-05 · Req. 13` (HU-CNV-20, HU-SGT-09, HU-RCL-08 y HU-DEV-10) y `SPEC-16 · Req. 3` (HU-PED-07 y HU-PED-08). Historias que cubren más de un requisito: HU-IDE-02 (`SPEC-01 · Req. 2–3`), HU-IDE-05 (`SPEC-02 · Req. 2–3`), HU-IDE-15 (`SPEC-03 · Req. 7`; SPEC-04 · Req. 3), HU-CNV-14 (`SPEC-23 · Req. 1–2`), HU-CNV-15 (`SPEC-23 · Req. 3–4`), HU-CNV-16 (`SPEC-23 · Req. 5–6`) y HU-CNV-19 (`SPEC-23 · Req. 9–10`).
 
-La cobertura a nivel de escenario también es completa: los **325 escenarios** de las specs están citados por nombre en los criterios de aceptación de alguna historia.
+La cobertura a nivel de escenario también es completa: los **352 escenarios** de las specs están citados por nombre en los criterios de aceptación de alguna historia.
 
 ## 4. Totales
 

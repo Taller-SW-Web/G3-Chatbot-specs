@@ -40,7 +40,6 @@ Incluye:
 - Esta spec solo registra y notifica por correo (outbox); no hay bandeja ni interfaz de revisión dentro de la app. Cualquier seguimiento posterior con el cliente ocurre por correo, fuera del chat — tal como ya lo anticipa el texto de consentimiento del formulario.
 - Las calificaciones de compra (CSAT) tampoco tienen panel propio: viven en Ventas, fuera de este repo.
 - Encuestas periódicas o proactivas (NPS, encuestas por correo fuera de una compra): no están en los mockups revisados.
-- Decidir el nombre de marca correcto ("INKA" vs. "Botleta"): pregunta abierta para el equipo, no de esta spec.
 
 ## Requirements
 
@@ -70,12 +69,12 @@ El sistema DEBE (SHALL) mostrar, debajo de cada bloque de respuesta del asistent
 - **ENTONCES** el ícono se marca igual en el cliente (optimista) y el reintento del registro ocurre en segundo plano, sin mostrar error ni bloquear el chat
 
 ### Requirement: Calificación de la compra (CSAT, vía Ventas)
-El sistema DEBE (SHALL) mostrar, dentro del bloque `CONFIRMACION_PEDIDO`, una invitación a calificar la compra con estrellas (1 a 5) y un comentario opcional, y DEBE (SHALL) enviar la calificación a Ventas (`POST /api/v2/csat`) en vez de almacenarla en el chatbot.
+El sistema DEBE (SHALL) mostrar, después del pago y una vez confirmado el pedido (`CONFIRMACION_PEDIDO`), un modal "Califica tu compra" con estrellas (1 a 5) y un comentario opcional, y DEBE (SHALL) enviar la calificación a Ventas (`POST /api/v2/csat`) en vez de almacenarla en el chatbot.
 
 *Trazabilidad: SPEC-24 · Requisito 2. Conecta con Ventas F5 — CSAT; ver `docs/contratos-integracion.md`.*
 
 #### Scenario: Calificación enviada
-- **DADO** un pedido recién confirmado (`CONFIRMACION_PEDIDO`)
+- **DADO** un pedido recién pagado y confirmado (`CONFIRMACION_PEDIDO`), con el modal de calificación abierto
 - **CUANDO** el cliente toca una cantidad de estrellas y pulsa "Enviar calificación"
 - **ENTONCES** se llama a `POST /api/v2/csat {pedidoId, clienteId, canal: "CHATBOT", puntuacion, comentario}`, Ventas responde `201`, y se reemplaza el modal por un agradecimiento breve
 
@@ -182,6 +181,8 @@ El sistema DEBE (SHALL) limitar el envío de reacciones, calificaciones y sugere
 1. 🟡 **¿La calificación requiere un scope nuevo de Seguridad?** El contrato de Ventas no documenta `security`/scopes por endpoint con el mismo detalle que Productos o Despacho — su sección 2.7 (CSAT) no tiene el bloque `Authorization` que sí tienen otras secciones del mismo contrato. **Por verse:** se abrió un issue en `Taller-SW-Web/G5-Ventas-Postventas` pidiendo que lo documenten; esta pregunta queda abierta hasta que respondan.
 
 ✅ **Resueltas con el equipo (02/10/2026):**
+- INKA es la tienda y Botleta es el asistente: no hay conflicto de marca (ver "Contexto").
+- La calificación de compra es un modal que aparece después de pagar, una vez confirmado el pedido.
 - La bandeja de sugerencias/bugs no tiene panel propio: solo se registra, y el seguimiento posterior con el cliente es por correo (ver "Fuera de alcance").
 - Los pulgares 👍/👎 sí se muestran tras cada bloque de respuesta del asistente, no solo al cierre de una tarea — se confirma el alcance ampliado respecto a la propuesta original de `kpis.md`. La pregunta abierta 9 de `docs/conversacion/README.md` queda completamente resuelta por esta spec.
 

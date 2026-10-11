@@ -137,14 +137,14 @@ El sistema DEBE (SHALL) recibir cada imagen por un endpoint del backend, validar
 - **ENTONCES** responde `503 SERVICIO_NO_DISPONIBLE`, no crea el adjunto, el frontend muestra "No pudimos subir la imagen" con "Reintentar" y la conversación de texto sigue funcionando
 
 ### Requirement: Enviar un mensaje con adjuntos
-El sistema DEBE (SHALL) aceptar en `POST /api/v1/chat/conversaciones/{id}/mensajes` una lista opcional `adjuntoIds` (máx. 3) junto con el texto, verificar que cada adjunto pertenece a esa conversación y está pendiente, ligarlos al mensaje y responder `202 {mensajeId}` como en un mensaje de texto.
+El sistema DEBE (SHALL) aceptar en `POST /api/v1/chat/conversaciones/{id}/mensajes` una lista opcional `adjuntoIds` (máx. 3) junto con el texto, verificar que cada adjunto pertenece a esa conversación y está pendiente, ligarlos al mensaje y responder como en un mensaje de texto (stream SSE en la respuesta del `POST`, SPEC-05 · Req. 4).
 
 *Trazabilidad: SPEC-23 · Requisito 4.*
 
 #### Scenario: Mensaje con texto y dos imágenes
 - **DADO** dos adjuntos `PENDING` de la conversación
 - **CUANDO** el cliente envía `{texto: "busco unas así", adjuntoIds: ["...", "..."]}`
-- **ENTONCES** el backend aplica `SensitiveDataFilter` al texto, guarda el mensaje, cambia los adjuntos a `SENT` ligándolos al mensaje, responde `202 {mensajeId}` y transmite la respuesta por WebSocket con los mismos eventos `token`, `bloque` y `fin`
+- **ENTONCES** el backend aplica `SensitiveDataFilter` al texto, guarda el mensaje, cambia los adjuntos a `SENT` ligándolos al mensaje, responde `200 text/event-stream` y transmite la respuesta con los mismos eventos `aceptado`, `token`, `bloque` y `fin`
 
 #### Scenario: Adjunto que no corresponde
 - **DADO** un `adjuntoId` inexistente, ya enviado o de otra conversación

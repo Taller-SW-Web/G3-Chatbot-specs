@@ -22,7 +22,7 @@ Aceptada
 - Cada cliente de módulo toma su **URL base de la configuración** (mock o real), sin cambiar código. Ejemplo: `SeguridadClient` con "URL base parametrizada (mock/real)".
 - **Seguridad** se simula con **Prism** sobre su `openapi.yaml` publicado (puerto `4010`, sin prefijo `/api/v1`), con ejemplos elegidos por la cabecera `Prefer` y `client_secret=secreto-de-prueba`.
 - **Productos, Ventas y Despacho** se simulan en las pruebas con **respx** y datos semilla; cada cliente (`ProductosClient`, `VentasClient`…) se entrega con su mock.
-- El proveedor LLM y el WebSocket se mockean en las pruebas del motor; el correo se revisa en **Mailtrap**.
+- El proveedor LLM y el stream SSE se mockean en las pruebas del motor; el correo se revisa en **Mailtrap**.
 - Definición de Listo (R3): una historia puede empezar si su contrato está confirmado **o** existe un mock utilizable.
 
 ## Alternativas consideradas

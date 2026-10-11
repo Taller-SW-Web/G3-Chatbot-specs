@@ -34,7 +34,7 @@ Revisión basada en los repos al 22/09/2026:
 Prefijo: `/api/v1`. Todas las respuestas de error usan `application/problem+json`.
 
 ### 2.1 Conversaciones (SPEC-05)
-🧩 Ampliado para soportar conversaciones múltiples (barra lateral) y streaming por WebSocket, según la arquitectura del equipo.
+🧩 Ampliado para soportar conversaciones múltiples (barra lateral) y streaming de la respuesta por SSE en el `POST` de mensajes (ADR-0021), según la arquitectura del equipo.
 
 | Método | Ruta | Sesión | Descripción |
 |---|---|---|---|
@@ -42,22 +42,24 @@ Prefijo: `/api/v1`. Todas las respuestas de error usan `application/problem+json
 | GET | `/chat/conversaciones` | Opcional* | Lista las conversaciones (propias o de la sesión anónima), ordenadas por `last_message_at` descendente, con `titulo` y vista previa del último mensaje. Paginado. |
 | GET | `/chat/conversaciones/buscar?q=` | Opcional* | Busca por texto en el título y los mensajes. |
 | GET | `/chat/conversaciones/{id}/mensajes` | Opcional* | Devuelve el historial paginado de una conversación. Cada mensaje con imágenes incluye `adjuntos[{adjuntoId, mimeType, ancho, alto, urlMiniatura, expiraEn}]` con URLs firmadas de corta vida (SPEC-23). |
-| POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Envía `{ "texto": "...", "adjuntoIds": ["..."] }` (`adjuntoIds` opcional, máx. 3; el texto es opcional si hay al menos un adjunto, ver 2.1.1) o `{ "accion": { "tipo": "...", "payload": {...} } }`. Responde `202 {mensajeId}` de inmediato; la respuesta del asistente se transmite por WebSocket (ver abajo), salvo las acciones directas, que devuelven el bloque en la misma respuesta REST. |
+| POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Envía `{ "texto": "...", "adjuntoIds": ["..."] }` (`adjuntoIds` opcional, máx. 3; el texto es opcional si hay al menos un adjunto, ver 2.1.1) o `{ "accion": { "tipo": "...", "payload": {...} } }`. Los errores de validación (`400`) y de pertenencia (`404`: la conversación no existe o no es del solicitante) se responden antes del stream como `application/problem+json`. En un envío de texto responde `200` con `Content-Type: text/event-stream` y la respuesta del asistente se transmite en esa misma respuesta (ver abajo); las acciones directas siguen devolviendo el bloque en la respuesta REST. Las acciones y `adjuntoIds` conservan su definición y aún no están implementados en el backend. |
 
 \* Una conversación ligada a un cliente solo la puede listar o leer ese cliente. Las anónimas se listan o leen con la cookie `chat_sid`.
 
 🧩 Tipos directos propuestos para las acciones rápidas fijas (sin LLM, registrados en el historial): `VER_OFERTAS` → `consultar_promociones`; `RASTREAR_PEDIDO` → identificación y consulta de pedido/seguimiento; `AYUDA_DEVOLUCION` → `preparar_devolucion`. Las dos últimas requieren sesión y conservan la acción pendiente para retomar después del login.
 
-**WebSocket** — `wss://<host>/api/v1/chat/ws?conversacionId=<id>`, autenticado con el mismo `accessToken` (query param o subprotocolo). Se usa **únicamente para transmitir la respuesta del asistente**; el cliente nunca envía mensajes por este canal. Eventos emitidos:
+**Streaming SSE** — en el `POST /chat/conversaciones/{id}/mensajes`, la respuesta `200 text/event-stream` lleva la respuesta del asistente. Se autentica como el resto de la API REST (mismo `accessToken` y cookies; sin token en query string). No hay endpoint WebSocket y el cliente nunca abre una conexión persistente para el chat. `EventSource` no admite `POST`, por lo que el frontend usa un lector de `fetch` con streaming. Eventos emitidos, en orden:
 
 | Evento | Payload | Cuándo |
 |---|---|---|
+| `aceptado` | `{ mensajeId }` | El mensaje del cliente quedó persistido |
 | `token` | `{ texto: string }` | Cada fragmento de texto de la respuesta |
 | `bloque` | `{ bloque: Bloque }` | Cuando un bloque estructurado (carrusel, carrito, formulario…) queda listo |
-| `fin` | `{ mensajeId }` | Cierre del turno |
-| `error` | `{ code }` | Si el turno falla (el frontend cae a modo degradado, SPEC-05 Req. 10) |
+| `degradado` | `{ motivo }` | El turno terminó en modo degradado (SPEC-05 Req. 10); el cliente descarta los tokens recibidos hasta ese momento |
+| `fin` | `{ mensajeId }` | Cierre del turno, con el id del mensaje del asistente ya persistido |
+| `error` | `{ code }` | Falla inesperada a mitad del stream; el stream termina |
 
-Si el WebSocket no conecta, el frontend hace *polling* de `GET /chat/conversaciones/{id}/mensajes?desde=<mensajeId>` (ver SPEC-05 Req. 4).
+Si el stream se corta, el frontend hace *polling* de `GET /chat/conversaciones/{id}/mensajes` hasta que aparece el mensaje del asistente (ver SPEC-05 Req. 4). Los *proxies* no deben almacenar en búfer la respuesta.
 
 **Tipos de bloque de respuesta** (`Bloque.tipo`): `TEXTO`, `CARRUSEL_PRODUCTOS`, `DETALLE_PRODUCTO`, `SELECTOR_VARIANTE`, `CARRITO`, `ACCIONES_RAPIDAS`, `FORMULARIO` (`REGISTRO`, `LOGIN`, `OTP_MFA`, `OTP_CELULAR`, `DIRECCION`, `PAGO`, `RECLAMO`, `DEVOLUCION`), `RESUMEN_CHECKOUT`, `CONFIRMACION_PEDIDO`, `LISTA_PEDIDOS`, `ESTADO_PEDIDO`, `LISTA_PROMOCIONES`, `CONSTANCIA_RECLAMO`, `ESTADO_RECLAMO`, `CONSTANCIA_DEVOLUCION`, `ESTADO_DEVOLUCION`, `ERROR`.
 

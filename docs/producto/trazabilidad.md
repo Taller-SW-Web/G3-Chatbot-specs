@@ -41,10 +41,10 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-CNV-02](historias/EP-02-conversacion.md#hu-cnv-02--buscar-entre-mis-conversaciones) | Buscar entre mis conversaciones | `SPEC-05 · Req. 1` (escenario 3) | — | `GET /chat/conversaciones/buscar` | — | Hito 3 | Should | 2 |
 | [HU-CNV-03](historias/EP-02-conversacion.md#hu-cnv-03--ver-ofertas-y-empezar-a-conversar-desde-la-pantalla-de-inicio) | Ver ofertas y empezar a conversar desde la pantalla de inicio | `SPEC-05 · Req. 2` | RN-CNV-04, RN-CNV-32 | `POST /chat/conversaciones`, `GET /catalogo/promociones`, `GET /catalogo/productos?soloOfertas=true` | PRO `GET /promociones`, `GET /productos` 🟡 | Hito 3 | Must | 5 |
 | [HU-CNV-04](historias/EP-02-conversacion.md#hu-cnv-04--pedir-lo-que-necesito-en-lenguaje-natural) | Pedir lo que necesito en lenguaje natural | `SPEC-05 · Req. 3` | RN-CNV-05, RN-CNV-06 | `POST /chat/conversaciones/{id}/mensajes` | Proveedor LLM | Hito 3 | Must | 8 |
-| [HU-CNV-05](historias/EP-02-conversacion.md#hu-cnv-05--ver-la-respuesta-del-asistente-en-tiempo-real) | Ver la respuesta del asistente en tiempo real | `SPEC-05 · Req. 4` | RN-CNV-07 | `POST /chat/conversaciones/{id}/mensajes`, WS `/chat/ws`, `GET /chat/conversaciones/{id}/mensajes?desde=` | Proveedor LLM (streaming) | Hito 3 | Must | 8 |
+| [HU-CNV-05](historias/EP-02-conversacion.md#hu-cnv-05--ver-la-respuesta-del-asistente-en-tiempo-real) | Ver la respuesta del asistente en tiempo real | `SPEC-05 · Req. 4` | RN-CNV-07 | `POST /chat/conversaciones/{id}/mensajes` (stream SSE), `GET /chat/conversaciones/{id}/mensajes?desde=` | Proveedor LLM (streaming) | Hito 3 | Must | 8 |
 | [HU-CNV-06](historias/EP-02-conversacion.md#hu-cnv-06--referirme-a-productos-mostrados-antes) | Referirme a productos mostrados antes | `SPEC-05 · Req. 5` | RN-CNV-08 | `POST /chat/conversaciones/{id}/mensajes` | Proveedor LLM | Hito 3 | Must | 3 |
 | [HU-CNV-07](historias/EP-02-conversacion.md#hu-cnv-07--ejecutar-herramientas-de-forma-segura-habilitadora) | Ejecutar herramientas de forma segura (Habilitadora) | `SPEC-05 · Req. 6` | RN-CNV-09, RN-CNV-10, RN-CNV-11 | `POST /chat/conversaciones/{id}/mensajes` | Proveedor LLM | Hito 3 | Must | 5 |
-| [HU-CNV-08](historias/EP-02-conversacion.md#hu-cnv-08--recibir-solo-datos-comerciales-verídicos) | Recibir solo datos comerciales verídicos | `SPEC-05 · Req. 7` | RN-CNV-12 | WS `/chat/ws` (evento `fin`) | Proveedor LLM | Hito 3 | Must | 5 |
+| [HU-CNV-08](historias/EP-02-conversacion.md#hu-cnv-08--recibir-solo-datos-comerciales-verídicos) | Recibir solo datos comerciales verídicos | `SPEC-05 · Req. 7` | RN-CNV-12 | `POST /chat/conversaciones/{id}/mensajes` (evento `fin`) | Proveedor LLM | Hito 3 | Must | 5 |
 | [HU-CNV-09](historias/EP-02-conversacion.md#hu-cnv-09--usar-botones-de-acción-rápida-sin-esperar-al-asistente) | Usar botones de acción rápida sin esperar al asistente | `SPEC-05 · Req. 8` | RN-CNV-13 | `POST /chat/conversaciones/{id}/mensajes` (`accion`) | — | Hito 3 | Must | 3 |
 | [HU-CNV-10](historias/EP-02-conversacion.md#hu-cnv-10--proteger-mis-datos-sensibles-y-resistir-instrucciones-maliciosas) | Proteger mis datos sensibles y resistir instrucciones maliciosas | `SPEC-05 · Req. 9` | RN-CNV-14, RN-CNV-15 | `POST /chat/conversaciones/{id}/mensajes` | Proveedor LLM | Hito 3 | Must | 5 |
 | [HU-CNV-11](historias/EP-02-conversacion.md#hu-cnv-11--seguir-comprando-aunque-el-asistente-falle) | Seguir comprando aunque el asistente falle | `SPEC-05 · Req. 10` | RN-CNV-16 | `POST /chat/conversaciones/{id}/mensajes` (respuesta REST) | PRO `GET /productos` 🟡 | Hito 3 | Should | 5 |
@@ -170,7 +170,7 @@ Cada uno de los **112 requisitos** de las 23 specs está cubierto por al menos u
 | `SPEC-05 · Req. 1` | Conversaciones múltiples | HU-CNV-01, HU-CNV-02 |
 | `SPEC-05 · Req. 2` | Pantalla de inicio | HU-CNV-03, HU-CNV-21 |
 | `SPEC-05 · Req. 3` | Interpretación de la intención mediante herramientas | HU-CNV-04 |
-| `SPEC-05 · Req. 4` | Transmisión de la respuesta por WebSocket | HU-CNV-05 |
+| `SPEC-05 · Req. 4` | Transmisión de la respuesta por SSE | HU-CNV-05 |
 | `SPEC-05 · Req. 5` | Referencias al contexto conversacional | HU-CNV-06 |
 | `SPEC-05 · Req. 6` | Ejecución segura de herramientas | HU-CNV-07 |
 | `SPEC-05 · Req. 7` | Veracidad de la respuesta | HU-CNV-08 |

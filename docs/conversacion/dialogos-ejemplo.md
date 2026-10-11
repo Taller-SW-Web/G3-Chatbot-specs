@@ -7,7 +7,7 @@
 | Elemento | Significado |
 |---|---|
 | **Usuario:** | Mensaje escrito por el cliente |
-| **Botleta:** | Texto del asistente (transmitido por WebSocket, o por REST en acciones directas y en modo degradado) |
+| **Botleta:** | Texto del asistente (transmitido por SSE, o por REST en acciones directas y en modo degradado) |
 | `⟶ tool: nombre(args)` | Herramienta que invoca el LLM, con argumentos validados por el backend (SPEC-05 · Req. 3 y 6) |
 | `⟶ acción: TIPO(payload)` | Acción directa de un botón, sin LLM (SPEC-05 · Req. 8) |
 | `⟵ resultado` | Resumen del resultado de la herramienta o del módulo |

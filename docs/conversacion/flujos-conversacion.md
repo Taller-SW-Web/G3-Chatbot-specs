@@ -15,7 +15,7 @@ stateDiagram-v2
     state "Conversando anónimo (chat_sid)" as Anonimo
     state "Conversando autenticado (rol CLIENTE)" as Autenticado
     state "Esperando login (accionPendiente guardada)" as EsperaLogin
-    state "Modo degradado (sin LLM o sin WebSocket)" as Degradado
+    state "Modo degradado (sin LLM o con el stream interrumpido)" as Degradado
     state "Limitado (429)" as Limitado
 
     [*] --> Inicio
@@ -38,7 +38,7 @@ stateDiagram-v2
 
 Notas:
 - La primera respuesta del asistente en cada conversación incluye la presentación como asistente virtual (SPEC-05 · Req. 12).
-- Si el WebSocket falla, la respuesta llega por *polling* cada 2 s tras 2 reintentos (SPEC-05 · Req. 4); eso no cambia el estado de sesión.
+- Si el stream se corta, la respuesta llega por *polling* cada 2 s (SPEC-05 · Req. 4); eso no cambia el estado de sesión.
 - Si el LLM falla, las acciones directas por botón siguen funcionando porque no pasan por el LLM (SPEC-05 · Req. 8).
 
 ## (b) Descubrimiento → carrito
@@ -169,7 +169,7 @@ flowchart TD
 
 ## (e) Secuencia de un turno de texto
 
-Un mensaje de texto viaja por REST y la respuesta vuelve por WebSocket (SPEC-05 · Req. 4). Las acciones con efecto no viajan por WebSocket (README §1.3). Las acciones directas de botones siguen otro camino: REST → `ActionDispatcher` → caso de uso, sin LLM (SPEC-05 · Req. 8).
+Un mensaje de texto viaja por REST y la respuesta vuelve por SSE en la respuesta del mismo `POST` (SPEC-05 · Req. 4, ADR-0021). Las acciones con efecto no usan el stream (README §1.3). Las acciones directas de botones siguen otro camino: REST → `ActionDispatcher` → caso de uso, sin LLM (SPEC-05 · Req. 8).
 
 Fuentes: SPEC-05 · Req. 3, 4, 6, 7, 9 y `motor-conversacion/design.md`; README §1.3.
 
@@ -185,11 +185,10 @@ sequenceDiagram
     participant LLM as LLMProvider
     participant TR as ToolRegistry y caso de uso
     participant MOD as Módulo externo
-    participant WS as chatbot_ws_adapter.py
 
     FE->>REST: POST /chat/conversaciones/{id}/mensajes con texto
     REST->>REST: RateLimiter (más de 20 por minuto responde 429)
-    REST-->>FE: 202 con mensajeId
+    REST-->>FE: 200 text/event-stream, evento aceptado con mensajeId
     REST->>UC: procesar turno
     UC->>F: redactar tarjeta, OTP y contraseña
     F-->>UC: texto seguro, persistido en mensaje
@@ -201,15 +200,15 @@ sequenceDiagram
     TR-->>UC: resultado truncado y bloque estructurado
     UC->>LLM: resultado de la herramienta
     LLM-->>UC: texto en streaming
-    UC->>WS: eventos token
-    WS-->>FE: token, token, token
-    UC->>WS: evento bloque
-    WS-->>FE: bloque (CARRUSEL_PRODUCTOS, CARRITO y otros)
+    UC->>REST: eventos token
+    REST-->>FE: token, token, token
+    UC->>REST: evento bloque
+    REST-->>FE: bloque (CARRUSEL_PRODUCTOS, CARRITO y otros)
     UC->>UC: OutputValidator compara precios del texto con los resultados
-    UC->>WS: evento fin con mensajeId y correcciones
-    WS-->>FE: fin
+    UC->>REST: evento fin con mensajeId y correcciones
+    REST-->>FE: fin
     Note over UC,LLM: Si el LLM no responde en 15 s, DegradedMode responde por REST con el menú
-    Note over FE,WS: Si el WebSocket no conecta, 2 reintentos y luego polling cada 2 s
+    Note over FE,REST: Si el stream se corta, polling del historial cada 2 s
 ```
 
 ## (f) Cuenta, búsqueda y accesos contextuales

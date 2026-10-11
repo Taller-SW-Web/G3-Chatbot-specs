@@ -14,37 +14,36 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `AppShell` (inbound, orquesta) | Layout raíz del App Router de Next.js (componente de cliente): monta `Sidebar`, contiene las rutas `/` (`HomePage`), `/chat/[id]` (`ChatPage`), `/carrito` (`CartPage`), `/checkout` (`CheckoutPage`) y `/pedidos` (`OrderHistoryPage`), y suscribe la conexión WebSocket activa. |
+| `AppShell` (inbound, orquesta) | Layout raíz del App Router de Next.js (componente de cliente): monta `Sidebar`, contiene las rutas `/` (`HomePage`), `/chat/[id]` (`ChatPage`), `/carrito` (`CartPage`), `/checkout` (`CheckoutPage`) y `/pedidos` (`OrderHistoryPage`), y mantiene el estado del stream SSE activo. |
 | `Sidebar` | "Nuevo chat", campo "Buscar chats", lista de conversaciones recientes (título + vista previa), acceso al perfil y a `SesionIndicator` (SPEC-03). |
 | `HomePage` | Banner de ofertas, grid de productos en oferta y el compositor de chat. |
-| `ChatPage` + `useChat` | Orquesta la vista de una conversación: envía mensajes por REST, escucha el WebSocket, renderiza `MessageList`. |
+| `ChatPage` + `useChat` | Orquesta la vista de una conversación: envía mensajes por REST, lee el stream SSE de la respuesta, renderiza `MessageList`. |
 | `MessageList` / `MessageRenderer` | Mapea `Bloque.tipo` al componente correspondiente; muestra el efecto de streaming token por token. |
 | `Composer` | Campo de texto (máx. 1000 caracteres), envío con Enter, deshabilitado mientras se espera. Con SPEC-23 admite hasta 3 imágenes adjuntas (`AttachmentButton`, `AttachmentPreviewList`) y envía sus `adjuntoIds` junto con el texto. |
 | `QuickReplies` | Chips de acciones rápidas que envían `accion`. |
-| `TypingIndicator` | Indicador "escribiendo…" mientras llegan tokens por WebSocket. |
-| `DegradedBanner` | Aviso de modo degradado (sin LLM o sin WebSocket) y menú alternativo. |
+| `TypingIndicator` | Indicador "escribiendo…" mientras llegan tokens por SSE. |
+| `DegradedBanner` | Aviso de modo degradado (sin LLM o con el stream interrumpido) y menú alternativo. |
 | `chatStore` (Zustand) | Conversación activa, listado de conversaciones, mensajes, cola de envío y **token de sesión en LocalStorage** (ver §1.4). |
 | Puerto `ChatbotApiPort` (dominio) | Contrato de los casos de uso hacia el adaptador REST. |
-| Puerto `WebSocketPort` (dominio) | Contrato de los casos de uso hacia el adaptador de streaming. |
+| Puerto `StreamingPort` (dominio) | Contrato de los casos de uso hacia el adaptador de streaming. |
 | `Axios Adapter` (outbound) | Implementa `ChatbotApiPort`; interceptor JWT desde `chatStore`. |
-| `WebSocket Adapter` (outbound) | Implementa `WebSocketPort`; reconexión con backoff y *fallback* a *polling*. |
+| `SSE Adapter` (outbound) | Implementa `StreamingPort` con un lector de `fetch` con streaming (`EventSource` no admite `POST`); si el stream se corta, hace *fallback* a *polling* del historial. |
 | `container.ts` / `apiConfig.ts` (infrastructure) | Inyección de dependencias y URL base del backend (variable pública `NEXT_PUBLIC_API_URL`). |
 
 ## Backend
 
 | Componente | Responsabilidad |
 |---|---|
-| `chatbot_router.py` (adaptador inbound REST) | `POST/GET /conversaciones`, `GET /conversaciones/buscar`, `GET/POST /conversaciones/{id}/mensajes` (el `POST` acepta `adjuntoIds`, SPEC-23); invoca `ChatbotServicePort`. Los endpoints de adjuntos están en SPEC-23. |
-| `chatbot_ws_adapter.py` (adaptador inbound WebSocket) | Handshake con JWT, suscripción por `conversacionId`, emisión de los eventos `token`, `bloque` y `fin`; invoca `ChatbotServicePort` solo para transmitir, nunca para ejecutar acciones. |
-| `ChatbotServicePort` (puerto inbound) | Contrato único que exponen ambos adaptadores hacia los casos de uso. |
+| `chatbot_router.py` (adaptador inbound REST) | `POST/GET /conversaciones`, `GET /conversaciones/buscar`, `GET/POST /conversaciones/{id}/mensajes` (el `POST` acepta `adjuntoIds`, SPEC-23); invoca `ChatbotServicePort`. Valida y comprueba la pertenencia antes de abrir el stream (errores `problem+json`) y, en un envío de texto, responde `200 text/event-stream` con los eventos `aceptado`, `token`, `bloque`, `degradado`, `fin` y `error` ([ADR-0021](../../../docs/arquitectura/adr/ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md)). Los endpoints de adjuntos están en SPEC-23. |
+| `ChatbotServicePort` (puerto inbound) | Contrato único que expone el adaptador REST hacia los casos de uso. |
 | `GestionarConversacionUseCase` | Crear, listar, buscar y cargar historial; pertenencia por cliente o `chat_sid`. |
-| `InterpretarYResponderUseCase` | Arma el prompt, llama al LLM, ejecuta herramientas (máx. 5 iteraciones y 1 reintento por error de validación), ensambla los bloques y los transmite por el puerto de WebSocket. Con SPEC-23, incluye en el contexto las imágenes de los últimos 12 mensajes como contenido multimodal (base64). |
+| `InterpretarYResponderUseCase` | Arma el prompt, llama al LLM, ejecuta herramientas (máx. 5 iteraciones y 1 reintento por error de validación), ensambla los bloques y los entrega como eventos del turno al adaptador REST, que los emite por SSE. Con SPEC-23, incluye en el contexto las imágenes de los últimos 12 mensajes como contenido multimodal (base64). |
 | `LLMProvider` (puerto outbound) + `ClaudeProvider` / `OpenAIProvider` | Llamada con tools, streaming y timeouts. Con SPEC-23, acepta partes de contenido de texto e imagen y declara si el modelo admite visión. |
 | `ToolRegistry` | Nombre, descripción, esquema Pydantic, `requiere_sesion`, `requiere_confirmacion` y handler (un caso de uso). |
 | `ActionDispatcher` | Enruta las acciones de botones a los mismos handlers, sin pasar por `InterpretarYResponderUseCase`. |
 | `SensitiveDataFilter` | Redacta tarjetas (Luhn), secuencias de 6 dígitos tras pedir un OTP, patrones de contraseña y números de documento precedidos por una palabra que los identifique (DNI, RUC, CE, pasaporte). |
 | `OutputValidator` | Contrasta los precios y montos del texto transmitido con los resultados de las herramientas. |
-| `DegradedMode` | Intérprete de palabras clave y menú, activo también cuando el WebSocket falla. Con SPEC-23 cubre además el fallo de visión: avisa que la imagen no pudo analizarse y procesa el texto sin ella. |
+| `DegradedMode` | Intérprete de palabras clave y menú, activo también cuando el stream falla. Con SPEC-23 cubre además el fallo de visión: avisa que la imagen no pudo analizarse y procesa el texto sin ella. |
 | `RateLimiter` | Por cliente, IP y conversación. Un mensaje con imágenes cuenta como uno; el límite de cargas de imagen lo define SPEC-23. |
 | `conversacion_postgres_adapter.py` (outbound) | Persistencia de conversaciones y mensajes en PostgreSQL. |
 | `prompts/sistema.md` | Prompt del sistema versionado. |
@@ -57,12 +56,12 @@
 - [ ] `[FE]` `HomePage` con banner de ofertas y grid de productos
 - [ ] `[FE]` `ChatPage`, `useChat`, `MessageList` y `MessageRenderer` con soporte de streaming
 - [ ] `[FE]` `Composer`, `QuickReplies`, `TypingIndicator` y `DegradedBanner`
-- [ ] `[FE]` `chatStore` (conversación activa, listado, mensajes, token) y puertos `ChatbotApiPort`/`WebSocketPort`
-- [ ] `[FE]` `Axios Adapter` (interceptor JWT) y `WebSocket Adapter` (reconexión y *fallback*)
+- [ ] `[FE]` `chatStore` (conversación activa, listado, mensajes, token) y puertos `ChatbotApiPort`/`StreamingPort`
+- [ ] `[FE]` `Axios Adapter` (interceptor JWT) y `SSE Adapter` (lector de `fetch` con streaming y *fallback* a *polling*)
 - [ ] `[FE]` `container.ts` y `apiConfig.ts`
 - [ ] `[BE]` Modelos `conversation` y `message` (con `title` derivado) y migraciones Alembic
 - [ ] `[BE]` `chatbot_router.py`: conversaciones, búsqueda y mensajes
-- [ ] `[BE]` `chatbot_ws_adapter.py`: handshake JWT, suscripción y eventos de streaming
+- [ ] `[BE]` Streaming SSE en la respuesta del `POST` de mensajes: eventos `aceptado`, `token`, `bloque`, `degradado`, `fin` y `error`
 - [ ] `[BE]` `GestionarConversacionUseCase`
 - [ ] `[BE]` Interfaz `LLMProvider` más una implementación inicial con streaming
 - [ ] `[BE]` `ToolRegistry`, `InterpretarYResponderUseCase` y `ActionDispatcher`
@@ -71,4 +70,4 @@
 - [ ] `[BE]` Prompt del sistema v1 y resumen de conversación
 - [ ] `[QA]` Conjunto de evaluación de 120 frases y job de CI con umbral del 90 %
 - [ ] `[BE]` Aceptar `adjuntoIds` en `POST /conversaciones/{id}/mensajes` y admitir contenido multimodal en `LLMProvider` e `InterpretarYResponderUseCase` (el detalle de adjuntos está en [`adjuntos-imagenes-chat`](../adjuntos-imagenes-chat/design.md))
-- [ ] `[QA]` Pruebas de todos los escenarios (LLM y WebSocket mockeados); prueba de reconexión sin duplicar texto
+- [ ] `[QA]` Pruebas de todos los escenarios (LLM y stream SSE mockeados); prueba del *fallback* a *polling* cuando el stream se corta

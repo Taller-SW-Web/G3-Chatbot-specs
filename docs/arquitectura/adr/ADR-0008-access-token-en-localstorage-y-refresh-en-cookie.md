@@ -10,7 +10,7 @@ Aceptada (con riesgo aceptado)
 
 ## Contexto
 
-- La arquitectura del equipo guarda el estado de sesión en `chatStore` (Zustand) respaldado por LocalStorage, y el interceptor de Axios adjunta el token en cada llamada REST y en el *handshake* del WebSocket.
+- La arquitectura del equipo guarda el estado de sesión en `chatStore` (Zustand) respaldado por LocalStorage, y el interceptor de Axios adjunta el token en cada llamada REST y en el *handshake* del WebSocket (hasta el [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md), que lo reemplaza por el `POST` con SSE).
 - Antes se había propuesto que el BFF guardara el token en una cookie `httpOnly` y gestionara el refresh.
 - Seguridad emite access tokens de 15 minutos y refresh tokens rotativos.
 - Next.js se usa solo como frontend, sin sesión de servidor ([ADR-0004](ADR-0004-backend-como-bff-y-nextjs-solo-frontend.md)).

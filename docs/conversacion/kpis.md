@@ -51,7 +51,7 @@ Se listan para tenerlas en un solo lugar; la definición vigente es la de cada s
 
 | Métrica | Umbral | Fuente |
 |---|---|---|
-| Primer fragmento por WebSocket | p95 ≤ 2 s | [SPEC-05 · RNF](../../openspec/specs/motor-conversacion/spec.md) |
+| Primer fragmento por SSE | p95 ≤ 2 s | [SPEC-05 · RNF](../../openspec/specs/motor-conversacion/spec.md) |
 | Turno completo | p95 ≤ 6 s | SPEC-05 · RNF |
 | Turno con imágenes: primer fragmento / turno completo | p95 ≤ 4 s / ≤ 10 s (provisional, hasta medirlo con el modelo real) | [SPEC-23 · RNF](../../openspec/specs/adjuntos-imagenes-chat/spec.md) |
 | Carga de una imagen adjunta / emisión de URL firmada | p95 ≤ 3 s / ≤ 500 ms | SPEC-23 · RNF |

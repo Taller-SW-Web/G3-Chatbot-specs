@@ -4,9 +4,9 @@
 
 ## Responsables
 
-- **Mathias:** `InterpretarYResponderUseCase` (ciclo de tool calling), prompt del sistema, evals en CI, WebSocket del backend y conversaciones múltiples (crear, listar, buscar, historial).
+- **Mathias:** `InterpretarYResponderUseCase` (ciclo de tool calling), prompt del sistema, evals en CI, streaming SSE del backend y conversaciones múltiples (crear, listar, buscar, historial).
 - **Alonso:** `ToolRegistry`, `ActionDispatcher`, `SensitiveDataFilter`, `OutputValidator` y `DegradedMode`.
-- **David:** `ChatWindow`, `MessageBubble` y adaptador WebSocket del frontend (reconexión y polling de respaldo).
+- **David:** `ChatWindow`, `MessageBubble` y lector de streaming SSE del frontend (`fetch`) y *polling* de respaldo.
 - **Diego:** `Sidebar` (nuevo chat, buscar, historial) y vista `ChatPage`.
 - **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
 
@@ -27,7 +27,7 @@ Esto cambia el modelo de datos respecto de una conversación única y continua: 
 El motor sigue usando un **LLM con tool calling** (Claude u OpenAI detrás de un adaptador `LLMProvider`), y el backend expone dos protocolos:
 
 - **REST** (`chatbot_router.py`) para crear conversaciones, listar, buscar, cargar el historial y ejecutar acciones con efecto.
-- **WebSocket** (`chatbot_ws_adapter.py`) **únicamente para el streaming de la respuesta del asistente** (efecto "escribiendo en vivo", token por token). Ninguna acción que cree, modifique o cobre algo se ejecuta por este canal: el mensaje del cliente se envía por REST, y la respuesta se transmite por WebSocket sobre esa misma conversación.
+- **Server-Sent Events (SSE)** en la respuesta del `POST /conversaciones/{id}/mensajes` para el streaming de la respuesta del asistente (efecto "escribiendo en vivo", token por token), decisión del 2026-10-11 ([ADR-0021](../../../docs/arquitectura/adr/ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md), que reemplaza al ADR-0007). No hay WebSocket ni conexión persistente para el chat: el mensaje del cliente y la respuesta viajan en la misma petición HTTP.
 
 Desde SPEC-23, el mensaje del cliente puede llevar **imágenes adjuntas** (`adjuntoIds`, cargadas antes por un endpoint dedicado). El backend las lee de su almacenamiento privado y las incluye en el contexto del LLM como contenido multimodal en base64; el motor las trata igual que el texto en la ventana de contexto. La carga, el almacenamiento, el análisis y las miniaturas de las imágenes se definen en [`adjuntos-imagenes-chat`](../adjuntos-imagenes-chat/spec.md) (SPEC-23).
 
@@ -40,13 +40,13 @@ Incluye:
 - Pantalla de inicio con catálogo destacado y entrada de chat combinados.
 - Barra lateral de navegación entre conversaciones y acceso al perfil.
 - Orquestador del ciclo LLM → herramienta → LLM, con un catálogo de herramientas declarado.
-- Transmisión de la respuesta por WebSocket (streaming) con reintento y *fallback* a REST si el WebSocket no está disponible.
+- Transmisión de la respuesta por SSE en la respuesta del `POST` (streaming) con *fallback* a *polling* del historial si el stream se corta.
 - Acciones directas desde botones, que no pasan por el LLM.
 - Respuesta en bloques estructurados (`TEXTO`, `CARRUSEL_PRODUCTOS`, etc.).
 - Memoria de trabajo por conversación: último carrusel, filtros vigentes, acción pendiente y borradores.
 - Mensajes con imágenes adjuntas: el contrato de envío acepta `adjuntoIds` y el contexto del LLM puede incluir imágenes (el detalle de la carga y el análisis está en SPEC-23).
 - Guardarraíles: dominio, veracidad, confirmación de acciones, datos sensibles, prompt injection y límites de uso.
-- Modo degradado sin LLM, sin WebSocket y sin capacidad de visión.
+- Modo degradado sin LLM, con el stream interrumpido y sin capacidad de visión.
 - Conjunto de evaluación de intenciones y métricas.
 
 ### Fuera de alcance
@@ -141,7 +141,7 @@ El sistema DEBE (SHALL) enviar al LLM el mensaje, el contexto acotado de la conv
 #### Scenario: Intención clara con parámetros
 - **DADO** un visitante
 - **CUANDO** escribe "zapatillas Nike para correr de menos de 350 soles"
-- **ENTONCES** el LLM invoca `buscar_productos {categoria: "zapatillas", marca: "Nike", uso: "running", precioMax: 350}`, el backend valida los argumentos y ejecuta la búsqueda, y la respuesta incluye un texto breve más el bloque `CARRUSEL_PRODUCTOS`, transmitida por WebSocket
+- **ENTONCES** el LLM invoca `buscar_productos {categoria: "zapatillas", marca: "Nike", uso: "running", precioMax: 350}`, el backend valida los argumentos y ejecuta la búsqueda, y la respuesta incluye un texto breve más el bloque `CARRUSEL_PRODUCTOS`, transmitida por SSE
 
 #### Scenario: Mensaje ambiguo
 - **DADO** el mensaje "quiero algo para mi hijo"
@@ -158,35 +158,50 @@ El sistema DEBE (SHALL) enviar al LLM el mensaje, el contexto acotado de la conv
 - **CUANDO** `InterpretarYResponderUseCase` arma el turno
 - **ENTONCES** incluye las imágenes en el contexto del LLM como contenido multimodal (base64, nunca URLs), el LLM puede invocar las mismas herramientas del catálogo con los criterios que deduzca de la imagen y el ciclo LLM → herramienta → LLM mantiene el máximo de 5 iteraciones
 
-### Requirement: Transmisión de la respuesta por WebSocket
-El sistema DEBE (SHALL) enviar el mensaje del cliente por REST y transmitir la respuesta del asistente por WebSocket en fragmentos, conservando el orden y permitiendo reconectar sin perder la respuesta.
+### Requirement: Transmisión de la respuesta por SSE
+El sistema DEBE (SHALL) transmitir la respuesta del asistente en fragmentos, conservando el orden, dentro de la respuesta del `POST` que envía el mensaje, mediante Server-Sent Events, y permitir recuperar la respuesta completa por *polling* si el stream se corta.
 
 *Trazabilidad: SPEC-05 · Requisito 4.*
 
 #### Scenario: Envío y streaming normal
-- **DADO** una conversación abierta con el WebSocket conectado
-- **CUANDO** el cliente envía un mensaje con `POST /conversaciones/{id}/mensajes`
-- **ENTONCES** el backend responde `202 {mensajeId}` de inmediato y transmite por `chatbot_ws_adapter.py`, sobre el mismo `conversacionId`, los eventos `token` (fragmentos de texto), `bloque` (cuando un bloque estructurado queda listo) y `fin` (cierre del turno)
+- **DADO** una conversación abierta del solicitante
+- **CUANDO** el cliente envía `POST /conversaciones/{id}/mensajes` con `{texto}` válido
+- **ENTONCES** el backend responde `200` con `Content-Type: text/event-stream` y emite, en orden, `aceptado {mensajeId}` (el mensaje del cliente quedó persistido), `token {texto}` (cada fragmento), `bloque {bloque}` (cuando un bloque estructurado queda listo) y `fin {mensajeId}` (cierre del turno, con el id del mensaje del asistente ya persistido)
+
+#### Scenario: Error de validación o conversación inexistente
+- **DADO** un cuerpo inválido, o una conversación que no existe o no pertenece al solicitante
+- **CUANDO** el cliente envía `POST /conversaciones/{id}/mensajes`
+- **ENTONCES** el backend responde antes de abrir el stream, con `application/problem+json`: `400` por validación y `404` si la conversación no existe o no es del solicitante
 
 #### Scenario: Envío con imágenes adjuntas
-- **DADO** una conversación abierta con el WebSocket conectado y adjuntos ya cargados (SPEC-23)
+- **DADO** una conversación abierta y adjuntos ya cargados (SPEC-23)
 - **CUANDO** el cliente envía `POST /conversaciones/{id}/mensajes` con `{texto, adjuntoIds}`
-- **ENTONCES** el backend responde `202 {mensajeId}` de inmediato y transmite la respuesta con los mismos eventos `token`, `bloque` y `fin`; el texto es opcional si hay al menos un adjunto
+- **ENTONCES** el backend responde con el mismo contrato de eventos (`aceptado`, `token`, `bloque`, `fin`); el texto es opcional si hay al menos un adjunto. El contrato de `adjuntoIds` y de las acciones (`accion`) conserva su definición, pero aún no está implementado en el backend
 
-#### Scenario: WebSocket no disponible
-- **DADO** que el navegador no logra conectar el WebSocket o se cae a mitad de una respuesta
+#### Scenario: El turno termina en modo degradado
+- **DADO** que el turno termina en modo degradado (Req. 10) cuando ya se emitieron `token`
+- **CUANDO** el backend emite `degradado {motivo}`
+- **ENTONCES** el cliente descarta los tokens recibidos hasta ese momento y muestra la respuesta degradada
+
+#### Scenario: Falla inesperada a mitad del stream
+- **DADO** un stream en curso
+- **CUANDO** ocurre una falla inesperada
+- **ENTONCES** el backend emite `error {code}` y el stream termina
+
+#### Scenario: Transporte no disponible o stream cortado
+- **DADO** que la conexión se corta antes del evento `fin`
 - **CUANDO** ocurre
-- **ENTONCES** el frontend reintenta la conexión 2 veces con backoff; si sigue sin poder, hace *polling* de `GET /conversaciones/{id}/mensajes?desde=` cada 2 s hasta recibir el mensaje completo del asistente, sin mostrar el efecto de streaming
+- **ENTONCES** el frontend hace *polling* de `GET /conversaciones/{id}/mensajes` cada 2 s hasta recibir el mensaje completo del asistente, sin mostrar el efecto de streaming; no reconecta ni reenvía el mensaje
 
 #### Scenario: Cliente con dos pestañas abiertas
 - **DADO** la misma conversación abierta en dos pestañas
-- **CUANDO** llega una respuesta
-- **ENTONCES** ambas conexiones WebSocket (suscritas al mismo `conversacionId`) reciben el streaming
+- **CUANDO** llega una respuesta a un mensaje enviado desde una de ellas
+- **ENTONCES** solo esa pestaña recibe el streaming en vivo; la otra ve el mensaje del asistente al recargar o por *polling*
 
-#### Scenario: Reconexión tras perder unos segundos
-- **DADO** un WebSocket que se reconecta 3 s después de una desconexión breve
-- **CUANDO** se reconecta
-- **ENTONCES** el cliente indica el último `mensajeId` recibido y el backend reenvía solo lo que falta de ese turno, sin duplicar texto
+#### Scenario: Pérdida breve de conexión
+- **DADO** un stream que se corta unos segundos y el cliente vuelve a tener conexión
+- **CUANDO** el frontend retoma
+- **ENTONCES** consulta el historial por *polling* hasta que aparece el mensaje del asistente, sin duplicar texto
 
 ### Requirement: Referencias al contexto conversacional
 El sistema DEBE (SHALL) resolver referencias a elementos mostrados previamente ("el segundo", "ese", "las rojas") usando la memoria de trabajo de la conversación activa.
@@ -249,14 +264,14 @@ El sistema DEBE (SHALL) presentar los precios, el stock, los descuentos, los tot
 - **ENTONCES** indica que no lo encontró, sin inventar productos ni características
 
 ### Requirement: Acciones directas desde la UI
-El sistema DEBE (SHALL) procesar las acciones de botones (`{accion: {tipo, payload}}`) invocando el caso de uso de dominio directamente, sin pasar por el LLM ni por el WebSocket, y registrarlas en el historial.
+El sistema DEBE (SHALL) procesar las acciones de botones (`{accion: {tipo, payload}}`) invocando el caso de uso de dominio directamente, sin pasar por el LLM ni por el stream SSE, y registrarlas en el historial.
 
 *Trazabilidad: SPEC-05 · Requisito 8.*
 
 #### Scenario: Botón "Agregar" de una tarjeta
 - **DADO** una tarjeta de producto sin variantes
 - **CUANDO** el cliente pulsa "Agregar"
-- **ENTONCES** se envía `{accion: {tipo: "AGREGAR_AL_CARRITO", payload: {sku, cantidad: 1}}}` por REST, se ejecuta el mismo caso de uso que usa la herramienta `agregar_al_carrito` y se responde con un bloque `CARRITO` resumido, sin abrir el WebSocket
+- **ENTONCES** se envía `{accion: {tipo: "AGREGAR_AL_CARRITO", payload: {sku, cantidad: 1}}}` por REST, se ejecuta el mismo caso de uso que usa la herramienta `agregar_al_carrito` y se responde con un bloque `CARRITO` resumido, sin abrir un stream
 
 ### Requirement: Protección de datos sensibles y ante prompt injection
 El sistema DEBE (SHALL) impedir que contraseñas, códigos OTP, datos de tarjeta o números de documento de identidad lleguen al LLM o a la base de datos, y DEBE tratar como datos (no como instrucciones) el contenido que devuelven las herramientas.
@@ -280,7 +295,7 @@ El sistema DEBE (SHALL) impedir que contraseñas, códigos OTP, datos de tarjeta
 - **ENTONCES** el asistente no altera su comportamiento: los descuentos solo provienen de Productos (SPEC-08 y SPEC-13) y los resultados de las herramientas van delimitados como datos en el prompt del sistema
 
 ### Requirement: Modo degradado
-El sistema DEBE (SHALL) seguir siendo útil cuando el LLM falla, excede el tiempo o no está configurado, y cuando ni el LLM ni el WebSocket están disponibles.
+El sistema DEBE (SHALL) seguir siendo útil cuando el LLM falla, excede el tiempo o no está configurado, y cuando ni el LLM ni el stream están disponibles.
 
 *Trazabilidad: SPEC-05 · Requisito 10.*
 
@@ -344,13 +359,13 @@ El sistema DEBE (SHALL) presentarse siempre como un asistente virtual, con el no
 
 ## Requisitos no funcionales
 
-- **Rendimiento:** primer fragmento de respuesta por WebSocket en p95 ≤ 2 s; turno completo p95 ≤ 6 s. Las acciones directas por REST, p95 ≤ 1,5 s.
+- **Rendimiento:** primer fragmento de respuesta por SSE en p95 ≤ 2 s; turno completo p95 ≤ 6 s. Las acciones directas por REST, p95 ≤ 1,5 s.
 - **Contexto:** se envían al LLM el prompt del sistema, el resumen de la conversación activa y sus últimos 12 mensajes (nunca de otras conversaciones). Los resultados de herramientas se truncan a lo necesario (máx. 10 productos, sin descripciones largas). Las imágenes adjuntas comparten esa misma ventana de 12 mensajes y se envían con un máximo por turno (SPEC-23).
 - **Calidad:** conjunto de evaluación versionado (`evals/intenciones.jsonl`) con al menos 120 frases etiquetadas, incluidas variantes peruanas. Precisión de intención ≥ 90 % en CI antes de cambiar el prompt o el modelo.
 - **Configuración:** proveedor, modelo, temperatura (0,6 por defecto; ver la enmienda del 2026-10-11 en ADR-0005), `max_tokens` y timeouts por variables de entorno. La clave del LLM nunca va en el frontend.
 - **Observabilidad:** por turno se registran la conversación, la intención, las herramientas, la latencia, los tokens y el costo estimado, sin datos personales en el texto del log.
 - **Privacidad:** al LLM se envía el nombre de pila del cliente (si hay sesión), nunca el correo, el celular, la dirección completa ni el documento. Las imágenes adjuntas se envían solo en base64 y no pasan por `SensitiveDataFilter` (que actúa sobre texto); su riesgo residual se trata en SPEC-23.
-- **Escalabilidad del WebSocket:** el servidor soporta reconexión y múltiples conexiones por conversación (varias pestañas); el estado de la conversación vive en PostgreSQL, no en memoria del proceso, para permitir varias réplicas del backend.
+- **Escalabilidad del streaming:** el proceso que recibe el `POST` es el mismo que transmite la respuesta, por lo que no se requiere un canal entre procesos; el estado de la conversación vive en PostgreSQL, no en memoria del proceso, para permitir varias réplicas del backend. Los *proxies* no deben almacenar en búfer las respuestas de larga duración.
 - **Idioma:** español neutro (variante peruana) con tono cercano y tuteo (el asistente trata de "tú" al cliente); moneda "S/"; sin emojis en exceso. La persona, el tono, la política de emojis y el microcopy canónico se detallan en [`docs/conversacion/persona-tono.md`](../../../docs/conversacion/persona-tono.md).
 
 ## Criterio de completitud

@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada
+Reemplazada por [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md)
 
 ## Fecha
 

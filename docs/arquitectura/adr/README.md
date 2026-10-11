@@ -20,7 +20,7 @@ Reglas:
 | [ADR-0004](ADR-0004-backend-como-bff-y-nextjs-solo-frontend.md) | El backend actúa como BFF y Next.js solo como frontend | Aceptada | 2026-09-24 |
 | [ADR-0005](ADR-0005-llm-con-tool-calling-detras-de-llmprovider.md) | LLM con tool calling detrás del puerto `LLMProvider`; datos comerciales solo desde herramientas | Aceptada | 2026-09-24 |
 | [ADR-0006](ADR-0006-datos-sensibles-fuera-del-llm.md) | Datos sensibles fuera del LLM: formularios dedicados y redacción previa | Aceptada | 2026-09-24 |
-| [ADR-0007](ADR-0007-rest-para-acciones-y-websocket-para-streaming.md) | REST para acciones y WebSocket solo para el streaming, con *fallback* y modo degradado | Aceptada | 2026-09-24 |
+| [ADR-0007](ADR-0007-rest-para-acciones-y-websocket-para-streaming.md) | REST para acciones y WebSocket solo para el streaming, con *fallback* y modo degradado | Reemplazada por ADR-0021 | 2026-09-24 |
 | [ADR-0008](ADR-0008-access-token-en-localstorage-y-refresh-en-cookie.md) | Access token en LocalStorage y refresh token en cookie `httpOnly` | Aceptada | 2026-09-24 |
 | [ADR-0009](ADR-0009-token-de-servicio-con-servicetokenprovider.md) | Token de servicio `client_credentials` con `ServiceTokenProvider` desde el Hito 4 | Aceptada | 2026-09-24 |
 | [ADR-0010](ADR-0010-integracion-sincrona-por-api-sin-eventos.md) | Integración síncrona por API, sin consumo ni publicación de eventos | Aceptada | 2026-09-24 |
@@ -34,5 +34,6 @@ Reglas:
 | [ADR-0018](ADR-0018-agrupacion-del-nucleo-en-ocho-casos-de-uso.md) | Agrupación del núcleo del backend en 8 casos de uso | Propuesta | 2026-09-24 |
 | [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md) | Imágenes como entrada del LLM, con almacenamiento propio privado detrás de `AttachmentStorage` | Aceptada | 2026-09-26 |
 | [ADR-0020](ADR-0020-despliegue-en-railway-vercel-y-supabase.md) | Despliegue en Railway, Vercel y Supabase, con el worker como servicio único (provisional) | Aceptada | 2026-10-10 |
+| [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md) | Streaming de la respuesta por SSE en la respuesta del `POST`, sin WebSocket | Aceptada | 2026-10-11 |
 
 Las vistas que estas decisiones explican están en el [modelo C4](../c4.md).

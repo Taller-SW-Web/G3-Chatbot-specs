@@ -93,13 +93,13 @@
 **Como** cliente, **quiero** ver la respuesta del asistente mientras se escribe y seguir recibiéndola aunque falle la conexión en vivo, **para** no quedarme esperando sin saber si el chat responde.
 
 **Criterios de aceptación**
-- `SPEC-05 · Req. 4 · Scenario: Envío y streaming normal` — el envío responde `202` y la respuesta llega por WebSocket con los eventos `token`, `bloque` y `fin`.
-- `SPEC-05 · Req. 4 · Scenario: WebSocket no disponible` — tras 2 reintentos con backoff, el frontend consulta por *polling* cada 2 s.
+- `SPEC-05 · Req. 4 · Scenario: Envío y streaming normal` — el envío responde `200 text/event-stream` y la respuesta llega en esa misma respuesta con los eventos `aceptado`, `token`, `bloque` y `fin`.
+- `SPEC-05 · Req. 4 · Scenario: Transporte no disponible o stream cortado` — el frontend consulta el historial por *polling* cada 2 s hasta recibir el mensaje del asistente.
 - `SPEC-05 · Req. 4 · Scenario: Cliente con dos pestañas abiertas` — ambas pestañas reciben el streaming de la misma conversación.
 - `SPEC-05 · Req. 4 · Scenario: Reconexión tras perder unos segundos` — el backend reenvía solo lo que falta del turno, sin duplicar texto.
 - `SPEC-05 · Req. 4 · Scenario: Envío con imágenes adjuntas` — el envío con `adjuntoIds` responde `202` y la respuesta llega con los mismos eventos `token`, `bloque` y `fin` (detalle en HU-CNV-15).
 
-**Prioridad:** Must: la arquitectura acordada transmite la respuesta del asistente por WebSocket.
+**Prioridad:** Must: la arquitectura acordada transmite la respuesta del asistente por SSE en la respuesta del `POST`.
 
 **Notas:** RNF asociados: primer fragmento p95 ≤ 2 s y turno completo p95 ≤ 6 s.
 
@@ -165,7 +165,7 @@
 **Como** cliente, **quiero** que los botones de las tarjetas y chips actúen de inmediato, **para** agregar o navegar sin depender de que el asistente interprete un texto.
 
 **Criterios de aceptación**
-- `SPEC-05 · Req. 8 · Scenario: Botón "Agregar" de una tarjeta` — la acción `AGREGAR_AL_CARRITO` se envía por REST, ejecuta el mismo caso de uso que la herramienta y responde con el bloque `CARRITO` sin abrir el WebSocket.
+- `SPEC-05 · Req. 8 · Scenario: Botón "Agregar" de una tarjeta` — la acción `AGREGAR_AL_CARRITO` se envía por REST, ejecuta el mismo caso de uso que la herramienta y responde con el bloque `CARRITO` sin abrir un stream.
 
 **Prioridad:** Must: todas las acciones directas de las demás épicas (tarjetas, carrito, chips) usan este mecanismo.
 
@@ -288,7 +288,7 @@
 - `SPEC-23 · Req. 3 · Scenario: Conversación de otro cliente` — se responde `404 RECURSO_NO_ENCONTRADO` y no se guarda nada.
 - `SPEC-23 · Req. 3 · Scenario: Cliente anónimo` — el visitante con `chat_sid` sube imágenes con las mismas reglas.
 - `SPEC-23 · Req. 3 · Scenario: Falla el almacenamiento` — se responde `503`, no se crea el adjunto y la conversación de texto sigue funcionando.
-- `SPEC-23 · Req. 4 · Scenario: Mensaje con texto y dos imágenes` — el mensaje liga los adjuntos, responde `202 {mensajeId}` y la respuesta llega por WebSocket.
+- `SPEC-23 · Req. 4 · Scenario: Mensaje con texto y dos imágenes` — el mensaje liga los adjuntos, responde `200 text/event-stream` y la respuesta llega por SSE en esa misma respuesta.
 - `SPEC-23 · Req. 4 · Scenario: Adjunto que no corresponde` — se responde `404` sin guardar el mensaje ni consumir el resto de los adjuntos.
 - `SPEC-23 · Req. 4 · Scenario: Más de 3 adjuntos` — se responde `422 LIMITE_ADJUNTOS`.
 - `SPEC-23 · Req. 4 · Scenario: Mensaje sin texto ni adjuntos` — se responde `400 VALIDACION`.
@@ -433,5 +433,5 @@ Tareas numeradas `T1…Tn` en el orden del "Desglose para issues" del `design.md
 
 | Spec | Tarea → Historia |
 |---|---|
-| SPEC-05 | T1 `[FE]` AppShell y rutas → HU-CNV-01 · T2 `[FE]` Sidebar → HU-CNV-01 (relacionada: HU-CNV-02) · T3 `[FE]` HomePage → HU-CNV-03 · T4 `[FE]` ChatPage, useChat, MessageList → HU-CNV-05 · T5 `[FE]` Composer, QuickReplies, TypingIndicator, DegradedBanner → HU-CNV-04 (relacionadas: HU-CNV-11, HU-CNV-13) · T6 `[FE]` chatStore y puertos → HU-CNV-01 · T7 `[FE]` adaptadores Axios y WebSocket → HU-CNV-05 · T8 `[FE]` container.ts y apiConfig.ts → HU-CNV-01 · T9 `[BE]` modelos `conversation` y `message` → HU-CNV-01 · T10 `[BE]` `chatbot_router.py` → HU-CNV-01 · T11 `[BE]` `chatbot_ws_adapter.py` → HU-CNV-05 · T12 `[BE]` GestionarConversacionUseCase → HU-CNV-01 · T13 `[BE]` LLMProvider → HU-CNV-04 · T14 `[BE]` ToolRegistry, InterpretarYResponderUseCase, ActionDispatcher → HU-CNV-04 (relacionadas: HU-CNV-07, HU-CNV-09) · T15 `[BE]` SensitiveDataFilter y OutputValidator → HU-CNV-08 (relacionada: HU-CNV-10) · T16 `[BE]` DegradedMode y RateLimiter → HU-CNV-11 (relacionada: HU-CNV-12) · T17 `[BE]` prompt del sistema v1 → HU-CNV-04 (relacionada: HU-CNV-13) · T18 `[QA]` conjunto de evaluación y umbral en CI → HU-CNV-04 · T19 `[QA]` escenarios → HU-CNV-01 a HU-CNV-13 |
+| SPEC-05 | T1 `[FE]` AppShell y rutas → HU-CNV-01 · T2 `[FE]` Sidebar → HU-CNV-01 (relacionada: HU-CNV-02) · T3 `[FE]` HomePage → HU-CNV-03 · T4 `[FE]` ChatPage, useChat, MessageList → HU-CNV-05 · T5 `[FE]` Composer, QuickReplies, TypingIndicator, DegradedBanner → HU-CNV-04 (relacionadas: HU-CNV-11, HU-CNV-13) · T6 `[FE]` chatStore y puertos → HU-CNV-01 · T7 `[FE]` adaptadores Axios y SSE → HU-CNV-05 · T8 `[FE]` container.ts y apiConfig.ts → HU-CNV-01 · T9 `[BE]` modelos `conversation` y `message` → HU-CNV-01 · T10 `[BE]` `chatbot_router.py` → HU-CNV-01 · T11 `[BE]` streaming SSE en el `POST` de mensajes → HU-CNV-05 · T12 `[BE]` GestionarConversacionUseCase → HU-CNV-01 · T13 `[BE]` LLMProvider → HU-CNV-04 · T14 `[BE]` ToolRegistry, InterpretarYResponderUseCase, ActionDispatcher → HU-CNV-04 (relacionadas: HU-CNV-07, HU-CNV-09) · T15 `[BE]` SensitiveDataFilter y OutputValidator → HU-CNV-08 (relacionada: HU-CNV-10) · T16 `[BE]` DegradedMode y RateLimiter → HU-CNV-11 (relacionada: HU-CNV-12) · T17 `[BE]` prompt del sistema v1 → HU-CNV-04 (relacionada: HU-CNV-13) · T18 `[QA]` conjunto de evaluación y umbral en CI → HU-CNV-04 · T19 `[QA]` escenarios → HU-CNV-01 a HU-CNV-13 |
 | SPEC-23 | T1 `[BE]` `AttachmentStorage` y `SupabaseAttachmentStorage` → HU-CNV-15 · T2 `[BE]` `ImageProcessor` → HU-CNV-15 · T3 `[BE]` modelo `attachment` y migración → HU-CNV-15 · T4 `[BE]` `AdjuntoService` y `POST`/`DELETE` de adjuntos → HU-CNV-15 · T5 `[BE]` `GET /chat/adjuntos/{adjuntoId}` y URLs firmadas → HU-CNV-17 · T6 `[BE]` `adjuntoIds` en el envío de mensajes → HU-CNV-15 · T7 `[BE]` `LLMProvider` multimodal → HU-CNV-16 · T8 `[BE]` `InterpretarYResponderUseCase` con imágenes → HU-CNV-16 · T9 `[BE]` `DegradedMode` y `RateLimiter` → HU-CNV-18 (relacionada: HU-CNV-19) · T10 `[BE]` job de limpieza → HU-CNV-19 · T11 `[BE]` registro por turno de imágenes, tokens y costo → HU-CNV-16 · T12 `[FE]` `AttachmentButton`, `AttachmentPreviewList` y `validateImageFile` → HU-CNV-14 · T13 `[FE]` `ImagePrivacyNotice` → HU-CNV-14 · T14 `[FE]` `MessageAttachments` e `ImageViewer` → HU-CNV-17 · T15 `[FE]` `ChatbotApiPort`, adaptador Axios y `chatStore` → HU-CNV-14 (relacionada: HU-CNV-17) · T16 `[INT]` validar visión y costo con `gpt-6-luna` → HU-CNV-16 · T17 `[INT]` bucket privado de Supabase Storage → HU-CNV-15 · T18 `[QA]` escenarios → HU-CNV-14 a HU-CNV-19 · T19 `[QA]` seguridad de adjuntos → HU-CNV-15 (relacionadas: HU-CNV-16, HU-CNV-17) · T20 `[QA]` modo degradado de imágenes → HU-CNV-18 |

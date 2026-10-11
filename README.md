@@ -49,7 +49,7 @@ graph LR
             Store["chatStore<br>Estado observable<br>Token en LocalStorage"]
         end
         Axios["Axios Adapter<br>REST / outbound<br>interceptor JWT"]
-        WS["WebSocket Adapter<br>streaming de respuesta"]
+        WS["SSE Adapter<br>lector de streaming de respuesta"]
         DI["DI + apiConfig<br>infrastructure<br>container.ts · apiConfig.ts"]
     end
     Backend["Backend Chatbot<br>API externa"]
@@ -60,11 +60,11 @@ graph LR
     CU -->|suscribe / actualiza-lee| Store
     CU -->|opera sobre| Dom
     CU -->|via ChatbotApiPort| Axios
-    CU -->|via WebSocketPort| WS
+    CU -->|via StreamingPort| WS
     DI -.->|DI + apiConfig| Axios
     DI -.->|URL base| Backend
     Axios -->|REST / Axios| Backend
-    WS -->|WS streaming| Backend
+    WS -->|SSE en la respuesta del POST| Backend
 ```
 
 ### 1.2 Backend — FastAPI hexagonal
@@ -73,9 +73,8 @@ graph LR
 graph LR
     Clientes["Clientes<br>Frontend Web (React)"]
     subgraph BE ["Chatbot Backend · FastAPI + DI Container"]
-        subgraph Entrada ["Borde de entrada · HTTP / WS"]
-            REST["API REST<br>chatbot_router.py"]
-            WSA["WebSocket<br>chatbot_ws_adapter.py"]
+        subgraph Entrada ["Borde de entrada · HTTP / SSE"]
+            REST["API REST + streaming SSE<br>chatbot_router.py"]
         end
         CU["Casos de uso (application)<br>8 casos de uso"]
         Dom["Dominio<br>entities · services · VO<br>Conversación, Pedido, Cliente"]
@@ -87,9 +86,7 @@ graph LR
     SEG["Seguridad y Usuarios<br>auth y usuarios"]
 
     Clientes -->|HTTPS| REST
-    Clientes -->|WebSocket| WSA
     REST --> CU
-    WSA --> CU
     CU -->|reglas de dominio| Dom
     CU -->|guarda estado| Estado
     CU -->|API asíncrona| PRO
@@ -103,7 +100,7 @@ Los **8 casos de uso** del núcleo backend agrupan las 23 specs de este reposito
 | Caso de uso | Agrupa |
 |---|---|
 | `GestionarConversacionUseCase` | SPEC-05 (crear, listar, buscar, cargar historial), SPEC-23 (cargar, enviar y quitar adjuntos, URLs firmadas) |
-| `InterpretarYResponderUseCase` | SPEC-05 (tool calling, streaming por WebSocket), SPEC-23 (imágenes como entrada del LLM) |
+| `InterpretarYResponderUseCase` | SPEC-05 (tool calling, streaming por SSE), SPEC-23 (imágenes como entrada del LLM) |
 | `GestionarCatalogoUseCase` | SPEC-06, 07, 08, 09 |
 | `GestionarCarritoUseCase` | SPEC-10, 11, 13 |
 | `GestionarCheckoutUseCase` | SPEC-12, 14 |
@@ -116,7 +113,7 @@ Los **8 casos de uso** del núcleo backend agrupan las 23 specs de este reposito
 ### 1.3 Principios
 
 1. **El backend sigue siendo un BFF.** El frontend solo habla con el backend del chatbot; es este quien llama a los demás módulos. Los tokens de servicio hacia Productos, Ventas, Despacho y Seguridad se gestionan en el backend, nunca en el navegador.
-2. **Doble protocolo, un solo caso de uso.** El REST atiende las acciones que crean o modifican estado (agregar al carrito, pagar, etc.) y las lecturas puntuales; el **WebSocket se usa únicamente para el streaming de la respuesta del asistente** (efecto "escribiendo en vivo"), token por token, sobre la misma conversación. Ninguna acción con efecto (pagar, enviar un reclamo) se dispara por WebSocket.
+2. **REST, con streaming SSE en la respuesta del envío.** El REST atiende las acciones que crean o modifican estado (agregar al carrito, pagar, etc.) y las lecturas puntuales; la respuesta del asistente (efecto "escribiendo en vivo", token por token) se transmite por **Server-Sent Events en la respuesta del `POST` que envía el mensaje** ([ADR-0021](docs/arquitectura/adr/ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md), que reemplaza al ADR-0007). No hay WebSocket ni conexión persistente para el chat.
 3. **Doble vía de entrada, una sola lógica.** Cada acción se puede disparar por texto libre (el LLM decide la herramienta) o por un botón de la UI (la acción va directo al caso de uso, sin LLM). Las dos vías ejecutan el mismo caso de uso.
 4. **El LLM no inventa datos.** Precios, stock, estados de pedido y descuentos provienen siempre de las herramientas. Las tarjetas y los resúmenes se renderizan con esos datos estructurados, no con el texto del LLM.
 5. **Los datos sensibles nunca pasan por el LLM.** Contraseñas, códigos OTP y datos de tarjeta se capturan en formularios seguros de la UI y se envían a endpoints dedicados. 🧩 Esta garantía cubre el texto: las imágenes que el cliente adjunta al chat (SPEC-23) sí llegan al LLM y no se redactan automáticamente; se mitiga con un aviso previo y se documenta como riesgo residual en `docs/conversacion/privacidad.md`.
@@ -126,7 +123,7 @@ Los **8 casos de uso** del núcleo backend agrupan las 23 specs de este reposito
 
 ### 1.4 Token y sesión — decisión del equipo
 
-El frontend guarda el `accessToken` en **`chatStore` respaldado por LocalStorage** (según la arquitectura del equipo), con el interceptor de Axios adjuntándolo en cada llamada REST y en el *handshake* del WebSocket. Esto reemplaza el patrón de cookie `httpOnly` + refresh por el BFF que se había propuesto antes.
+El frontend guarda el `accessToken` en **`chatStore` respaldado por LocalStorage** (según la arquitectura del equipo), con el interceptor de Axios adjuntándolo en cada llamada REST y en el `POST` que abre el stream SSE. Esto reemplaza el patrón de cookie `httpOnly` + refresh por el BFF que se había propuesto antes.
 
 > 🧩 **Riesgo aceptado:** guardar el token en LocalStorage lo expone a robo vía XSS (a diferencia de una cookie `httpOnly`). Mitigaciones mínimas que las specs de identidad (SPEC-01 a SPEC-04) deben implementar:
 > - Sanitizar todo contenido que se renderiza desde el LLM o desde otros módulos (nunca `dangerouslySetInnerHTML` con texto no controlado).
@@ -139,8 +136,8 @@ El frontend guarda el `accessToken` en **`chatStore` respaldado por LocalStorage
 | Capa | Tecnología |
 |---|---|
 | Frontend | Next.js (App Router, usado solo como frontend) + React + TypeScript, arquitectura hexagonal propia (`inbound/`, `application/`, `domain/`, `outbound/`, `infrastructure/`), TanStack Query, Zustand (`chatStore`), React Hook Form + Zod, Tailwind CSS |
-| Backend | Python 3.12, **FastAPI** (`chatbot_router.py` REST, `chatbot_ws_adapter.py` WebSocket), arquitectura hexagonal (`domain/`, `application/`, `adapters/inbound/`, `adapters/outbound/`), Pydantic v2, SQLAlchemy 2 + Alembic, httpx async, PyJWT (JWKS), APScheduler para el worker de outbox |
-| LLM | Adaptador `LLMProvider` (puerto outbound) con implementaciones Claude y OpenAI (tool calling); el streaming de la respuesta se empuja al frontend por `chatbot_ws_adapter.py` |
+| Backend | Python 3.12, **FastAPI** (`chatbot_router.py` REST con streaming SSE en la respuesta del `POST` de mensajes), arquitectura hexagonal (`domain/`, `application/`, `adapters/inbound/`, `adapters/outbound/`), Pydantic v2, SQLAlchemy 2 + Alembic, httpx async, PyJWT (JWKS), APScheduler para el worker de outbox |
+| LLM | Adaptador `LLMProvider` (puerto outbound) con implementaciones Claude y OpenAI (tool calling); el streaming de la respuesta se emite al frontend por SSE desde `chatbot_router.py` |
 | Base de datos | PostgreSQL (`conversacion_postgres_adapter`), alojado en Supabase (plan gratuito; PostgreSQL 18 sin confirmar) |
 | Imágenes del chat (SPEC-23) | Puerto `AttachmentStorage` con `SupabaseAttachmentStorage` (bucket privado de Supabase Storage); el LLM (`gpt-6-luna`, visión sin verificar) recibe las imágenes en base64 |
 | Correo | SMTP (Mailtrap en desarrollo) |

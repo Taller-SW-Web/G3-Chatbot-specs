@@ -67,3 +67,7 @@ Mathias (líder y DevOps) decidió el 2026-10-10 los destinos de despliegue. **L
 - `odd/tasks/hito-3.md` (restricciones, tareas H3-01, H3-03, H3-04 y H3-18, y riesgo *Costo de Railway*)
 - [`c4.md`](../c4.md#vista-de-despliegue) (vista de despliegue)
 - [ADR-0004](ADR-0004-backend-como-bff-y-nextjs-solo-frontend.md), [ADR-0007](ADR-0007-rest-para-acciones-y-websocket-para-streaming.md), [ADR-0011](ADR-0011-outbox-transaccional.md), [ADR-0017](ADR-0017-mocks-y-urls-base-parametrizadas.md), [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md)
+
+## Enmienda (2026-10-11)
+
+El [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md) reemplazó al ADR-0007: la respuesta del asistente ya no se transmite por un WebSocket persistente, sino por SSE en la respuesta del `POST`. Donde este ADR cita el WebSocket (contexto, tabla de destinos, alternativa *serverless* y consecuencias positivas), léase ahora "respuesta HTTP en streaming de larga duración". El worker de larga duración sigue siendo un motivo válido contra el backend *serverless*, y las respuestas en streaming de larga duración son otro. La decisión de despliegue no cambia.

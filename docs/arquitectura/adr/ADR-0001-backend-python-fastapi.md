@@ -35,7 +35,7 @@ El profesor aprobó esta elección el 2026-09-24.
 ## Consecuencias
 
 **Positivas**
-- FastAPI soporta REST y WebSocket en la misma aplicación, que es justo lo que pide el doble protocolo ([ADR-0007](ADR-0007-rest-para-acciones-y-websocket-para-streaming.md)).
+- FastAPI soporta REST y WebSocket en la misma aplicación, que es lo que pedía el doble protocolo original ([ADR-0007](ADR-0007-rest-para-acciones-y-websocket-para-streaming.md)). Desde el 2026-10-11 el streaming viaja por SSE en la respuesta del `POST` ([ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md)), que FastAPI también admite.
 - Los esquemas Pydantic sirven a la vez para validar la API y los argumentos de las herramientas del LLM (SPEC-05 · Req. 6).
 - Las llamadas async con httpx encajan con la integración síncrona por API hacia cuatro módulos ([ADR-0010](ADR-0010-integracion-sincrona-por-api-sin-eventos.md)).
 

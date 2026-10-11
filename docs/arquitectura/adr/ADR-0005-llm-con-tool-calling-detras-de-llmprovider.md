@@ -33,7 +33,7 @@ Aceptada
 
 **Positivas**
 - Un mismo motor cubre las 56 intenciones sin reglas por intención; la precisión se controla con `evals/intenciones.jsonl` (≥ 120 frases, ≥ 90 % en CI).
-- Si el LLM falla, las acciones directas por botón y el modo degradado siguen funcionando ([ADR-0007](ADR-0007-rest-para-acciones-y-websocket-para-streaming.md)).
+- Si el LLM falla, las acciones directas por botón y el modo degradado siguen funcionando ([ADR-0007](ADR-0007-rest-para-acciones-y-websocket-para-streaming.md), reemplazado por [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md)).
 
 **Negativas y riesgos aceptados**
 - Costo y latencia por turno (riesgo R9): se acotan con rate limit (20 mensajes/min), contexto limitado y timeout de 15 s.

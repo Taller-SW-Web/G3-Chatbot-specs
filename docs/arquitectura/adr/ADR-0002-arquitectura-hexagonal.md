@@ -19,8 +19,8 @@ Aceptada
 
 El frontend y el backend se organizan en **arquitectura hexagonal (puertos y adaptadores)**, cada uno con su núcleo de dominio y casos de uso independientes del framework (README §1):
 
-- **Backend:** `domain/` (entidades, servicios, value objects), `application/` (casos de uso), `adapters/inbound/` (REST `chatbot_router.py`, WebSocket `chatbot_ws_adapter.py`, ambos detrás de `ChatbotServicePort`) y `adapters/outbound/`. Los puertos outbound incluyen `LLMProvider`, `PaymentGateway`, `SmsSender` y `EmailSender`, más los clientes de módulos y la persistencia `conversacion_postgres_adapter`.
-- **Frontend:** `inbound/` (AppShell, App Router), `application/` (casos de uso como `enviarMensaje`), `domain/` (entidades y puertos `ChatbotApiPort`, `WebSocketPort`), `outbound/` (adaptadores Axios y WebSocket) e `infrastructure/` (`container.ts`, `apiConfig.ts`).
+- **Backend:** `domain/` (entidades, servicios, value objects), `application/` (casos de uso), `adapters/inbound/` (REST `chatbot_router.py`, con streaming SSE en la respuesta del `POST` de mensajes desde el 2026-10-11, [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md); detrás de `ChatbotServicePort`) y `adapters/outbound/`. Los puertos outbound incluyen `LLMProvider`, `PaymentGateway`, `SmsSender` y `EmailSender`, más los clientes de módulos y la persistencia `conversacion_postgres_adapter`.
+- **Frontend:** `inbound/` (AppShell, App Router), `application/` (casos de uso como `enviarMensaje`), `domain/` (entidades y puertos `ChatbotApiPort`, `StreamingPort`), `outbound/` (adaptadores Axios y SSE) e `infrastructure/` (`container.ts`, `apiConfig.ts`).
 
 ## Alternativas consideradas
 

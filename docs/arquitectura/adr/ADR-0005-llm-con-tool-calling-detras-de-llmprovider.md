@@ -18,7 +18,7 @@ Aceptada
 ## Decisión
 
 - La interpretación usa un **LLM con tool calling**: el backend envía el mensaje, el contexto acotado (resumen y últimos 12 mensajes) y el catálogo de herramientas, y ejecuta la herramienta que el LLM elige (`InterpretarYResponderUseCase`, `ToolRegistry`; máx. 5 iteraciones).
-- El proveedor queda detrás del puerto outbound **`LLMProvider`**, con las implementaciones `ClaudeProvider` y `OpenAIProvider`. Proveedor, modelo, temperatura (≤ 0,3), `max_tokens` y timeouts se configuran por variables de entorno.
+- El proveedor queda detrás del puerto outbound **`LLMProvider`**, con las implementaciones `ClaudeProvider` y `OpenAIProvider`. Proveedor, modelo, temperatura (≤ 0,3; modificado por la enmienda del 2026-10-11), `max_tokens` y timeouts se configuran por variables de entorno.
 - **Veracidad:** precios, stock, descuentos, totales y estados provienen siempre de las herramientas y se renderizan en bloques estructurados, no con el texto del LLM. `OutputValidator` compara los montos del texto con los resultados y corrige en el evento `fin`.
 - **Ejecución segura:** argumentos validados con Pydantic, identidad tomada siempre del token, sesión exigida en herramientas protegidas y confirmación en la UI para acciones con efecto económico o irreversible. El pago, los reclamos y las devoluciones solo se envían con botón.
 
@@ -43,6 +43,17 @@ Aceptada
 ## Enmienda (2026-09-26): el contexto puede incluir imágenes
 
 Sin cambiar la decisión original, el contexto acotado que el backend envía al LLM puede incluir ahora **imágenes adjuntas** por el cliente, dentro de la misma ventana de los últimos 12 mensajes. `LLMProvider` admite partes de contenido de texto e imagen (base64, nunca URLs) y declara si el modelo admite visión; el modelo configurado es `gpt-6-luna`, cuyo soporte de visión y costo por imagen no están verificados. Las imágenes suman costo y latencia por turno (riesgo R9) y un flujo transfronterizo adicional. Ver [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md) y SPEC-23.
+
+## Enmienda (2026-10-11): OpenAI como primer proveedor y temperatura 0,6
+
+Mathias (líder) decidió el 2026-10-11 dos cambios sobre la configuración del LLM:
+
+- **Primer proveedor:** se implementa primero `OpenAIProvider`. `ClaudeProvider` queda previsto detrás del mismo puerto, sin implementar.
+- **Temperatura:** el valor por defecto pasa a **0,6** y deja de aplicarse el tope de 0,3 de la decisión original. Sigue configurándose por variable de entorno (`LLM_TEMPERATURE`).
+
+Consecuencia aceptada: una temperatura más alta aumenta la variabilidad del texto. La veracidad de precios, stock, descuentos y estados no depende de la temperatura, porque esos datos provienen de las herramientas y pasan por `OutputValidator`.
+
+Pendiente de verificar cuando el equipo tenga la clave de API: que `gpt-6-luna` acepte el parámetro de temperatura.
 
 ## Referencias
 

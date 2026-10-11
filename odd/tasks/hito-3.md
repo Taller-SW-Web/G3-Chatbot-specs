@@ -38,6 +38,7 @@ Fuera de alcance: SPEC-04, 07, 08 y 23 (Hito 4), checkout y pedido (Hito 4), seg
 - Identificadores de base de datos en inglés; etiquetas de interfaz en español, resueltas por el frontend.
 - Next.js se usa solo como frontend (ADR-0004): sin Route Handlers ni Server Actions hacia el backend.
 - Precios, stock y descuentos provienen siempre de las herramientas, nunca del texto del LLM.
+- Gestor de paquetes del frontend: pnpm (decisión del 2026-10-10, tarea H3-04). Cuando el cambio llegue a `development`, cada integrante debe actualizar su entorno local: instalar pnpm, eliminar `node_modules` y cualquier `package-lock.json` local, ejecutar `pnpm install` y no volver a usar `npm install`.
 - Modo TDD: sin configurar. Se ejecutan las verificaciones funcionales de cada repositorio (`python -m pytest` en backend; `lint`, `typecheck`, `test` y `build` en frontend).
 
 ## Tareas
@@ -138,7 +139,8 @@ Estado al 2026-10-10: Fase 0 iniciada. Documento creado y versionado en `main`. 
 
 | Tarea | Ruta | Evidencia | Revisión | Commit |
 |---|---|---|---|---|
-| H3-01 | Delegada (un redactor; ADR y `c4.md` son dos archivos no triviales) | ADR-0020 creado; vista de despliegue en `c4.md`; preguntas abiertas de topología del worker y despliegue cerradas. Los seis diagramas Mermaid de `c4.md` renderizan con `mermaid-cli`; enlaces a ADR-0020 verificados | RDD desactivado; nivel evaluado: pasivo | Pendiente de confirmación del usuario (rama `docs/h3-01-adr-despliegue`) |
+| H3-01 | Delegada (un redactor; ADR y `c4.md` son dos archivos no triviales) | ADR-0020 creado; vista de despliegue en `c4.md`; preguntas abiertas de topología del worker y despliegue cerradas. Los seis diagramas Mermaid de `c4.md` renderizan con `mermaid-cli`; enlaces a ADR-0020 verificados | RDD desactivado; nivel evaluado: pasivo | `11484dc` en `main` |
+| H3-04 (en curso) | Delegada (un redactor para la migración); corrección de lint en línea | Migración a pnpm 10.34.6 y CI sin el paso que omitía las verificaciones; error de lint previo en `ChatPage.tsx` corregido. `lint`, `typecheck`, `test` y `build` pasan en local. Falta: push, CI en GitHub y despliegue en Vercel con vista previa por PR | RDD desactivado | `b5e0469` y `1794b10` en `development` del frontend, sin push |
 
 Pendientes que deja H3-01: dónde se alojan los mocks en el entorno desplegado (afecta a H3-03, H3-06 y H3-07) y quién aporta el medio de pago de Railway.
 

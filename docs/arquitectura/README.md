@@ -6,8 +6,8 @@ Esta carpeta documenta la arquitectura del Canal Chatbot con dos herramientas co
 
 | Documento | Para qué sirve | Lectores principales |
 |---|---|---|
-| [`c4.md`](c4.md) | Diagramas C4 en Mermaid: contexto (nivel 1), contenedores (nivel 2), entorno de desarrollo y componentes del backend (nivel 3, en dos vistas). Cada diagrama trae una tabla de elementos con su spec de origen | Todo el equipo, docentes, otros módulos |
-| [`adr/`](adr/README.md) | Registro de decisiones de arquitectura (formato de Michael Nygard): 18 aceptadas y 1 propuesta, con índice y [plantilla](adr/plantilla.md) | Tech lead, backend, frontend |
+| [`c4.md`](c4.md) | Diagramas C4 en Mermaid: contexto (nivel 1), contenedores (nivel 2), entorno de desarrollo, despliegue y componentes del backend (nivel 3, en dos vistas). Cada diagrama trae una tabla de elementos con su spec de origen | Todo el equipo, docentes, otros módulos |
+| [`adr/`](adr/README.md) | Registro de decisiones de arquitectura (formato de Michael Nygard): 19 aceptadas y 1 propuesta, con índice y [plantilla](adr/plantilla.md) | Tech lead, backend, frontend |
 
 ## Relación con el resto del repositorio
 
@@ -26,6 +26,6 @@ Esta carpeta documenta la arquitectura del Canal Chatbot con dos herramientas co
 
 Consolidadas de [`c4.md`](c4.md#preguntas-abiertas) y del [ADR-0018](adr/ADR-0018-agrupacion-del-nucleo-en-ocho-casos-de-uso.md):
 
-1. **Topología del worker:** ¿el `OutboxWorker` y los jobs corren como proceso separado o dentro de la API? Con varias réplicas de la API, un scheduler en cada una duplicaría los jobs.
-2. **Despliegue:** ningún documento define dónde se despliegan frontend, backend y base de datos, por eso no hay vista de despliegue.
-3. **Casos de uso de identidad:** la agrupación en 8 casos de uso (Propuesta) no cubre SPEC-01 a SPEC-04.
+Resueltas por el [ADR-0020](adr/ADR-0020-despliegue-en-railway-vercel-y-supabase.md) (provisional): la topología del worker (servicio propio, instancia única) y el despliegue (Railway, Vercel y Supabase).
+
+1. **Casos de uso de identidad:** la agrupación en 8 casos de uso (Propuesta) no cubre SPEC-01 a SPEC-04.

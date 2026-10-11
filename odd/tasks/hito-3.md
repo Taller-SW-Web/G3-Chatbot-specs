@@ -59,7 +59,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama.
 | H3-08 | Sebastian (revisa), Alonso (corrige) | backend | Revisar y mergear el PR #35 |
 
 - [ ] H3-00
-- [ ] H3-01
+- [x] H3-01
 - [ ] H3-02
 - [ ] H3-03
 - [ ] H3-04
@@ -134,7 +134,13 @@ Estrategia: `ask-on-risk`. El hito supera con holgura las 400 líneas modificada
 
 ## Progreso
 
-Estado al 2026-10-10: ninguna tarea iniciada. Documento creado y versionado en `main`. Copia en Engram: tema `odd/hito-3/tasks`.
+Estado al 2026-10-10: Fase 0 iniciada. Documento creado y versionado en `main`. Copia en Engram: tema `odd/hito-3/tasks`.
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-01 | Delegada (un redactor; ADR y `c4.md` son dos archivos no triviales) | ADR-0020 creado; vista de despliegue en `c4.md`; preguntas abiertas de topología del worker y despliegue cerradas. Los seis diagramas Mermaid de `c4.md` renderizan con `mermaid-cli`; enlaces a ADR-0020 verificados | RDD desactivado; nivel evaluado: pasivo | Pendiente de confirmación del usuario (rama `docs/h3-01-adr-despliegue`) |
+
+Pendientes que deja H3-01: dónde se alojan los mocks en el entorno desplegado (afecta a H3-03, H3-06 y H3-07) y quién aporta el medio de pago de Railway.
 
 ## Siguiente paso
 

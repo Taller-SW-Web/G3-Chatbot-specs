@@ -33,5 +33,6 @@ Reglas:
 | [ADR-0017](ADR-0017-mocks-y-urls-base-parametrizadas.md) | Integración contra mocks con URLs base parametrizadas | Aceptada | 2026-09-24 |
 | [ADR-0018](ADR-0018-agrupacion-del-nucleo-en-ocho-casos-de-uso.md) | Agrupación del núcleo del backend en 8 casos de uso | Propuesta | 2026-09-24 |
 | [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md) | Imágenes como entrada del LLM, con almacenamiento propio privado detrás de `AttachmentStorage` | Aceptada | 2026-09-26 |
+| [ADR-0020](ADR-0020-despliegue-en-railway-vercel-y-supabase.md) | Despliegue en Railway, Vercel y Supabase, con el worker como servicio único (provisional) | Aceptada | 2026-10-10 |
 
 Las vistas que estas decisiones explican están en el [modelo C4](../c4.md).

@@ -6,11 +6,11 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `GET /promociones` | 🟡 A5 · scope `promociones:leer` pendiente |
+| Productos | `GET /promociones?canal=CHATBOT&vigentes=true` → `items[{ promotion_id, name, status, valid_from, valid_until, channels }]` | 🟡 A5 · scope `promociones:leer` pendiente |
 | Productos | `GET /precios` | 🟡 A5 · scope `precios:leer` pendiente |
-| Productos | `POST /promociones/evaluar` (lo usa SPEC-11) | 🟡 A5 · scope `promociones:evaluar` pendiente |
+| Productos | `POST /promociones/evaluar` (lo usa SPEC-11) → `{ promotion_id, original_amount, discount_amount, result_amount, currency, reason }` | 🟡 A5 · scope `promociones:evaluar` pendiente |
 
-🧩 El contrato real usa `precio_regular`, `precio_oferta`, `currency`, `channel_id`, `lines`, `quantity`, `coupon_code` y `customer_ref`; no se puede seguir usando nombres en español camelCase ni `canal`/`lineas`/`cupon`.
+🧩 `GET /promociones` no entrega beneficio, alcance por categoría/marca ni modalidad (`AUTOMATICA`/`CUPON`), y `evaluar` devuelve un solo descuento para la cesta. Pendiente con Productos: confirmar si el listado incluye promociones de cupón y si piensan exponer el beneficio. El nombre de la promoción en el carrito se resuelve por `promotion_id` contra el listado (caché 60 s). 🧩 El contrato real usa `precio_regular`, `precio_oferta`, `currency`, `channel_id`, `lines`, `quantity`, `coupon_code` y `customer_ref`; no se puede seguir usando nombres en español camelCase ni `canal`/`lineas`/`cupon`.
 
 ## Frontend
 

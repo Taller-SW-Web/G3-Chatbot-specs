@@ -8,7 +8,7 @@
 |---|---|---|
 | Productos | Búsqueda de catálogo (ver SPEC-06) | 🟡 A5 |
 | Productos | `GET /recomendaciones` | 🟡 A5 · scope `recomendaciones:leer` pendiente |
-| Productos | `GET /inventario/disponibilidad?skus=` | 🟡 A5 |
+| Productos | `GET /inventario/disponibilidad/comercial?skus=&canal=CHATBOT` (estado, sin cantidades) | 🟡 A5 |
 
 🧩 Hay que revisar el YAML real de Productos antes de cerrar el payload: el resumen del contrato confirma `GET /recomendaciones`, pero el detalle de filtros y respuesta puede variar incluso dentro del mismo módulo.
 

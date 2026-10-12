@@ -190,18 +190,22 @@ Errores de Seguridad: RFC 7807 con `code`. Lista completa: `TOKEN_INVALIDO`, `SC
 
 | Endpoint | Uso | Scope requerido | Estado |
 |---|---|---|---|
-| `GET /productos?q=&categoriaId=&marcaId=&canal=&pagina=&tamanio=&estado=&precioMin=&precioMax=` | Búsqueda y listado del catálogo | `catalogo:leer` | 🟡 `pending-security-registration` |
+| `GET /productos?q=&categoriaId=&marcaId=&canal=&pagina=&tamanio=&estado=&precioMin=&precioMax=&orden=` (`orden`: `NOMBRE_ASC`, `NOMBRE_DESC`) | Búsqueda y listado del catálogo (no devuelve precio ni disponibilidad) | `catalogo:leer` | 🟡 `pending-security-registration` |
 | `GET /productos/{productoId}` | Detalle de producto con variantes | `catalogo:leer` | 🟡 `pending-security-registration` |
 | `GET /categorias` | Catálogo de categorías | `catalogo:leer` | 🟡 `pending-security-registration` |
 | `GET /marcas` | Catálogo de marcas | `catalogo:leer` | 🟡 `pending-security-registration` |
-| `GET /precios` | Precios por SKU/canal | `precios:leer` | 🟡 `pending-security-registration` |
+| `GET /precios?skus=&canal=&at=` | Precios por SKU/canal (`precio_regular`, `precio_oferta`, vigencia) | `precios:leer` | 🟡 `pending-security-registration` |
 | `GET /precios/skus/{sku}` | Precio de un SKU | `precios:leer` | 🟡 `pending-security-registration` |
 | `GET /promociones` | Promociones vigentes | `promociones:leer` | 🟡 `pending-security-registration` |
 | `POST /promociones/evaluar` | Evaluación del carrito y cupones | `promociones:evaluar` | 🟡 `pending-security-registration` |
 | `POST /cupones/validar` | Validación de cupón sin consumir | `cupones:validar` | 🟡 `pending-security-registration` |
-| `GET /recomendaciones` | Recomendaciones / candidatos | `recomendaciones:leer` | 🟡 `pending-security-registration` |
-| `GET /inventario/disponibilidad?skus=A,B,C` | Disponibilidad de stock | `inventario:disponibilidad:leer` | 🟡 `pending-security-registration` |
+| `GET /recomendaciones?productoId=&canal=CHATBOT` | Recomendaciones `CROSS_SELL`/`UPSELL` | `recomendaciones:leer` | 🟡 `pending-security-registration` |
+| `GET /inventario/disponibilidad/comercial?skus=A,B,C&canal=CHATBOT` (máx. 100 SKU) | Disponibilidad comercial: solo `sku` y `status` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO`); provisional (`D-INV-01`), no reserva stock | `inventario:disponibilidad:leer` | 🟡 `pending-security-registration` |
 | `POST /productos/datos-fisicos/consulta` | Datos físicos por SKU (lo usa Despacho) | `productos:fisicos:leer` | 🟡 `pending-security-registration` |
+
+🧩 **Alineación HTTP 0.5.0 (`integraciones/ALINEACION_CHATBOT.md` de Productos, 07/10/2026):** el BFF conserva camelCase internamente y su adaptador traduce al contrato publicado. Mapeo: `canal` → `channel_id`, `lineas[{sku,cantidad}]` → `lines[{sku,quantity,product_id?}]`, `cupon` → `coupon_code`, `customerRef` → `customer_ref`. `customer_ref` es el `sub` del token del **cliente** (nunca el del token de servicio) y `null` en anónimo; si el cupón limita usos por cliente, Productos responde `code: CUSTOMER_REF_REQUERIDO`. La ruta de disponibilidad es `/inventario/disponibilidad/comercial`, no `/inventario/disponibilidad`.
+
+🧩 **Lo que Productos no entrega** (y las specs ya no asumen): cantidades de stock (solo `DISPONIBLE`/`STOCK_BAJO`/`AGOTADO`); precio y disponibilidad dentro de la búsqueda (se consultan aparte por SKU); filtros de talla, color y `soloOfertas`; orden por precio; beneficio, alcance y modalidad de cada promoción en `GET /promociones` (solo `promotion_id`, `name`, `status`, vigencia y `channels`); desglose por línea en `POST /promociones/evaluar` (devuelve un único `discount_amount`, un `promotion_id` y `reason`); el monto mínimo exacto de un cupón rechazado. Consulta pendiente a Productos: si planean exponerlos.
 
 🧩 Payloads reales del contrato: `product_id`, `category_id`/`categoria_id`, `name`, `description`, `images`, `channel_id`, `lines`, `quantity`, `coupon_code`, `customer_ref`, `precio_regular`, `precio_oferta`, `currency` y paginación con `items`/`tamanio`.
 
@@ -289,7 +293,7 @@ Mejoras posibles: suscribirse a `pedido entregado` de Ventas y a `usuario.desact
 | A4 | 🟡 Abierto | Seguridad / Despacho | Emisión del rol `SERVICIO_INTEGRACION` al token de servicio del chatbot para consultar el seguimiento. Los scopes `cotizaciones:calcular` y `seguimientos:leer` ya fueron concedidos por Seguridad #31; las credenciales reales llegan en Hito 4. | SPEC-18 |
 | A5 | 🟡 En seguimiento (Seguridad #33) | Productos | El contrato real está definido en `api/openapi.yaml` y los payloads se alinearon. Seguridad aceptó registrar/conceder los siete scopes solicitados cuando el PO de Productos confirme que corresponden a su lista oficial; hasta esa confirmación, siguen sin estar concedidos a `modulo-chatbot`. | SPEC-06 a SPEC-13 |
 | A6 | ✅ Resuelto en el contrato real | Productos / Despacho | El canal ya no calcula ni envía peso/volumen; ahora Despacho recibe `destino` y `lineas`, y consulta datos físicos con Productos cuando hace falta. El chatbot no lleva `pesos_por_categoria.yaml` ni calcula peso localmente. | SPEC-12 |
-| A7 | 🟡 Abierto | Productos | Búsqueda por texto libre (`q`) sobre nombre, descripción y características. | SPEC-06, SPEC-07 |
+| A7 | ✅ Resuelto (07/10) | Productos | Búsqueda por texto libre (`GET /productos?q=`) confirmada en `ALINEACION_CHATBOT.md`. | SPEC-06, SPEC-07 |
 | A8 | ✅ Resuelto | Ventas | `api-contract.md` publicado: creación de pedido, notificación de pago (`POST /pagos/notificacion`) y listado por cliente. | SPEC-15, SPEC-17 |
 | A9 | ✅ Resuelto | Ventas | Anulación de un pedido `CREADO`/`PAGADO` por `PAGO_NO_COMPLETADO` iniciada por el canal: `POST /pedidos/{id}/anulaciones`, responde `200` directo. | SPEC-15 |
 | A10 | ✅ Resuelto (23/09) | Ventas | Publicaron los cuatro endpoints que faltaban: `GET /api/v2/reclamos/{codigoSeguimiento}` (detalle), `GET /api/v2/reclamos?documento=&clienteId=&estado=` (listado), `GET /api/v2/devoluciones?clienteId=&estado=&tipo=` (listado) y, dentro de `GET /api/v2/devoluciones/{id}`, un bloque anidado `resolucion.reembolso` con el estado del extorno. SPEC-19, SPEC-20, SPEC-21 y SPEC-22 ya no tienen ningún requisito bloqueado. | SPEC-19, SPEC-20, SPEC-21, SPEC-22 |

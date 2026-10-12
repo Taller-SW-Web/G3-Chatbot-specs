@@ -10,7 +10,7 @@
 | Ventas | `POST /api/v2/devoluciones` | ✅ §2.2 |
 | Ventas | `GET /api/v2/devoluciones?clienteId=&estado=&tipo=` (detección de duplicados) | ✅ §2.4 |
 | Ventas | `GET /api/v1/pedidos?clienteId=` (selección del pedido) | ✅ |
-| Productos | `GET /inventario/disponibilidad?skus=` para la variante deseada | 🟡 A5 · scope `inventario:disponibilidad:leer` pendiente |
+| Productos | `GET /inventario/disponibilidad/comercial?skus=&canal=CHATBOT` para la variante deseada (estado, sin cantidades) | 🟡 A5 · scope `inventario:disponibilidad:leer` pendiente |
 
 ## Frontend
 

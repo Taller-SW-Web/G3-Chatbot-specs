@@ -7,7 +7,7 @@
 | Módulo | Endpoint | Estado |
 |---|---|---|
 | Productos | `GET /productos/{productoId}` | 🟡 A5 · scope `catalogo:leer` pendiente |
-| Productos | `GET /inventario/disponibilidad?skus=` | 🟡 A5 · scope pendiente |
+| Productos | `GET /inventario/disponibilidad/comercial?skus=&canal=CHATBOT` → `sku`, `status` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO`) | 🟡 A5 · scope pendiente |
 | Productos | `GET /precios` | 🟡 A5 · scope `precios:leer` pendiente |
 
 🧩 El contrato real usa `product_id`, `name`, `description`, `images`, `tiene_variantes`, `sku_base` y `variants`; ya no se asume `productoId`, `imagenUrl`, `descripcionBreve` ni un único `img`. Si `description` llega nulo, el frontend debe manejarlo con fallback.

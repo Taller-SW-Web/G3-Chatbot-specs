@@ -6,7 +6,7 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `POST /cupones/validar {coupon_code, customer_ref, channel_id, lines[]}` | 🟡 A5 · scope `cupones:validar` pendiente |
+| Productos | `POST /cupones/validar {coupon_code, customer_ref, channel_id, lines[{sku, quantity, product_id?}]}` → `{ valid, code, rejection_reason, benefit{promotion_id}, discount_amount, result_amount, currency }`; `code` ∈ `CUPON_NO_ENCONTRADO, CUPON_INACTIVO, CUPON_FUERA_DE_VIGENCIA, MONTO_MINIMO_NO_ALCANZADO, CUPON_AGOTADO, LIMITE_CUPON_CLIENTE_ALCANZADO, CUSTOMER_REF_REQUERIDO, CUPON_NO_COMBINABLE` | 🟡 A5 · scope `cupones:validar` pendiente |
 | Productos | `POST /promociones/evaluar` con `coupon_code` y `customer_ref` (totales combinados) | 🟡 A5 · scope `promociones:evaluar` pendiente |
 | Ventas | Campo `cupon` en `POST /pedidos` | ✅ A8 |
 

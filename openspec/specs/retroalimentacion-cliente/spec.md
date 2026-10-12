@@ -17,7 +17,7 @@ Darle al cliente tres formas distintas de opinar sobre su experiencia — una re
 🧩 Esta spec se agrega a partir de tres mockups del equipo (02/10/2026) que unifican tres mecanismos de retroalimentación ya insinuados en otras partes del repo, pero nunca formalizados juntos:
 
 1. **Reacciones rápidas (👍/👎) y copiar**, tras cada bloque de respuesta del asistente. Ya estaba *propuesto* en [`kpis.md` §3](../../docs/conversacion/kpis.md#csat-propuesta-no-está-en-las-specs) y en la [pregunta abierta 9](../../docs/conversacion/README.md#preguntas-abiertas) del repo, pero solo al final de una compra, reclamo o devolución, una vez por sesión. Esta spec **amplía** esa propuesta: al ser íconos persistentes y no un modal, se muestran tras cualquier bloque de respuesta del asistente, no solo al cierre de una tarea. Con esto, la pregunta abierta 9 queda resuelta por esta spec.
-2. **Calificación de la compra (estrellas + comentario)**, tras la confirmación del pedido. Esto **es** la encuesta CSAT de Ventas (su F5), que `SPEC-16` había dejado fuera de alcance explícitamente ("Reembolsos: son responsabilidad de F4…" — en su redacción original, la encuesta CSAT no se mencionaba como parte del canal). Ventas ya publicó `POST /api/v2/csat` con `canal: "CHATBOT"` contemplado, así que esta spec la conecta ahí en vez de construir un almacenamiento propio. **Pendiente:** actualizar la sección "Fuera de alcance" de `SPEC-16` para quitar o matizar esa exclusión.
+2. **Calificación del pedido (caritas + comentario)**, al pie del detalle de un pedido `ENTREGADO`, más una **valoración de la experiencia de compra** (popup con estrellas, tras el pago, propia del chatbot). La calificación del pedido **es** la encuesta CSAT de Ventas (su F5), que `SPEC-16` había dejado fuera de alcance explícitamente ("Reembolsos: son responsabilidad de F4…" — en su redacción original, la encuesta CSAT no se mencionaba como parte del canal). Ventas ya publicó `POST /api/v2/csat` con `canal: "CHATBOT"` contemplado, así que esta spec la conecta ahí en vez de construir un almacenamiento propio. **Pendiente:** actualizar la sección "Fuera de alcance" de `SPEC-16` para quitar o matizar esa exclusión.
 3. **Sugerencia o reporte de bug**, desde la pantalla "Mi cuenta" (sección "Ayúdanos a mejorar"). No tiene dueño en ningún otro módulo — es retroalimentación sobre el canal mismo, no sobre un pedido. Se diseña como una capacidad propia del chatbot, reutilizando el puerto `AttachmentStorage` que ya existe (SPEC-23) para la captura de pantalla opcional, en vez de construir un segundo mecanismo de carga de archivos.
 
 ✅ Los mockups usan dos nombres porque son dos cosas distintas, no una inconsistencia: **INKA** es la tienda (la marca que ve el cliente en el encabezado), y **Botleta** es el propio asistente conversacional, ya nombrado y aprobado en [`persona-tono.md`](../../docs/conversacion/persona-tono.md) ("Botleta: bot + atleta"). Por eso el modal de calificación habla en la voz de Botleta ("Tu opinión ayuda a Botleta a mejorar") mientras el encabezado de la app sigue mostrando INKA.
@@ -28,7 +28,8 @@ La pantalla "Mi cuenta" desde la que se accede a "Enviar sugerencia / Reportar b
 
 Incluye:
 - Reacciones 👍/👎 y "Copiar" tras cada bloque de respuesta del asistente en el chat.
-- Modal "Califica tu compra" tras la confirmación del pedido (`CONFIRMACION_PEDIDO`), con estrellas (1 a 5) y comentario opcional, enviado a Ventas.
+- Calificación del pedido al pie del detalle de un pedido `ENTREGADO`: tres caritas (1, 3, 5) y comentario opcional, enviada a Ventas. No es un modal.
+- Valoración de la experiencia de compra: popup "Califica tu compra" tras el pago, con estrellas (1 a 5) y comentario opcional, guardada en el chatbot (no va a Ventas).
 - Entrada "Ayúdanos a mejorar" en la pantalla "Mi cuenta".
 - Formulario "Enviar sugerencia / Reportar bug": tipo (Sugerencia o Bug), título, descripción, correo de contacto prellenado, captura de pantalla opcional.
 - Notificación interna al equipo cuando se envía una sugerencia o un bug.
@@ -38,7 +39,8 @@ Incluye:
 
 - Edición o eliminación de una reacción ya enviada, o de una calificación ya enviada.
 - Esta spec solo registra y notifica por correo (outbox); no hay bandeja ni interfaz de revisión dentro de la app. Cualquier seguimiento posterior con el cliente ocurre por correo, fuera del chat — tal como ya lo anticipa el texto de consentimiento del formulario.
-- Las calificaciones de compra (CSAT) tampoco tienen panel propio: viven en Ventas, fuera de este repo.
+- La calificación del pedido (CSAT) no tiene panel propio: vive en Ventas, fuera de este repo. La valoración de la experiencia de compra se guarda en `purchase_rating`, sin interfaz de revisión en la app.
+- Pedir la calificación de forma proactiva cuando el pedido se entrega: el chatbot no recibe aviso de entrega; se ofrece solo cuando el cliente abre el pedido.
 - Encuestas periódicas o proactivas (NPS, encuestas por correo fuera de una compra): no están en los mockups revisados.
 
 ## Requirements
@@ -173,7 +175,7 @@ El sistema DEBE (SHALL) limitar el envío de reacciones, calificaciones y sugere
 - **Privacidad:** la captura de pantalla de un bug nunca se envía al LLM; vive en el mismo bucket privado que las imágenes del chat (SPEC-23), con el mismo tratamiento de URLs firmadas, nunca públicas.
 - **No bloqueante:** ninguno de los tres mecanismos puede impedir ni demorar el flujo principal (conversar, pagar, ver el pedido). Todos los fallos de registro se degradan en silencio o con un mensaje breve, nunca con un bloqueo.
 - **Rendimiento:** registrar una reacción, p95 ≤ 400 ms; enviar la calificación a Ventas, p95 ≤ 1 s; registrar una sugerencia (sin captura), p95 ≤ 1 s.
-- **Idempotencia:** el envío de una calificación usa `pedidoId` como clave natural (Ventas ya responde `409` ante duplicados); el envío de una sugerencia usa una `Idempotency-Key` igual que el resto de operaciones que crean algo (ver convención general del repo).
+- **Idempotencia:** el envío de la calificación del pedido usa `pedidoId` como clave natural (Ventas ya responde `409` ante duplicados); la valoración de la compra es única por pedido; el envío de una sugerencia usa una `Idempotency-Key` igual que el resto de operaciones que crean algo (ver convención general del repo).
 - **Retención:** la captura de un bug sigue la misma política de retención que las imágenes del chat (SPEC-23 · pregunta abierta 10, todavía sin plazo fijado).
 
 ## Preguntas abiertas
@@ -182,7 +184,7 @@ El sistema DEBE (SHALL) limitar el envío de reacciones, calificaciones y sugere
 
 ✅ **Resueltas con el equipo (02/10/2026):**
 - INKA es la tienda y Botleta es el asistente: no hay conflicto de marca (ver "Contexto").
-- La calificación de compra es un modal que aparece después de pagar, una vez confirmado el pedido.
+- ~~La calificación de compra es un modal que aparece después de pagar.~~ **Reemplazado (11/10/2026):** Ventas solo acepta calificar pedidos `ENTREGADO`, así que hay dos momentos: valoración de la compra (local, popup con estrellas) tras el pago, y calificación del pedido (Ventas, bloque al pie con caritas) en el detalle de un pedido entregado.
 - La bandeja de sugerencias/bugs no tiene panel propio: solo se registra, y el seguimiento posterior con el cliente es por correo (ver "Fuera de alcance").
 - Los pulgares 👍/👎 sí se muestran tras cada bloque de respuesta del asistente, no solo al cierre de una tarea — se confirma el alcance ampliado respecto a la propuesta original de `kpis.md`. La pregunta abierta 9 de `docs/conversacion/README.md` queda completamente resuelta por esta spec.
 

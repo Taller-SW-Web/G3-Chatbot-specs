@@ -14,14 +14,14 @@ Permitir al cliente conocer el estado de sus reclamos y leer la respuesta del eq
 
 ## Contexto
 
-✅ **Resuelto (23/09).** Ventas publicó los dos endpoints que faltaban (acuerdo A10): `GET /api/v2/reclamos/{codigoSeguimiento}` (detalle y respuesta) y `GET /api/v2/reclamos?documento=&clienteId=&estado=` (listado paginado). Esta spec, antes bloqueada, ya se implementa completa contra el backend real.
+✅ **Resuelto (23/09).** Ventas publicó los dos endpoints que faltaban (acuerdo A10): `GET /api/v2/reclamos/{codigoSeguimiento}` (detalle y respuesta) y el listado paginado, que desde el 12/10 el cliente consulta con `GET /api/v2/reclamos/me` y su propio token (acuerdo A15). Esta spec, antes bloqueada, ya se implementa completa contra el backend real.
 
 Estados reales confirmados por Ventas: `REGISTRADO`, `EN_PROCESO`, `ATENDIDO`, `DERIVADO` — dos más de los que se habían asumido antes (`REGISTRADO`/`ATENDIDO` solamente).
 
 ## Alcance
 
 Incluye:
-- Listado de los reclamos del cliente (recientes primero), vía `GET /api/v2/reclamos?clienteId=`.
+- Listado de los reclamos del cliente (recientes primero), vía `GET /api/v2/reclamos/me`.
 - Consulta por código de seguimiento, vía `GET /api/v2/reclamos/{codigoSeguimiento}`.
 - Detalle: estado, fechas, pedido, motivo, `fechaLimiteSLA` y `respuestaVisibleCliente` (si existe).
 - Preguntas directas ("¿ya me respondieron?").
@@ -98,7 +98,7 @@ El sistema DEBE (SHALL) informar la indisponibilidad de Ventas sin mostrar infor
 
 ## Requisitos no funcionales
 
-- **Seguridad:** el listado siempre filtra por `clienteId = sub` del token, y el detalle compara la pertenencia antes de mostrar.
+- **Seguridad:** el listado usa `GET /api/v2/reclamos/me` con el token del cliente, que Ventas filtra por `sub` sin aceptar `clienteId`; el detalle compara la pertenencia antes de mostrar.
 - **Fidelidad:** la respuesta de Ventas (`respuestaVisibleCliente`) se muestra textual; el LLM puede introducirla ("Esto respondió el equipo de ventas:"), pero no resumirla ni modificarla.
 - **Rendimiento:** la consulta tarda p95 ≤ 800 ms.
 - **Mapeo de errores:** Ventas responde con la clave `codigo`; se normaliza al `code` interno.

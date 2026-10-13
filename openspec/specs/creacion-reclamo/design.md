@@ -7,9 +7,9 @@
 | Módulo | Endpoint | Estado |
 |---|---|---|
 | Ventas | `POST /api/v2/reclamos` | ✅ `api-contract.md` §2.6 |
-| Ventas | `GET /api/v2/reclamos?clienteId=&estado=` (detección de duplicados) | ✅ §2.8 |
+| Ventas | `GET /api/v2/reclamos/me?estado=` con token del cliente (detección de duplicados) | ✅ §2.10b (A15) |
 | Ventas | `PATCH /api/v2/reclamos/{id}/respuesta` (solo lo usa el Gestor; el chatbot no lo llama) | ✅ §2.9 (referencia) |
-| Ventas | `GET /api/v1/pedidos?clienteId=` (selección del pedido) | ✅ |
+| Ventas | `GET /api/v1/pedidos/me` con token del cliente (selección del pedido) | ✅ §1.4b (A15) |
 
 ## Frontend
 

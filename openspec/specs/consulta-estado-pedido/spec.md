@@ -125,7 +125,7 @@ El sistema DEBE (SHALL) informar la indisponibilidad de Ventas sin mostrar estad
 
 ## Requisitos no funcionales
 
-- **Seguridad:** el listado siempre filtra por `clienteId = sub` del token, y el detalle compara la pertenencia antes de mostrar; Ventas también lo valida.
+- **Seguridad:** el listado usa `GET /api/v1/pedidos/me` con el token del cliente, que Ventas filtra por `sub` sin aceptar `clienteId`; el detalle compara la pertenencia antes de mostrar y Ventas también la valida.
 - **Rendimiento:** la consulta tarda p95 ≤ 800 ms sin Despacho y ≤ 1,2 s con Despacho (llamadas en paralelo cuando se conoce el estado).
 - **Privacidad:** no se muestran datos del repartidor ni el motivo de un fallo de entrega.
 

@@ -6,8 +6,8 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Ventas | `GET /api/v2/devoluciones?clienteId=&estado=&tipo=&pagina=&tamano=` | ✅ `api-contract.md` §2.4 |
-| Ventas | `GET /api/v2/devoluciones/{id}` (incluye `resolucion.reembolso`) | ✅ §2.3 |
+| Ventas | `GET /api/v2/devoluciones/me?estado=&tipo=&pagina=&tamano=` con token del cliente (rol `CLIENTE`) | ✅ `api-postventas.md` §2.4b (A15) |
+| Ventas | `GET /api/v2/devoluciones/{id}` (incluye `resolucion.reembolso`) | ✅ §2.3, con token del cliente (A15) |
 
 ## Frontend
 
@@ -20,7 +20,7 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `GET /api/v1/devoluciones` · `GET /api/v1/devoluciones/{id}` | Proxy directo a Ventas, con `clienteId` tomado del token (nunca del cliente). |
+| `GET /api/v1/devoluciones` · `GET /api/v1/devoluciones/{id}` | Proxy directo a Ventas (`/devoluciones/me` y `/devoluciones/{id}`) con el token del cliente; Ventas filtra por el `sub` y el chatbot nunca envía `clienteId`. |
 | `DevolucionConsultaService` | Mapea los estados de F3, arma el mensaje del reembolso cuando el bloque existe, y usa `return_ref` local solo como respaldo si Ventas no responde. |
 | Herramientas `listar_devoluciones` y `consultar_devolucion` | Uso desde el chat. |
 

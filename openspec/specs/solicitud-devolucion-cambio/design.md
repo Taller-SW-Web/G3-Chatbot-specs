@@ -8,8 +8,8 @@
 |---|---|---|
 | Ventas | `POST /api/v2/devoluciones/evidencias/upload` | ✅ `api-contract.md` §2.1 |
 | Ventas | `POST /api/v2/devoluciones` | ✅ §2.2 |
-| Ventas | `GET /api/v2/devoluciones?clienteId=&estado=&tipo=` (detección de duplicados) | ✅ §2.4 |
-| Ventas | `GET /api/v1/pedidos?clienteId=` (selección del pedido) | ✅ |
+| Ventas | `GET /api/v2/devoluciones/me?estado=&tipo=` con token del cliente (detección de duplicados) | ✅ §2.4b (A15) |
+| Ventas | `GET /api/v1/pedidos/me` con token del cliente (selección del pedido) | ✅ §1.4b (A15) |
 | Productos | `GET /inventario/disponibilidad?skus=` para la variante deseada | 🟡 A5 · scope `inventario:disponibilidad:leer` pendiente |
 
 ## Frontend

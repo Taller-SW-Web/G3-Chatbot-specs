@@ -23,7 +23,7 @@ Distingue:
 
 El reclamo requiere un bloque `consumidor` con nombre completo, **documento**, correo y teléfono — el mismo dato que SPEC-12 ya captura en el checkout, así que se reutiliza del último pedido del cliente en lugar de pedirlo de nuevo.
 
-✅ **Resuelto (23/09):** Ventas agregó `GET /api/v2/reclamos/{codigoSeguimiento}` y `GET /api/v2/reclamos?documento=&clienteId=&estado=` (acuerdo A10). Ya se puede detectar duplicados contra el listado real, y SPEC-20 puede consultar el estado sin limitaciones.
+✅ **Resuelto (23/09):** Ventas agregó `GET /api/v2/reclamos/{codigoSeguimiento}` y el listado de reclamos (acuerdo A10), que desde el 12/10 el cliente consulta con `GET /api/v2/reclamos/me` y su propio token (A15). Ya se puede detectar duplicados contra el listado real, y SPEC-20 puede consultar el estado sin limitaciones.
 
 ## Alcance
 

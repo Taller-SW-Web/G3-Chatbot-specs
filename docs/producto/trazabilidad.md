@@ -141,7 +141,7 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 
 ## 3. Verificación de cobertura de requisitos
 
-Cada uno de los **112 requisitos** de las 23 specs está cubierto por al menos una historia.
+Cada uno de los **119 requisitos** de las 24 specs (con los cambios pendientes de `openspec/changes/` aplicados) está cubierto por al menos una historia.
 
 | Requisito | Nombre | Historia(s) |
 |---|---|---|
@@ -265,11 +265,11 @@ Cada uno de los **112 requisitos** de las 23 specs está cubierto por al menos u
 | `SPEC-24 · Req. 6` | Límites de uso de los tres mecanismos | HU-CNV-26 |
 | `SPEC-24 · Req. 7` | Valoración de la experiencia de compra (propia del chatbot) | HU-CNV-24 |
 
-**Resultado:** 112 de 112 requisitos cubiertos (100 %). Requisitos sin historia: ninguno.
+**Resultado:** 119 de 119 requisitos cubiertos (100 %). Requisitos sin historia: ninguno.
 
 Requisitos repartidos en más de una historia: `SPEC-05 · Req. 1` (HU-CNV-01 y HU-CNV-02), `SPEC-05 · Req. 13` (HU-CNV-20, HU-SGT-09, HU-RCL-08 y HU-DEV-10) y `SPEC-16 · Req. 3` (HU-PED-07 y HU-PED-08). Historias que cubren más de un requisito: HU-IDE-02 (`SPEC-01 · Req. 2–3`), HU-IDE-05 (`SPEC-02 · Req. 2–3`), HU-IDE-15 (`SPEC-03 · Req. 7`; SPEC-04 · Req. 3), HU-CNV-14 (`SPEC-23 · Req. 1–2`), HU-CNV-15 (`SPEC-23 · Req. 3–4`), HU-CNV-16 (`SPEC-23 · Req. 5–6`), HU-CNV-19 (`SPEC-23 · Req. 9–10`), HU-CNV-25 (`SPEC-24 · Req. 3–4`) y HU-CNV-26 (`SPEC-24 · Req. 5–6`).
 
-La cobertura a nivel de escenario también es completa: los **352 escenarios** de las specs están citados por nombre en los criterios de aceptación de alguna historia.
+A nivel de escenario, **373 de los 380 escenarios** de las specs están citados por nombre en los criterios de aceptación de alguna historia. Faltan 7, anteriores a SPEC-24: `SPEC-03 · Req. 7` ("Visitante sin sesión" y "Cliente sin documento registrado"), `SPEC-05 · Req. 4` ("Error de validación o conversación inexistente", "El turno termina en modo degradado", "Falla inesperada a mitad del stream" y "Pérdida breve de conexión") y `SPEC-21 · Req. 4` ("Pedido no `ENTREGADO`").
 
 ## 4. Totales
 
@@ -277,33 +277,33 @@ La cobertura a nivel de escenario también es completa: los **352 escenarios** d
 
 | Épica | Historias | Puntos | Must | Should | Could | Hito 3 (pts) | Hito 4 (pts) | Hito 5–6 (pts) |
 |---|---|---|---|---|---|---|---|---|
-| EP-01 · Identidad y sesión | 14 | 50 | 13 | 1 | — | 40 | 10 | — |
-| EP-02 · Motor de conversación | 19 | 94 | 10 | 9 | — | 60 | 34 | — |
+| EP-01 · Identidad y sesión | 15 | 55 | 13 | 2 | — | 40 | 15 | — |
+| EP-02 · Motor de conversación | 26 | 121 | 10 | 13 | 3 | 60 | 34 | 27 |
 | EP-03 · Descubrimiento de productos | 16 | 61 | 13 | 3 | — | 38 | 23 | — |
 | EP-04 · Carrito y stock | 8 | 36 | 7 | 1 | — | 36 | — | — |
 | EP-05 · Checkout y pago | 16 | 65 | 14 | 2 | — | — | 65 | — |
 | EP-06 · Grabación y confirmación del pedido | 8 | 32 | 7 | 1 | — | — | 32 | — |
-| EP-07 · Seguimiento de pedidos | 8 | 28 | 3 | 5 | — | — | — | 28 |
-| EP-08 · Reclamos | 7 | 22 | — | 4 | 3 | — | — | 22 |
-| EP-09 · Devoluciones y reembolsos | 9 | 31 | — | — | 9 | — | — | 31 |
-| **Total** | **105** | **419** | **67** | **26** | **12** | **174** | **164** | **81** |
+| EP-07 · Seguimiento de pedidos | 9 | 30 | 3 | 6 | — | — | — | 30 |
+| EP-08 · Reclamos | 8 | 24 | — | 4 | 4 | — | — | 24 |
+| EP-09 · Devoluciones y reembolsos | 10 | 33 | — | — | 10 | — | — | 33 |
+| **Total** | **116** | **457** | **67** | **32** | **17** | **174** | **169** | **114** |
 
 ### 4.2 Por hito
 
 | Hito | Specs (README) | Historias | Puntos | Must (pts) | Should (pts) | Could (pts) |
 |---|---|---|---|---|---|---|
 | Hito 3 | SPEC-01, 02, 03, 05, 06, 09, 10, 11 | 41 | 174 | 36 (156) | 5 (18) | 0 (0) |
-| Hito 4 | SPEC-04, 07, 08, 12, 13, 14, 15, 16, 23 | 40 | 164 | 28 (116) | 12 (48) | 0 (0) |
-| Hito 5–6 | SPEC-17 a 22 | 24 | 81 | 3 (12) | 9 (31) | 12 (38) |
-| **Total** | | **105** | **419** | **67 (284)** | **26 (97)** | **12 (38)** |
+| Hito 4 | SPEC-04, 07, 08, 12, 13, 14, 15, 16, 23 | 41 | 169 | 28 (116) | 13 (53) | 0 (0) |
+| Hito 5–6 | SPEC-17 a 22, 24 | 34 | 114 | 3 (12) | 14 (49) | 17 (53) |
+| **Total** | | **116** | **457** | **67 (284)** | **32 (120)** | **17 (53)** |
 
 ### 4.3 Distribución MoSCoW
 
 | Prioridad | Historias | % historias | Puntos | % puntos |
 |---|---|---|---|---|
-| Must | 67 | 64 % | 284 | 68 % |
-| Should | 26 | 25 % | 97 | 23 % |
-| Could | 12 | 11 % | 38 | 9 % |
+| Must | 67 | 58 % | 284 | 62 % |
+| Should | 32 | 27 % | 120 | 26 % |
+| Could | 17 | 15 % | 53 | 12 % |
 | Won't (este ciclo) | 0 | — | — | — |
 
 Los puntos Won't no se cuentan: lo excluido del ciclo está en [`alcance.md` §5](alcance.md#5-fuera-de-alcance-consolidado) y no genera historias.
@@ -312,6 +312,6 @@ Los puntos Won't no se cuentan: lo excluido del ciclo está en [`alcance.md` §5
 
 | Área | IDE | CNV | CAT | CAR | CHK | PED | SGT | RCL | DEV | Total |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Reglas | 21 | 29 | 17 | 16 | 26 | 14 | 14 | 11 | 14 | **162** |
+| Reglas | 22 | 45 | 17 | 16 | 27 | 14 | 14 | 11 | 14 | **180** |
 
-Todas las reglas del catálogo están citadas por al menos una historia, y todas las reglas citadas en las historias existen en el catálogo.
+Todas las reglas citadas en las historias existen en el catálogo. Tres reglas del catálogo, anteriores a SPEC-24, no las cita ninguna historia: RN-CHK-27, RN-CNV-30 y RN-CNV-33.

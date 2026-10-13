@@ -9,7 +9,7 @@
 ## 2. Documentos transversales
 
 - [ ] 2.1 Añadir `purchase_rating` y `order_ref.csat_sent` a `docs/modelo-datos.md`.
-- [ ] 2.2 Actualizar `docs/contratos-integracion.md` (CSAT: `ENTREGADO`, 1/3/5, `postventa:csat:escribir`).
+- [x] 2.2 Contratos de integración: CSAT con token del cliente, rol CLIENTE, sin scope (acuerdo A15, ya en contratos-integracion.md por el PR de Ventas).
 - [ ] 2.3 Quitar la exclusión del CSAT en `notificacion-confirmacion` (SPEC-16).
 - [ ] 2.4 Marcar la pregunta abierta 9 de `docs/conversacion/README.md` como resuelta.
 - [ ] 2.5 Historias de usuario, reglas y trazabilidad; recalcular totales.

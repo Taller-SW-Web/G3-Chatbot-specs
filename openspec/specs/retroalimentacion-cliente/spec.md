@@ -180,7 +180,7 @@ El sistema DEBE (SHALL) limitar el envío de reacciones, calificaciones y sugere
 
 ## Preguntas abiertas
 
-1. 🟡 **¿La calificación requiere un scope nuevo de Seguridad?** El contrato de Ventas no documenta `security`/scopes por endpoint con el mismo detalle que Productos o Despacho — su sección 2.7 (CSAT) no tiene el bloque `Authorization` que sí tienen otras secciones del mismo contrato. **Por verse:** se abrió un issue en `Taller-SW-Web/G5-Ventas-Postventas` pidiendo que lo documenten; esta pregunta queda abierta hasta que respondan.
+1. ✅ **¿La calificación requiere un scope nuevo de Seguridad?** **Resuelta por Ventas (12/10/2026, acuerdo A15 en `docs/contratos-integracion.md`):** no requiere scope. `POST /api/v2/csat` se llama con el token del cliente (rol `CLIENTE`); Ventas valida el `sub` del JWT contra el dueño del `pedidoId` y responde `403` si no coincide. El scope `postventa:csat:escribir` no existe y no se solicita.
 
 ✅ **Resueltas con el equipo (02/10/2026):**
 - INKA es la tienda y Botleta es el asistente: no hay conflicto de marca (ver "Contexto").

@@ -16,7 +16,7 @@
 
 ## 3. Coordinación
 
-- [ ] 3.1 Comentar en Ventas #9 y #37 la corrección (escala 1/3/5, `ENTREGADO`).
+- [x] 3.1 Comentar en Ventas #9 y #37 la corrección (escala 1/3/5, `ENTREGADO`).
 - [ ] 3.2 Cerrar la pregunta de autenticación del CSAT cuando Ventas responda.
 
 ## 4. Verificación

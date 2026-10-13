@@ -6,7 +6,7 @@
 
 | Componente | Uso | Estado |
 |---|---|---|
-| Ventas, `POST /api/v2/csat` | Registrar la calificación de la compra | ✅ Publicado, `canal: "CHATBOT"` contemplado. Scope por confirmar (pregunta abierta 1 de la spec; issue abierto en G5-Ventas-Postventas) |
+| Ventas, `POST /api/v2/csat` | Registrar la calificación de la compra | ✅ Publicado, `canal: "CHATBOT"` contemplado. Token del cliente, rol `CLIENTE`, sin scope (acuerdo A15) |
 | `AttachmentStorage` (SPEC-23, reutilizado) | Guardar la captura de pantalla de un bug/sugerencia | ✅ Puerto ya existente; esta spec no crea un segundo mecanismo de carga |
 | `EmailSender` / outbox (SPEC-16, reutilizado) | Notificación interna de sugerencias y bugs | ✅ Adaptador ya existente |
 | "Mi cuenta" (`openspec/changes/alinear-specs-con-prototipo`) | Punto de entrada al formulario de sugerencia/bug | 🟡 Cambio todavía sin aplicar a `inicio-sesion` |
@@ -28,10 +28,10 @@
 | Componente | Responsabilidad |
 |---|---|
 | `POST /api/v1/mensajes/{mensajeId}/reaccion` (`chatbot_router.py`) | Registra o actualiza la reacción (👍/👎) de un mensaje; sin autenticación obligatoria (usa `cliente_id` o `chat_sid`, igual que el resto del chat). |
-| `POST /api/v1/pedidos/{pedidoId}/csat` | Valida la pertenencia del pedido al cliente autenticado y que esté `ENTREGADO`, llama a `VentasClient.registrarCsat()`, y propaga `201`/`409`/`422`/`503`. Marca `order_ref.csat_sent`. |
+| `POST /api/v1/pedidos/{pedidoId}/csat` | Valida la pertenencia del pedido al cliente autenticado y que esté `ENTREGADO`, llama a `VentasClient.registrarCsat()` reenviando el token del cliente, y propaga `201`/`403`/`409`/`422`/`503`. Marca `order_ref.csat_sent`. |
 | `POST /api/v1/pedidos/{pedidoId}/valoracion-compra` | Guarda la valoración de la experiencia de compra en `purchase_rating` (una por pedido). |
 | `POST /api/v1/sugerencias` | Crea la sugerencia o el bug, sube la captura (si existe) vía `AttachmentStorage`, y encola la notificación interna por outbox. |
-| `VentasClient.registrarCsat()` | Cliente de `POST /api/v2/csat`; normaliza errores de Ventas (`codigo` → `code` interno). |
+| `VentasClient.registrarCsat()` | Cliente de `POST /api/v2/csat`; reenvía el token del cliente (rol `CLIENTE`, sin scope; acuerdo A15), propaga el `403` de Ventas cuando el `sub` no es el dueño del pedido y normaliza errores de Ventas (`codigo` → `code` interno). |
 | `SugerenciaService` | Orquesta la validación, la subida opcional de la captura y el registro; aplica el límite de 5 por hora. |
 | `RateLimiter` (ampliado) | Agrega el límite de 30 reacciones/minuto y 5 sugerencias/hora por cliente o IP. |
 | Tablas `message_reaction`, `feedback_suggestion` y `purchase_rating` | Ver más abajo. |
@@ -46,7 +46,7 @@
 
 **`order_ref.csat_sent`** (`boolean NOT NULL DEFAULT false`): marca que la calificación del pedido ya se envió a Ventas (o que Ventas respondió `409`), para no volver a mostrar el bloque sin preguntarle a Ventas en cada carga.
 
-La calificación del pedido (CSAT) **no se guarda** como calificación propia: vive en Ventas (`POST /api/v2/csat`). La valoración de la compra sí es propia del chatbot (`purchase_rating`). 🧩 Pendiente de Ventas (issue #37): token con el que se llama al endpoint y validación de `clienteId`.
+La calificación del pedido (CSAT) **no se guarda** como calificación propia: vive en Ventas (`POST /api/v2/csat`). La valoración de la compra sí es propia del chatbot (`purchase_rating`). ✅ Acuerdo A15 (Ventas, 12/10/2026): el endpoint se llama con el token del cliente (rol `CLIENTE`, sin scope); Ventas valida el `sub` del JWT contra el dueño del `pedidoId` y responde `403` si no coincide. El scope `postventa:csat:escribir` no existe.
 
 ### Encaje en los casos de uso del núcleo
 
@@ -64,7 +64,7 @@ No se agrega un caso de uso nuevo: la reacción y la sugerencia se agrupan como 
 - [ ] `[FE]` `MessageFeedback` y `useReaction` con estado optimista
 - [ ] `[FE]` `PurchaseRatingModal` tras la confirmación del pedido y `DeliveryRatingFooter` en el detalle de un pedido `ENTREGADO`
 - [ ] `[FE]` `FeedbackEntryPoint` en "Mi cuenta" y `FeedbackForm` completo
-- [ ] `[INT]` Dar seguimiento al issue abierto en `G5-Ventas-Postventas` sobre la autenticación de `POST /api/v2/csat` (pregunta abierta 1 de la spec)
+- [x] `[INT]` Dar seguimiento al issue abierto en `G5-Ventas-Postventas` sobre la autenticación de `POST /api/v2/csat` (pregunta abierta 1 de la spec; resuelta en el acuerdo A15)
 - [ ] `[INT]` Actualizar `SPEC-16` para quitar la exclusión del CSAT de su "Fuera de alcance"
 - [ ] `[INT]` Marcar la pregunta abierta 9 de `docs/conversacion/README.md` como resuelta, enlazando a esta spec
 - [ ] `[QA]` Pruebas de todos los escenarios, incluida la idempotencia de la calificación (`409` de Ventas) y el límite de sugerencias por hora

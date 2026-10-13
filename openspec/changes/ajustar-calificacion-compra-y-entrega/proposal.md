@@ -25,4 +25,4 @@ Decisiones asumidas (confirmar con el equipo):
 3. Si el cliente no responde, el bloque de entrega vuelve a aparecer al reabrir el pedido; el popup de compra no vuelve a mostrarse.
 4. La calificación del pedido se ofrece para cualquier pedido `ENTREGADO` del cliente, aunque se haya creado en otro canal; Ventas rechaza duplicados con `409`.
 
-Pendiente de Ventas (issue #37): con qué token se llama a `POST /api/v2/csat` y si validan `clienteId`.
+Resuelto por Ventas el 12/10 (acuerdo A15): token del cliente, rol CLIENTE, 403 si el `sub` no es el dueño del pedido; sin scope.

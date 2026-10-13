@@ -95,7 +95,7 @@ graph LR
     CU -->|API asíncrona| SEG
 ```
 
-Los **8 casos de uso** del núcleo backend agrupan las 23 specs de este repositorio:
+Los **8 casos de uso** del núcleo backend agrupan las 24 specs de este repositorio:
 
 | Caso de uso | Agrupa |
 |---|---|
@@ -109,6 +109,8 @@ Los **8 casos de uso** del núcleo backend agrupan las 23 specs de este reposito
 | `GestionarPostventaUseCase` | SPEC-19, 20, 21, 22 |
 
 > 🧩 Esta agrupación en 8 casos de uso es una propuesta para alinear las specs con el diagrama de arquitectura; el equipo debe confirmarla contra el código o ajustar los nombres.
+>
+> 🧩 SPEC-24 (retroalimentación del cliente) no cae en ninguna fila: su [`design.md`](openspec/specs/retroalimentacion-cliente/design.md) propone un caso de uso propio, `GestionarRetroalimentacionUseCase`, separado de `GestionarConversacionUseCase`. Sumarlo como noveno caso de uso requiere actualizar [ADR-0018](docs/arquitectura/adr/ADR-0018-agrupacion-del-nucleo-en-ocho-casos-de-uso.md), igual que la pregunta pendiente sobre los servicios de identidad.
 
 ### 1.3 Principios
 
@@ -157,11 +159,11 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 | **Inicio** (`HomePage`, ruta `/`) | Banner de ofertas, grid de "Productos en oferta", campo de chat en la parte inferior y acciones rápidas fijas "Ver ofertas", "Rastrear pedido" y "Ayuda con devolución". | SPEC-06, 08, 09, 05 |
 | **Barra lateral** (`Sidebar`, overlay) | "Nuevo chat", acceso a "Buscar chats", "Historial de pedidos", lista de conversaciones recientes y pie con `SesionIndicator` para abrir "Mi cuenta" o iniciar sesión | SPEC-03, 05, 17 |
 | **Buscar chats** (`SearchChatsPage`, ruta `/buscar`) | Pantalla completa con búsqueda enfocada, recientes con título, vista previa y fecha, resultados resaltados y estado sin coincidencias | SPEC-05 |
-| **Mi cuenta** (`AccountPage`, ruta `/cuenta`) | Pantalla completa de solo lectura con perfil, celular enmascarado y estado de verificación, último documento enmascarado, accesos a pedidos/reclamos y cierre de sesión | SPEC-03, 04, 17, 20 |
-| **Conversación** (`ChatPage`, ruta `/chat/[id]`) | Historial de mensajes, tarjetas inline con "Preguntar en el chat", entrada de texto, adjuntos y tres acciones rápidas fijas | SPEC-05 a 09, 17, 18, 20, 22, 23 |
+| **Mi cuenta** (`AccountPage`, ruta `/cuenta`) | Pantalla completa de solo lectura con perfil, celular enmascarado y estado de verificación, último documento enmascarado, accesos a pedidos/reclamos, sección "Ayúdanos a mejorar" (sugerencias y bugs) y cierre de sesión | SPEC-03, 04, 17, 20, 24 |
+| **Conversación** (`ChatPage`, ruta `/chat/[id]`) | Historial de mensajes, 👍/👎 y "Copiar" bajo cada respuesta, tarjetas inline con "Preguntar en el chat", entrada de texto, adjuntos, tres acciones rápidas fijas y popup "Califica tu compra" tras el pago | SPEC-05 a 09, 17, 18, 20, 22, 23, 24 |
 | **Carrito** (`CartPage`, ruta `/carrito`, pantalla completa vía ícono con badge) | Líneas, cantidades, subtotal, botón de pago | SPEC-10, 11, 13 |
 | **Checkout** (`CheckoutPage`, ruta `/checkout`) | Total a pagar, documento con nota informativa, dirección de envío (campos libres), método de pago (**solo tarjeta**) | SPEC-12, 14 |
-| **Historial de pedidos** (`OrderHistoryPage`, ruta `/pedidos`, pestañas) | "En proceso", "Entregados", "Reembolsos"; las tarjetas permiten "Preguntar en el chat" | SPEC-17, 18, 21, 22 |
+| **Historial de pedidos** (`OrderHistoryPage`, ruta `/pedidos`, pestañas) | "En proceso", "Entregados", "Reembolsos"; las tarjetas permiten "Preguntar en el chat"; el detalle de un pedido entregado muestra al pie la calificación de la entrega (caritas) | SPEC-17, 18, 21, 22, 24 |
 
 🧩 Totales vigentes tras este cambio: **23 specs, 112 requisitos, 352 escenarios, 111 historias, 438 puntos y 168 reglas de negocio**. Se recalculan desde las specs, historias y catálogo de reglas.
 
@@ -198,12 +200,13 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 | [SPEC-21](openspec/specs/solicitud-devolucion-cambio/spec.md) | `solicitud-devolucion-cambio` | Solicitud de devolución o cambio | Postventa | Sí |
 | [SPEC-22](openspec/specs/consulta-devolucion-reembolso/spec.md) | `consulta-devolucion-reembolso` | Consulta de estado de devolución y reembolso | Postventa | Sí |
 | [SPEC-23](openspec/specs/adjuntos-imagenes-chat/spec.md) | `adjuntos-imagenes-chat` | Adjuntos de imágenes en el chat (visión del LLM) | Transversal | No |
+| [SPEC-24](openspec/specs/retroalimentacion-cliente/spec.md) | `retroalimentacion-cliente` | Retroalimentación del cliente: reacciones, calificación de la entrega, valoración de la compra y sugerencias | Transversal | Parcial |
 
 ### Orden sugerido de implementación
 
 1. **Hito 3 (demo 1):** SPEC-05 (base del chat, conversaciones múltiples y herramientas), 06, 09, 10, 11, 01, 02 y 03.
 2. **Hito 4 (integración):** SPEC-04, 07, 08, 12, 13, 14, 15, 16 y SPEC-23 (imágenes en el chat, después del núcleo del Hito 3).
-3. **Hito 5–6:** SPEC-17 a SPEC-22, más el endurecimiento de los RNF y las pruebas de performance.
+3. **Hito 5–6:** SPEC-17 a SPEC-22 y SPEC-24 (la calificación de la entrega depende del detalle del pedido de SPEC-17), más el endurecimiento de los RNF y las pruebas de performance.
 
 ---
 
@@ -224,6 +227,7 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 | (Extensión) Reclamos desde el canal | SPEC-19, SPEC-20 |
 | (Extensión, a partir del wireframe de historial) Devoluciones, cambios y reembolsos | SPEC-21, SPEC-22 |
 | (Extensión) Imágenes adjuntas al chat interpretadas por el LLM (el audio queda fuera de alcance) | SPEC-23 |
+| (Extensión, a partir de los mockups del equipo) Retroalimentación del cliente: reacciones, calificación de la entrega, valoración de la compra y sugerencias | SPEC-24 |
 
 ---
 

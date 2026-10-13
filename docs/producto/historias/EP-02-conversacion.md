@@ -1,6 +1,6 @@
 # EP-02 · Motor de conversación — Historias de usuario
 
-> Specs: [SPEC-05](../../../openspec/specs/motor-conversacion/spec.md), [SPEC-23](../../../openspec/specs/adjuntos-imagenes-chat/spec.md) · Área `CNV` · 21 historias · 102 puntos
+> Specs: [SPEC-05](../../../openspec/specs/motor-conversacion/spec.md), [SPEC-23](../../../openspec/specs/adjuntos-imagenes-chat/spec.md), [SPEC-24](../../../openspec/specs/retroalimentacion-cliente/spec.md) · Área `CNV` · 26 historias · 121 puntos
 >
 > Los criterios de aceptación **remiten** a los escenarios de la spec, que son la única fuente de verdad del comportamiento. Aquí solo se resume cada uno en una línea.
 
@@ -427,11 +427,117 @@
 
 **Notas:** default de diseño: `FixedQuickActions` ejecuta acciones directas registradas en historial; `QuickReplies` sigue representando las sugerencias de una respuesta.
 
+---
+
+## HU-CNV-22 · Reaccionar a las respuestas del asistente y copiarlas
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-02 | Should | 3 | Hito 5–6 | `SPEC-24 · Req. 1` | RN-CNV-34, RN-CNV-35 | — |
+
+**Como** cliente (anónimo o autenticado), **quiero** marcar con 👍 o 👎 cada respuesta del asistente y copiar su texto, **para** decir rápido si me sirvió y guardar lo que necesito sin interrumpir la conversación.
+
+**Criterios de aceptación**
+- `SPEC-24 · Req. 1 · Scenario: Reacción positiva` — el ícono queda seleccionado y la reacción se registra ligada al mensaje y al cliente o `chat_sid`, sin interrumpir el chat.
+- `SPEC-24 · Req. 1 · Scenario: Cambiar de reacción` — pasar de 👍 a 👎 actualiza la reacción; no se acumulan ambas.
+- `SPEC-24 · Req. 1 · Scenario: Copiar el texto de la respuesta` — se copia el texto plano del bloque al portapapeles, sin registrarlo en el backend.
+- `SPEC-24 · Req. 1 · Scenario: Registro falla` — el ícono se marca igual (optimista) y el registro se reintenta en segundo plano, sin error visible.
+
+**Prioridad:** Should: alimenta la métrica de satisfacción con las respuestas y resuelve la pregunta abierta 9 de diseño conversacional, pero el chat funciona sin ella.
+
+**Notas:** no requiere sesión. Upsert por mensaje y por quien reacciona (`message_reaction`, ver [`modelo-datos.md`](../../modelo-datos.md)).
+
+---
+
+## HU-CNV-23 · Calificar la entrega de mi pedido
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-02 | Should | 5 | Hito 5–6 | `SPEC-24 · Req. 2` | RN-CNV-36, RN-CNV-37, RN-CNV-38, RN-CNV-39 | Ventas (`POST /api/v2/csat`, acuerdo A15 ✅) |
+
+**Como** cliente autenticado con un pedido entregado, **quiero** calificar la entrega con una carita y un comentario opcional desde el detalle del pedido, **para** contarle a la tienda cómo me fue sin que me interrumpan con encuestas.
+
+**Criterios de aceptación**
+- `SPEC-24 · Req. 2 · Scenario: Calificación enviada` — al elegir una carita y pulsar "Enviar calificación" se llama a `POST /api/v2/csat` con `canal: "CHATBOT"` y, con `201`, el bloque se reemplaza por un agradecimiento.
+- `SPEC-24 · Req. 2 · Scenario: Sin estrellas seleccionadas` — sin una carita elegida, "Enviar calificación" sigue deshabilitado.
+- `SPEC-24 · Req. 2 · Scenario: El cliente lo descarta` — si sale sin responder, no se envía nada y el bloque vuelve a aparecer al reabrir el pedido.
+- `SPEC-24 · Req. 2 · Scenario: Encuesta ya registrada para ese pedido` — un `409 CSAT_ALREADY_SUBMITTED` muestra "Ya calificaste este pedido", sin error, y marca `order_ref.csat_sent`.
+- `SPEC-24 · Req. 2 · Scenario: Ventas no disponible al calificar` — se informa que no se pudo enviar, el bloque se conserva para reintentar y el detalle sigue usable.
+- `SPEC-24 · Req. 2 · Scenario: Pedido aún no entregado` — en pedidos `CREADO`, `PAGADO`, `EN_PREPARACION` o `DESPACHADO` el bloque no aparece.
+
+**Prioridad:** Should: conecta el canal con la encuesta CSAT de Ventas (F5), pero no bloquea la compra ni el seguimiento.
+
+**Notas:** los criterios siguen el requisito modificado por el cambio `ajustar-calificacion-compra-y-entrega` (bloque al pie de `OrderDetail` con caritas 5/3/1), todavía sin archivar en la spec base. El nombre del escenario "Sin estrellas seleccionadas" se conserva del requisito original aunque ahora son caritas. Se llama con el token del cliente (rol `CLIENTE`, sin scope) y un `403` de Ventas indica que el pedido no es del cliente. Depende del detalle del pedido de SPEC-17 (EP-07).
+
+---
+
+## HU-CNV-24 · Valorar mi experiencia de compra al terminar de pagar
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-02 | Could | 3 | Hito 5–6 | `SPEC-24 · Req. 7` | RN-CNV-40, RN-CNV-41 | — |
+
+**Como** cliente que acaba de pagar en el chat, **quiero** valorar con estrellas cómo fue comprar aquí, **para** ayudar a mejorar el asistente sin retrasar la confirmación de mi pedido.
+
+**Criterios de aceptación**
+- `SPEC-24 · Req. 7 · Scenario: Valoración enviada` — al elegir las estrellas y pulsar "Enviar calificación" se guarda `purchase_rating` y el popup se reemplaza por un agradecimiento.
+- `SPEC-24 · Req. 7 · Scenario: Sin estrellas seleccionadas` — sin estrellas, "Enviar calificación" sigue deshabilitado.
+- `SPEC-24 · Req. 7 · Scenario: El cliente lo descarta` — "Ahora no" cierra el popup sin guardar y no vuelve a mostrarse para ese pedido.
+- `SPEC-24 · Req. 7 · Scenario: Una sola valoración por pedido` — un pedido ya valorado no vuelve a mostrar el popup ni admite otra valoración.
+- `SPEC-24 · Req. 7 · Scenario: Falla el guardado` — se muestra "No pudimos guardar tu opinión" y la confirmación del pedido sigue visible y sin cambios.
+
+**Prioridad:** Could: mide la experiencia de compra en el chat, pero no forma parte del flujo de pago ni de un lineamiento del curso.
+
+**Notas:** requisito agregado por el cambio `ajustar-calificacion-compra-y-entrega`, todavía sin archivar. No se envía a Ventas. `PurchaseRatingModal` se monta junto con `OrderConfirmation` (SPEC-15, EP-06).
+
+---
+
+## HU-CNV-25 · Enviar una sugerencia o reportar un bug desde Mi cuenta
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-02 | Could | 5 | Hito 5–6 | `SPEC-24 · Req. 3–4` | RN-CNV-42, RN-CNV-43 | — |
+
+**Como** cliente autenticado, **quiero** enviar una sugerencia o reportar un error desde "Mi cuenta", con una captura si hace falta, **para** que el equipo conozca lo que puede mejorar.
+
+**Criterios de aceptación**
+- `SPEC-24 · Req. 3 · Scenario: Entrada visible para cualquier cliente autenticado` — "Mi cuenta" muestra "Ayúdanos a mejorar" con el botón, sin otra condición.
+- `SPEC-24 · Req. 4 · Scenario: Envío válido con captura` — la captura se sube por `AttachmentStorage` al bucket privado, se registra la sugerencia y se muestra un código de seguimiento interno.
+- `SPEC-24 · Req. 4 · Scenario: Campos obligatorios incompletos` — con título o descripción por debajo del mínimo, "Enviar" sigue deshabilitado y se muestra la ayuda.
+- `SPEC-24 · Req. 4 · Scenario: Captura inválida` — un archivo de más de 5 MB o que no es JPG ni PNG se rechaza en el cliente, sin impedir enviar sin captura.
+- `SPEC-24 · Req. 4 · Scenario: Envío sin captura` — se registra igual, con el adjunto vacío.
+- `SPEC-24 · Req. 4 · Scenario: Backend no disponible al enviar` — se pide reintentar y el formulario conserva lo escrito (salvo la captura).
+
+**Prioridad:** Could: retroalimentación sobre el canal mismo, sin impacto en la compra.
+
+**Notas:** depende de la pantalla "Mi cuenta" (SPEC-03 · Req. 7, cambio `alinear-specs-con-prototipo`). Pendiente de modelo de datos: `attachment.conversation_id` es obligatorio y la captura se sube fuera de una conversación (ver [`modelo-datos.md`](../../modelo-datos.md#pendientes)). Los comunicados posteriores con el cliente van por correo y están fuera de alcance.
+
+---
+
+## HU-CNV-26 · Avisar al equipo y limitar el abuso de la retroalimentación (Habilitadora)
+
+| Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
+|---|---|---|---|---|---|---|
+| EP-02 | Could | 3 | Hito 5–6 | `SPEC-24 · Req. 5–6` | RN-CNV-44, RN-CNV-45 | SMTP |
+
+**Como** equipo del chatbot, **quiero** recibir un correo por cada sugerencia o bug y limitar cuántas reacciones y sugerencias se envían, **para** atenderlas a tiempo sin que el canal sea abusado.
+
+**Criterios de aceptación**
+- `SPEC-24 · Req. 5 · Scenario: Notificación enviada` — se encola un correo interno con tipo, título, descripción, correo de contacto y enlace a la captura, por el outbox de SPEC-16.
+- `SPEC-24 · Req. 5 · Scenario: Falla el envío del correo interno` — la sugerencia no se pierde ni se muestra como fallida al cliente; solo falla la notificación.
+- `SPEC-24 · Req. 6 · Scenario: Exceso de reacciones` — más de 30 reacciones en 1 minuto se ignoran en silencio.
+- `SPEC-24 · Req. 6 · Scenario: Exceso de sugerencias` — con 5 sugerencias en 1 hora, la siguiente se rechaza con "Ya enviaste varias sugerencias, intenta en un rato".
+
+**Prioridad:** Could: acompaña a HU-CNV-25 y protege el canal; sin sugerencias no hace falta.
+
+**Notas:** habilitadora. Reutiliza `EmailSender` y la tarea `SEND_EMAIL` del outbox (SPEC-16, EP-06) y amplía el `RateLimiter` de SPEC-05.
+
 ## Asignación del desglose (`design.md`) a historias
 
-Tareas numeradas `T1…Tn` en el orden del "Desglose para issues" del `design.md` de cada spec (`motor-conversacion` y `adjuntos-imagenes-chat`). Las tareas `[QA]` de escenarios se replican como una sub-issue por historia.
+Tareas numeradas `T1…Tn` en el orden del "Desglose para issues" del `design.md` de cada spec (`motor-conversacion`, `adjuntos-imagenes-chat` y `retroalimentacion-cliente`). Las tareas `[QA]` de escenarios se replican como una sub-issue por historia.
 
 | Spec | Tarea → Historia |
 |---|---|
 | SPEC-05 | T1 `[FE]` AppShell y rutas → HU-CNV-01 · T2 `[FE]` Sidebar → HU-CNV-01 (relacionada: HU-CNV-02) · T3 `[FE]` HomePage → HU-CNV-03 · T4 `[FE]` ChatPage, useChat, MessageList → HU-CNV-05 · T5 `[FE]` Composer, QuickReplies, TypingIndicator, DegradedBanner → HU-CNV-04 (relacionadas: HU-CNV-11, HU-CNV-13) · T6 `[FE]` chatStore y puertos → HU-CNV-01 · T7 `[FE]` adaptadores Axios y SSE → HU-CNV-05 · T8 `[FE]` container.ts y apiConfig.ts → HU-CNV-01 · T9 `[BE]` modelos `conversation` y `message` → HU-CNV-01 · T10 `[BE]` `chatbot_router.py` → HU-CNV-01 · T11 `[BE]` streaming SSE en el `POST` de mensajes → HU-CNV-05 · T12 `[BE]` GestionarConversacionUseCase → HU-CNV-01 · T13 `[BE]` LLMProvider → HU-CNV-04 · T14 `[BE]` ToolRegistry, InterpretarYResponderUseCase, ActionDispatcher → HU-CNV-04 (relacionadas: HU-CNV-07, HU-CNV-09) · T15 `[BE]` SensitiveDataFilter y OutputValidator → HU-CNV-08 (relacionada: HU-CNV-10) · T16 `[BE]` DegradedMode y RateLimiter → HU-CNV-11 (relacionada: HU-CNV-12) · T17 `[BE]` prompt del sistema v1 → HU-CNV-04 (relacionada: HU-CNV-13) · T18 `[QA]` conjunto de evaluación y umbral en CI → HU-CNV-04 · T19 `[QA]` escenarios → HU-CNV-01 a HU-CNV-13 |
 | SPEC-23 | T1 `[BE]` `AttachmentStorage` y `SupabaseAttachmentStorage` → HU-CNV-15 · T2 `[BE]` `ImageProcessor` → HU-CNV-15 · T3 `[BE]` modelo `attachment` y migración → HU-CNV-15 · T4 `[BE]` `AdjuntoService` y `POST`/`DELETE` de adjuntos → HU-CNV-15 · T5 `[BE]` `GET /chat/adjuntos/{adjuntoId}` y URLs firmadas → HU-CNV-17 · T6 `[BE]` `adjuntoIds` en el envío de mensajes → HU-CNV-15 · T7 `[BE]` `LLMProvider` multimodal → HU-CNV-16 · T8 `[BE]` `InterpretarYResponderUseCase` con imágenes → HU-CNV-16 · T9 `[BE]` `DegradedMode` y `RateLimiter` → HU-CNV-18 (relacionada: HU-CNV-19) · T10 `[BE]` job de limpieza → HU-CNV-19 · T11 `[BE]` registro por turno de imágenes, tokens y costo → HU-CNV-16 · T12 `[FE]` `AttachmentButton`, `AttachmentPreviewList` y `validateImageFile` → HU-CNV-14 · T13 `[FE]` `ImagePrivacyNotice` → HU-CNV-14 · T14 `[FE]` `MessageAttachments` e `ImageViewer` → HU-CNV-17 · T15 `[FE]` `ChatbotApiPort`, adaptador Axios y `chatStore` → HU-CNV-14 (relacionada: HU-CNV-17) · T16 `[INT]` validar visión y costo con `gpt-6-luna` → HU-CNV-16 · T17 `[INT]` bucket privado de Supabase Storage → HU-CNV-15 · T18 `[QA]` escenarios → HU-CNV-14 a HU-CNV-19 · T19 `[QA]` seguridad de adjuntos → HU-CNV-15 (relacionadas: HU-CNV-16, HU-CNV-17) · T20 `[QA]` modo degradado de imágenes → HU-CNV-18 |
+| SPEC-24 | T1 `[BE]` tablas de retroalimentación y `order_ref.csat_sent` → HU-CNV-22 (relacionadas: HU-CNV-23, HU-CNV-24, HU-CNV-25) · T2 `[BE]` `POST /mensajes/{id}/reaccion` → HU-CNV-22 · T3 `[BE]` `VentasClient.registrarCsat()` y `POST /pedidos/{id}/csat` → HU-CNV-23 · T4 `[BE]` `POST /pedidos/{id}/valoracion-compra` → HU-CNV-24 · T5 `[BE]` `SugerenciaService` → HU-CNV-25 · T6 `[BE]` notificación interna por correo → HU-CNV-26 · T7 `[BE]` `RateLimiter` de reacciones y sugerencias → HU-CNV-26 · T8 `[FE]` `MessageFeedback` y `useReaction` → HU-CNV-22 · T9 `[FE]` `PurchaseRatingModal` y `DeliveryRatingFooter` → HU-CNV-24 (relacionada: HU-CNV-23) · T10 `[FE]` `FeedbackEntryPoint` y `FeedbackForm` → HU-CNV-25 · T11 `[INT]` autenticación de `POST /api/v2/csat` (resuelta, A15) → HU-CNV-23 · T12 `[INT]` actualizar SPEC-16 → HU-CNV-23 · T13 `[INT]` cerrar la pregunta abierta 9 → HU-CNV-22 · T14 `[QA]` escenarios → HU-CNV-22 a HU-CNV-26 · T15 `[QA]` la captura nunca llega al LLM ni a una URL pública → HU-CNV-25 |

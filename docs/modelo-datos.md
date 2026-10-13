@@ -49,7 +49,7 @@ erDiagram
     OUTBOX
 ```
 
-`CLAIM_REF` y `RETURN_REF` guardan `order_id` **sin FK** a `order_ref`: el cliente elige el pedido desde el listado de Ventas (`GET /api/v1/pedidos?clienteId=`, ver `creacion-reclamo/design.md` y `solicitud-devolucion-cambio/design.md`), y ese pedido puede haberse creado en otro canal, sin fila en `order_ref`.
+`CLAIM_REF` y `RETURN_REF` guardan `order_id` **sin FK** a `order_ref`: el cliente elige el pedido desde el listado de Ventas (`GET /api/v1/pedidos/me`, ver `creacion-reclamo/design.md` y `solicitud-devolucion-cambio/design.md`), y ese pedido puede haberse creado en otro canal, sin fila en `order_ref`.
 
 ## Tablas
 

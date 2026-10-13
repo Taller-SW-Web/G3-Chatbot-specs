@@ -37,13 +37,19 @@
 | **Pedidos de humano** | Frecuencia de `INT-SIS-07` | turnos `INT-SIS-07` / sesiones | etiqueta de intención por turno 🟠 | 🟠 | Solo seguimiento (insumo para decidir si se agrega un canal de contacto) | Mensual |
 | **Tasa de modo degradado** | Turnos atendidos sin LLM | turnos respondidos por `DegradedMode` / turnos de texto | marca de modo degradado en `message` o en el log 🟠 | 🟠 | ≤ 2 % | Diaria durante la demo |
 | **Correcciones del validador de salida** | Precios del texto que no coincidían con las herramientas | turnos con corrección en `fin` / turnos con precio en el texto | log de `OutputValidator` 🟠 | 🟠 | 0 en la demo; cualquier caso se revisa | Por hito |
-| **CSAT (propuesta)** | Satisfacción con la respuesta | 👍 / (👍 + 👎) | evento de valoración 🟠 (no existe en las specs) | 🟠 **Propuesta** | ≥ 80 % | Semanal |
+| **CSAT de respuestas** | Satisfacción con la respuesta | 👍 / (👍 + 👎) | `message_reaction.reaction` (SPEC-24 · Req. 1) ✅ | ✅ | ≥ 80 % | Semanal |
 | **Costo por conversación** | Costo del LLM por conversación medible | Σ (`input_tokens` × precio de entrada + `output_tokens` × precio de salida) / conversaciones | `message.input_tokens`, `message.output_tokens` + tabla de precios del modelo en configuración 🟠 | ✅ tokens · 🟠 precio | Línea base en Hito 3; después, no superar la línea base en más de 20 % tras cambios de prompt o modelo | Semanal |
 | **Latencia percibida** | Tiempo hasta el primer fragmento y del turno completo | p95 de `message.latency_ms` (turno) y del primer evento `token` | `message.latency_ms` ✅; primer fragmento 🟠 (no hay campo) | ✅ / 🟠 | Las del RNF: ≤ 2 s y ≤ 6 s (en turnos de texto; los turnos con imágenes tienen metas propias en §4) | Diaria durante la demo |
 
-### CSAT: propuesta (no está en las specs)
+<a id="csat-propuesta-no-está-en-las-specs"></a>
 
-Una sola pregunta, sin interrumpir la compra: después de un bloque `CONFIRMACION_PEDIDO`, `CONSTANCIA_RECLAMO` o `CONSTANCIA_DEVOLUCION`, o tras una despedida, se muestran dos botones "👍" / "👎" con el texto "¿Te sirvió esta conversación?". Es opcional, se muestra como máximo una vez por sesión y no se vuelve a pedir si el cliente lo ignora. No se debe confundir con la encuesta de satisfacción de Ventas (F5), que SPEC-16 deja fuera de alcance. Si el equipo la aprueba, se incorpora a SPEC-05 mediante un cambio de OpenSpec (acción directa `VALORAR_CONVERSACION` y un campo o tabla nueva); hasta entonces es solo una propuesta ([pregunta abierta 9](README.md#preguntas-abiertas)).
+### CSAT: resuelto en SPEC-24
+
+✅ **Resuelta (12/10/2026).** La propuesta original era una sola pregunta "👍" / "👎" ("¿Te sirvió esta conversación?") después de un bloque `CONFIRMACION_PEDIDO`, `CONSTANCIA_RECLAMO` o `CONSTANCIA_DEVOLUCION`, como máximo una vez por sesión. [SPEC-24 `retroalimentacion-cliente`](../../openspec/specs/retroalimentacion-cliente/spec.md) la reemplaza y amplía ([pregunta abierta 9](README.md#preguntas-abiertas)):
+
+- **Reacciones 👍/👎 y "Copiar"** tras **cada** bloque de respuesta del asistente (Req. 1). Alimentan la métrica "CSAT de respuestas" de la tabla anterior.
+- **Calificación de la entrega:** es la encuesta CSAT de Ventas (F5), con tres caritas (5, 3, 1) al pie del detalle de un pedido `ENTREGADO` (Req. 2). Se guarda en Ventas, no en el chatbot.
+- **Valoración de la experiencia de compra:** popup "Califica tu compra" con estrellas (1 a 5) tras el pago, propia del chatbot (`purchase_rating`, Req. 7). Un posible KPI es el promedio de estrellas por semana; no se fija meta hasta tener línea base.
 
 ## 4. Métricas técnicas ya definidas en las specs
 

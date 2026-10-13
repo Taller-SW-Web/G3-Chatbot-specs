@@ -65,7 +65,7 @@ No se agrega un caso de uso nuevo: la reacción y la sugerencia se agrupan como 
 - [ ] `[FE]` `PurchaseRatingModal` tras la confirmación del pedido y `DeliveryRatingFooter` en el detalle de un pedido `ENTREGADO`
 - [ ] `[FE]` `FeedbackEntryPoint` en "Mi cuenta" y `FeedbackForm` completo
 - [x] `[INT]` Dar seguimiento al issue abierto en `G5-Ventas-Postventas` sobre la autenticación de `POST /api/v2/csat` (pregunta abierta 1 de la spec; resuelta en el acuerdo A15)
-- [ ] `[INT]` Actualizar `SPEC-16` para quitar la exclusión del CSAT de su "Fuera de alcance"
-- [ ] `[INT]` Marcar la pregunta abierta 9 de `docs/conversacion/README.md` como resuelta, enlazando a esta spec
+- [x] `[INT]` Actualizar `SPEC-16` para quitar la exclusión del CSAT de su "Fuera de alcance"
+- [x] `[INT]` Marcar la pregunta abierta 9 de `docs/conversacion/README.md` como resuelta, enlazando a esta spec
 - [ ] `[QA]` Pruebas de todos los escenarios, incluida la idempotencia de la calificación (`409` de Ventas) y el límite de sugerencias por hora
 - [ ] `[QA]` Prueba de que una captura de bug nunca llega al LLM ni a una URL pública

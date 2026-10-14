@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
-### Requirement: Calificación de la compra (CSAT, vía Ventas)
-El sistema DEBE (SHALL) ofrecer la calificación del pedido (CSAT de Ventas) al pie de la pantalla de detalle de un pedido cuyo estado sea `ENTREGADO`, con tres caritas (feliz, neutral, triste) y un comentario opcional, y DEBE (SHALL) enviarla a Ventas (`POST /api/v2/csat`) en vez de almacenarla como calificación propia. Las caritas se envían como `puntuacion` 5 (feliz), 3 (neutral) y 1 (triste), la escala acordada por Ventas con Marketplace. No es una ventana emergente: es un bloque fijo al pie de la pantalla.
+### Requirement: Calificación de la entrega (CSAT, vía Ventas)
+El sistema DEBE (SHALL) ofrecer la calificación del pedido (CSAT de Ventas) al pie de la pantalla de detalle de un pedido cuyo estado sea `ENTREGADO`, con tres caritas (feliz, neutral, triste) y un comentario opcional, y DEBE (SHALL) enviarla a Ventas (`POST /api/v2/csat`) en vez de almacenarla como calificación propia. Las caritas se envían como `puntuacion` 5 (feliz), 3 (neutral) y 1 (triste), la escala acordada por Ventas con Marketplace. El `clienteId` del cuerpo DEBE (MUST) ser igual al `sub` del token del cliente. No es una ventana emergente: es un bloque fijo al pie de la pantalla.
 
 *Trazabilidad: SPEC-24 · Requisito 2. Conecta con Ventas F5 — CSAT; ver `docs/contratos-integracion.md`. Ventas solo acepta calificar pedidos `ENTREGADO` (`422 ORDER_NOT_DELIVERED`).*
 
@@ -30,6 +30,16 @@ El sistema DEBE (SHALL) ofrecer la calificación del pedido (CSAT de Ventas) al 
 - **CUANDO** el cliente envía su calificación
 - **ENTONCES** se informa "No pudimos enviar tu calificación, intenta de nuevo más tarde" y el bloque se conserva para reintentar; el detalle del pedido sigue usable
 
+#### Scenario: El pedido no es del cliente
+- **DADO** que Ventas responde `403` porque el `sub` del token no es el dueño del pedido
+- **CUANDO** el cliente envía su calificación
+- **ENTONCES** se muestra el error genérico "No pudimos enviar tu calificación, intenta de nuevo" y el bloque se conserva
+
+#### Scenario: Pedido no entregado según Ventas
+- **DADO** que Ventas responde `422 ORDER_NOT_DELIVERED` al enviar la calificación
+- **CUANDO** el cliente envía su calificación
+- **ENTONCES** el bloque se oculta y se refresca el detalle del pedido para mostrar su estado vigente
+
 #### Scenario: Pedido aún no entregado
 - **DADO** el detalle de un pedido en `CREADO`, `PAGADO`, `EN_PREPARACION` o `DESPACHADO`
 - **CUANDO** se muestra la pantalla
@@ -55,7 +65,7 @@ El sistema DEBE (SHALL) mostrar, después del pago y una vez confirmado el pedid
 #### Scenario: El cliente lo descarta
 - **DADO** el popup abierto
 - **CUANDO** el cliente toca "Ahora no"
-- **ENTONCES** el popup se cierra sin guardar nada y no se vuelve a mostrar para ese mismo pedido
+- **ENTONCES** el popup se cierra sin guardar nada y no se vuelve a mostrar para ese mismo pedido en ese navegador. El descarte se recuerda por pedido en el navegador (LocalStorage, con `orderId` como clave), es por dispositivo por diseño y no se guarda en el backend; si se borra el almacenamiento o se abre en otro dispositivo, el popup puede volver a mostrarse
 
 #### Scenario: Una sola valoración por pedido
 - **DADO** un pedido con valoración de compra ya guardada

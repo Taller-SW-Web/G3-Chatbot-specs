@@ -93,7 +93,7 @@ Nada de esto está en las specs ni en el modelo de datos; se propone para decidi
 | Latencia del primer fragmento | Campo en el log por turno | Latencia percibida |
 | Correcciones de `OutputValidator` | Contador en el log por turno | Correcciones del validador |
 | Conversación donde se inició el checkout | el log de `iniciar_checkout` | Turnos hasta comprar |
-| Valoración 👍/👎 | Acción directa y almacenamiento (solo si se aprueba el CSAT) | CSAT |
+| Valoración 👍/👎 | Acción directa y almacenamiento en `message_reaction` (SPEC-24 · Req. 1) | CSAT |
 | Precio por token del modelo | Variable de configuración junto al proveedor y el modelo | Costo por conversación |
 
 Todas las marcas nuevas respetan SPEC-05 · RNF *Observabilidad*: **sin datos personales en el texto del log**.

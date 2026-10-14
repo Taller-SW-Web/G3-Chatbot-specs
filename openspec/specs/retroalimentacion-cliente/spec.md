@@ -1,6 +1,6 @@
 # Retroalimentación del cliente
 
-> Origen: SPEC-24 · Grupo: Transversal · Requiere sesión: Parcial (ver Requisitos) · Depende de: [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`grabacion-pedido`](../grabacion-pedido/spec.md) (SPEC-15), [`notificacion-confirmacion`](../notificacion-confirmacion/spec.md) (SPEC-16), [`adjuntos-imagenes-chat`](../adjuntos-imagenes-chat/spec.md) (SPEC-23), el cambio pendiente `openspec/changes/alinear-specs-con-prototipo` (pantalla "Mi cuenta", aún no aplicado a `inicio-sesion`) · Se relaciona con: Ventas (F5 — CSAT)
+> Origen: SPEC-24 · Grupo: Transversal · Requiere sesión: Parcial (ver Requisitos) · Depende de: [`motor-conversacion`](../motor-conversacion/spec.md) (SPEC-05), [`grabacion-pedido`](../grabacion-pedido/spec.md) (SPEC-15), [`notificacion-confirmacion`](../notificacion-confirmacion/spec.md) (SPEC-16), [`adjuntos-imagenes-chat`](../adjuntos-imagenes-chat/spec.md) (SPEC-23, solo el puerto `AttachmentStorage`; no su tabla `attachment`), el cambio pendiente `openspec/changes/alinear-specs-con-prototipo` (pantalla "Mi cuenta", aún no aplicado a `inicio-sesion`) · Se relaciona con: Ventas (F5 — CSAT)
 
 ## Responsables
 
@@ -70,7 +70,7 @@ El sistema DEBE (SHALL) mostrar, debajo de cada bloque de respuesta del asistent
 - **CUANDO** el cliente toca 👍 o 👎
 - **ENTONCES** el ícono se marca igual en el cliente (optimista) y el reintento del registro ocurre en segundo plano, sin mostrar error ni bloquear el chat
 
-### Requirement: Calificación de la compra (CSAT, vía Ventas)
+### Requirement: Calificación de la entrega (CSAT, vía Ventas)
 El sistema DEBE (SHALL) mostrar, después del pago y una vez confirmado el pedido (`CONFIRMACION_PEDIDO`), un modal "Califica tu compra" con estrellas (1 a 5) y un comentario opcional, y DEBE (SHALL) enviar la calificación a Ventas (`POST /api/v2/csat`) en vez de almacenarla en el chatbot.
 
 *Trazabilidad: SPEC-24 · Requisito 2. Conecta con Ventas F5 — CSAT; ver `docs/contratos-integracion.md`.*
@@ -118,7 +118,7 @@ El sistema DEBE (SHALL) permitir enviar una sugerencia o un reporte de error con
 #### Scenario: Envío válido con captura
 - **DADO** el formulario con tipo "Bug", título "No carga el carrito", descripción de 40 caracteres y una captura `.png` de 2 MB adjunta
 - **CUANDO** el cliente pulsa "Enviar"
-- **ENTONCES** la captura se sube primero mediante el mismo puerto `AttachmentStorage` de SPEC-23 (bucket privado, sin lectura pública), se registra la sugerencia con la referencia al adjunto, y se muestra una confirmación con un código de seguimiento interno
+- **ENTONCES** la captura se sube primero mediante el mismo puerto `AttachmentStorage` de SPEC-23 (bucket privado, sin lectura pública), se registra la sugerencia con la clave de la captura (`screenshot_key`), y se muestra una confirmación con un código de seguimiento interno
 
 #### Scenario: Campos obligatorios incompletos
 - **DADO** un título de 2 caracteres o una descripción de 5 caracteres
@@ -133,7 +133,7 @@ El sistema DEBE (SHALL) permitir enviar una sugerencia o un reporte de error con
 #### Scenario: Envío sin captura
 - **DADO** un formulario válido sin ninguna imagen adjunta
 - **CUANDO** el cliente pulsa "Enviar"
-- **ENTONCES** se registra igual, con el campo de adjunto vacío
+- **ENTONCES** se registra igual, sin clave de captura (`screenshot_key` nula)
 
 #### Scenario: Backend no disponible al enviar
 - **DADO** que el registro falla
@@ -172,7 +172,7 @@ El sistema DEBE (SHALL) limitar el envío de reacciones, calificaciones y sugere
 
 ## Requisitos no funcionales
 
-- **Privacidad:** la captura de pantalla de un bug nunca se envía al LLM; vive en el mismo bucket privado que las imágenes del chat (SPEC-23), con el mismo tratamiento de URLs firmadas, nunca públicas.
+- **Privacidad:** la captura de pantalla de un bug nunca se envía al LLM; vive en el mismo bucket privado que las imágenes del chat (SPEC-23), con el mismo tratamiento de URLs firmadas, nunca públicas. Se guarda como una clave de objeto propia de SPEC-24 (`feedback_suggestion.screenshot_key`), con la misma validación de tipo y tamaño del puerto; no usa la tabla `attachment`.
 - **No bloqueante:** ninguno de los tres mecanismos puede impedir ni demorar el flujo principal (conversar, pagar, ver el pedido). Todos los fallos de registro se degradan en silencio o con un mensaje breve, nunca con un bloqueo.
 - **Rendimiento:** registrar una reacción, p95 ≤ 400 ms; enviar la calificación a Ventas, p95 ≤ 1 s; registrar una sugerencia (sin captura), p95 ≤ 1 s.
 - **Idempotencia:** el envío de la calificación del pedido usa `pedidoId` como clave natural (Ventas ya responde `409` ante duplicados); la valoración de la compra es única por pedido; el envío de una sugerencia usa una `Idempotency-Key` igual que el resto de operaciones que crean algo (ver convención general del repo).

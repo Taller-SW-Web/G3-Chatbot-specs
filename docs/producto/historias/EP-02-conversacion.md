@@ -463,6 +463,8 @@
 - `SPEC-24 · Req. 2 · Scenario: El cliente lo descarta` — si sale sin responder, no se envía nada y el bloque vuelve a aparecer al reabrir el pedido.
 - `SPEC-24 · Req. 2 · Scenario: Encuesta ya registrada para ese pedido` — un `409 CSAT_ALREADY_SUBMITTED` muestra "Ya calificaste este pedido", sin error, y marca `order_ref.csat_sent`.
 - `SPEC-24 · Req. 2 · Scenario: Ventas no disponible al calificar` — se informa que no se pudo enviar, el bloque se conserva para reintentar y el detalle sigue usable.
+- `SPEC-24 · Req. 2 · Scenario: El pedido no es del cliente` — un `403` de Ventas muestra el error genérico "No pudimos enviar tu calificación, intenta de nuevo" y conserva el bloque.
+- `SPEC-24 · Req. 2 · Scenario: Pedido no entregado según Ventas` — un `422 ORDER_NOT_DELIVERED` oculta el bloque y refresca el detalle del pedido.
 - `SPEC-24 · Req. 2 · Scenario: Pedido aún no entregado` — en pedidos `CREADO`, `PAGADO`, `EN_PREPARACION` o `DESPACHADO` el bloque no aparece.
 
 **Prioridad:** Should: conecta el canal con la encuesta CSAT de Ventas (F5), pero no bloquea la compra ni el seguimiento.
@@ -482,7 +484,7 @@
 **Criterios de aceptación**
 - `SPEC-24 · Req. 7 · Scenario: Valoración enviada` — al elegir las estrellas y pulsar "Enviar calificación" se guarda `purchase_rating` y el popup se reemplaza por un agradecimiento.
 - `SPEC-24 · Req. 7 · Scenario: Sin estrellas seleccionadas` — sin estrellas, "Enviar calificación" sigue deshabilitado.
-- `SPEC-24 · Req. 7 · Scenario: El cliente lo descarta` — "Ahora no" cierra el popup sin guardar y no vuelve a mostrarse para ese pedido.
+- `SPEC-24 · Req. 7 · Scenario: El cliente lo descarta` — "Ahora no" cierra el popup sin guardar y no vuelve a mostrarse para ese pedido en ese navegador (el descarte se recuerda en LocalStorage, por dispositivo).
 - `SPEC-24 · Req. 7 · Scenario: Una sola valoración por pedido` — un pedido ya valorado no vuelve a mostrar el popup ni admite otra valoración.
 - `SPEC-24 · Req. 7 · Scenario: Falla el guardado` — se muestra "No pudimos guardar tu opinión" y la confirmación del pedido sigue visible y sin cambios.
 
@@ -510,7 +512,7 @@
 
 **Prioridad:** Could: retroalimentación sobre el canal mismo, sin impacto en la compra.
 
-**Notas:** depende de la pantalla "Mi cuenta" (SPEC-03 · Req. 7, cambio `alinear-specs-con-prototipo`). Pendiente de modelo de datos: `attachment.conversation_id` es obligatorio y la captura se sube fuera de una conversación (ver [`modelo-datos.md`](../../modelo-datos.md#pendientes)). Los comunicados posteriores con el cliente van por correo y están fuera de alcance.
+**Notas:** depende de la pantalla "Mi cuenta" (SPEC-03 · Req. 7, cambio `alinear-specs-con-prototipo`). Reutiliza solo el puerto `AttachmentStorage` de SPEC-23; la clave de la captura se guarda en `feedback_suggestion.screenshot_key`, sin tocar la tabla `attachment` (ver [`modelo-datos.md`](../../modelo-datos.md)). Los comunicados posteriores con el cliente van por correo y están fuera de alcance.
 
 ---
 

@@ -46,7 +46,6 @@ erDiagram
     MESSAGE |o--o{ ATTACHMENT : "incluye al enviarse"
     MESSAGE ||--o{ MESSAGE_REACTION : "recibe (SPEC-24)"
     ORDER_REF ||--o| PURCHASE_RATING : "se valora (SPEC-24)"
-    ATTACHMENT |o--o| FEEDBACK_SUGGESTION : "captura (SPEC-24)"
     LOCAL_PHONE_VERIFICATION
     CLAIM_REF
     OUTBOX
@@ -355,7 +354,7 @@ Restricción de tabla: `CHECK (customer_id IS NOT NULL OR anonymous_sid IS NOT N
 | title | text | no | `CHECK (char_length(title) >= 3)` |
 | description | text | no | `CHECK (char_length(description) BETWEEN 6 AND 1000)` |
 | contact_email | text | no | Prellenado desde el perfil y editable |
-| attachment_id | uuid | sí | FK → `attachment.id` `ON DELETE SET NULL`. Captura opcional; si la imagen se purga, la sugerencia se conserva |
+| screenshot_key | text | sí | Clave del objeto en el bucket privado (subido por el puerto `AttachmentStorage` de SPEC-23, mismo tipo y tamaño: JPG/PNG de hasta 5 MB). Captura opcional; sin FK, no usa la tabla `attachment` |
 | notification_status | text | no | `DEFAULT 'PENDING'`, `CHECK IN ('PENDING','SENT','FAILED')`. Estado del correo interno (outbox `SEND_EMAIL`); un fallo no se muestra al cliente |
 | idempotency_key | text | no | `UNIQUE`. SPEC-24 pide `Idempotency-Key` al enviar una sugerencia |
 | created_at / updated_at | timestamptz | no | |
@@ -363,10 +362,9 @@ Restricción de tabla: `CHECK (customer_id IS NOT NULL OR anonymous_sid IS NOT N
 | Índice | Consulta que lo usa |
 |---|---|
 | `(customer_id, created_at DESC)` | Límite de 5 sugerencias por hora por cliente (SPEC-24 · Requisito 6) |
-| `(attachment_id) WHERE attachment_id IS NOT NULL` | Cubre la FK |
 
 ### `purchase_rating`
-🧩 Nueva tabla (SPEC-24 · Requisito 7). Valoración de la experiencia de compra en el chat (popup "Califica tu compra" con estrellas, tras el pago). Es propia del chatbot y **no** se envía a Ventas; la calificación de la entrega (CSAT) vive en Ventas y aquí solo se marca `order_ref.csat_sent`. Solo inserción: una por pedido y no se edita. "Ahora no" no crea fila; el frontend recuerda el descarte para no volver a mostrar el popup de ese pedido.
+🧩 Nueva tabla (SPEC-24 · Requisito 7). Valoración de la experiencia de compra en el chat (popup "Califica tu compra" con estrellas, tras el pago). Es propia del chatbot y **no** se envía a Ventas; la calificación de la entrega (CSAT) vive en Ventas y aquí solo se marca `order_ref.csat_sent`. Solo inserción: una por pedido y no se edita. "Ahora no" no crea fila; el frontend recuerda el descarte por pedido en el navegador (LocalStorage), por dispositivo, sin guardarlo en el backend.
 
 | Campo | Tipo | Nulo | Restricciones / notas |
 |---|---|---|---|
@@ -406,8 +404,7 @@ Tareas asíncronas con reintento (ADR-0011), procesadas por el worker de APSched
 
 - ⚠️ **Retención**: no hay plazo definido para `checkout.summary` (incluye el documento), `local_phone_verification`, `payment_attempt`, `notification.recipient` ni `outbox.payload`, ni para borrar conversaciones autenticadas (ver `conversacion/privacidad.md`). Cuando se definan, cada plazo necesitará un job de purga y posiblemente un índice por `created_at`.
 - ⚠️ **Retención de adjuntos del chat** (SPEC-23): no hay plazo definido para `attachment` ni para los archivos del bucket (solo se limpian los pendientes a las 24 h). Falta decidir si se alinea con el archivado de 90 días y qué ocurre con las imágenes de conversaciones anónimas al expirar; el borrado de archivos requiere un job que reconcilie el bucket con la tabla.
-- ⚠️ **Captura de bugs en `attachment`** (SPEC-24): `attachment.conversation_id` es `NOT NULL` y su ciclo `PENDING`/`SENT` está atado a un mensaje, pero la captura de un bug se sube desde "Mi cuenta", fuera de una conversación. Falta decidir si `attachment` admite un origen sin conversación (por ejemplo, `conversation_id` nulo con un `CHECK` sobre el origen) o si la captura usa otro registro; hasta entonces, `feedback_suggestion.attachment_id` queda definido pero sin resolver cómo se crea la fila.
-- ⚠️ **Retención de SPEC-24**: no hay plazo para `message_reaction`, `feedback_suggestion` (incluye `contact_email`) ni `purchase_rating`. La captura de un bug sigue la retención de `attachment`.
+- ⚠️ **Retención de SPEC-24**: no hay plazo para `message_reaction`, `feedback_suggestion` (incluye `contact_email`) ni `purchase_rating`. La captura de un bug (`screenshot_key`) vive en el mismo bucket privado y sigue sin plazo ni job de purga propios.
 - ⚠️ **PostgreSQL 18 en Supabase**: las claves usan `uuidv7()` nativo de PostgreSQL 18 y no está confirmado que el plan gratuito de Supabase lo ofrezca. Si no, habrá que generar el UUID v7 en la aplicación o con una función propia; no se cambia el modelo por ahora.
 - **Búsqueda full-text a escala**: el índice GIN de `message.search_vector` es global; la consulta filtra después por el `customer_id` de la conversación. Es suficiente para el volumen del proyecto. Si creciera mucho, se puede desnormalizar `customer_id` en `message`.
 - **Modelo físico**: DDL, trigger `set_updated_at()` y migraciones Alembic se escriben en la fase de implementación del backend, a partir de este documento.

@@ -165,7 +165,7 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 | **Checkout** (`CheckoutPage`, ruta `/checkout`) | Total a pagar, documento con nota informativa, dirección de envío (campos libres), método de pago (**solo tarjeta**) | SPEC-12, 14 |
 | **Historial de pedidos** (`OrderHistoryPage`, ruta `/pedidos`, pestañas) | "En proceso", "Entregados", "Reembolsos"; las tarjetas permiten "Preguntar en el chat"; el detalle de un pedido entregado muestra al pie la calificación de la entrega (caritas) | SPEC-17, 18, 21, 22, 24 |
 
-🧩 Totales vigentes tras este cambio: **24 specs, 119 requisitos, 380 escenarios, 116 historias, 457 puntos y 180 reglas de negocio**. Se recalculan desde las specs, historias y catálogo de reglas.
+🧩 Totales vigentes tras este cambio: **24 specs, 119 requisitos, 382 escenarios, 116 historias, 457 puntos y 180 reglas de negocio**. Se recalculan desde las specs, historias y catálogo de reglas, e incluyen los requisitos y escenarios de los cambios pendientes de archivar.
 
 > 🧩 El wireframe de checkout mostraba también "Efectivo / Pago contra entrega"; se retira porque el curso pide explícitamente **simulación de pago con tarjeta** para este canal (ver SPEC-14, sección *Fuera de alcance*).
 > 🧩 La pestaña "Reembolsos" del historial se cubre con las specs nuevas SPEC-21 y SPEC-22, coordinadas con F3 (Devoluciones y cambios) y F4 (Reembolsos y extornos) de Ventas y Postventa.

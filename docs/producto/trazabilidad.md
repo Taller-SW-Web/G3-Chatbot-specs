@@ -258,7 +258,7 @@ Cada uno de los **119 requisitos** de las 24 specs (con los cambios pendientes d
 | `SPEC-23 · Req. 9` | Límites de uso de las imágenes | HU-CNV-19 |
 | `SPEC-23 · Req. 10` | Conversaciones archivadas y referencias de adjuntos | HU-CNV-19 |
 | `SPEC-24 · Req. 1` | Reacciones rápidas tras un bloque de respuesta | HU-CNV-22 |
-| `SPEC-24 · Req. 2` | Calificación de la compra (CSAT, vía Ventas) | HU-CNV-23 |
+| `SPEC-24 · Req. 2` | Calificación de la entrega (CSAT, vía Ventas) | HU-CNV-23 |
 | `SPEC-24 · Req. 3` | Acceso a retroalimentación desde "Mi cuenta" | HU-CNV-25 |
 | `SPEC-24 · Req. 4` | Formulario de sugerencia o reporte de bug | HU-CNV-25 |
 | `SPEC-24 · Req. 5` | Notificación interna de sugerencias y bugs | HU-CNV-26 |
@@ -269,7 +269,7 @@ Cada uno de los **119 requisitos** de las 24 specs (con los cambios pendientes d
 
 Requisitos repartidos en más de una historia: `SPEC-05 · Req. 1` (HU-CNV-01 y HU-CNV-02), `SPEC-05 · Req. 13` (HU-CNV-20, HU-SGT-09, HU-RCL-08 y HU-DEV-10) y `SPEC-16 · Req. 3` (HU-PED-07 y HU-PED-08). Historias que cubren más de un requisito: HU-IDE-02 (`SPEC-01 · Req. 2–3`), HU-IDE-05 (`SPEC-02 · Req. 2–3`), HU-IDE-15 (`SPEC-03 · Req. 7`; SPEC-04 · Req. 3), HU-CNV-14 (`SPEC-23 · Req. 1–2`), HU-CNV-15 (`SPEC-23 · Req. 3–4`), HU-CNV-16 (`SPEC-23 · Req. 5–6`), HU-CNV-19 (`SPEC-23 · Req. 9–10`), HU-CNV-25 (`SPEC-24 · Req. 3–4`) y HU-CNV-26 (`SPEC-24 · Req. 5–6`).
 
-A nivel de escenario, **373 de los 380 escenarios** de las specs están citados por nombre en los criterios de aceptación de alguna historia. Faltan 7, anteriores a SPEC-24: `SPEC-03 · Req. 7` ("Visitante sin sesión" y "Cliente sin documento registrado"), `SPEC-05 · Req. 4` ("Error de validación o conversación inexistente", "El turno termina en modo degradado", "Falla inesperada a mitad del stream" y "Pérdida breve de conexión") y `SPEC-21 · Req. 4` ("Pedido no `ENTREGADO`").
+A nivel de escenario, **375 de los 382 escenarios** de las specs están citados por nombre en los criterios de aceptación de alguna historia. Faltan 7, anteriores a SPEC-24: `SPEC-03 · Req. 7` ("Visitante sin sesión" y "Cliente sin documento registrado"), `SPEC-05 · Req. 4` ("Error de validación o conversación inexistente", "El turno termina en modo degradado", "Falla inesperada a mitad del stream" y "Pérdida breve de conexión") y `SPEC-21 · Req. 4` ("Pedido no `ENTREGADO`").
 
 ## 4. Totales
 

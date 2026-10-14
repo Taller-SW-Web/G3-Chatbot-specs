@@ -12,7 +12,7 @@
 | Requisito de spec | `SPEC-NN · Req. N`: el N-ésimo `### Requirement:` del `spec.md` de la spec `SPEC-NN` (índice en el README §3). Un rango se escribe `Req. 2–3`. | `SPEC-11 · Req. 1` | `openspec/specs/<capacidad>/spec.md` |
 | Escenario | `SPEC-NN · Req. N · Scenario: <nombre exacto>` | `SPEC-11 · Req. 1 · Scenario: Límite por línea` | ídem (`#### Scenario:`) |
 | Tarea de desglose | `SPEC-NN · Tn`: la n-ésima tarea del "Desglose para issues" del `design.md` | `SPEC-14 · T5` | `openspec/specs/<capacidad>/design.md` |
-| Acuerdo de integración | `A1` … `A14` (✅ resuelto, 🟡 abierto) | `A5` 🟡 | [`contratos-integracion.md` §6](../contratos-integracion.md#6-acuerdos-pendientes-llevar-a-la-sincronización-de-líderes) |
+| Acuerdo de integración | `A1` … `A15` (✅ resuelto, 🟡 abierto) | `A5` 🟡 | [`contratos-integracion.md` §6](../contratos-integracion.md#6-acuerdos-pendientes-llevar-a-la-sincronización-de-líderes) |
 
 Áreas: `IDE` Identidad · `CNV` Conversación · `CAT` Catálogo y descubrimiento · `CAR` Carrito · `CHK` Checkout · `PED` Pedido · `SGT` Seguimiento · `RCL` Reclamos · `DEV` Devoluciones.
 
@@ -58,6 +58,11 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-CNV-19](historias/EP-02-conversacion.md#hu-cnv-19--limitar-el-uso-de-imágenes-y-conservar-sus-referencias-habilitadora) | Limitar el uso de imágenes y conservar sus referencias (Habilitadora) | `SPEC-23 · Req. 9–10` | RN-CNV-28, RN-CNV-29 | `POST /chat/conversaciones/{id}/adjuntos` (`429`, `422`) | — | Hito 4 | Should | 5 |
 | [HU-CNV-20](historias/EP-02-conversacion.md#hu-cnv-20--preguntar-en-el-chat-desde-mis-tarjetas) | Preguntar en el chat desde mis tarjetas | `SPEC-05 · Req. 13` | RN-CNV-31 | `POST /chat/conversaciones`, `POST /chat/conversaciones/{id}/mensajes` | Módulos dueños consultados por herramientas | Hito 5–6 | Should | 3 |
 | [HU-CNV-21](historias/EP-02-conversacion.md#hu-cnv-21--usar-acciones-rápidas-fijas-en-inicio-y-conversación) | Usar acciones rápidas fijas en Inicio y Conversación | `SPEC-05 · Req. 14` | RN-CNV-32 | `POST /chat/conversaciones/{id}/mensajes` (`accion`) | PRO promociones; VEN pedidos/postventa; DES seguimiento | Hito 5–6 | Should | 5 |
+| [HU-CNV-22](historias/EP-02-conversacion.md#hu-cnv-22--reaccionar-a-las-respuestas-del-asistente-y-copiarlas) | Reaccionar a las respuestas del asistente y copiarlas | `SPEC-24 · Req. 1` | RN-CNV-34, RN-CNV-35 | `POST /mensajes/{mensajeId}/reaccion` | — | Hito 5–6 | Should | 3 |
+| [HU-CNV-23](historias/EP-02-conversacion.md#hu-cnv-23--calificar-la-entrega-de-mi-pedido) | Calificar la entrega de mi pedido | `SPEC-24 · Req. 2` | RN-CNV-36, RN-CNV-37, RN-CNV-38, RN-CNV-39 | `POST /pedidos/{pedidoId}/csat` | VEN `POST /api/v2/csat` (token del cliente, A15) | Hito 5–6 | Should | 5 |
+| [HU-CNV-24](historias/EP-02-conversacion.md#hu-cnv-24--valorar-mi-experiencia-de-compra-al-terminar-de-pagar) | Valorar mi experiencia de compra al terminar de pagar | `SPEC-24 · Req. 7` | RN-CNV-40, RN-CNV-41 | `POST /pedidos/{pedidoId}/valoracion-compra` | — | Hito 5–6 | Could | 3 |
+| [HU-CNV-25](historias/EP-02-conversacion.md#hu-cnv-25--enviar-una-sugerencia-o-reportar-un-bug-desde-mi-cuenta) | Enviar una sugerencia o reportar un bug desde Mi cuenta | `SPEC-24 · Req. 3–4` | RN-CNV-42, RN-CNV-43 | `POST /sugerencias` | — | Hito 5–6 | Could | 5 |
+| [HU-CNV-26](historias/EP-02-conversacion.md#hu-cnv-26--avisar-al-equipo-y-limitar-el-abuso-de-la-retroalimentación-habilitadora) | Avisar al equipo y limitar el abuso de la retroalimentación (Habilitadora) | `SPEC-24 · Req. 5–6` | RN-CNV-44, RN-CNV-45 | `POST /sugerencias` (`429`), `POST /mensajes/{mensajeId}/reaccion` | SMTP | Hito 5–6 | Could | 3 |
 | [HU-CAT-01](historias/EP-03-descubrimiento.md#hu-cat-01--buscar-productos-combinando-filtros) | Buscar productos combinando filtros | `SPEC-06 · Req. 1` | RN-CAT-01, RN-CAT-02, RN-CAT-05 | `GET /catalogo/productos` | PRO `GET /productos`, `GET /precios` 🟡 | Hito 3 | Must | 5 |
 | [HU-CAT-02](historias/EP-03-descubrimiento.md#hu-cat-02--ser-entendido-aunque-use-sinónimos-o-escriba-mal-la-marca) | Ser entendido aunque use sinónimos o escriba mal la marca | `SPEC-06 · Req. 2` | RN-CAT-03, RN-CAT-04 | `GET /catalogo/productos` | PRO `GET /categorias`, `GET /marcas` 🟡 | Hito 3 | Must | 5 |
 | [HU-CAT-03](historias/EP-03-descubrimiento.md#hu-cat-03--refinar-la-búsqueda-conversando-o-con-chips) | Refinar la búsqueda conversando o con chips | `SPEC-06 · Req. 3` | — | `GET /catalogo/productos` | PRO `GET /productos` 🟡 | Hito 3 | Should | 5 |
@@ -133,20 +138,10 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-DEV-08](historias/EP-09-devoluciones.md#hu-dev-08--ver-el-estado-de-mi-reembolso) | Ver el estado de mi reembolso | `SPEC-22 · Req. 3` | RN-DEV-12, RN-DEV-14 | `GET /devoluciones/{devolucionId}` | VEN `GET /api/v2/devoluciones/{id}` | Hito 5–6 | Could | 3 |
 | [HU-DEV-09](historias/EP-09-devoluciones.md#hu-dev-09--saber-cuándo-no-se-pueden-consultar-mis-devoluciones) | Saber cuándo no se pueden consultar mis devoluciones | `SPEC-22 · Req. 4` | — | `GET /devoluciones/{devolucionId}` | VEN `GET /api/v2/devoluciones/{id}` | Hito 5–6 | Could | 1 |
 | [HU-DEV-10](historias/EP-09-devoluciones.md#hu-dev-10--preguntar-en-el-chat-desde-mi-solicitud) | Preguntar en el chat desde mi solicitud | `SPEC-05 · Req. 13` | RN-CNV-31 | `POST /chat/conversaciones/{id}/mensajes` | VEN `GET /api/v2/devoluciones/{id}` | Hito 5–6 | Could | 2 |
-| `SPEC-23 · Req. 1` | Adjuntar imágenes desde el compositor | HU-CNV-14 |
-| `SPEC-23 · Req. 2` | Aviso de privacidad antes de la primera carga | HU-CNV-14 |
-| `SPEC-23 · Req. 3` | Carga previa de la imagen mediante el backend | HU-CNV-15 |
-| `SPEC-23 · Req. 4` | Enviar un mensaje con adjuntos | HU-CNV-15 |
-| `SPEC-23 · Req. 5` | Análisis de la imagen por el LLM | HU-CNV-16 |
-| `SPEC-23 · Req. 6` | Búsqueda de productos a partir de una imagen | HU-CNV-16 |
-| `SPEC-23 · Req. 7` | Miniaturas en el historial mediante URLs firmadas | HU-CNV-17 |
-| `SPEC-23 · Req. 8` | Degradación sin visión o ante una falla del LLM | HU-CNV-18 |
-| `SPEC-23 · Req. 9` | Límites de uso de las imágenes | HU-CNV-19 |
-| `SPEC-23 · Req. 10` | Conversaciones archivadas y referencias de adjuntos | HU-CNV-19 |
 
 ## 3. Verificación de cobertura de requisitos
 
-Cada uno de los **112 requisitos** de las 23 specs está cubierto por al menos una historia.
+Cada uno de los **119 requisitos** de las 24 specs (con los cambios pendientes de `openspec/changes/` aplicados) está cubierto por al menos una historia.
 
 | Requisito | Nombre | Historia(s) |
 |---|---|---|
@@ -252,12 +247,29 @@ Cada uno de los **112 requisitos** de las 23 specs está cubierto por al menos u
 | `SPEC-22 · Req. 2` | Mostrar el estado del expediente | HU-DEV-07 |
 | `SPEC-22 · Req. 3` | Mostrar el estado del reembolso de dinero | HU-DEV-08 |
 | `SPEC-22 · Req. 4` | Tolerancia a fallos | HU-DEV-09 |
+| `SPEC-23 · Req. 1` | Adjuntar imágenes desde el compositor | HU-CNV-14 |
+| `SPEC-23 · Req. 2` | Aviso de privacidad antes de la primera carga | HU-CNV-14 |
+| `SPEC-23 · Req. 3` | Carga previa de la imagen mediante el backend | HU-CNV-15 |
+| `SPEC-23 · Req. 4` | Enviar un mensaje con adjuntos | HU-CNV-15 |
+| `SPEC-23 · Req. 5` | Análisis de la imagen por el LLM | HU-CNV-16 |
+| `SPEC-23 · Req. 6` | Búsqueda de productos a partir de una imagen | HU-CNV-16 |
+| `SPEC-23 · Req. 7` | Miniaturas en el historial mediante URLs firmadas | HU-CNV-17 |
+| `SPEC-23 · Req. 8` | Degradación sin visión o ante una falla del LLM | HU-CNV-18 |
+| `SPEC-23 · Req. 9` | Límites de uso de las imágenes | HU-CNV-19 |
+| `SPEC-23 · Req. 10` | Conversaciones archivadas y referencias de adjuntos | HU-CNV-19 |
+| `SPEC-24 · Req. 1` | Reacciones rápidas tras un bloque de respuesta | HU-CNV-22 |
+| `SPEC-24 · Req. 2` | Calificación de la entrega (CSAT, vía Ventas) | HU-CNV-23 |
+| `SPEC-24 · Req. 3` | Acceso a retroalimentación desde "Mi cuenta" | HU-CNV-25 |
+| `SPEC-24 · Req. 4` | Formulario de sugerencia o reporte de bug | HU-CNV-25 |
+| `SPEC-24 · Req. 5` | Notificación interna de sugerencias y bugs | HU-CNV-26 |
+| `SPEC-24 · Req. 6` | Límites de uso de los tres mecanismos | HU-CNV-26 |
+| `SPEC-24 · Req. 7` | Valoración de la experiencia de compra (propia del chatbot) | HU-CNV-24 |
 
-**Resultado:** 112 de 112 requisitos cubiertos (100 %). Requisitos sin historia: ninguno.
+**Resultado:** 119 de 119 requisitos cubiertos (100 %). Requisitos sin historia: ninguno.
 
-Requisitos repartidos en más de una historia: `SPEC-05 · Req. 1` (HU-CNV-01 y HU-CNV-02), `SPEC-05 · Req. 13` (HU-CNV-20, HU-SGT-09, HU-RCL-08 y HU-DEV-10) y `SPEC-16 · Req. 3` (HU-PED-07 y HU-PED-08). Historias que cubren más de un requisito: HU-IDE-02 (`SPEC-01 · Req. 2–3`), HU-IDE-05 (`SPEC-02 · Req. 2–3`), HU-IDE-15 (`SPEC-03 · Req. 7`; SPEC-04 · Req. 3), HU-CNV-14 (`SPEC-23 · Req. 1–2`), HU-CNV-15 (`SPEC-23 · Req. 3–4`), HU-CNV-16 (`SPEC-23 · Req. 5–6`) y HU-CNV-19 (`SPEC-23 · Req. 9–10`).
+Requisitos repartidos en más de una historia: `SPEC-05 · Req. 1` (HU-CNV-01 y HU-CNV-02), `SPEC-05 · Req. 13` (HU-CNV-20, HU-SGT-09, HU-RCL-08 y HU-DEV-10) y `SPEC-16 · Req. 3` (HU-PED-07 y HU-PED-08). Historias que cubren más de un requisito: HU-IDE-02 (`SPEC-01 · Req. 2–3`), HU-IDE-05 (`SPEC-02 · Req. 2–3`), HU-IDE-15 (`SPEC-03 · Req. 7`; SPEC-04 · Req. 3), HU-CNV-14 (`SPEC-23 · Req. 1–2`), HU-CNV-15 (`SPEC-23 · Req. 3–4`), HU-CNV-16 (`SPEC-23 · Req. 5–6`), HU-CNV-19 (`SPEC-23 · Req. 9–10`), HU-CNV-25 (`SPEC-24 · Req. 3–4`) y HU-CNV-26 (`SPEC-24 · Req. 5–6`).
 
-La cobertura a nivel de escenario también es completa: los **352 escenarios** de las specs están citados por nombre en los criterios de aceptación de alguna historia.
+A nivel de escenario, **375 de los 382 escenarios** de las specs están citados por nombre en los criterios de aceptación de alguna historia. Faltan 7, anteriores a SPEC-24: `SPEC-03 · Req. 7` ("Visitante sin sesión" y "Cliente sin documento registrado"), `SPEC-05 · Req. 4` ("Error de validación o conversación inexistente", "El turno termina en modo degradado", "Falla inesperada a mitad del stream" y "Pérdida breve de conexión") y `SPEC-21 · Req. 4` ("Pedido no `ENTREGADO`").
 
 ## 4. Totales
 
@@ -265,33 +277,33 @@ La cobertura a nivel de escenario también es completa: los **352 escenarios** d
 
 | Épica | Historias | Puntos | Must | Should | Could | Hito 3 (pts) | Hito 4 (pts) | Hito 5–6 (pts) |
 |---|---|---|---|---|---|---|---|---|
-| EP-01 · Identidad y sesión | 14 | 50 | 13 | 1 | — | 40 | 10 | — |
-| EP-02 · Motor de conversación | 19 | 94 | 10 | 9 | — | 60 | 34 | — |
+| EP-01 · Identidad y sesión | 15 | 55 | 13 | 2 | — | 40 | 15 | — |
+| EP-02 · Motor de conversación | 26 | 121 | 10 | 13 | 3 | 60 | 34 | 27 |
 | EP-03 · Descubrimiento de productos | 16 | 61 | 13 | 3 | — | 38 | 23 | — |
 | EP-04 · Carrito y stock | 8 | 36 | 7 | 1 | — | 36 | — | — |
 | EP-05 · Checkout y pago | 16 | 65 | 14 | 2 | — | — | 65 | — |
 | EP-06 · Grabación y confirmación del pedido | 8 | 32 | 7 | 1 | — | — | 32 | — |
-| EP-07 · Seguimiento de pedidos | 8 | 28 | 3 | 5 | — | — | — | 28 |
-| EP-08 · Reclamos | 7 | 22 | — | 4 | 3 | — | — | 22 |
-| EP-09 · Devoluciones y reembolsos | 9 | 31 | — | — | 9 | — | — | 31 |
-| **Total** | **105** | **419** | **67** | **26** | **12** | **174** | **164** | **81** |
+| EP-07 · Seguimiento de pedidos | 9 | 30 | 3 | 6 | — | — | — | 30 |
+| EP-08 · Reclamos | 8 | 24 | — | 4 | 4 | — | — | 24 |
+| EP-09 · Devoluciones y reembolsos | 10 | 33 | — | — | 10 | — | — | 33 |
+| **Total** | **116** | **457** | **67** | **32** | **17** | **174** | **169** | **114** |
 
 ### 4.2 Por hito
 
 | Hito | Specs (README) | Historias | Puntos | Must (pts) | Should (pts) | Could (pts) |
 |---|---|---|---|---|---|---|
 | Hito 3 | SPEC-01, 02, 03, 05, 06, 09, 10, 11 | 41 | 174 | 36 (156) | 5 (18) | 0 (0) |
-| Hito 4 | SPEC-04, 07, 08, 12, 13, 14, 15, 16, 23 | 40 | 164 | 28 (116) | 12 (48) | 0 (0) |
-| Hito 5–6 | SPEC-17 a 22 | 24 | 81 | 3 (12) | 9 (31) | 12 (38) |
-| **Total** | | **105** | **419** | **67 (284)** | **26 (97)** | **12 (38)** |
+| Hito 4 | SPEC-04, 07, 08, 12, 13, 14, 15, 16, 23 | 41 | 169 | 28 (116) | 13 (53) | 0 (0) |
+| Hito 5–6 | SPEC-17 a 22, 24 | 34 | 114 | 3 (12) | 14 (49) | 17 (53) |
+| **Total** | | **116** | **457** | **67 (284)** | **32 (120)** | **17 (53)** |
 
 ### 4.3 Distribución MoSCoW
 
 | Prioridad | Historias | % historias | Puntos | % puntos |
 |---|---|---|---|---|
-| Must | 67 | 64 % | 284 | 68 % |
-| Should | 26 | 25 % | 97 | 23 % |
-| Could | 12 | 11 % | 38 | 9 % |
+| Must | 67 | 58 % | 284 | 62 % |
+| Should | 32 | 27 % | 120 | 26 % |
+| Could | 17 | 15 % | 53 | 12 % |
 | Won't (este ciclo) | 0 | — | — | — |
 
 Los puntos Won't no se cuentan: lo excluido del ciclo está en [`alcance.md` §5](alcance.md#5-fuera-de-alcance-consolidado) y no genera historias.
@@ -300,6 +312,6 @@ Los puntos Won't no se cuentan: lo excluido del ciclo está en [`alcance.md` §5
 
 | Área | IDE | CNV | CAT | CAR | CHK | PED | SGT | RCL | DEV | Total |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Reglas | 21 | 29 | 17 | 16 | 26 | 14 | 14 | 11 | 14 | **162** |
+| Reglas | 22 | 45 | 17 | 16 | 27 | 14 | 14 | 11 | 14 | **180** |
 
-Todas las reglas del catálogo están citadas por al menos una historia, y todas las reglas citadas en las historias existen en el catálogo.
+Todas las reglas citadas en las historias existen en el catálogo. Tres reglas del catálogo, anteriores a SPEC-24, no las cita ninguna historia: RN-CHK-27, RN-CNV-30 y RN-CNV-33.

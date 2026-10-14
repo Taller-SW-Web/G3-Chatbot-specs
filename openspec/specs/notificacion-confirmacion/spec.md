@@ -29,7 +29,7 @@ Incluye:
 ### Fuera de alcance
 
 - Correos por los cambios de estado posteriores (despachado, entregado): requerirían consumir eventos de Ventas (mejora futura).
-- Encuesta de satisfacción: es F5 de Ventas.
+- Encuesta de satisfacción: la calificación de la entrega (CSAT de Ventas, F5) vive en [`retroalimentacion-cliente`](../retroalimentacion-cliente/spec.md) (SPEC-24), en el detalle del pedido entregado, y no se envía por correo.
 - SMS o notificaciones push.
 
 ## Requirements

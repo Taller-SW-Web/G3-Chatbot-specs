@@ -28,7 +28,7 @@ Según `docs/producto/epicas.md`:
 - SPEC-10 y 11: carrito y validación de stock.
 - Pista de DevOps: CI, CD y despliegue de ambos repositorios.
 
-Fuera de alcance: SPEC-04, 07, 08 y 23 (Hito 4), checkout y pedido (Hito 4), seguimiento y postventa (Hito 5–6), e integración con las APIs reales de los otros módulos (credenciales desde el Hito 4; se usan mocks según ADR-0017).
+Fuera de alcance: SPEC-04, 07, 08 y 23 (Hito 4), SPEC-24 (Hito 5–6, asignada a Nikol el 2026-10-14), checkout y pedido (Hito 4), seguimiento y postventa (Hito 5–6), e integración con las APIs reales de los otros módulos (credenciales desde el Hito 4; se usan mocks según ADR-0017).
 
 ## Restricciones
 
@@ -65,10 +65,10 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama.
 - [ ] H3-02
 - [ ] H3-03
 - [ ] H3-04
-- [ ] H3-05
-- [ ] H3-06
+- [x] H3-05
+- [x] H3-06
 - [ ] H3-07
-- [ ] H3-08
+- [x] H3-08
 
 ### Fase 1: en paralelo
 
@@ -129,14 +129,14 @@ Estrategia: `ask-on-risk`. El hito supera con holgura las 400 líneas modificada
 
 - **Carga de Mathias:** concentra el bucle del agente y siete tareas de DevOps. Es el cuello de botella del hito; conviene reasignar H3-17 o posponerla hasta cerrar H3-10.
 - **Carga de Sebastian en la Fase 0:** contratos, mock de Seguridad y revisión del PR #35. Si se atrasa, se detiene la Fase 1.
-- **PR #35 sin revisar:** bloquea H3-10 y H3-11.
+- **PR #35 sin revisar:** resuelto el 2026-10-14 (mergeado); quedan el acople con H3-10 y la prueba con el modelo real.
 - **Fecha de la demo sin definir:** el plan no tiene fechas; hay que fijarla para ordenar la Fase 2.
 - **Costo de Railway:** USD 5 al mes; falta definir quién aporta el medio de pago.
 - **Dependencia de David con Sebastian:** H3-13 necesita los contratos de H3-05; mientras tanto trabaja contra los puertos ya definidos en el frontend.
 
 ## Progreso
 
-Estado al 2026-10-10: Fase 0 iniciada. Documento creado y versionado en `main`. Copia en Engram: tema `odd/hito-3/tasks`.
+Estado al 2026-10-14: Fase 0 en curso (H3-01, H3-05, H3-06 y H3-08 cerradas; H3-04 a medias). Documento creado y versionado en `main`. Copia en Engram: tema `odd/hito-3/tasks`.
 
 | Tarea | Ruta | Evidencia | Revisión | Commit |
 |---|---|---|---|---|
@@ -169,6 +169,18 @@ Hallazgos que afectan al despliegue:
 
 Pendientes que deja H3-01: dónde se alojan los mocks en el entorno desplegado (afecta a H3-03, H3-06 y H3-07) y quién aporta el medio de pago de Railway.
 
+Cierre de H3-05 y avance de H3-04 (2026-10-14):
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-05 | Delegada a Sebastian | PR #37 mergeado en `development` del backend: base de contratos de módulos, cliente httpx, DTO de bloques y SSE, configuración por entorno | Aprobación de PR | `e40ee4e` en `development` del backend |
+| H3-04 | — | Migración a pnpm y lockfile ya en `development` del frontend (`b5e0469`, `1794b10`). Falta: despliegue en Vercel con vista previa por PR y verificar el CI en GitHub | — | — |
+| H3-08 | En línea (revisión) y delegada (un revisor de solo lectura) | PR #35 de Alonso: las correcciones de `d50a3c8` resuelven el bloqueante del filtro de datos sensibles, los falsos positivos, la idempotencia, el `output_validator` y `degraded_mode`; 357 pruebas unitarias pasan. Residuales para un PR posterior: tarjetas con `/` o `_` como separador, contraseña con `! ` dentro del secreto, tests más fuertes (contraseña completa, `US$`) | Aprobado por Mathias el 2026-10-14; RDD desactivado | `3e974d3` (merge) en `development` del backend |
+| H3-06 | En línea (revisión) y delegada (un revisor de solo lectura y un redactor para los residuales) | PR #39 de Sonny: las correcciones de `8cc6e61` resuelven los tres bloqueantes (4xx como `ModuleRequestError`, prueba del 404 por el cliente público, nombres en inglés). Residuales cerrados por Mathias directo en `development`: 4xx sin JSON conserva el estado, `ModuleRequestError` en `module_errors.py`, `MAX_SKUS_PER_CALL` compartido, errores de transporte de httpx traducidos en `base_client.py`. 395 pruebas unitarias pasan | Aprobado por Mathias el 2026-10-14; RDD desactivado | `a14bc5d` (merge) y `7ab8351` en `development` del backend |
+| Limpieza de tests | En línea (renombrado mecánico) | Los tests con prefijo de hito pasan a llevar el nombre de lo que prueban (`test_module_contracts`, `test_product_inventory_clients`, `test_catalog_tools`, `test_conversation_attachment_persistence`) y `h3_tools.py` pasa a `catalog_tools.py`. Quedan sin renombrar `docs/h2-06-persistencia.md` y `docs/h3-motor-herramientas.md`. No se ejecutó el test de integración (requiere PostgreSQL) | RDD desactivado | `6d3c14b` en `development` del backend |
+
+Alineación con las specs (2026-10-14): SPEC-24 queda en Hito 5–6 y no altera el alcance. El alineamiento con Ventas está mergeado (specs #12). El alineamiento con Productos HTTP 0.5.0 (specs #11) sigue abierto y puede obligar a ajustar H3-06 (PR #39) y H3-12. Sin avance verificable aún en H3-00, H3-02, H3-03 (no hay Dockerfile), H3-07, H3-09 y H3-11 a H3-18. Con el #35 y el #39 integrados, H3-11 y H3-12 quedan desbloqueadas.
+
 ## Siguiente paso
 
-Mathias, Sebastian y Sonny inician la Fase 0. La primera decisión por cerrar es la fecha de la demo.
+Cerrar la Fase 0: Sebastian avanza H3-07 (mock de Seguridad); Mathias aplica H3-02 y H3-03 (corrigiendo antes `psycopg2` para las migraciones) y termina H3-04 en Vercel; Nikol cierra H3-00. Arranca la Fase 1 con Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11). Siguen por decidir la fecha de la demo y la política de cookies entre dominios.

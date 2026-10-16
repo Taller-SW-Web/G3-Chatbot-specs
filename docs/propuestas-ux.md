@@ -4,14 +4,12 @@
 
 Diseño visual: [archivo de Figma del chatbot](https://www.figma.com/design/RjFXUJR82LQ2vSd6UP2xEj/Chatbot). SPEC-24 no referencia nodos concretos de Figma, por eso se enlaza el archivo general. Los tokens, componentes y reglas de accesibilidad citados abajo están en [`docs/design-system.md`](design-system.md).
 
-**Fuente de las propuestas 2 y 3.** El `spec.md` base de SPEC-24 todavía describe el Requisito 2 con su redacción anterior: un modal de estrellas tras el pago que se envía a Ventas. El cambio [`ajustar-calificacion-compra-y-entrega`](../openspec/changes/ajustar-calificacion-compra-y-entrega/specs/retroalimentacion-cliente/spec.md), aún sin archivar, separa esa calificación en dos:
+**Fuente de las propuestas 2 y 3.** El cambio [`ajustar-calificacion-compra-y-entrega`](../openspec/changes/archive/2026-10-16-ajustar-calificacion-compra-y-entrega/proposal.md), archivado el 2026-10-16, separó la calificación tras el pago en dos requisitos que ya están en el `spec.md` de SPEC-24:
 
-- el Requisito 2 reemplazado por "Calificación de la entrega con caritas (CSAT, vía Ventas)", con las caritas al pie del pedido `ENTREGADO`;
-- un Requisito 7 nuevo, con el popup de estrellas que se guarda en el chatbot.
+- el Requisito 2 "Calificación de la entrega con caritas (CSAT, vía Ventas)", con las caritas al pie del pedido `ENTREGADO`, que reemplazó al anterior modal de estrellas enviado a Ventas;
+- el Requisito 7 "Valoración de la experiencia de compra (propia del chatbot)", con el popup de estrellas que se guarda en el chatbot.
 
-El `design.md`, el Alcance y las preguntas resueltas del `spec.md` ya siguen esa separación. Este documento también la sigue y cita los escenarios de ese cambio.
-
-Las decisiones de la PO sobre SPEC-24 están en ese cambio, en el `spec.md` y en el `design.md`: la reacción enviada se puede cambiar; el escenario de las caritas se llama "Sin carita seleccionada"; el agradecimiento de ambas calificaciones es "¡Gracias por tu calificación!"; y el límite de frecuencia de las calificaciones queda pendiente hasta el Hito 5-6.
+Ese cambio también recogió las decisiones de la PO sobre SPEC-24, que ya están en el `spec.md` y el `design.md`: la reacción enviada se puede cambiar; el escenario de las caritas se llama "Sin carita seleccionada"; el agradecimiento de ambas calificaciones es "¡Gracias por tu calificación!"; y el límite de frecuencia de las calificaciones queda pendiente hasta el Hito 5-6.
 
 | # | Propuesta | Componente (`design.md`) | Destino del dato | Requisito |
 |---|---|---|---|---|
@@ -122,7 +120,7 @@ Reglas comunes a las tres:
 - Cumple con la grilla base de 16 px de margen en menos de 576 px (§4.4).
 
 **Correspondencia con SPEC-24.**
-- Requisito 2 "Calificación de la entrega con caritas (CSAT, vía Ventas)", que en el cambio `ajustar-calificacion-compra-y-entrega` reemplaza a "Calificación de la entrega (CSAT, vía Ventas)", con los escenarios citados en la tabla.
+- Requisito 2 "Calificación de la entrega con caritas (CSAT, vía Ventas)", que reemplazó a "Calificación de la entrega (CSAT, vía Ventas)" al archivar `ajustar-calificacion-compra-y-entrega`, con los escenarios citados en la tabla.
 - Requisitos no funcionales:
   - Rendimiento: enviar la calificación a Ventas, p95 ≤ 1 s.
   - Idempotencia: `pedidoId` como clave natural; Ventas responde `409` ante duplicados.
@@ -172,7 +170,7 @@ Reglas comunes a las tres:
 - Los títulos en Oswald solo se usan si el popup lleva un H3 (§3.1).
 
 **Correspondencia con SPEC-24.**
-- Requisito 7 "Valoración de la experiencia de compra (propia del chatbot)", añadido por `ajustar-calificacion-compra-y-entrega`, con los escenarios citados en la tabla.
+- Requisito 7 "Valoración de la experiencia de compra (propia del chatbot)", añadido al archivar `ajustar-calificacion-compra-y-entrega`, con los escenarios citados en la tabla.
 - Requisito no funcional de idempotencia: la valoración de la compra es única por pedido.
 - Tabla `purchase_rating` en [`docs/modelo-datos.md`](modelo-datos.md).
 

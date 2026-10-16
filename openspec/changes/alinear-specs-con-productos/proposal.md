@@ -6,7 +6,7 @@ Productos y Ofertas publicó su contrato HTTP 0.5.0 y su `ALINEACION_CHATBOT.md`
 
 ## What Changes
 
-- **Stock:** pasa de cantidades (`available`) a la proyección comercial `DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` (`GET /inventario/disponibilidad/comercial`). Se elimina el escenario "Stock parcial" y la acción "Ajustar a N"; la validación exacta de cantidades queda en Ventas (`409`).
+- **Stock:** pasa de cantidades (`available`) a la proyección comercial `DISPONIBLE`, `STOCK_BAJO`, `AGOTADO`, `INDETERMINADO` (`GET /inventario/disponibilidad/comercial`) y a la verificación por cantidad no vinculante (`POST .../verificar`). Se elimina el escenario "Stock parcial" y la acción "Ajustar a N"; la validación exacta de cantidades queda en Ventas (`409`).
 - **Búsqueda:** solo filtros reales (`q`, categoría, marca, precio mínimo y máximo, orden por nombre). Talla y color viajan en `q`. "Más baratas" reduce `precioMax`. Precio y disponibilidad se piden aparte por SKU.
 - **Ofertas:** el listado de promociones muestra nombre y vigencia; las ofertas por producto vienen de `precio_oferta`. Se elimina el filtrado de promociones por categoría o marca y la exclusión por modalidad.
 - **Carrito:** el descuento es un único importe con el nombre resuelto por `promotion_id`.
@@ -26,15 +26,18 @@ Productos y Ofertas publicó su contrato HTTP 0.5.0 y su `ALINEACION_CHATBOT.md`
 
 ## Questions to Confirm
 
-Decisiones asumidas por defecto (confirmar con el equipo):
+Productos respondió el 15/10/2026 en el issue #87 (acuerdo A16). Quedó confirmado lo que sigue y se refleja en este cambio:
 
-1. **Sin cantidades:** con `STOCK_BAJO` se permite agregar con aviso; solo `AGOTADO` bloquea.
-2. **"Más baratas":** se reduce `precioMax` al percentil 50 de los precios previos, porque Productos no ordena por precio.
-3. **Promociones:** se muestran sin beneficio detallado ni filtro por categoría o marca.
-4. **Talla y color:** se envían como texto en `q` y se confirman en el detalle.
+- Estados de disponibilidad con `INDETERMINADO` y verificación por cantidad no vinculante; el umbral de `STOCK_BAJO` es global con ajuste por SKU, y no se promete ni se calcula una cantidad.
+- Precio y stock se consultan aparte de la búsqueda, por lotes de hasta 100 SKU; los SKU de las variantes salen del detalle (sin endpoint masivo).
+- Los siete scopes son los de `modulo-chatbot`; falta el registro y la concesión en Seguridad.
 
-Preguntas pendientes para Productos:
+Decisiones interinas asumidas (confirmar con el equipo; se reemplazan cuando Productos publique sus ampliaciones):
 
-- ¿`GET /promociones` incluye promociones de cupón? ¿Planean exponer beneficio y alcance?
-- ¿La búsqueda puede traer precio, disponibilidad y SKU de productos con variantes?
-- ¿Planean exponer cantidades o filtros de talla y color?
+1. **Talla y color:** viajan en `q` solo como ayuda, sin prometer que filtren, y se confirman en el detalle.
+2. **"Más baratas":** se reduce `precioMax` al percentil 50 hasta que exista `PRECIO_ASC`/`PRECIO_DESC`.
+3. **Promociones:** se muestran con nombre y vigencia; el nombre de la promoción aplicada en el carrito se busca por `promotion_id` y, si no aparece, se dice "Descuento".
+4. **`INDETERMINADO`:** se acepta con aviso y no bloquea el checkout; Ventas confirma el stock al crear el pedido.
+5. **Verificación por cantidad:** es provisional; si no está disponible, se usa solo el estado comercial.
+
+Pendiente de Productos (etapa posterior, sin fecha): filtros de variantes, orden por precio, resumen y alcance de promociones, desglose por línea, monto faltante del cupón, pauta de caché y concurrencia, y la matriz de errores y límites (SKU inexistente o inactivo, validaciones, `429`).

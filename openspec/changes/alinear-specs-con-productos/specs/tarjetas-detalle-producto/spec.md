@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Tarjetas en carrusel
-El sistema DEBE (SHALL) representar cada lista de productos como un bloque `CARRUSEL_PRODUCTOS` con tarjetas que contienen los datos de `ProductoResumen`: `productoId`, `nombre`, `marca`, `imagenUrl`, `precio` (`PriceTag`), `descripcionBreve` (máx. 90 caracteres, a partir de `description`, omitida si es nula), `tieneVariantes`, `disponibilidad` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO`, tal como las entrega Productos) y `skuUnico` (si no tiene variantes).
+El sistema DEBE (SHALL) representar cada lista de productos como un bloque `CARRUSEL_PRODUCTOS` con tarjetas que contienen los datos de `ProductoResumen`: `productoId`, `nombre`, `marca`, `imagenUrl`, `precio` (`PriceTag`), `descripcionBreve` (máx. 90 caracteres, a partir de `description`, omitida si es nula), `tieneVariantes`, `disponibilidad` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO`, tal como las entrega Productos) y `skuUnico` (si no tiene variantes).
 
 *Trazabilidad: SPEC-09 · Requisito 1.*
 
@@ -29,6 +29,11 @@ El sistema DEBE (SHALL) representar cada lista de productos como un bloque `CARR
 - **DADO** un SKU en `STOCK_BAJO`
 - **CUANDO** se renderiza
 - **ENTONCES** la tarjeta muestra "Pocas unidades" sin indicar cantidad
+
+#### Scenario: Disponibilidad indeterminada
+- **DADO** un SKU con estado `INDETERMINADO`
+- **CUANDO** se renderiza
+- **ENTONCES** la tarjeta no muestra etiqueta de stock y el botón "Agregar" sigue habilitado (la verificación ocurre al agregar)
 
 ### Requirement: Detalle del producto
 El sistema DEBE (SHALL) mostrar el detalle completo (`GET /api/v1/productos/{productoId}?canal=CHATBOT`) con sus variantes y la disponibilidad comercial por SKU al pulsar "Ver detalle" o al pedirlo por texto.

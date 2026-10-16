@@ -31,7 +31,7 @@
 
 ## Desglose para issues
 
-- [ ] `[INT]` Acordar con Productos los endpoints reales de promociones, precios y evaluación (A5)
+- [x] `[INT]` Acordar con Productos los endpoints reales de promociones, precios y evaluación (A5) — confirmado por Productos el 15/10 (A16)
 - [ ] `[BE]` Herramienta `consultar_promociones` y `PromocionesService`
 - [ ] `[BE]` `PricingAdapter` y `EvaluacionClient`
 - [ ] `[FE]` `PromotionList`, `PriceTag` y `CartDiscountLines`

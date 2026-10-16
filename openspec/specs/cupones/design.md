@@ -33,7 +33,7 @@
 
 ## Desglose para issues
 
-- [ ] `[INT]` Acordar con Productos el endpoint real de validación de cupones y el catálogo de motivos (A5)
+- [x] `[INT]` Acordar con Productos el endpoint real de validación de cupones y el catálogo de motivos (A5) — confirmado por Productos el 15/10 (A16)
 - [ ] `[BE]` `CuponService`, `CuponesClient` y los endpoints aplicar/quitar
 - [ ] `[BE]` Revalidación en `TotalesCalculator` y `CheckoutService`
 - [ ] `[BE]` Rate limit de intentos y herramientas LLM

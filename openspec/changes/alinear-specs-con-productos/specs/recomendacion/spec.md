@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Recomendaciones veraces y disponibles
-El sistema DEBE (SHALL) recomendar únicamente productos activos que no estén `AGOTADO` y DEBE generar las justificaciones solo a partir de los atributos devueltos por Productos.
+El sistema DEBE (SHALL) recomendar únicamente productos activos que no estén `AGOTADO` (con `INDETERMINADO` se puede recomendar sin afirmar que hay stock) y DEBE generar las justificaciones solo a partir de los atributos devueltos por Productos.
 
 *Trazabilidad: SPEC-07 · Requisito 2.*
 

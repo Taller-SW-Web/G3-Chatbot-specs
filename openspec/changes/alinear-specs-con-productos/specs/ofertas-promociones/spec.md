@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Listar promociones vigentes del canal
-El sistema DEBE (SHALL) consultar las promociones vigentes del canal (`GET /api/v1/promociones?canal=CHATBOT&vigentes=true`) y mostrarlas con su nombre y vigencia. Productos no entrega el beneficio ni el alcance de cada promoción, por lo que el chatbot no los inventa.
+El sistema DEBE (SHALL) consultar las promociones vigentes del canal (`GET /api/v1/promociones?canal=CHATBOT&vigentes=true`) y mostrarlas con su nombre y vigencia. Productos no entrega todavía el beneficio ni el alcance de cada promoción, y comprometió ampliarlo para una etapa posterior; mientras tanto el chatbot no los inventa. El listado tampoco garantiza incluir todas las promociones que pueden aparecer en una evaluación (por ejemplo las de cupón privado).
 
 *Trazabilidad: SPEC-08 · Requisito 1.*
 
@@ -43,7 +43,7 @@ El sistema DEBE (SHALL) mostrar en el carrito el resultado de la evaluación de 
 #### Scenario: Promoción automática aplicada
 - **DADO** un carrito elegible para una promoción
 - **CUANDO** se recalcula el carrito
-- **ENTONCES** el bloque `CARRITO` muestra una línea "Promoción <nombre>: -S/ 24.90" con el importe de `discount_amount`
+- **ENTONCES** el bloque `CARRITO` muestra una línea "Promoción <nombre>: -S/ 24.90" con el importe de `discount_amount`; si el `promotion_id` no se encuentra en el listado o es nulo, la línea dice "Descuento: -S/ 24.90"
 
 #### Scenario: El cliente pregunta por qué no se aplicó una promoción
 - **DADO** un carrito sin descuento

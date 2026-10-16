@@ -20,7 +20,13 @@
 - [ ] 3.2 Recalcular totales de requisitos y escenarios en README y trazabilidad.
 - [ ] 3.3 Responder las preguntas pendientes a Productos y ajustar según su respuesta.
 - [ ] 3.4 Archivar el cambio en un PR aparte.
+- [ ] 3.5 Cuando Productos publique las ampliaciones (filtros de variantes, orden por precio, resumen de promociones, desglose por línea, monto faltante, matriz de errores y límites), reemplazar los comportamientos interinos y actualizar los specs.
+- [ ] 3.6 Confirmar con Seguridad (#33) el registro y la concesión de los siete scopes.
 
 ## 4. Verificación
 
 - [x] 4.1 `npx @fission-ai/openspec validate alinear-specs-con-productos --strict`
+
+## 5. Respuesta de Productos (15/10)
+
+- [x] 5.1 Ajustar los deltas y diseños a la respuesta de Productos (`INDETERMINADO`, verificación por cantidad, SKU por variantes, tratamiento de errores, acuerdo A16).

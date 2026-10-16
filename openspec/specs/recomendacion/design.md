@@ -34,6 +34,6 @@
 - [ ] `[BE]` `config/actividades.yaml` (running, fútbol, fútbol sala, vóley, básquet, pádel, tenis, gimnasio, natación, ciclismo) con sus categorías
 - [ ] `[BE]` Herramienta `recomendar_productos` y `RecomendacionService`
 - [ ] `[BE]` `CrossSellService` más la integración con la confirmación del carrito
-- [ ] `[INT]` Cliente real de la API de recomendaciones de Productos (A5)
+- [ ] `[INT]` Cliente real de la API de recomendaciones de Productos (A5) (el contrato está confirmado por Productos, A16; falta el cliente real)
 - [ ] `[FE]` Variante `recomendacion` de la tarjeta, `ClarifyingChips` y `CrossSellStrip`
 - [ ] `[QA]` 25 frases de necesidad en el conjunto de evaluación y pruebas de todos los escenarios

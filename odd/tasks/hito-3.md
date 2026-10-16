@@ -60,7 +60,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama.
 | H3-07 | Sebastian | backend | Mock de Seguridad (ADR-0017) |
 | H3-08 | Sebastian (revisa), Alonso (corrige) | backend | Revisar y mergear el PR #35 |
 
-- [ ] H3-00
+- [x] H3-00
 - [x] H3-01
 - [x] H3-02
 - [x] H3-03
@@ -214,8 +214,14 @@ Cierre de H3-03 (2026-10-16):
 |---|---|---|---|---|
 | H3-03 | Delegada (un mapeador y un redactor); despliegue en Railway hecho por Mathias desde el dashboard | `Dockerfile` (`python:3.12-slim`, usuario sin privilegios uid 10001, `uvicorn` como PID 1 en `${PORT:-8000}` con `--proxy-headers`, `HEALTHCHECK`) y `.dockerignore`. Verificado en local: build de 401 MB, `/health` responde 200 en el puerto 8000 y con `PORT=9000`, contenedor `healthy`, `alembic history` ve `0001 (head)`. Servicio en Railway (entorno *staging*, rama `development`, despliegue automático): `https://g3-chatbot-backend-staging.up.railway.app/health` responde 200. Healthcheck `/health` (60 s) y reinicio `On Failure` (3 reintentos) configurados en el dashboard: Railway ya no lee `railway.json` en servicios nuevos (*config as code* deprecado), por lo que se eliminó | PR #41 aprobado; RDD desactivado | `7a619b0` (merge del #41) y `e1433b5` (borra `railway.json`, directo en `development`) en el backend |
 
+Cierre de H3-00 (2026-10-16):
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-00 | Hecha por Nikol | H2-09 cerrada con `docs/evidencia-hito-2.md` (PR #13, `f705f6e`). `hito-2.md` actualizado: H2-03 a H2-10 marcadas con su commit y PR, los cuatro criterios de aceptación cumplidos y el vínculo entre cuentas de GitHub e integrantes confirmado por la PO. La evidencia marca como cumplido el criterio de enlaces del README (specs PR #14) | PR #16 mergeado | `d27a7e3` (merge del #16) en `main` de specs |
+
 Fuera de H3-03, en H3-18: `DATABASE_URL`, migraciones como paso del despliegue, secretos por entorno, `MODULES_MODE` ([ADR-0022](../../docs/arquitectura/adr/ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md)), entorno de producción para `main` y prueba del SSE sin búfer a través del proxy de Vercel ([ADR-0023](../../docs/arquitectura/adr/ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md)).
 
 ## Siguiente paso
 
-Cerrar la Fase 0: Mathias termina H3-04 en Vercel; Nikol cierra H3-00. Arranca la Fase 1 con el reparto vertical del 2026-10-15: Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11), y el resto según su funcionalidad. Actualizar la división de responsabilidades del equipo con el nuevo reparto. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.
+Cerrar la Fase 0: Mathias termina H3-04 en Vercel (H3-00 cerrada el 2026-10-16). Arranca la Fase 1 con el reparto vertical del 2026-10-15: Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11), y el resto según su funcionalidad. Actualizar la división de responsabilidades del equipo con el nuevo reparto. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.

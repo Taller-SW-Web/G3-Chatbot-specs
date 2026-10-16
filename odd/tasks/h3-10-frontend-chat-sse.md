@@ -37,7 +37,7 @@ Estado verificado el 2026-10-16 sobre `development` del frontend (con el PR #19 
 - [x] H3-10F-1
 - [x] H3-10F-2
 - [x] H3-10F-3
-- [ ] H3-10F-4
+- [x] H3-10F-4
 - [ ] H3-10F-5
 
 ## Decisión de entrega
@@ -60,11 +60,11 @@ Puede ir en un solo PR o en uno por tarea. Se decide al cerrar H3-10F-3, según 
 
 ## Progreso
 
-Estado al 2026-10-16: H3-10F-1 a H3-10F-3 hechas; H3-10F-4 es la siguiente. Copia en Engram: tema `odd/h3-10-frontend-chat-sse/tasks`.
+Estado al 2026-10-16: H3-10F-1 a H3-10F-4 hechas; H3-10F-5 es la siguiente y única pendiente. Copia en Engram: tema `odd/h3-10-frontend-chat-sse/tasks`.
 
 ## Siguiente paso
 
-Iniciar H3-10F-4: conectar `ChatPage`, `ChatWindow` y `MessageBubble` a `useChat`, retirar las semillas y los mocks del flujo del chat y corregir el comentario obsoleto de `ChatPage.tsx`. Antes, decidir qué se muestra en un turno degradado (ver pendientes de H3-10F-3).
+Iniciar H3-10F-5: probar el chat de punta a punta en un navegador contra el backend local con OpenAI real (la interfaz aún no se ha ejecutado), corregir los E2E de Playwright que rompe H3-10F-4, reescribir `docs/arquitectura-frontend.md` para SSE y decidir qué hacer con las rutas mock que quedan (ver pendientes de H3-10F-4).
 
 ### Cierre de H3-10F-1 (2026-10-16)
 
@@ -98,3 +98,19 @@ Pendientes que deja H3-10F-3:
 - **Turno degradado:** el backend guarda el texto del turno degradado (`DEGRADED_TEXT`) pero el stream solo envía `degradado`, el bloque de acciones rápidas y `fin`. En vivo, el mensaje consolidado queda con texto vacío y el bloque; al recargar el historial aparece con su texto. Opciones: que el backend emita ese texto como `token` después de `degradado` (compatible con el contrato, porque el cliente solo descarta los tokens anteriores), o que el frontend use un texto de respaldo. Decidir antes de H3-10F-4.
 - El `reductor` no conserva en el mensaje consolidado la marca de que el turno fue degradado; si la interfaz necesita el aviso después de `fin`, hay que añadirla.
 - `useChat` no tiene prueba propia: no contiene lógica y la cubren el reductor y el caso de uso.
+
+### Cierre de H3-10F-4 (2026-10-16)
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-10F-4 | Delegada (un redactor; más de dos archivos no triviales) | Decisión de Mathias sobre el turno degradado: el backend emite el texto de respaldo como `token` después de `degradado` (commit `69f184a` directo en `development` del backend; 496 pruebas pasan sobre PostgreSQL 18). `HomePage` crea una conversación real y deja el primer mensaje en un campo transitorio de `chatStore` (no persistido); `ChatPage` lo envía una sola vez tras cargar el historial. `ChatPage` usa `useChat` sin semillas ni palabras clave; `ChatWindow` y `MessageBubble` muestran mensajes reales, el borrador en streaming, el indicador de escritura y avisos de error o turno incompleto con "Reintentar"; un fallo previo al stream devuelve el texto al campo. Las acciones rápidas envían su etiqueta como texto, porque `accion` responde 501. La lógica de presentación está en funciones puras (`chatPresentacion.ts`). `DETALLE_PRODUCTO` y `RESUMEN_CHECKOUT` se muestran; `CARRUSEL_PRODUCTOS` y `CONFIRMACION_PEDIDO` se muestran inertes; `CARRITO` y los demás tipos sin forma definida no se renderizan. 108 pruebas pasan (27 nuevas); `typecheck`, `lint` (0 errores, 3 advertencias previas) y `build` pasan | Código de `ChatPage`, `HomePage`, `useChat` y `chatStore` leído por el orquestador; `typecheck`, `test`, `lint` y `build` repetidos. La interfaz NO se ha ejecutado en un navegador | Commit pendiente de confirmación del responsable, en `feature/h3-10-chat-sse` del frontend |
+
+Pendientes que deja H3-10F-4:
+
+- La interfaz del chat aún no se ha probado en un navegador; es el primer paso de H3-10F-5.
+- Rutas mock que quedan y ahora caen en el estado de error del historial: `OrderHistoryPage` y `SeguimientoPage` (`/chat/consulta`) y `DevolucionPage` (`/chat/devolucion-compra`). Pertenecen a pedidos y devoluciones (Hitos 4 a 6); decidir si se desactivan los botones o se dejan hasta entonces. Además, `mensajePendiente` ya no tiene consumidor.
+- Playwright: `tests/e2e/visual.spec.ts` navega a `/chat/talla-42`, que ahora muestra el error de historial, así que la captura `visual-chat.png` deja de ser válida. `home.spec.ts` no se ve afectado.
+- La grilla de productos de Home sigue con `PRODUCTOS_MOCK` y el botón de agregar solo actualiza la insignia del carrito (pertenece a la búsqueda y el carrito reales).
+- El botón de foto queda deshabilitado en Home y en el chat ("Próximamente"); `AttachmentPopup` no se usa, pero el archivo se conserva.
+- Los bloques `CARRITO`, `SELECTOR_VARIANTE`, `FORMULARIO`, `LISTA_*`, `ESTADO_*` y `CONSTANCIA_*` no se renderizan; los cubren las tareas de herramientas, carrito y registro.
+- Cambio mayor al heurístico de 400 líneas (unas 450 añadidas y 480 retiradas) porque `ChatPage` se reescribió por completo.

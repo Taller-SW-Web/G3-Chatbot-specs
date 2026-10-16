@@ -64,7 +64,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama.
 - [x] H3-01
 - [x] H3-02
 - [x] H3-03
-- [ ] H3-04
+- [x] H3-04
 - [x] H3-05
 - [x] H3-06
 - [x] H3-07
@@ -222,6 +222,14 @@ Cierre de H3-00 (2026-10-16):
 
 Fuera de H3-03, en H3-18: `DATABASE_URL`, migraciones como paso del despliegue, secretos por entorno, `MODULES_MODE` ([ADR-0022](../../docs/arquitectura/adr/ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md)), entorno de producción para `main` y prueba del SSE sin búfer a través del proxy de Vercel ([ADR-0023](../../docs/arquitectura/adr/ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md)).
 
+Cierre de H3-04 (2026-10-16):
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-04 | En línea (verificación); proyecto de Vercel creado por Mathias desde el dashboard | pnpm 10.34.6 y lockfile versionados en `development` del frontend; el CI de GitHub (`check`: lint, typecheck, test y build) pasa en `development`. Proyecto de Vercel (plan Hobby) conectado al repo por la app de GitHub; rama de producción `main` (rama por defecto del repo). `https://g3-chatbot-frontend.vercel.app/` responde 200 y el estado `Vercel` del último commit de `main` es `success`. Sin variables de entorno: el frontend usa sus mocks hasta H3-18 | No aplica (configuración remota) | `b5e0469` y `1794b10` en `development` del frontend |
+
+Decisiones de H3-04 (Mathias, 2026-10-16): una sola URL del frontend, la de producción (`main`), sin entorno ni dominio de *staging* en Vercel. Las vistas previas por PR no forman parte del alcance: los cambios se prueban en local y luego en el despliegue. Lo mergeado en `development` no aparece en la URL hasta que se promueve a `main`. Con el proxy de [ADR-0023](../../docs/arquitectura/adr/ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md), producción del frontend apunta a producción del backend (H3-18).
+
 ## Siguiente paso
 
-Cerrar la Fase 0: Mathias termina H3-04 en Vercel (H3-00 cerrada el 2026-10-16). Arranca la Fase 1 con el reparto vertical del 2026-10-15: Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11), y el resto según su funcionalidad. Actualizar la división de responsabilidades del equipo con el nuevo reparto. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.
+Fase 0 cerrada (H3-00 y H3-04 cerradas el 2026-10-16). Arranca la Fase 1 con el reparto vertical del 2026-10-15: Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11), y el resto según su funcionalidad. Actualizar la división de responsabilidades del equipo con el nuevo reparto. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.

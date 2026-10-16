@@ -60,7 +60,7 @@ Puede ir en un solo PR o en uno por tarea. Se decide al cerrar H3-10F-3, según 
 
 ## Progreso
 
-Estado al 2026-10-16: H3-10F-1 a H3-10F-4 hechas; H3-10F-5 en curso (prueba en navegador hecha; faltan los puntos pendientes de su cierre). Copia en Engram: tema `odd/h3-10-frontend-chat-sse/tasks`.
+Estado al 2026-10-16: H3-10F-1 a H3-10F-4 hechas; H3-10F-5 casi cerrada (solo falta decidir la enmienda del polling en las specs y actualizar `hito-3.md`). Copia en Engram: tema `odd/h3-10-frontend-chat-sse/tasks`.
 
 ## Siguiente paso
 
@@ -139,3 +139,16 @@ Hallazgos:
 - **Sin ver el texto crecer en pantalla:** la respuesta ya estaba completa al tomar el snapshot.
 
 Pendiente de H3-10F-5: corregir `tests/e2e/visual.spec.ts` (usa `/chat/talla-42`), reescribir `docs/arquitectura-frontend.md` para SSE, decidir qué hacer con las rutas mock de pedidos y devoluciones, y actualizar `contratos-integracion.md` (línea 59) y ADR-0021 (línea 31) con el texto de respaldo que llega como `token` tras `degradado`.
+
+### Avance de H3-10F-5: cierre de pendientes (2026-10-16)
+
+| Pendiente | Resultado |
+|---|---|
+| Rutas mock de pedidos y devoluciones | Decisión de Mathias (opción A): los botones "Preguntar en el chat" (`SeguimientoPage`, cuatro en `OrderHistoryPage`) y "Seguir por el chat" (`DevolucionPage`, `ReclamoPage`) quedan deshabilitados con "Próximamente". No quedan navegaciones a ids mock. `mensajePendiente` se elimina del store (`version: 2` y migración que lo descarta) |
+| `tests/e2e/visual.spec.ts` | La captura del chat usa un UUID fijo y la API interceptada con `page.route` (sin backend), con `animations: "disabled"`. Línea base `docs/visual-chat.png` regenerada contra `next dev` (el puerto 3000 lo ocupaba otro proceso, así que se usó una configuración temporal en el 3100; la captura incluye el indicador de Next en desarrollo) |
+| `arquitectura-frontend.md` | Reescrito para SSE: puertos, adaptador y parser, reductor, casos de uso, hook, Markdown, proxy y flujo A |
+| Contrato y ADR-0021 | Fila `degradado` actualizada y enmienda del 2026-10-16 con el orden del turno degradado; ajustados el escenario de `motor-conversacion` (solo el orden de eventos) y el caso CP-H3-05-17 |
+
+Verificación: `typecheck`, `test` (164), `lint` (0 errores, 3 advertencias previas) y `build` pasan.
+
+Pendientes: tres lugares de las specs (ADR-0021, `contratos-integracion.md` y el escenario "Transporte no disponible o stream cortado" de `motor-conversacion`) y `c4.md` línea 133 siguen diciendo que, si el stream se corta, el frontend hace polling cada 2 s; lo implementado es un único refetch y, sin respuesta, turno incompleto con reintento. Además, `arquitectura-frontend.md` sigue describiendo el repositorio como "fase 0, ficheros en 0 bytes". Falta actualizar la fila de H3-15 de `hito-3.md` (aprobada por Mathias, commit `6ccaa8c`).

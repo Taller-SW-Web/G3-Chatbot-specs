@@ -63,7 +63,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama.
 - [ ] H3-00
 - [x] H3-01
 - [x] H3-02
-- [ ] H3-03
+- [x] H3-03
 - [ ] H3-04
 - [x] H3-05
 - [x] H3-06
@@ -190,7 +190,7 @@ Cierre de H3-05 y avance de H3-04 (2026-10-14):
 | H3-06 | En línea (revisión) y delegada (un revisor de solo lectura y un redactor para los residuales) | PR #39 de Sonny: las correcciones de `8cc6e61` resuelven los tres bloqueantes (4xx como `ModuleRequestError`, prueba del 404 por el cliente público, nombres en inglés). Residuales cerrados por Mathias directo en `development`: 4xx sin JSON conserva el estado, `ModuleRequestError` en `module_errors.py`, `MAX_SKUS_PER_CALL` compartido, errores de transporte de httpx traducidos en `base_client.py`. 395 pruebas unitarias pasan | Aprobado por Mathias el 2026-10-14; RDD desactivado | `a14bc5d` (merge) y `7ab8351` en `development` del backend |
 | Limpieza de tests | En línea (renombrado mecánico) | Los tests con prefijo de hito pasan a llevar el nombre de lo que prueban (`test_module_contracts`, `test_product_inventory_clients`, `test_catalog_tools`, `test_conversation_attachment_persistence`) y `h3_tools.py` pasa a `catalog_tools.py`. Quedan sin renombrar `docs/h2-06-persistencia.md` y `docs/h3-motor-herramientas.md`. No se ejecutó el test de integración (requiere PostgreSQL) | RDD desactivado | `6d3c14b` en `development` del backend |
 
-Alineación con las specs (2026-10-14): SPEC-24 queda en Hito 5–6 y no altera el alcance. El alineamiento con Ventas está mergeado (specs #12). El alineamiento con Productos HTTP 0.5.0 (specs #11) sigue abierto y puede obligar a ajustar H3-06 (PR #39) y H3-12. Sin avance verificable aún en H3-00, H3-03 (no hay Dockerfile), H3-09 y H3-11 a H3-18. Con el #35 y el #39 integrados, H3-11 y H3-12 quedan desbloqueadas.
+Alineación con las specs (2026-10-14): SPEC-24 queda en Hito 5–6 y no altera el alcance. El alineamiento con Ventas está mergeado (specs #12). El alineamiento con Productos HTTP 0.5.0 (specs #11) sigue abierto y puede obligar a ajustar H3-06 (PR #39) y H3-12. Sin avance verificable aún en H3-00, H3-09 y H3-11 a H3-18. Con el #35 y el #39 integrados, H3-11 y H3-12 quedan desbloqueadas.
 
 Cierre de H3-02 (2026-10-15):
 
@@ -208,6 +208,14 @@ Cierre de H3-07 (2026-10-16):
 
 Pendientes de H3-07 para H3-09: puerto de salida para Seguridad (hoy el cliente no implementa un puerto, a diferencia de H3-06) y token de servicio (`/auth/token`, A3) antes del Hito 4. `docs/arquitectura-backend.md` (líneas 107 y 154) aún menciona `introspeccion_api_adapter.py`.
 
+Cierre de H3-03 (2026-10-16):
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-03 | Delegada (un mapeador y un redactor); despliegue en Railway hecho por Mathias desde el dashboard | `Dockerfile` (`python:3.12-slim`, usuario sin privilegios uid 10001, `uvicorn` como PID 1 en `${PORT:-8000}` con `--proxy-headers`, `HEALTHCHECK`) y `.dockerignore`. Verificado en local: build de 401 MB, `/health` responde 200 en el puerto 8000 y con `PORT=9000`, contenedor `healthy`, `alembic history` ve `0001 (head)`. Servicio en Railway (entorno *staging*, rama `development`, despliegue automático): `https://g3-chatbot-backend-staging.up.railway.app/health` responde 200. Healthcheck `/health` (60 s) y reinicio `On Failure` (3 reintentos) configurados en el dashboard: Railway ya no lee `railway.json` en servicios nuevos (*config as code* deprecado), por lo que se eliminó | PR #41 aprobado; RDD desactivado | `7a619b0` (merge del #41) y `e1433b5` (borra `railway.json`, directo en `development`) en el backend |
+
+Fuera de H3-03, en H3-18: `DATABASE_URL`, migraciones como paso del despliegue, secretos por entorno, `MODULES_MODE` ([ADR-0022](../../docs/arquitectura/adr/ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md)), entorno de producción para `main` y prueba del SSE sin búfer a través del proxy de Vercel ([ADR-0023](../../docs/arquitectura/adr/ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md)).
+
 ## Siguiente paso
 
-Cerrar la Fase 0: Mathias aplica H3-03 (corrigiendo antes `psycopg2` para las migraciones) y termina H3-04 en Vercel; Nikol cierra H3-00. Arranca la Fase 1 con el reparto vertical del 2026-10-15: Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11), y el resto según su funcionalidad. Actualizar la división de responsabilidades del equipo con el nuevo reparto. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.
+Cerrar la Fase 0: Mathias termina H3-04 en Vercel; Nikol cierra H3-00. Arranca la Fase 1 con el reparto vertical del 2026-10-15: Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11), y el resto según su funcionalidad. Actualizar la división de responsabilidades del equipo con el nuevo reparto. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.

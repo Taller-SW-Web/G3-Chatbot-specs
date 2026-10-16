@@ -62,7 +62,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama.
 
 - [ ] H3-00
 - [x] H3-01
-- [ ] H3-02
+- [x] H3-02
 - [ ] H3-03
 - [ ] H3-04
 - [x] H3-05
@@ -190,8 +190,16 @@ Cierre de H3-05 y avance de H3-04 (2026-10-14):
 | H3-06 | En línea (revisión) y delegada (un revisor de solo lectura y un redactor para los residuales) | PR #39 de Sonny: las correcciones de `8cc6e61` resuelven los tres bloqueantes (4xx como `ModuleRequestError`, prueba del 404 por el cliente público, nombres en inglés). Residuales cerrados por Mathias directo en `development`: 4xx sin JSON conserva el estado, `ModuleRequestError` en `module_errors.py`, `MAX_SKUS_PER_CALL` compartido, errores de transporte de httpx traducidos en `base_client.py`. 395 pruebas unitarias pasan | Aprobado por Mathias el 2026-10-14; RDD desactivado | `a14bc5d` (merge) y `7ab8351` en `development` del backend |
 | Limpieza de tests | En línea (renombrado mecánico) | Los tests con prefijo de hito pasan a llevar el nombre de lo que prueban (`test_module_contracts`, `test_product_inventory_clients`, `test_catalog_tools`, `test_conversation_attachment_persistence`) y `h3_tools.py` pasa a `catalog_tools.py`. Quedan sin renombrar `docs/h2-06-persistencia.md` y `docs/h3-motor-herramientas.md`. No se ejecutó el test de integración (requiere PostgreSQL) | RDD desactivado | `6d3c14b` en `development` del backend |
 
-Alineación con las specs (2026-10-14): SPEC-24 queda en Hito 5–6 y no altera el alcance. El alineamiento con Ventas está mergeado (specs #12). El alineamiento con Productos HTTP 0.5.0 (specs #11) sigue abierto y puede obligar a ajustar H3-06 (PR #39) y H3-12. Sin avance verificable aún en H3-00, H3-02, H3-03 (no hay Dockerfile), H3-07, H3-09 y H3-11 a H3-18. Con el #35 y el #39 integrados, H3-11 y H3-12 quedan desbloqueadas.
+Alineación con las specs (2026-10-14): SPEC-24 queda en Hito 5–6 y no altera el alcance. El alineamiento con Ventas está mergeado (specs #12). El alineamiento con Productos HTTP 0.5.0 (specs #11) sigue abierto y puede obligar a ajustar H3-06 (PR #39) y H3-12. Sin avance verificable aún en H3-00, H3-03 (no hay Dockerfile), H3-07, H3-09 y H3-11 a H3-18. Con el #35 y el #39 integrados, H3-11 y H3-12 quedan desbloqueadas.
+
+Cierre de H3-02 (2026-10-15):
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-02 | En línea (configuración de GitHub por API) | Protección clásica en `main` y `development` de backend y frontend: PR obligatorio con una aprobación, se descartan aprobaciones al llegar commits nuevos, check de CI obligatorio (`test` en backend, `check` en frontend; sin exigir rama al día), sin force-push ni borrado. `enforce_admins` desactivado por decisión de Mathias, para permitir commits directos de emergencia. El team `chatbot` pasa de admin a maintain en ambos repos, porque como admin podía saltarse la protección; Mathias conserva admin como owner de la organización. Verificado por API: protección aplicada en las cuatro ramas, `SebJoq21` con rol maintain, `MathiasTL` con rol admin | No aplica (configuración remota) | No aplica |
+
+Riesgo residual de H3-02: los otros ocho owners de la organización `Taller-SW-Web` (incluye integrantes de otros grupos) siguen siendo admin y pueden saltarse la protección; solo los puede cambiar quien administre la organización. El resto del equipo pierde acceso a Settings de los repos (secretos, webhooks, integraciones), que queda a cargo de Mathias.
 
 ## Siguiente paso
 
-Cerrar la Fase 0: Sebastian avanza H3-07 (mock de Seguridad); Mathias aplica H3-02 y H3-03 (corrigiendo antes `psycopg2` para las migraciones) y termina H3-04 en Vercel; Nikol cierra H3-00. Arranca la Fase 1 con el reparto vertical del 2026-10-15: Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11), y el resto según su funcionalidad. Actualizar la división de responsabilidades del equipo con el nuevo reparto. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.
+Cerrar la Fase 0: Sebastian avanza H3-07 (mock de Seguridad); Mathias aplica H3-03 (corrigiendo antes `psycopg2` para las migraciones) y termina H3-04 en Vercel; Nikol cierra H3-00. Arranca la Fase 1 con el reparto vertical del 2026-10-15: Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11), y el resto según su funcionalidad. Actualizar la división de responsabilidades del equipo con el nuevo reparto. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.

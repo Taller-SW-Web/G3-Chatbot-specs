@@ -61,7 +61,7 @@ Estado: **cumplido**, con la identidad de cada cuenta confirmada por la PO el 20
 | Los cuatro integrantes sin commits tienen al menos un commit propio en `main` | Cumplido | Sección 1 (identidades confirmadas por la PO el 2026-10-16) |
 | Las 14 tablas tienen modelo y adapter con contenido, y cada adapter tiene al menos un test | Cumplido | Tabla 2.1. Quedan dos archivos vacíos que no corresponden a ninguna de las 14 tablas |
 | Una sola migración inicial `0001`, con los triggers de `updated_at` y su downgrade | Cumplido | Sección 2.2 |
-| El README enlaza los mockups, el sistema de diseño y las 3 propuestas de UX | Pendiente | Sección 2.3. Lo cubre otro PR |
+| El README enlaza los mockups, el sistema de diseño y las 3 propuestas de UX | Cumplido | Sección 2.3 (specs `8f8423f`, PR #14, merge `3b6fa53`) |
 
 ### 2.1 Tablas, modelos, adapters y tests (backend `origin/main`, `da03d62`)
 
@@ -120,11 +120,11 @@ Archivo: `src/infrastructure/db/migrations/versions/0001_initial_schema.py`, del
 
 ### 2.3 Enlaces del README
 
-Estado: **pendiente**. Lo cubre otro PR.
+Estado: **cumplido** con el PR #14 de specs (commit `8f8423f`, merge `3b6fa53`).
 
-- El README de specs tiene la fila "Diseño | Figma", pero sin enlace. No enlaza `docs/design-system.md`, que existe desde `2582579`, ni ninguna propuesta de UX.
-- En `docs/` de specs no hay propuestas de UX.
-- El frontend no tiene `README.md` en `main`. Su carpeta `docs/` solo contiene cinco capturas (`visual-*.png`).
+- La fila "Diseño" del README de specs enlaza el Figma, `docs/design-system.md` (existe desde `2582579`, PR #8) y `docs/propuestas-ux.md`.
+- `docs/propuestas-ux.md` documenta las 3 propuestas de UX: reacción 👍/👎 a una respuesta del asistente, calificación de la entrega y valoración de la propia compra.
+- El frontend no tiene `README.md` en `main`; los enlaces se cubren desde el README de specs.
 
 ## 3. Casos de prueba iniciales del Hito 2
 

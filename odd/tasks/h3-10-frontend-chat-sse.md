@@ -60,7 +60,7 @@ Puede ir en un solo PR o en uno por tarea. Se decide al cerrar H3-10F-3, según 
 
 ## Progreso
 
-Estado al 2026-10-16: H3-10F-1 a H3-10F-4 hechas; H3-10F-5 es la siguiente y única pendiente. Copia en Engram: tema `odd/h3-10-frontend-chat-sse/tasks`.
+Estado al 2026-10-16: H3-10F-1 a H3-10F-4 hechas; H3-10F-5 en curso (prueba en navegador hecha; faltan los puntos pendientes de su cierre). Copia en Engram: tema `odd/h3-10-frontend-chat-sse/tasks`.
 
 ## Siguiente paso
 
@@ -114,3 +114,28 @@ Pendientes que deja H3-10F-4:
 - El botón de foto queda deshabilitado en Home y en el chat ("Próximamente"); `AttachmentPopup` no se usa, pero el archivo se conserva.
 - Los bloques `CARRITO`, `SELECTOR_VARIANTE`, `FORMULARIO`, `LISTA_*`, `ESTADO_*` y `CONSTANCIA_*` no se renderizan; los cubren las tareas de herramientas, carrito y registro.
 - Cambio mayor al heurístico de 400 líneas (unas 450 añadidas y 480 retiradas) porque `ChatPage` se reescribió por completo.
+
+### Avance de H3-10F-5: prueba en navegador (2026-10-16)
+
+Entorno: PostgreSQL 18 desechable con la migración `0001`, backend local con la clave de OpenAI en el entorno del proceso y frontend en `next dev` con `API_PROXY_TARGET` hacia el backend, abierto por `localhost` (por `127.0.0.1` Next 16 bloquea los recursos de `/_next` en desarrollo y la página no hidrata). El backend lee `LLM_API_KEY` solo del entorno del proceso (`os.getenv`), no del archivo `.env`.
+
+| Caso | Resultado |
+|---|---|
+| Home crea una conversación real y navega a `/chat/<uuid>` | Correcto; el backend registró un solo `POST` del primer mensaje |
+| Turno degradado (backend sin clave) | Texto de respaldo por SSE después de `degradado` y seis acciones rápidas; igual tras recargar el historial |
+| Chip de acción rápida | Se envía su etiqueta como mensaje y dispara un turno nuevo |
+| `/chat/talla-42` (id inválido) | Estado de error con "Reintentar" y "Volver al inicio" |
+| Turno real con OpenAI | Respuesta correcta; 331 tokens repartidos en 3,2 s, primer token a 1,19 s por el proxy de Next (1,58 s directo al backend), sin acumulación en el proxy |
+| Herramientas con OpenAI | En conversaciones nuevas solo "Quiero registrarme" devuelve `FORMULARIO`; las preguntas de producto y de envío responden con texto |
+| Markdown del modelo | Renderizado con `react-markdown` y `remark-gfm` (sin HTML crudo ni imágenes, enlaces solo `http`, `https` y `mailto`); verificado en tamaño móvil |
+
+Hallazgos:
+
+- **Markdown crudo (resuelto):** el modelo responde con Markdown y la interfaz lo mostraba como texto plano. Decisión de Mathias: no restringir el system prompt y renderizar el Markdown con una librería. Los mensajes del usuario siguen como texto plano. El resaltado automático en negrita de códigos de pedido, reembolso y reclamo y de promociones vigentes se integró en el Markdown: los patrones viven en `resaltadoChat.ts`, compartidos con `renderChatText`, y un plugin de `remark` hecho a mano los envuelve en `strong` en los mensajes del bot, sin tocar código, enlaces ni texto que ya está en negrita. La salida de `renderChatText` se conserva (regresión de 19 cadenas; solo desaparecen wrappers `span` vacíos). Un código partido entre dos nodos de Markdown no se resalta. Verificado en vivo con códigos `#A-1043` y `REC-2026-0042` en un mensaje del bot.
+- **Saltos de línea simples:** Markdown colapsa un salto de línea simple en un espacio, y el modelo a veces separa datos con uno solo (por ejemplo "Código de pedido: … Código de reclamo: …" quedó en un párrafo). Opción si molesta: `remark-breaks`, que los convierte en `<br>`.
+- **Formulario de registro sin renderizar:** el asistente dice que el formulario aparece en pantalla y la interfaz no lo muestra, porque `FORMULARIO` no se renderiza y `Bloque` no define su forma. Lo cubre el registro (H3-09) y es necesario para el criterio de aceptación "el cliente se registra".
+- **Contexto de la conversación:** tras pedir el registro, una pregunta de producto en la misma conversación volvió a devolver `FORMULARIO`. En conversaciones nuevas no ocurre. Con herramientas de búsqueda reales (H3-12) debería desaparecer; revisar entonces.
+- **Latencia:** un turno con herramienta tardó más de 8 s en el navegador; por script dio 3,4 s en dos corridas. No se reprodujo. El streaming está comprobado en la red, no en el DOM.
+- **Sin ver el texto crecer en pantalla:** la respuesta ya estaba completa al tomar el snapshot.
+
+Pendiente de H3-10F-5: corregir `tests/e2e/visual.spec.ts` (usa `/chat/talla-42`), reescribir `docs/arquitectura-frontend.md` para SSE, decidir qué hacer con las rutas mock de pedidos y devoluciones, y actualizar `contratos-integracion.md` (línea 59) y ADR-0021 (línea 31) con el texto de respaldo que llega como `token` tras `degradado`.

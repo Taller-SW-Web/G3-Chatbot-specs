@@ -22,10 +22,10 @@ Mostrar al cliente el estado de sus solicitudes de devolución o cambio, incluid
 
 ✅ El `api-contract.md` de Ventas (v1.3.0) resuelve todo lo que esta spec necesitaba (acuerdo A10):
 
-- `GET /api/v2/devoluciones?clienteId=&estado=&tipo=&pagina=&tamano=` — listado paginado, **con `estadoReembolso` resumido en cada fila**.
+- `GET /api/v2/devoluciones/me?estado=&tipo=&pagina=&tamano=` — listado paginado del cliente autenticado (token del cliente, sin `clienteId`), **con `estadoReembolso` resumido en cada fila**.
 - `GET /api/v2/devoluciones/{id}` — detalle que, cuando la resolución fue `DEVOLUCION_DINERO` y ya se procesó, incluye el bloque anidado `resolucion.reembolso{reembolsoId, estado, monto, moneda, transaccionPasarelaId, fechaEjecucion}`.
 
-Una mejora sobre el diseño anterior: como el listado es por `clienteId` directamente contra Ventas, el chatbot ya no depende de su propio `return_ref` para mostrar el historial — **trae todas las solicitudes del cliente, incluidas las registradas desde otros canales** (Marketplace, Retail), no solo las de este chat.
+Una mejora sobre el diseño anterior: como el listado `/devoluciones/me` se consulta directamente contra Ventas con el token del cliente, el chatbot ya no depende de su propio `return_ref` para mostrar el historial — **trae todas las solicitudes del cliente, incluidas las registradas desde otros canales** (Marketplace, Retail), no solo las de este chat.
 
 ## Alcance
 
@@ -128,7 +128,7 @@ El sistema DEBE (SHALL) informar la indisponibilidad de Ventas sin mostrar estad
 
 ## Requisitos no funcionales
 
-- **Seguridad:** el listado siempre filtra por `clienteId = sub` del token; el detalle compara la pertenencia antes de mostrar.
+- **Seguridad:** el listado usa `GET /api/v2/devoluciones/me` con el token del cliente, que Ventas filtra por `sub` sin aceptar `clienteId`; el detalle compara la pertenencia antes de mostrar.
 - **Fidelidad:** el fundamento de un rechazo y el detalle del reembolso se muestran tal como los registra Ventas, sin resumir ni reinterpretar.
 - **Rendimiento:** la consulta tarda p95 ≤ 800 ms.
 - **Mapeo de errores:** Ventas responde con la clave `codigo`; se normaliza al `code` interno.

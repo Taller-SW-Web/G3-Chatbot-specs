@@ -23,7 +23,7 @@ Diagramas:
 | Texto | `text`. Si hay un límite de negocio se expresa con `CHECK (char_length(col) <= n)`, no con `varchar(n)`. |
 | Enumeraciones | `text` con `CHECK (col IN (...))`. No se usan tipos `ENUM` de Postgres porque los estados evolucionan con los specs. |
 | Importes | `numeric(12,2)` con `CHECK (col >= 0)`. |
-| Tiempos | `timestamptz` (UTC). Toda tabla tiene `created_at NOT NULL DEFAULT now()`. Las tablas que se modifican tienen además `updated_at NOT NULL DEFAULT now()`, mantenido por el trigger `set_updated_at()` (no solo por el ORM, para que también se actualice en scripts y correcciones manuales). Las tablas de solo inserción (`message`, `local_phone_verification`, `payment_attempt`, `claim_ref`, `return_ref`) no lo llevan. |
+| Tiempos | `timestamptz` (UTC). Toda tabla tiene `created_at NOT NULL DEFAULT now()`. Las tablas que se modifican tienen además `updated_at NOT NULL DEFAULT now()`, mantenido por el trigger `set_updated_at()` (no solo por el ORM, para que también se actualice en scripts y correcciones manuales). Las tablas de solo inserción (`message`, `local_phone_verification`, `payment_attempt`, `claim_ref`, `return_ref`, `purchase_rating`) no lo llevan. |
 | `jsonb` | Solo para snapshots y datos de forma variable que no se filtran ni se relacionan. Siempre con `CHECK (jsonb_typeof(col) = 'object')`. |
 | Snapshots de módulos externos | Cuando se guarda una copia del contrato de un módulo ajeno, se conserva el nombre real del campo externo (`product_id`, `precio_regular`, `channel_id`, etc.) en el `jsonb`, tal como lo define el otro sistema, y no se renombra a la convención de esta base (por eso `product_id` dentro de un `jsonb` es el campo externo, distinto de la columna `cart_item.product_id`); solo se agrega una capa local si sí hace falta para la lógica del canal. |
 | Claves foráneas | Cada FK declara su `ON DELETE` y tiene un índice sobre la columna que referencia (Postgres no lo crea solo). |
@@ -44,12 +44,14 @@ erDiagram
     CONVERSATION ||--o{ EVIDENCE : borrador
     CONVERSATION ||--o{ ATTACHMENT : "recibe (SPEC-23)"
     MESSAGE |o--o{ ATTACHMENT : "incluye al enviarse"
+    MESSAGE ||--o{ MESSAGE_REACTION : "recibe (SPEC-24)"
+    ORDER_REF ||--o| PURCHASE_RATING : "se valora (SPEC-24)"
     LOCAL_PHONE_VERIFICATION
     CLAIM_REF
     OUTBOX
 ```
 
-`CLAIM_REF` y `RETURN_REF` guardan `order_id` **sin FK** a `order_ref`: el cliente elige el pedido desde el listado de Ventas (`GET /api/v1/pedidos?clienteId=`, ver `creacion-reclamo/design.md` y `solicitud-devolucion-cambio/design.md`), y ese pedido puede haberse creado en otro canal, sin fila en `order_ref`.
+`CLAIM_REF` y `RETURN_REF` guardan `order_id` **sin FK** a `order_ref`: el cliente elige el pedido desde el listado de Ventas (`GET /api/v1/pedidos/me`, ver `creacion-reclamo/design.md` y `solicitud-devolucion-cambio/design.md`), y ese pedido puede haberse creado en otro canal, sin fila en `order_ref`.
 
 ## Tablas
 
@@ -217,11 +219,14 @@ Restricción de tabla: `CHECK ((result = 'APPROVED') = (reason IS NULL))`, porqu
 | checkout_id | uuid | no | FK → `checkout.id` `ON DELETE RESTRICT`, `UNIQUE` (un checkout genera como máximo un pedido) |
 | local_status | text | no | `DEFAULT 'CREATED'`, `CHECK IN ('CREATED','PAYMENT_PENDING_NOTIFICATION','PAID_NOTIFIED','CANCELLATION_REQUESTED','CANCELLED')` |
 | total | numeric(12,2) | no | `CHECK (>= 0)` |
+| csat_sent | boolean | no | `DEFAULT false`. 🧩 Nuevo (SPEC-24): `true` cuando la calificación de la entrega ya se envió a Ventas (`201`) o Ventas respondió `409 CSAT_ALREADY_SUBMITTED`; evita volver a mostrar el bloque al pie del detalle sin preguntarle a Ventas en cada carga |
 | created_at / updated_at | timestamptz | no | |
+
+🧩 `csat_sent` solo existe para pedidos creados desde el chatbot. Un pedido `ENTREGADO` de otro canal no tiene fila en `order_ref`: el bloque se muestra y, si ya estaba calificado, Ventas responde `409` y el bloque pasa a "Ya calificaste este pedido".
 
 | Índice | Consulta que lo usa |
 |---|---|
-| PK `(order_id)` | Control de pertenencia al consultar seguimiento (junto con `customer_id`) |
+| PK `(order_id)` | Control de pertenencia al consultar seguimiento (junto con `customer_id`) y lectura de `csat_sent` al abrir el detalle |
 | `UNIQUE (checkout_id)` | Encontrar el pedido de un checkout. Cubre la FK |
 
 ### `notification`
@@ -320,6 +325,60 @@ Restricción de tabla: `CHECK ((status = 'SENT') = (message_id IS NOT NULL))`, p
 | `(created_at) WHERE status = 'PENDING'` | Job de limpieza de adjuntos no enviados a las 24 h |
 | `UNIQUE (storage_key)`, `UNIQUE (thumbnail_key)` | Evitar que dos filas apunten al mismo objeto y ubicar la fila al reconciliar archivos huérfanos del bucket |
 
+### `message_reaction`
+🧩 Nueva tabla (SPEC-24 · Requisito 1). Reacción vigente (👍/👎) de quien conversa sobre un bloque de respuesta del asistente. Cambiar de reacción actualiza la fila (upsert); "Copiar" no se registra.
+
+| Campo | Tipo | Nulo | Restricciones / notas |
+|---|---|---|---|
+| id | uuid | no | PK, `DEFAULT uuidv7()` |
+| message_id | uuid | no | FK → `message.id` `ON DELETE CASCADE` |
+| customer_id | uuid | sí | `sub` del token; null si reacciona un visitante anónimo |
+| anonymous_sid | text | sí | Hash de la cookie `chat_sid`, igual que en `conversation` |
+| reaction | text | no | `CHECK IN ('POSITIVE','NEGATIVE')` |
+| created_at / updated_at | timestamptz | no | |
+
+Restricción de tabla: `CHECK (customer_id IS NOT NULL OR anonymous_sid IS NOT NULL)`, porque toda reacción tiene un autor, autenticado o anónimo.
+
+| Índice | Consulta que lo usa |
+|---|---|
+| `UNIQUE NULLS NOT DISTINCT (message_id, customer_id, anonymous_sid)` | Una reacción vigente por mensaje y por quien reacciona; es la clave del upsert. `NULLS NOT DISTINCT` hace que la columna nula no permita duplicados. También cubre la FK |
+
+### `feedback_suggestion`
+🧩 Nueva tabla (SPEC-24 · Requisitos 4 y 5). Sugerencia o reporte de bug enviado desde "Mi cuenta" (requiere sesión). Se modifica solo para actualizar `notification_status` cuando el worker procesa el correo interno.
+
+| Campo | Tipo | Nulo | Restricciones / notas |
+|---|---|---|---|
+| id | uuid | no | PK, `DEFAULT uuidv7()`. Base del código de seguimiento interno que ve el cliente |
+| customer_id | uuid | no | `sub` del token |
+| type | text | no | `CHECK IN ('SUGGESTION','BUG')` |
+| title | text | no | `CHECK (char_length(title) >= 3)` |
+| description | text | no | `CHECK (char_length(description) BETWEEN 6 AND 1000)` |
+| contact_email | text | no | Prellenado desde el perfil y editable |
+| screenshot_key | text | sí | Clave del objeto en el bucket privado (subido por el puerto `AttachmentStorage` de SPEC-23, mismo tipo y tamaño: JPG/PNG de hasta 5 MB). Captura opcional; sin FK, no usa la tabla `attachment` |
+| notification_status | text | no | `DEFAULT 'PENDING'`, `CHECK IN ('PENDING','SENT','FAILED')`. Estado del correo interno (outbox `SEND_EMAIL`); un fallo no se muestra al cliente |
+| idempotency_key | text | no | `UNIQUE`. SPEC-24 pide `Idempotency-Key` al enviar una sugerencia |
+| created_at / updated_at | timestamptz | no | |
+
+| Índice | Consulta que lo usa |
+|---|---|
+| `(customer_id, created_at DESC)` | Límite de 5 sugerencias por hora por cliente (SPEC-24 · Requisito 6) |
+
+### `purchase_rating`
+🧩 Nueva tabla (SPEC-24 · Requisito 7). Valoración de la experiencia de compra en el chat (popup "Califica tu compra" con estrellas, tras el pago). Es propia del chatbot y **no** se envía a Ventas; la calificación de la entrega (CSAT) vive en Ventas y aquí solo se marca `order_ref.csat_sent`. Solo inserción: una por pedido y no se edita. "Ahora no" no crea fila; el frontend recuerda el descarte por pedido en el navegador (LocalStorage), por dispositivo, sin guardarlo en el backend.
+
+| Campo | Tipo | Nulo | Restricciones / notas |
+|---|---|---|---|
+| id | uuid | no | PK, `DEFAULT uuidv7()` |
+| order_id | text | no | FK → `order_ref.order_id` `ON DELETE RESTRICT`, `UNIQUE` (una valoración por pedido) |
+| customer_id | uuid | no | `sub` del token |
+| rating | smallint | no | `CHECK (rating BETWEEN 1 AND 5)`. Estrellas |
+| comment | text | sí | `CHECK (char_length(comment) <= 500)` |
+| created_at | timestamptz | no | |
+
+| Índice | Consulta que lo usa |
+|---|---|
+| `UNIQUE (order_id)` | "¿Este pedido ya tiene valoración?" antes de mostrar el popup, e idempotencia. También cubre la FK |
+
 ### `outbox`
 Tareas asíncronas con reintento (ADR-0011), procesadas por el worker de APScheduler.
 
@@ -345,6 +404,7 @@ Tareas asíncronas con reintento (ADR-0011), procesadas por el worker de APSched
 
 - ⚠️ **Retención**: no hay plazo definido para `checkout.summary` (incluye el documento), `local_phone_verification`, `payment_attempt`, `notification.recipient` ni `outbox.payload`, ni para borrar conversaciones autenticadas (ver `conversacion/privacidad.md`). Cuando se definan, cada plazo necesitará un job de purga y posiblemente un índice por `created_at`.
 - ⚠️ **Retención de adjuntos del chat** (SPEC-23): no hay plazo definido para `attachment` ni para los archivos del bucket (solo se limpian los pendientes a las 24 h). Falta decidir si se alinea con el archivado de 90 días y qué ocurre con las imágenes de conversaciones anónimas al expirar; el borrado de archivos requiere un job que reconcilie el bucket con la tabla.
+- ⚠️ **Retención de SPEC-24**: no hay plazo para `message_reaction`, `feedback_suggestion` (incluye `contact_email`) ni `purchase_rating`. La captura de un bug (`screenshot_key`) vive en el mismo bucket privado y sigue sin plazo ni job de purga propios.
 - ⚠️ **PostgreSQL 18 en Supabase**: las claves usan `uuidv7()` nativo de PostgreSQL 18 y no está confirmado que el plan gratuito de Supabase lo ofrezca. Si no, habrá que generar el UUID v7 en la aplicación o con una función propia; no se cambia el modelo por ahora.
 - **Búsqueda full-text a escala**: el índice GIN de `message.search_vector` es global; la consulta filtra después por el `customer_id` de la conversación. Es suficiente para el volumen del proyecto. Si creciera mucho, se puede desnormalizar `customer_id` en `message`.
 - **Modelo físico**: DDL, trigger `set_updated_at()` y migraciones Alembic se escriben en la fase de implementación del backend, a partir de este documento.

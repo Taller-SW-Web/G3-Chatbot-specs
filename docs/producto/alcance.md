@@ -10,9 +10,9 @@ El Canal Chatbot es el canal de venta conversacional del Marketplace Multicanal 
 
 | Rol | Cómo se identifica | Qué puede hacer | Fuente |
 |---|---|---|---|
-| **Visitante anónimo** | Sin token; conversaciones ligadas a la cookie `chat_sid` | Conversar, buscar, ver recomendaciones y ofertas, ver detalle, armar un carrito anónimo (expira a los 7 días de inactividad), registrarse e iniciar sesión | SPEC-05, SPEC-06 a 11 (Requiere sesión: No) |
+| **Visitante anónimo** | Sin token; conversaciones ligadas a la cookie `chat_sid` | Conversar, reaccionar con 👍/👎 a las respuestas, buscar, ver recomendaciones y ofertas, ver detalle, armar un carrito anónimo (expira a los 7 días de inactividad), registrarse e iniciar sesión | SPEC-05, SPEC-06 a 11 (Requiere sesión: No), SPEC-24 · Req. 1 |
 | **Cliente registrado sin verificar** | Cuenta `PENDIENTE_VERIFICACION` en Seguridad | Verificar el correo y pedir reenvío del enlace; no puede iniciar sesión | SPEC-01 · Req. 3, SPEC-02 |
-| **Cliente autenticado** | Token con rol `CLIENTE` (`sub` = `customer_id`) | Todo lo anterior, más: carrito persistente, dirección y cotización, cupones, consulta de pedidos, reclamos, devoluciones y reembolsos | SPEC-03, SPEC-05 · Req. 6 |
+| **Cliente autenticado** | Token con rol `CLIENTE` (`sub` = `customer_id`) | Todo lo anterior, más: carrito persistente, dirección y cotización, cupones, consulta de pedidos, reclamos, devoluciones y reembolsos, calificar la entrega y valorar la compra, y enviar sugerencias o reportar bugs | SPEC-03, SPEC-05 · Req. 6, SPEC-24 · Req. 2–4 y 7 |
 | **Cliente autenticado con celular verificado** | Verificación local vigente para el celular actual del perfil | Iniciar el checkout y pagar | SPEC-04 · Req. 1, SPEC-14 · Req. 1 |
 | **Usuario sin rol `CLIENTE`** (p. ej., vendedor) | Token sin `CLIENTE` | Nada: se cierra su sesión con "Esta cuenta no puede comprar desde este canal" | SPEC-03 · Req. 1 |
 
@@ -42,6 +42,7 @@ Agrupadas por épica (ver [`epicas.md`](epicas.md)). Una línea por capacidad.
 **EP-02 · Motor de conversación**
 - Conversaciones múltiples (crear, listar, buscar en una pantalla propia, retomar), pantalla de inicio, interpretación con herramientas, streaming por SSE con *fallback* a *polling*, botones "Preguntar en el chat", acciones rápidas fijas, guardarraíles, modo degradado, límites de uso y presentación del asistente virtual con aviso de privacidad ([SPEC-05](../../openspec/specs/motor-conversacion/spec.md)).
 - Adjuntar hasta 3 imágenes por mensaje (JPG, PNG o WebP de hasta 5 MB) desde galería o cámara para que el asistente las interprete con visión, con aviso de privacidad previo, almacenamiento privado, miniaturas con URLs firmadas en el historial, degradación si el análisis falla y límites de uso ([SPEC-23](../../openspec/specs/adjuntos-imagenes-chat/spec.md), Hito 4). Las imágenes se convierten en criterios de texto para la búsqueda existente; no hay búsqueda por similitud visual ni se reutilizan como evidencia de devolución o reclamo.
+- Retroalimentación del cliente ([SPEC-24](../../openspec/specs/retroalimentacion-cliente/spec.md), Hito 5–6): 👍/👎 y "Copiar" tras cada respuesta del asistente; calificación de la entrega (CSAT de Ventas) con tres caritas al pie del detalle de un pedido `ENTREGADO`; valoración de la experiencia de compra con estrellas en un popup tras el pago, guardada en el chatbot; y envío de sugerencias o reportes de bug desde "Mi cuenta", con captura opcional y aviso interno por correo. Ninguno de los mecanismos bloquea el flujo principal.
 
 **EP-03 · Descubrimiento de productos**
 - Búsqueda con filtros combinados, sinónimos locales, refinamiento y paginación de 10 en 10 ([SPEC-06](../../openspec/specs/busqueda-filtrado/spec.md)).
@@ -76,7 +77,7 @@ Agrupadas por épica (ver [`epicas.md`](epicas.md)). Una línea por capacidad.
 
 ## 5. Fuera de alcance (consolidado)
 
-Recopilado de la sección *Fuera de alcance* de las 23 specs, sin duplicados. Cuando un mismo punto aparece en varias specs, se citan todas.
+Recopilado de la sección *Fuera de alcance* de las 24 specs, sin duplicados. Cuando un mismo punto aparece en varias specs, se citan todas.
 
 ### Canal e interacción
 | Excluido | Fuente |
@@ -151,7 +152,10 @@ Recopilado de la sección *Fuera de alcance* de las 23 specs, sin duplicados. Cu
 | Consumo de stock y solicitud de despacho (los desencadena Ventas) | SPEC-15 |
 | Anulación de un pedido a pedido del cliente (F2 de Ventas) | SPEC-15, SPEC-17, SPEC-21 |
 | Correos por cambios de estado posteriores (despachado, entregado) | SPEC-16 |
-| Encuesta de satisfacción (F5 de Ventas) | SPEC-16 |
+| Pedir la calificación de la entrega de forma proactiva cuando el pedido se entrega (el chatbot no recibe aviso de entrega; se ofrece al abrir el pedido) | SPEC-24 |
+| Enviar la encuesta de satisfacción por correo, o encuestas periódicas o proactivas (NPS) | SPEC-16, SPEC-24 |
+| Bandeja o panel de revisión de sugerencias, bugs, valoraciones o calificaciones dentro de la app; el seguimiento con el cliente es por correo | SPEC-24 |
+| Editar o borrar una reacción, valoración o calificación ya enviada | SPEC-24 |
 | Mapa o rastreo GPS en tiempo real | SPEC-18 |
 | Reprogramar la entrega o cambiar la dirección desde el chat | SPEC-18 |
 | Contacto directo con el repartidor | SPEC-18 |
@@ -176,11 +180,11 @@ Recopilado de la sección *Fuera de alcance* de las 23 specs, sin duplicados. Cu
 |---|---|---|---|---|
 | **Seguridad y Usuarios** | ✅ Contrato publicado | JWKS, `client_credentials`, registro, política de contraseña, verificación de correo, login, OTP, refresh, logout, `me`, direcciones, introspección | A1 ✅ (acción pendiente: informar la URL de `/verificar-correo`); A2 ✅ decidido fuera de alcance de Seguridad; A3 ✅ (credenciales reales desde Hito 4); A4 🟡 (rol `SERVICIO_INTEGRACION`) | EP-01, EP-05 (introspección), EP-07 (token de servicio) |
 | **Productos y Ofertas** | 🟡 Provisional: las specs de Productos definen las capacidades, pero los scopes aún están pendientes de registro en Seguridad | Búsqueda, detalle, categorías, marcas, precios por canal, disponibilidad, promociones, evaluación, cupones, candidatos | A5 🟡 (rutas y payloads reales, scopes pendientes), A6 ✅ (contrato real resuelto: `destino + lineas`), A7 🟡 (búsqueda por texto libre) | EP-02 (grid de inicio), EP-03, EP-04, EP-05 (cupones y revalidación), EP-09 (variante deseada) |
-| **Ventas y Postventa** | ✅ Contrato publicado (v1.3.0) | Pedidos (crear, notificar pago, anular, detalle, listado), reclamos (crear, detalle, listado), devoluciones (evidencia, crear, detalle, listado) | A8, A9, A10, A13, A14 ✅ | EP-04 (409 por stock), EP-05, EP-06, EP-07, EP-08, EP-09 |
+| **Ventas y Postventa** | ✅ Contrato publicado (v1.3.0) | Pedidos (crear, notificar pago, anular, detalle, listado), reclamos (crear, detalle, listado), devoluciones (evidencia, crear, detalle, listado), calificación de la entrega (`POST /api/v2/csat`, token del cliente) | A8, A9, A10, A13, A14, A15 ✅ | EP-02 (SPEC-24), EP-04 (409 por stock), EP-05, EP-06, EP-07, EP-08, EP-09 |
 | **Despacho y Entrega** | Cotización y seguimiento ✅ contrato + scopes concedidos; credenciales reales en Hito 4 | `POST /api/v1/cotizaciones` (`destino` + `lineas`); `GET /api/v1/seguimientos/pedidos/{idPedido}` | A11 ✅, A12 ✅ (Seguridad #31); A4 🟡 (rol `SERVICIO_INTEGRACION` para seguimiento) | EP-05 (cotización), EP-07 (seguimiento) |
 | **Proveedor LLM** | Definido por configuración | Claude u OpenAI detrás de `LLMProvider`; para SPEC-23, `gpt-6-luna` (OpenAI) con entrada de imágenes ⚠️ soporte de visión sin verificar | — | EP-02 y todas las épicas conversacionales |
-| **Supabase Storage** | Propio del chatbot (plan gratuito) | Bucket privado detrás de `AttachmentStorage`; URLs firmadas emitidas por el backend | — | EP-02 (SPEC-23) |
-| **SMTP** | Configurable (Mailtrap en desarrollo) | Envío de correo | — | EP-06 |
+| **Supabase Storage** | Propio del chatbot (plan gratuito) | Bucket privado detrás de `AttachmentStorage`; URLs firmadas emitidas por el backend | — | EP-02 (SPEC-23 y capturas de bugs de SPEC-24) |
+| **SMTP** | Configurable (Mailtrap en desarrollo) | Envío de correo | — | EP-06; EP-02 (aviso interno de sugerencias y bugs, SPEC-24) |
 
 ## 7. Restricciones
 
@@ -193,7 +197,7 @@ Recopilado de la sección *Fuera de alcance* de las 23 specs, sin duplicados. Cu
 **Hitos (README §3)**
 - Hito 3 (demo 1): SPEC-05, 06, 09, 10, 11, 01, 02 y 03.
 - Hito 4 (integración): SPEC-04, 07, 08, 12, 13, 14, 15, 16 y 23 (SPEC-23 después del núcleo del Hito 3).
-- Hito 5–6: SPEC-17 a 22, endurecimiento de RNF y pruebas de performance.
+- Hito 5–6: SPEC-17 a 22 y SPEC-24, endurecimiento de RNF y pruebas de performance.
 
 **Negocio y seguridad**
 - Único método de pago: **tarjeta simulada** con un simulador determinista; no hay pasarela real ni pago contra entrega (SPEC-14).
@@ -224,6 +228,7 @@ Recopilado de la sección *Fuera de alcance* de las 23 specs, sin duplicados. Cu
 | Rendimiento de compra | búsqueda p95 ≤ 800 ms; carrito p95 ≤ 900 ms; cotización p95 ≤ 600 ms; pago p95 ≤ 1 s; creación de pedido p95 ≤ 1,5 s | SPEC-06, 11, 12, 14, 15 · RNF |
 | Calidad del LLM | ≥ 120 frases etiquetadas; precisión de intención ≥ 90 % en CI | SPEC-05 · RNF |
 | Correo de confirmación | enviado en ≤ 60 s en el 95 % de los casos | SPEC-16 · RNF |
+| Retroalimentación | 30 reacciones por minuto (exceso ignorado en silencio); 5 sugerencias o bugs por hora; título ≥ 3 y descripción de 6 a 1000 caracteres; captura JPG/PNG de hasta 5 MB | SPEC-24 · Req. 4 y 6 |
 
 ## 8. Supuestos
 

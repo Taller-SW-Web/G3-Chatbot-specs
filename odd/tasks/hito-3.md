@@ -28,7 +28,7 @@ Según `docs/producto/epicas.md`:
 - SPEC-10 y 11: carrito y validación de stock.
 - Pista de DevOps: CI, CD y despliegue de ambos repositorios.
 
-Fuera de alcance: SPEC-04, 07, 08 y 23 (Hito 4), checkout y pedido (Hito 4), seguimiento y postventa (Hito 5–6), e integración con las APIs reales de los otros módulos (credenciales desde el Hito 4; se usan mocks según ADR-0017).
+Fuera de alcance: SPEC-04, 07, 08 y 23 (Hito 4), SPEC-24 (Hito 5–6, asignada a Nikol el 2026-10-14), checkout y pedido (Hito 4), seguimiento y postventa (Hito 5–6), e integración con las APIs reales de los otros módulos (credenciales desde el Hito 4; se usan mocks según ADR-0017).
 
 ## Restricciones
 
@@ -65,25 +65,34 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama.
 - [ ] H3-02
 - [ ] H3-03
 - [ ] H3-04
-- [ ] H3-05
-- [ ] H3-06
+- [x] H3-05
+- [x] H3-06
 - [ ] H3-07
-- [ ] H3-08
+- [x] H3-08
 
 ### Fase 1: en paralelo
 
+Reparto por funcionalidad vertical (ajuste del 2026-10-15, aprobado por Mathias): se pidió que cada integrante entregue una funcionalidad completa, backend y frontend. Las pantallas y componentes del design system ya existen en el frontend con datos mock (verificado el 2026-10-15 en `origin/development`: tokens en `globals.css`, clases `.wf-btn`, `.wf-input`, `.wf-chip` y `.wf-card`, formularios de auth, bloques de chat, `ProductCard`, `CartWidget` y páginas), por lo que la parte frontend de cada funcionalidad consiste en retirar `mockData` de su flujo y conectarla al backend real.
+
+| ID | Responsable | Funcionalidad | Backend | Frontend |
+|---|---|---|---|---|
+| H3-09 | Sebastian | Registro y verificación de correo (SPEC-01 y 02) | Casos de uso y endpoints de registro y verificación | `RegistroForm` y pantalla de verificación conectados al backend |
+| H3-10 | Mathias | Chat en streaming (SPEC-05 núcleo) | Bucle del agente (máximo 5 iteraciones), system prompt, `LLMProvider` y streaming por SSE (ADR-0021) | Lector de streaming SSE que reemplaza a `ChatbotWebSocketAdapter`; `ChatPage`, `ChatWindow` y `MessageBubble` conectados |
+| H3-11 | Alonso | Herramientas, acciones rápidas y modo degradado | Declaración de las herramientas del hito, `ActionDispatcher`, `OutputValidator` y modo degradado | Render de los bloques `ACCIONES_RAPIDAS` y `BloqueError`, y aviso de modo degradado |
+| H3-12 | Sonny | Búsqueda y catálogo (SPEC-06 y 09) | Herramientas de búsqueda, filtrado y detalle de producto | `CarruselProductos`, `ProductCard` y `DetalleProducto` con datos de las herramientas |
+| H3-13 | David | Carrito y stock (SPEC-10 y 11) | Carrito y validación de stock | `CartWidget`, `BloqueCarrito` y `CartPage` conectados |
+| H3-14 | Diego | Inicio y cierre de sesión (SPEC-03) | Inicio de sesión, MFA, refresh y cierre de sesión | `LoginForm`, `OtpMfaForm` y `AuthModal` conectados; almacenamiento del token, refresh y mitigaciones de XSS exigidas por SPEC-01 a 03 |
+| H3-15 | Nikol | Gestión de conversaciones (SPEC-05 Req. 1) | Resaltado de la coincidencia en la búsqueda (pendiente de H3-10; propuesta: `ts_headline`) | `Sidebar` conectado: listar, crear y buscar conversaciones |
+
+Tareas transversales:
+
 | ID | Responsable | Repositorio | Tarea |
 |---|---|---|---|
-| H3-09 | Sebastian | backend | SPEC-01 a 03: registro, verificación de correo, inicio de sesión, MFA, refresh y cierre de sesión |
-| H3-10 | Mathias | backend | SPEC-05 núcleo: CRUD de conversaciones, bucle del agente (máximo 5 iteraciones), system prompt, `LLMProvider` y streaming de la respuesta por SSE (ADR-0021) |
-| H3-11 | Alonso | backend | Declaración de las herramientas del hito, `ActionDispatcher`, `OutputValidator` y modo degradado |
-| H3-12 | Sonny | backend | SPEC-06, 09, 10 y 11: catálogo, detalle de producto, carrito y validación de stock |
-| H3-13 | David | frontend | Sustituir `mockData.ts` por los adapters reales (`ChatbotApiAxiosAdapter` y un lector de streaming SSE que reemplaza a `ChatbotWebSocketAdapter`, ADR-0021) y conectar los componentes de chat, tarjetas de producto y carrito |
-| H3-14 | Diego | frontend | `HomePage`, `Sidebar`, `ChatPage`, `CartPage` y formularios de registro e inicio de sesión sobre el design system (`docs/design-system.md`) |
-| H3-15 | Sebastian, Diego | frontend | Sesión en el cliente: almacenamiento del token, refresh y mitigaciones de XSS exigidas por SPEC-01 a 03 |
 | H3-16 | Nikol | specs, frontend | Casos de prueba a partir de los escenarios de las specs del hito y E2E de humo con Playwright |
 | H3-17 | Mathias | backend | CI: lint, pruebas de integración con PostgreSQL como servicio y verificación de `alembic upgrade head` |
 | H3-18 | Mathias | backend, frontend | CD: `development` → staging y `main` → producción, con las migraciones como paso del despliegue; secretos por entorno (LLM, Supabase, URLs base de los mocks) |
+
+Diego mantiene además el cuidado del design system (`docs/design-system.md`). Revisión cruzada para quienes escriben backend por primera vez: Sebastian revisa los PR de H3-14 y Mathias los de H3-15.
 
 - [ ] H3-09
 - [ ] H3-10
@@ -129,14 +138,16 @@ Estrategia: `ask-on-risk`. El hito supera con holgura las 400 líneas modificada
 
 - **Carga de Mathias:** concentra el bucle del agente y siete tareas de DevOps. Es el cuello de botella del hito; conviene reasignar H3-17 o posponerla hasta cerrar H3-10.
 - **Carga de Sebastian en la Fase 0:** contratos, mock de Seguridad y revisión del PR #35. Si se atrasa, se detiene la Fase 1.
-- **PR #35 sin revisar:** bloquea H3-10 y H3-11.
+- **PR #35 sin revisar:** resuelto el 2026-10-14 (mergeado); quedan el acople con H3-10 y la prueba con el modelo real.
 - **Fecha de la demo sin definir:** el plan no tiene fechas; hay que fijarla para ordenar la Fase 2.
 - **Costo de Railway:** USD 5 al mes; falta definir quién aporta el medio de pago.
-- **Dependencia de David con Sebastian:** H3-13 necesita los contratos de H3-05; mientras tanto trabaja contra los puertos ya definidos en el frontend.
+- **Backend nuevo para Diego y Nikol:** con el reparto vertical escriben backend por primera vez (H3-14 y H3-15). Se mitiga con revisión cruzada de Sebastian y Mathias.
+- **Conflictos en archivos compartidos del frontend:** varias funcionalidades tocan `ChatbotApiAxiosAdapter.ts`, `ChatbotApiPort.ts`, `container.ts` y `mockData.ts`. Conviene PR pequeños y que cada uno retire solo el mock de su flujo.
+- **Dependencia del chat:** H3-11, H3-12 y H3-13 muestran sus bloques dentro del chat; hasta que H3-10 conecte el streaming en el frontend, se prueban con el mock.
 
 ## Progreso
 
-Estado al 2026-10-10: Fase 0 iniciada. Documento creado y versionado en `main`. Copia en Engram: tema `odd/hito-3/tasks`.
+Estado al 2026-10-14: Fase 0 en curso (H3-01, H3-05, H3-06 y H3-08 cerradas; H3-04 a medias). Documento creado y versionado en `main`. Copia en Engram: tema `odd/hito-3/tasks`.
 
 | Tarea | Ruta | Evidencia | Revisión | Commit |
 |---|---|---|---|---|
@@ -154,7 +165,7 @@ Decisiones del segundo tramo de H3-10 (2026-10-11): primer proveedor OpenAI; tem
 
 Decisiones provisionales del quinto tramo de H3-10 (2026-10-11): `q` vacío, ausente o de más de 100 caracteres responde `400 VALIDACION`; mismo formato, orden y paginación que el listado; no se buscan conversaciones sin título ni filas de herramientas; una consulta formada solo por palabras vacías devuelve una lista vacía. La configuración `spanish` ignora mayúsculas y tildes y une singular con plural, pero no encuentra palabras parciales. Pendiente: la spec pide devolver los resultados "resaltando la coincidencia" y la respuesta no trae ningún campo de resaltado; falta decidir si lo resuelve el frontend o el backend con `ts_headline`.
 
-Decisiones del cuarto tramo de H3-10 (2026-10-11): transporte por SSE en la respuesta del `POST` (ADR-0021), decidido por Mathias. Provisionales: un cuerpo con `accion` o `adjuntoIds` responde `501 FUNCIONALIDAD_NO_DISPONIBLE`; campos desconocidos responden `400`; identificadores de las acciones rápidas (`BUSCAR_POR_CATEGORIA`, `VER_OFERTAS`, `VER_CARRITO`, `MIS_PEDIDOS`, `MIS_RECLAMOS`, `MIS_DEVOLUCIONES`); el bloque de respaldo usa la forma de `Bloque.ts` del frontend (`id`, `tipo: ACCIONES_RAPIDAS`, `acciones[{id, etiqueta}]`). Cambios que necesita el frontend (H3-13): reemplazar el adaptador WebSocket por `fetch` con lectura del stream y `credentials: "include"`; leer el nombre del evento en `event:` y no en un campo `kind`; `bloque` llega como `{bloque}`; manejar `aceptado` y `degradado`; `error` trae solo `code`. Limitaciones conocidas: una desconexión del cliente surte efecto entre eventos, por lo que una llamada al LLM detenida retrasa la limpieza hasta el timeout; sin reanudación de un turno parcial; el historial devuelve `bloques` como `{"blocks": [...]}` y el frontend lo tipa como arreglo.
+Decisiones del cuarto tramo de H3-10 (2026-10-11): transporte por SSE en la respuesta del `POST` (ADR-0021), decidido por Mathias. Provisionales: un cuerpo con `accion` o `adjuntoIds` responde `501 FUNCIONALIDAD_NO_DISPONIBLE`; campos desconocidos responden `400`; identificadores de las acciones rápidas (`BUSCAR_POR_CATEGORIA`, `VER_OFERTAS`, `VER_CARRITO`, `MIS_PEDIDOS`, `MIS_RECLAMOS`, `MIS_DEVOLUCIONES`); el bloque de respaldo usa la forma de `Bloque.ts` del frontend (`id`, `tipo: ACCIONES_RAPIDAS`, `acciones[{id, etiqueta}]`). Cambios que necesita el frontend (parte frontend de H3-10 desde el reparto vertical del 2026-10-15; antes H3-13): reemplazar el adaptador WebSocket por `fetch` con lectura del stream y `credentials: "include"`; leer el nombre del evento en `event:` y no en un campo `kind`; `bloque` llega como `{bloque}`; manejar `aceptado` y `degradado`; `error` trae solo `code`. Limitaciones conocidas: una desconexión del cliente surte efecto entre eventos, por lo que una llamada al LLM detenida retrasa la limpieza hasta el timeout; sin reanudación de un turno parcial; el historial devuelve `bloques` como `{"blocks": [...]}` y el frontend lo tipa como arreglo.
 
 Decisiones provisionales del tercer tramo de H3-10 (2026-10-11): el límite de 15 s se aplica a cada llamada al LLM y no al turno completo; al llegar a la quinta iteración las herramientas pedidas no se ejecutan y se responde con un texto de respaldo; un segundo `ARGUMENTOS_INVALIDOS` en el mismo turno termina el turno; título con los primeros 40 caracteres del primer mensaje; mensaje de 1 a 1000 caracteres; el contexto usa solo mensajes del cliente y del asistente; si el cliente corta el stream se confirman las filas de herramientas ya ejecutadas; nombre del asistente por `ASSISTANT_NAME` (por defecto `Botleta`), ya incluida en `.env.template`. Textos de respaldo y tipo de bloque `QUICK_ACTIONS` propuestos por la implementación, no definidos en las specs. Fuera de este tramo: `OutputValidator`, filtro de datos sensibles, `DegradedMode`, adjuntos de imagen, límite de frecuencia y generación del resumen.
 
@@ -169,6 +180,18 @@ Hallazgos que afectan al despliegue:
 
 Pendientes que deja H3-01: dónde se alojan los mocks en el entorno desplegado (afecta a H3-03, H3-06 y H3-07) y quién aporta el medio de pago de Railway.
 
+Cierre de H3-05 y avance de H3-04 (2026-10-14):
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-05 | Delegada a Sebastian | PR #37 mergeado en `development` del backend: base de contratos de módulos, cliente httpx, DTO de bloques y SSE, configuración por entorno | Aprobación de PR | `e40ee4e` en `development` del backend |
+| H3-04 | — | Migración a pnpm y lockfile ya en `development` del frontend (`b5e0469`, `1794b10`). Falta: despliegue en Vercel con vista previa por PR y verificar el CI en GitHub | — | — |
+| H3-08 | En línea (revisión) y delegada (un revisor de solo lectura) | PR #35 de Alonso: las correcciones de `d50a3c8` resuelven el bloqueante del filtro de datos sensibles, los falsos positivos, la idempotencia, el `output_validator` y `degraded_mode`; 357 pruebas unitarias pasan. Residuales para un PR posterior: tarjetas con `/` o `_` como separador, contraseña con `! ` dentro del secreto, tests más fuertes (contraseña completa, `US$`) | Aprobado por Mathias el 2026-10-14; RDD desactivado | `3e974d3` (merge) en `development` del backend |
+| H3-06 | En línea (revisión) y delegada (un revisor de solo lectura y un redactor para los residuales) | PR #39 de Sonny: las correcciones de `8cc6e61` resuelven los tres bloqueantes (4xx como `ModuleRequestError`, prueba del 404 por el cliente público, nombres en inglés). Residuales cerrados por Mathias directo en `development`: 4xx sin JSON conserva el estado, `ModuleRequestError` en `module_errors.py`, `MAX_SKUS_PER_CALL` compartido, errores de transporte de httpx traducidos en `base_client.py`. 395 pruebas unitarias pasan | Aprobado por Mathias el 2026-10-14; RDD desactivado | `a14bc5d` (merge) y `7ab8351` en `development` del backend |
+| Limpieza de tests | En línea (renombrado mecánico) | Los tests con prefijo de hito pasan a llevar el nombre de lo que prueban (`test_module_contracts`, `test_product_inventory_clients`, `test_catalog_tools`, `test_conversation_attachment_persistence`) y `h3_tools.py` pasa a `catalog_tools.py`. Quedan sin renombrar `docs/h2-06-persistencia.md` y `docs/h3-motor-herramientas.md`. No se ejecutó el test de integración (requiere PostgreSQL) | RDD desactivado | `6d3c14b` en `development` del backend |
+
+Alineación con las specs (2026-10-14): SPEC-24 queda en Hito 5–6 y no altera el alcance. El alineamiento con Ventas está mergeado (specs #12). El alineamiento con Productos HTTP 0.5.0 (specs #11) sigue abierto y puede obligar a ajustar H3-06 (PR #39) y H3-12. Sin avance verificable aún en H3-00, H3-02, H3-03 (no hay Dockerfile), H3-07, H3-09 y H3-11 a H3-18. Con el #35 y el #39 integrados, H3-11 y H3-12 quedan desbloqueadas.
+
 ## Siguiente paso
 
-Mathias, Sebastian y Sonny inician la Fase 0. La primera decisión por cerrar es la fecha de la demo.
+Cerrar la Fase 0: Sebastian avanza H3-07 (mock de Seguridad); Mathias aplica H3-02 y H3-03 (corrigiendo antes `psycopg2` para las migraciones) y termina H3-04 en Vercel; Nikol cierra H3-00. Arranca la Fase 1 con el reparto vertical del 2026-10-15: Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11), y el resto según su funcionalidad. Actualizar la división de responsabilidades del equipo con el nuevo reparto. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.

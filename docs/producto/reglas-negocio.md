@@ -12,7 +12,7 @@
 | Área | Épica | Reglas |
 |---|---|---|
 | `IDE` | Identidad y sesión | 22 |
-| `CNV` | Motor de conversación | 33 |
+| `CNV` | Motor de conversación | 45 |
 | `CAT` | Descubrimiento de productos | 17 |
 | `CAR` | Carrito y stock | 16 |
 | `CHK` | Checkout y pago | 27 |
@@ -20,7 +20,7 @@
 | `SGT` | Seguimiento de pedidos | 14 |
 | `RCL` | Reclamos | 11 |
 | `DEV` | Devoluciones y reembolsos | 14 |
-| **Total** | | **168** |
+| **Total** | | **180** |
 
 ---
 
@@ -88,6 +88,18 @@
 | RN-CNV-31 | "Preguntar en el chat" abre siempre una conversación nueva con el identificador contextual; la respuesta y sus datos provienen de la herramienta de la capacidad correspondiente. | SPEC-05 · Req. 13 | Chatbot |
 | RN-CNV-32 | Las acciones rápidas fijas "Ver ofertas", "Rastrear pedido" y "Ayuda con devolución" están visibles en Inicio y Conversación, se ejecutan directamente y se registran en historial; las dos acciones protegidas requieren sesión y continúan tras login. | SPEC-05 · Req. 14 | Chatbot |
 | RN-CNV-33 | Galería y cámara usan las mismas validaciones de formato, tamaño y cantidad; la cámara se abre con el selector nativo, no se persiste un permiso propio y una foto mayor de 5 MB se rechaza sin compresión. | SPEC-23 · Req. 1 y RNF (Privacidad) | Chatbot |
+| RN-CNV-34 | 👍, 👎 y "Copiar" se muestran bajo cada bloque de respuesta del asistente; hay una sola reacción vigente por mensaje y por quien reacciona (cambiarla la reemplaza) y "Copiar" no se registra en el backend. | SPEC-24 · Req. 1 | Chatbot |
+| RN-CNV-35 | La reacción se marca de inmediato en la UI; si falla el registro, se reintenta en segundo plano sin mostrar error ni bloquear el chat. | SPEC-24 · Req. 1 | Chatbot |
+| RN-CNV-36 | La calificación de la entrega se ofrece solo al pie del detalle de un pedido `ENTREGADO` que el cliente no ha calificado; no es una ventana emergente ni se pide de forma proactiva al entregarse el pedido. | SPEC-24 · Req. 2 y Fuera de alcance | Ventas (solo califica pedidos `ENTREGADO`, `422 ORDER_NOT_DELIVERED`); Chatbot (ubicación) |
+| RN-CNV-37 | Las caritas se envían a Ventas como `puntuacion` 5 (feliz), 3 (neutral) y 1 (triste), con comentario opcional; la calificación de la entrega no se guarda como calificación propia del chatbot. | SPEC-24 · Req. 2 | Ventas (escala acordada con Marketplace) |
+| RN-CNV-38 | Un `409 CSAT_ALREADY_SUBMITTED` se muestra como "Ya calificaste este pedido", sin error, y marca el pedido como calificado; si el cliente sale sin responder o Ventas no responde, el bloque se vuelve a ofrecer. | SPEC-24 · Req. 2 | Chatbot (Ventas admite una sola encuesta por pedido) |
+| RN-CNV-39 | `POST /api/v2/csat` se llama con el token del cliente (rol `CLIENTE`, sin scope); Ventas responde `403` si el `sub` no es el dueño del pedido. | SPEC-24 · Preguntas abiertas (acuerdo A15) | Ventas (acuerdo A15) |
+| RN-CNV-40 | La valoración de la experiencia de compra (estrellas de 1 a 5 y comentario opcional) se ofrece en un popup tras el pago, se guarda en el chatbot y no se envía a Ventas; hay una sola por pedido y "Ahora no" no vuelve a mostrarla para ese pedido en ese navegador (el descarte se recuerda por dispositivo y no se guarda en el backend). | SPEC-24 · Req. 7 | Chatbot |
+| RN-CNV-41 | Ningún mecanismo de retroalimentación impide ni demora conversar, pagar o ver el pedido: un fallo se degrada en silencio o con un mensaje breve y la confirmación del pedido sigue visible. | SPEC-24 · Req. 7 y RNF (No bloqueante) | Chatbot |
+| RN-CNV-42 | Una sugerencia o bug requiere sesión e incluye tipo (`Sugerencia` o `Bug`), título de al menos 3 caracteres, descripción de 6 a 1000 caracteres y un correo de contacto prellenado y editable. | SPEC-24 · Req. 3 y Req. 4 | Chatbot |
+| RN-CNV-43 | La captura de un bug es opcional, JPG o PNG de hasta 5 MB; se guarda en el bucket privado de SPEC-23 con URLs firmadas y nunca se envía al LLM. | SPEC-24 · Req. 4 y RNF (Privacidad) | Chatbot |
+| RN-CNV-44 | Cada sugerencia o bug avisa al equipo con un correo interno por el outbox de SPEC-16; si ese correo falla, la sugerencia no se pierde ni se muestra como fallida al cliente. | SPEC-24 · Req. 5 | Chatbot |
+| RN-CNV-45 | Más de 30 reacciones por minuto de un cliente o `chat_sid` se ignoran en silencio; con 5 sugerencias o bugs en una hora, la siguiente se rechaza con "Ya enviaste varias sugerencias, intenta en un rato". | SPEC-24 · Req. 6 | Chatbot |
 
 ## RN-CAT — Descubrimiento de productos
 

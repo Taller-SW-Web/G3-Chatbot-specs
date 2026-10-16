@@ -9,7 +9,7 @@
 | Ventas | `POST /api/v1/pedidos` | ✅ `api-contract.md` §1.1 |
 | Ventas | `POST /api/v1/pedidos/{id}/pagos/notificacion` | ✅ §1.2 |
 | Ventas | `POST /api/v1/pedidos/{id}/anulaciones` | ✅ §1.7 |
-| Seguridad | Token de servicio `modulo-chatbot` para llamar a Ventas desde el worker (sin token de cliente) | ✅ |
+| Seguridad | Token de servicio `modulo-chatbot` para llamar a Ventas desde el worker (sin token de cliente), con los scopes `ventas:pedidos:crear`, `ventas:pedidos:anular` y `ventas:pagos:webhook` | ✅ `ventas:pagos:webhook` ya concedido (Ventas, A15) |
 
 ## Frontend
 

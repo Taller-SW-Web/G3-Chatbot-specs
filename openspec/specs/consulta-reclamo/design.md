@@ -6,8 +6,8 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Ventas | `GET /api/v2/reclamos?clienteId=&estado=&pagina=&tamano=` | ✅ `api-contract.md` §2.8 |
-| Ventas | `GET /api/v2/reclamos/{codigoSeguimiento}` | ✅ §2.7 |
+| Ventas | `GET /api/v2/reclamos/me?estado=&pagina=&tamano=` con token del cliente (rol `CLIENTE`) | ✅ `api-postventas.md` §2.10b (A15) |
+| Ventas | `GET /api/v2/reclamos/{codigoSeguimiento}` | ✅ §2.9, con token del cliente (A15) |
 
 ## Frontend
 
@@ -21,7 +21,7 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `GET /api/v1/reclamos` · `GET /api/v1/reclamos/{codigoSeguimiento}` | Proxy con control de pertenencia (`clienteId` del token, nunca del cliente). |
+| `GET /api/v1/reclamos` · `GET /api/v1/reclamos/{codigoSeguimiento}` | Proxy hacia `/reclamos/me` y `/reclamos/{codigoSeguimiento}` con el token del cliente; Ventas filtra por el `sub` y el chatbot nunca envía `clienteId`. |
 | `ReclamoConsultaService` | Mapea los cuatro estados reales y arma el mensaje del plazo o la respuesta. |
 | Herramientas `listar_reclamos` y `consultar_reclamo` (`{codigoSeguimiento?}`) | Uso desde el chat. |
 

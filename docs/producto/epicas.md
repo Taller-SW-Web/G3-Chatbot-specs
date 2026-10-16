@@ -1,6 +1,6 @@
 # Épicas — Canal Chatbot
 
-> Capa de producto sobre las 23 specs de `openspec/specs/`. Las épicas se derivan del campo **Grupo** del índice del [README](../../README.md#3-índice-de-especificaciones). Dos grupos se dividieron para que cada épica quede de un tamaño manejable y con un objetivo único:
+> Capa de producto sobre las 24 specs de `openspec/specs/`. Las épicas se derivan del campo **Grupo** del índice del [README](../../README.md#3-índice-de-especificaciones). Dos grupos se dividieron para que cada épica quede de un tamaño manejable y con un objetivo único:
 >
 > - **Checkout** (SPEC-12 a 16) → EP-05 *Checkout y pago* (SPEC-12, 13, 14) y EP-06 *Grabación y confirmación del pedido* (SPEC-15, 16).
 > - **Postventa** (SPEC-19 a 22) → EP-08 *Reclamos* (SPEC-19, 20) y EP-09 *Devoluciones y reembolsos* (SPEC-21, 22).
@@ -12,7 +12,7 @@
 | Épica | Nombre | Grupo (README) | Specs | Área | Hito | Historias | Puntos |
 |---|---|---|---|---|---|---|---|
 | EP-01 | Identidad y sesión | Identidad | SPEC-01, 02, 03, 04 | `IDE` | Hito 3 (01–03) · Hito 4 (04) | 15 | 55 |
-| EP-02 | Motor de conversación | Transversal | SPEC-05, 23 | `CNV` | Hito 3 (05) · Hito 4 (23) · Hito 5–6 (accesos desde tarjetas) | 21 | 102 |
+| EP-02 | Motor de conversación | Transversal | SPEC-05, 23, 24 | `CNV` | Hito 3 (05) · Hito 4 (23) · Hito 5–6 (accesos desde tarjetas y 24) | 26 | 121 |
 | EP-03 | Descubrimiento de productos | Descubrimiento | SPEC-06, 07, 08, 09 | `CAT` | Hito 3 (06, 09) · Hito 4 (07, 08) | 16 | 61 |
 | EP-04 | Carrito y stock | Carrito | SPEC-10, 11 | `CAR` | Hito 3 | 8 | 36 |
 | EP-05 | Checkout y pago | Checkout | SPEC-12, 13, 14 | `CHK` | Hito 4 | 16 | 65 |
@@ -20,7 +20,7 @@
 | EP-07 | Seguimiento de pedidos | Seguimiento | SPEC-17, 18 | `SGT` | Hito 5–6 | 9 | 30 |
 | EP-08 | Reclamos | Postventa | SPEC-19, 20 | `RCL` | Hito 5–6 | 8 | 24 |
 | EP-09 | Devoluciones y reembolsos | Postventa | SPEC-21, 22 | `DEV` | Hito 5–6 | 10 | 33 |
-| | **Total** | | **23 specs** | | | **111** | **438** |
+| | **Total** | | **24 specs** | | | **116** | **457** |
 
 ```mermaid
 graph LR
@@ -49,11 +49,11 @@ graph LR
 
 ## EP-02 · Motor de conversación
 
-- **Objetivo:** ofrecer la aplicación de chat de pantalla completa (conversaciones múltiples, búsqueda propia, pantalla de inicio, streaming), consultar desde tarjetas, mostrar acciones rápidas fijas, interpretar cada mensaje con herramientas de forma segura y verídica y, desde SPEC-23, permitir adjuntar imágenes desde galería o cámara.
-- **Valor de negocio:** es la base transversal que usan las demás specs y cubre el lineamiento "consulta conversacional de productos mediante lenguaje natural". Las imágenes permiten mostrar lo que se busca o el problema que se tiene en lugar de describirlo (el audio sigue fuera de alcance).
-- **Specs:** SPEC-05 Motor de conversación · SPEC-23 Adjuntos de imágenes en el chat.
-- **Hito:** Hito 3 (núcleo de SPEC-05), Hito 4 (SPEC-23, después del núcleo del Hito 3) y Hito 5–6 (accesos desde las tarjetas de pedidos y postventa).
-- **Dependencias:** proveedor LLM (configuración); SPEC-03 para ligar conversaciones al cliente; SPEC-08 para el grid de ofertas del inicio (ver [preguntas abiertas](alcance.md#preguntas-abiertas)). SPEC-23 depende de SPEC-05 (motor, `LLMProvider`, ventana de contexto, modo degradado y límites de uso) y de SPEC-06 (búsqueda de productos con los criterios que el LLM deduce de la imagen); se relaciona con SPEC-21 (EP-09) sin compartir datos: las imágenes del chat no son la evidencia de devolución. Requiere un bucket privado de Supabase Storage y un modelo con soporte de visión ⚠️ (`gpt-6-luna`, sin verificar).
+- **Objetivo:** ofrecer la aplicación de chat de pantalla completa (conversaciones múltiples, búsqueda propia, pantalla de inicio, streaming), consultar desde tarjetas, mostrar acciones rápidas fijas, interpretar cada mensaje con herramientas de forma segura y verídica, permitir adjuntar imágenes desde galería o cámara (SPEC-23) y recoger la opinión del cliente sin interrumpirlo (SPEC-24): reacciones a cada respuesta, calificación de la entrega, valoración de la compra y sugerencias o reportes de bug.
+- **Valor de negocio:** es la base transversal que usan las demás specs y cubre el lineamiento "consulta conversacional de productos mediante lenguaje natural". Las imágenes permiten mostrar lo que se busca o el problema que se tiene en lugar de describirlo (el audio sigue fuera de alcance). La retroalimentación alimenta la métrica de satisfacción con las respuestas ([`kpis.md`](../conversacion/kpis.md)) y conecta el canal con la encuesta CSAT de Ventas (F5).
+- **Specs:** SPEC-05 Motor de conversación · SPEC-23 Adjuntos de imágenes en el chat · SPEC-24 Retroalimentación del cliente.
+- **Hito:** Hito 3 (núcleo de SPEC-05), Hito 4 (SPEC-23, después del núcleo del Hito 3) y Hito 5–6 (accesos desde las tarjetas de pedidos y postventa, y SPEC-24).
+- **Dependencias:** proveedor LLM (configuración); SPEC-03 para ligar conversaciones al cliente; SPEC-08 para el grid de ofertas del inicio (ver [preguntas abiertas](alcance.md#preguntas-abiertas)). SPEC-23 depende de SPEC-05 (motor, `LLMProvider`, ventana de contexto, modo degradado y límites de uso) y de SPEC-06 (búsqueda de productos con los criterios que el LLM deduce de la imagen); se relaciona con SPEC-21 (EP-09) sin compartir datos: las imágenes del chat no son la evidencia de devolución. Requiere un bucket privado de Supabase Storage y un modelo con soporte de visión ⚠️ (`gpt-6-luna`, sin verificar). SPEC-24 depende de SPEC-05 (bloques de respuesta), SPEC-15 y SPEC-17 (confirmación y detalle del pedido, EP-06 y EP-07), SPEC-16 (outbox de correo), SPEC-23 (`AttachmentStorage` para la captura) y de la pantalla "Mi cuenta" (SPEC-03); la calificación de la entrega usa `POST /api/v2/csat` de Ventas con el token del cliente (acuerdo A15 ✅).
 - **Historias:** [historias/EP-02-conversacion.md](historias/EP-02-conversacion.md)
 
 ## EP-03 · Descubrimiento de productos

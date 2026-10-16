@@ -56,8 +56,8 @@ Cada pregunta trae una **propuesta** aplicada provisionalmente en estos document
 8. **Confirmación antes de cada acción con escritura.** Se esperaba confirmar toda escritura (agregar, quitar, cupón), pero SPEC-05 · Req. 6 marca agregar, cambiar cantidad, quitar y aplicar cupón **sin** confirmación en la UI (son reversibles); solo vaciar el carrito, reemplazar un cupón, pagar, reclamar y devolver la exigen.
    *Propuesta:* seguir la spec (menos fricción; los cambios se informan y se pueden deshacer). Cambiarlo requeriría modificar SPEC-05 · Req. 6.
 
-9. **CSAT con 👍/👎.** No está en las specs.
-   *Propuesta:* una pregunta opcional al final de una compra, reclamo o devolución ([`kpis.md` §3](kpis.md#csat-propuesta-no-está-en-las-specs)); si se aprueba, cambio en SPEC-05.
+9. ✅ **Resuelta (12/10/2026). CSAT con 👍/👎.** No estaba en las specs; la propuesta era una pregunta opcional al final de una compra, reclamo o devolución ([`kpis.md` §3](kpis.md#csat-propuesta-no-está-en-las-specs)).
+   *Decisión:* [SPEC-24 `retroalimentacion-cliente`](../../openspec/specs/retroalimentacion-cliente/spec.md) la amplía: 👍/👎 y "Copiar" tras **cada** bloque de respuesta del asistente (Req. 1), no solo al cierre de una tarea. Además separa la calificación de la entrega (CSAT de Ventas, caritas al pie del detalle de un pedido `ENTREGADO`, Req. 2) de la valoración de la experiencia de compra (popup con estrellas tras el pago, propia del chatbot, Req. 7). No hace falta un cambio en SPEC-05.
 
 10. **Retención de datos incompleta.** Solo están definidos: archivado de conversaciones a los 90 días (sin borrado), expiración de anónimas a los 7 días y purga de borradores de evidencia a las 24 h. Faltan plazos para las imágenes adjuntas al chat enviadas (SPEC-23; solo se limpian los pendientes a las 24 h), mensajes archivados, `checkout.summary` (con documento), `local_phone_verification`, `payment_attempt`, `notification`, `outbox` y logs.
     *Propuesta:* definir un plazo por tabla en `modelo-datos.md` mediante un cambio de OpenSpec ([`privacidad.md` §2](privacidad.md#2-inventario-de-datos-personales)).

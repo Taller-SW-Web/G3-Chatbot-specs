@@ -36,7 +36,7 @@ Estado verificado el 2026-10-16 sobre `development` del frontend (con el PR #19 
 
 - [x] H3-10F-1
 - [x] H3-10F-2
-- [ ] H3-10F-3
+- [x] H3-10F-3
 - [ ] H3-10F-4
 - [ ] H3-10F-5
 
@@ -60,11 +60,11 @@ Puede ir en un solo PR o en uno por tarea. Se decide al cerrar H3-10F-3, según 
 
 ## Progreso
 
-Estado al 2026-10-16: H3-10F-1 y H3-10F-2 hechas; H3-10F-3 es la siguiente. Copia en Engram: tema `odd/h3-10-frontend-chat-sse/tasks`.
+Estado al 2026-10-16: H3-10F-1 a H3-10F-3 hechas; H3-10F-4 es la siguiente. Copia en Engram: tema `odd/h3-10-frontend-chat-sse/tasks`.
 
 ## Siguiente paso
 
-Iniciar H3-10F-3: borrador en el store (tokens, bloques, `degradado` y `error`) y reescritura de `useChat` sobre `container.stream` y `cargarHistorial`. Decidir ahí qué hacer con un turno que termina sin `fin` ni `error`.
+Iniciar H3-10F-4: conectar `ChatPage`, `ChatWindow` y `MessageBubble` a `useChat`, retirar las semillas y los mocks del flujo del chat y corregir el comentario obsoleto de `ChatPage.tsx`. Antes, decidir qué se muestra en un turno degradado (ver pendientes de H3-10F-3).
 
 ### Cierre de H3-10F-1 (2026-10-16)
 
@@ -86,3 +86,15 @@ Pendientes que deja H3-10F-2:
 - `pollingMs` en `apiConfig.ts` quedó sin consumidor; decidir en H3-10F-3 si el polling de respaldo se mantiene o se elimina.
 - `ChatPage.tsx` línea 47 conserva un comentario sobre `useChat` que quedará obsoleto; se corrige en H3-10F-4.
 - Resuelto: la forma del historial (pregunta abierta de este documento).
+
+### Cierre de H3-10F-3 (2026-10-16)
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-10F-3 | Delegada (un redactor; más de dos archivos no triviales) | Decisión de Mathias: si el stream termina sin `fin` ni `error`, una sola consulta del historial y, si no aparece la respuesta, aviso de turno incompleto con reintento, sin polling. Verificado en el backend: pedir el historial no llama al LLM, y ante una desconexión del cliente el turno se cancela y no se guarda la respuesta (`interpret_and_respond_use_case.py`, línea 158). El estado del turno es local al hook (reductor puro `turnoChat.ts`), la orquestación está en `ejecutarTurnoUseCase` y `useChat` es solo pegamento de React. `chatStore` deja de persistir mensajes: se quitan `mensajes`, `escribiendo` y sus acciones (sin consumidores), con `version: 1` y una migración que descarta lo antiguo, y `partialize` conserva los demás campos persistidos. Se elimina `pollingMs`. 81 pruebas pasan (22 nuevas); `typecheck`, `lint` (0 errores, 3 advertencias previas) y `build` pasan | Reductor, caso de uso, hook y diff del store leídos por el orquestador; `typecheck`, `test`, `lint` y `build` repetidos | Commit pendiente de confirmación del responsable, en `feature/h3-10-chat-sse` del frontend |
+
+Pendientes que deja H3-10F-3:
+
+- **Turno degradado:** el backend guarda el texto del turno degradado (`DEGRADED_TEXT`) pero el stream solo envía `degradado`, el bloque de acciones rápidas y `fin`. En vivo, el mensaje consolidado queda con texto vacío y el bloque; al recargar el historial aparece con su texto. Opciones: que el backend emita ese texto como `token` después de `degradado` (compatible con el contrato, porque el cliente solo descarta los tokens anteriores), o que el frontend use un texto de respaldo. Decidir antes de H3-10F-4.
+- El `reductor` no conserva en el mensaje consolidado la marca de que el turno fue degradado; si la interfaz necesita el aviso después de `fin`, hay que añadirla.
+- `useChat` no tiene prueba propia: no contiene lógica y la cubren el reductor y el caso de uso.

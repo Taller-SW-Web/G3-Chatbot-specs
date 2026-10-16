@@ -27,7 +27,7 @@
 | Puerto `ChatbotApiPort` (dominio) | Contrato de los casos de uso hacia el adaptador REST. |
 | Puerto `StreamingPort` (dominio) | Contrato de los casos de uso hacia el adaptador de streaming. |
 | `Axios Adapter` (outbound) | Implementa `ChatbotApiPort`; interceptor JWT desde `chatStore`. |
-| `SSE Adapter` (outbound) | Implementa `StreamingPort` con un lector de `fetch` con streaming (`EventSource` no admite `POST`); si el stream se corta, hace *fallback* a *polling* del historial. |
+| `SSE Adapter` (outbound) | Implementa `StreamingPort` con un lector de `fetch` con streaming (`EventSource` no admite `POST`); si el stream se corta, si el stream termina sin `fin` ni `error`, reconsulta el historial una sola vez. |
 | `container.ts` / `apiConfig.ts` (infrastructure) | Inyección de dependencias y URL base del backend (variable pública `NEXT_PUBLIC_API_URL`). |
 
 ## Backend
@@ -57,7 +57,7 @@
 - [ ] `[FE]` `ChatPage`, `useChat`, `MessageList` y `MessageRenderer` con soporte de streaming
 - [ ] `[FE]` `Composer`, `QuickReplies`, `TypingIndicator` y `DegradedBanner`
 - [ ] `[FE]` `chatStore` (conversación activa, listado, mensajes, token) y puertos `ChatbotApiPort`/`StreamingPort`
-- [ ] `[FE]` `Axios Adapter` (interceptor JWT) y `SSE Adapter` (lector de `fetch` con streaming y *fallback* a *polling*)
+- [ ] `[FE]` `Axios Adapter` (interceptor JWT) y `SSE Adapter` (lector de `fetch` con streaming y reconsulta única del historial)
 - [ ] `[FE]` `container.ts` y `apiConfig.ts`
 - [ ] `[BE]` Modelos `conversation` y `message` (con `title` derivado) y migraciones Alembic
 - [ ] `[BE]` `chatbot_router.py`: conversaciones, búsqueda y mensajes
@@ -70,4 +70,4 @@
 - [ ] `[BE]` Prompt del sistema v1 y resumen de conversación
 - [ ] `[QA]` Conjunto de evaluación de 120 frases y job de CI con umbral del 90 %
 - [ ] `[BE]` Aceptar `adjuntoIds` en `POST /conversaciones/{id}/mensajes` y admitir contenido multimodal en `LLMProvider` e `InterpretarYResponderUseCase` (el detalle de adjuntos está en [`adjuntos-imagenes-chat`](../adjuntos-imagenes-chat/design.md))
-- [ ] `[QA]` Pruebas de todos los escenarios (LLM y stream SSE mockeados); prueba del *fallback* a *polling* cuando el stream se corta
+- [ ] `[QA]` Pruebas de todos los escenarios (LLM y stream SSE mockeados); prueba de la reconsulta única del historial y de la acción "Reintentar" cuando el stream se corta

@@ -38,7 +38,7 @@ stateDiagram-v2
 
 Notas:
 - La primera respuesta del asistente en cada conversación incluye la presentación como asistente virtual (SPEC-05 · Req. 12).
-- Si el stream se corta, la respuesta llega por *polling* cada 2 s (SPEC-05 · Req. 4); eso no cambia el estado de sesión.
+- Si el stream se corta, el frontend reconsulta el historial una sola vez (SPEC-05 · Req. 4); eso no cambia el estado de sesión.
 - Si el LLM falla, las acciones directas por botón siguen funcionando porque no pasan por el LLM (SPEC-05 · Req. 8).
 
 ## (b) Descubrimiento → carrito
@@ -208,7 +208,7 @@ sequenceDiagram
     UC->>REST: evento fin con mensajeId y correcciones
     REST-->>FE: fin
     Note over UC,LLM: Si el LLM no responde en 15 s, DegradedMode responde por REST con el menú
-    Note over FE,REST: Si el stream se corta, polling del historial cada 2 s
+    Note over FE,REST: Si el stream se corta sin fin ni error, una sola reconsulta del historial
 ```
 
 ## (f) Cuenta, búsqueda y accesos contextuales

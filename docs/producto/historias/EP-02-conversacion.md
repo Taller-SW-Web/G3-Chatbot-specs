@@ -94,7 +94,7 @@
 
 **Criterios de aceptación**
 - `SPEC-05 · Req. 4 · Scenario: Envío y streaming normal` — el envío responde `200 text/event-stream` y la respuesta llega en esa misma respuesta con los eventos `aceptado`, `token`, `bloque` y `fin`.
-- `SPEC-05 · Req. 4 · Scenario: Transporte no disponible o stream cortado` — el frontend consulta el historial por *polling* cada 2 s hasta recibir el mensaje del asistente.
+- `SPEC-05 · Req. 4 · Scenario: Transporte no disponible o stream cortado` — el frontend reconsulta el historial una sola vez; si no aparece la respuesta, muestra el turno como incompleto con "Reintentar".
 - `SPEC-05 · Req. 4 · Scenario: Cliente con dos pestañas abiertas` — ambas pestañas reciben el streaming de la misma conversación.
 - `SPEC-05 · Req. 4 · Scenario: Reconexión tras perder unos segundos` — el backend reenvía solo lo que falta del turno, sin duplicar texto.
 - `SPEC-05 · Req. 4 · Scenario: Envío con imágenes adjuntas` — el envío con `adjuntoIds` responde `202` y la respuesta llega con los mismos eventos `token`, `bloque` y `fin` (detalle en HU-CNV-15).

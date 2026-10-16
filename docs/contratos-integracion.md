@@ -56,11 +56,11 @@ Prefijo: `/api/v1`. Todas las respuestas de error usan `application/problem+json
 | `aceptado` | `{ mensajeId }` | El mensaje del cliente quedó persistido |
 | `token` | `{ texto: string }` | Cada fragmento de texto de la respuesta |
 | `bloque` | `{ bloque: Bloque }` | Cuando un bloque estructurado (carrusel, carrito, formulario…) queda listo |
-| `degradado` | `{ motivo }` | El turno terminó en modo degradado (SPEC-05 Req. 10); el cliente descarta los tokens recibidos hasta ese momento |
+| `degradado` | `{ motivo }` | El turno terminó en modo degradado (SPEC-05 Req. 10); el cliente descarta los tokens recibidos antes de este evento y el texto de respaldo llega después como un `token`, seguido de `bloque` `ACCIONES_RAPIDAS` y `fin` |
 | `fin` | `{ mensajeId }` | Cierre del turno, con el id del mensaje del asistente ya persistido |
 | `error` | `{ code }` | Falla inesperada a mitad del stream; el stream termina |
 
-Si el stream se corta, el frontend hace *polling* de `GET /chat/conversaciones/{id}/mensajes` hasta que aparece el mensaje del asistente (ver SPEC-05 Req. 4). Los *proxies* no deben almacenar en búfer la respuesta.
+Si el stream termina sin evento `fin` ni `error` (por ejemplo, se cae la conexión), el frontend no hace *polling*: reconsulta una sola vez `GET /chat/conversaciones/{id}/mensajes` (arreglo simple de los últimos 50 mensajes, sin `desde`). Si ese historial ya contiene un mensaje del asistente posterior al último del cliente, reemplaza los mensajes locales por él; si no, o si la consulta falla, muestra el turno como incompleto con la acción "Reintentar", que reenvía el texto como un mensaje nuevo del cliente (ver SPEC-05 Req. 4). Los *proxies* no deben almacenar en búfer la respuesta.
 
 **Tipos de bloque de respuesta** (`Bloque.tipo`): `TEXTO`, `CARRUSEL_PRODUCTOS`, `DETALLE_PRODUCTO`, `SELECTOR_VARIANTE`, `CARRITO`, `ACCIONES_RAPIDAS`, `FORMULARIO` (`REGISTRO`, `LOGIN`, `OTP_MFA`, `OTP_CELULAR`, `DIRECCION`, `PAGO`, `RECLAMO`, `DEVOLUCION`), `RESUMEN_CHECKOUT`, `CONFIRMACION_PEDIDO`, `LISTA_PEDIDOS`, `ESTADO_PEDIDO`, `LISTA_PROMOCIONES`, `CONSTANCIA_RECLAMO`, `ESTADO_RECLAMO`, `CONSTANCIA_DEVOLUCION`, `ESTADO_DEVOLUCION`, `ERROR`.
 

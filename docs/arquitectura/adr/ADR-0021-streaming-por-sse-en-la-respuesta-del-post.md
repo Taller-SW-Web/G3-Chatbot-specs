@@ -28,12 +28,12 @@ Mathias (líder del equipo) decidió el 2026-10-11 que **la respuesta del asiste
 | `aceptado` | `{ mensajeId }` | El mensaje del cliente quedó persistido |
 | `token` | `{ texto }` | Cada fragmento de texto de la respuesta |
 | `bloque` | `{ bloque }` | Un bloque estructurado queda listo |
-| `degradado` | `{ motivo }` | El turno terminó en modo degradado; el cliente descarta los tokens recibidos hasta ese momento |
+| `degradado` | `{ motivo }` | El turno terminó en modo degradado; el cliente descarta los tokens recibidos antes de este evento y el texto de respaldo llega después como un `token` |
 | `fin` | `{ mensajeId }` | Cierre del turno, con el id del mensaje del asistente ya persistido |
 | `error` | `{ code }` | Falla inesperada a mitad del stream; el stream termina |
 
 - **Sin WebSocket:** no existe un endpoint WebSocket. El cliente nunca abre una conexión persistente para el chat.
-- **Fallback:** si el stream se corta, el frontend hace *polling* de `GET /chat/conversaciones/{id}/mensajes` hasta que aparece el mensaje del asistente. Esto reemplaza al antiguo comportamiento de "reconectar y reenviar lo que falta".
+- **Fallback:** si el stream termina sin `fin` ni `error`, el frontend reconsulta una sola vez el historial (`GET /chat/conversaciones/{id}/mensajes`) y no hace *polling*. Esto reemplaza al antiguo comportamiento de "reconectar y reenviar lo que falta". Ver la enmienda del 2026-10-16.
 - **Sin cambios respecto del ADR-0007:** REST sigue atendiendo las acciones con efecto y las lecturas, el estado de la conversación vive en PostgreSQL y el modo degradado sigue disponible. Las acciones (`accion`) y los adjuntos de imagen (`adjuntoIds`) del mismo endpoint conservan su definición vigente y **aún no están implementados en el backend**.
 
 **Motivos**
@@ -50,7 +50,7 @@ Mathias (líder del equipo) decidió el 2026-10-11 que **la respuesta del asiste
 | WebSocket con un canal en memoria entre el `POST` y el socket | Solo funciona con una réplica y contradice el requisito de API sin estado |
 | WebSocket con *pub/sub* entre procesos (por ejemplo, PostgreSQL `LISTEN/NOTIFY` o Redis) | Añade más infraestructura de la que el proyecto necesita |
 | Enviar el mensaje por el propio WebSocket | No tiene estado compartido, pero conserva todo el costo de gestionar la conexión |
-| Solo *polling*, sin streaming | No da el efecto "escribiendo en vivo". Se conserva como *fallback* |
+| Solo *polling*, sin streaming | No da el efecto "escribiendo en vivo". Además, tras un corte el *polling* nunca tendría éxito (ver la enmienda del 2026-10-16) |
 
 ## Consecuencias
 
@@ -60,10 +60,24 @@ Mathias (líder del equipo) decidió el 2026-10-11 que **la respuesta del asiste
 - Autenticación, cookies y errores `problem+json` iguales a los del resto de la API.
 
 **Negativas y riesgos aceptados**
-- Una segunda pestaña abierta en la misma conversación no ve el stream en vivo; ve el mensaje al recargar o con *polling*.
+- Una segunda pestaña abierta en la misma conversación no ve el stream en vivo; ve el mensaje al recargar.
 - El servidor no puede enviar mensajes no solicitados. Hoy nada lo necesita; si se requieren notificaciones *push*, tendrán su propia decisión.
 - El frontend debe reemplazar su adaptador WebSocket por un lector de `fetch` con streaming, porque `EventSource` no admite `POST`.
 - Los *proxies* no deben almacenar en búfer las respuestas HTTP de larga duración.
+
+## Enmienda (2026-10-16): orden de los eventos en un turno degradado
+
+El texto de respaldo de un turno degradado (modo degradado, límite de iteraciones y argumentos inválidos) ya no se entrega solo en el mensaje guardado: se emite también por el stream, de modo que el mensaje en vivo coincide con el almacenado. El orden de un turno degradado es:
+
+`aceptado`, `token`\*, `degradado`, `token` (texto de respaldo), `bloque` (`ACCIONES_RAPIDAS`), `fin`
+
+El cliente descarta los `token` recibidos **antes** de `degradado` y muestra el texto de respaldo que llega como `token` **después**. El resto del contrato de eventos no cambia.
+
+## Enmienda (2026-10-16): sin polling tras un stream cortado
+
+Si el stream SSE termina sin evento `fin` ni `error` (por ejemplo, se cae la conexión), el frontend no hace *polling*. Reconsulta el historial una sola vez (`GET /chat/conversaciones/{id}/mensajes`, arreglo simple de los últimos 50 mensajes, sin `desde`). Si ese historial ya contiene un mensaje del asistente posterior al último del cliente, reemplaza los mensajes locales por él. Si no lo contiene, o si la consulta falla, muestra el turno como incompleto con la acción "Reintentar", que reenvía el texto.
+
+Motivo: cuando el cliente se desconecta a mitad del turno, el backend cancela el turno y no guarda la respuesta del asistente (se revierte, salvo que ya se haya ejecutado una herramienta); el mensaje del cliente sí está guardado antes de iniciar el stream. Por eso un *polling* repetido nunca tendría éxito. Reintentar envía un segundo mensaje del cliente, porque el primero ya está guardado. La consulta del historial no invoca al LLM, así que no genera costo de tokens.
 
 ## Referencias
 

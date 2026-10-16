@@ -6,7 +6,7 @@
 
 - **Mathias:** `InterpretarYResponderUseCase` (ciclo de tool calling), prompt del sistema, evals en CI, streaming SSE del backend y conversaciones múltiples (crear, listar, buscar, historial).
 - **Alonso:** `ToolRegistry`, `ActionDispatcher`, `SensitiveDataFilter`, `OutputValidator` y `DegradedMode`.
-- **David:** `ChatWindow`, `MessageBubble` y lector de streaming SSE del frontend (`fetch`) y *polling* de respaldo.
+- **David:** `ChatWindow`, `MessageBubble` y lector de streaming SSE del frontend (`fetch`) y reconsulta única del historial si el stream se corta.
 - **Diego:** `Sidebar` (nuevo chat, buscar, historial) y vista `ChatPage`.
 - **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
 
@@ -40,7 +40,7 @@ Incluye:
 - Pantalla de inicio con catálogo destacado y entrada de chat combinados.
 - Barra lateral de navegación entre conversaciones y acceso al perfil.
 - Orquestador del ciclo LLM → herramienta → LLM, con un catálogo de herramientas declarado.
-- Transmisión de la respuesta por SSE en la respuesta del `POST` (streaming) con *fallback* a *polling* del historial si el stream se corta.
+- Transmisión de la respuesta por SSE en la respuesta del `POST` (streaming) con una única reconsulta del historial (sin *polling*) si el stream se corta.
 - Acciones directas desde botones, que no pasan por el LLM.
 - Respuesta en bloques estructurados (`TEXTO`, `CARRUSEL_PRODUCTOS`, etc.).
 - Memoria de trabajo por conversación: último carrusel, filtros vigentes, acción pendiente y borradores.
@@ -159,7 +159,7 @@ El sistema DEBE (SHALL) enviar al LLM el mensaje, el contexto acotado de la conv
 - **ENTONCES** incluye las imágenes en el contexto del LLM como contenido multimodal (base64, nunca URLs), el LLM puede invocar las mismas herramientas del catálogo con los criterios que deduzca de la imagen y el ciclo LLM → herramienta → LLM mantiene el máximo de 5 iteraciones
 
 ### Requirement: Transmisión de la respuesta por SSE
-El sistema DEBE (SHALL) transmitir la respuesta del asistente en fragmentos, conservando el orden, dentro de la respuesta del `POST` que envía el mensaje, mediante Server-Sent Events, y permitir recuperar la respuesta completa por *polling* si el stream se corta.
+El sistema DEBE (SHALL) transmitir la respuesta del asistente en fragmentos, conservando el orden, dentro de la respuesta del `POST` que envía el mensaje, mediante Server-Sent Events, y permitir recuperar la respuesta completa con una única consulta del historial si el stream se corta sin `fin` ni `error`.
 
 *Trazabilidad: SPEC-05 · Requisito 4.*
 
@@ -181,7 +181,7 @@ El sistema DEBE (SHALL) transmitir la respuesta del asistente en fragmentos, con
 #### Scenario: El turno termina en modo degradado
 - **DADO** que el turno termina en modo degradado (Req. 10) cuando ya se emitieron `token`
 - **CUANDO** el backend emite `degradado {motivo}`
-- **ENTONCES** el cliente descarta los tokens recibidos hasta ese momento y muestra la respuesta degradada
+- **ENTONCES** el cliente descarta los tokens recibidos antes de `degradado` y muestra la respuesta degradada, cuyo texto llega como un `token` posterior
 
 #### Scenario: Falla inesperada a mitad del stream
 - **DADO** un stream en curso
@@ -191,17 +191,17 @@ El sistema DEBE (SHALL) transmitir la respuesta del asistente en fragmentos, con
 #### Scenario: Transporte no disponible o stream cortado
 - **DADO** que la conexión se corta antes del evento `fin`
 - **CUANDO** ocurre
-- **ENTONCES** el frontend hace *polling* de `GET /conversaciones/{id}/mensajes` cada 2 s hasta recibir el mensaje completo del asistente, sin mostrar el efecto de streaming; no reconecta ni reenvía el mensaje
+- **ENTONCES** el frontend no hace *polling*: vuelve a consultar el historial una sola vez (`GET /chat/conversaciones/{id}/mensajes`, últimos 50 mensajes, sin `desde`). Si ese historial ya contiene un mensaje del asistente posterior al último mensaje del cliente, reemplaza los mensajes locales por él; si no lo contiene, o si la consulta falla, muestra el turno como incompleto con la acción "Reintentar", que reenvía el texto. No muestra el efecto de streaming; no reconecta ni reenvía el mensaje de forma automática
 
 #### Scenario: Cliente con dos pestañas abiertas
 - **DADO** la misma conversación abierta en dos pestañas
 - **CUANDO** llega una respuesta a un mensaje enviado desde una de ellas
-- **ENTONCES** solo esa pestaña recibe el streaming en vivo; la otra ve el mensaje del asistente al recargar o por *polling*
+- **ENTONCES** solo esa pestaña recibe el streaming en vivo; la otra ve el mensaje del asistente al recargar
 
 #### Scenario: Pérdida breve de conexión
 - **DADO** un stream que se corta unos segundos y el cliente vuelve a tener conexión
 - **CUANDO** el frontend retoma
-- **ENTONCES** consulta el historial por *polling* hasta que aparece el mensaje del asistente, sin duplicar texto
+- **ENTONCES** consulta el historial una sola vez (sin *polling*); si ya contiene el mensaje del asistente, reemplaza los mensajes locales por el historial sin duplicar texto; si no, muestra el turno como incompleto con la acción "Reintentar"
 
 ### Requirement: Referencias al contexto conversacional
 El sistema DEBE (SHALL) resolver referencias a elementos mostrados previamente ("el segundo", "ese", "las rojas") usando la memoria de trabajo de la conversación activa.

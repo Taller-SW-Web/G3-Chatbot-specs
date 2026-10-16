@@ -469,7 +469,7 @@
 
 **Prioridad:** Should: conecta el canal con la encuesta CSAT de Ventas (F5), pero no bloquea la compra ni el seguimiento.
 
-**Notas:** los criterios siguen el requisito "Calificación de la entrega con caritas (CSAT, vía Ventas)" del cambio `ajustar-calificacion-compra-y-entrega` (bloque al pie de `OrderDetail` con caritas 5/3/1), que reemplaza al Requisito 2 de la spec base y todavía no está archivado. Se llama con el token del cliente (rol `CLIENTE`, sin scope) y un `403` de Ventas indica que el pedido no es del cliente. Depende del detalle del pedido de SPEC-17 (EP-07).
+**Notas:** los criterios siguen el requisito "Calificación de la entrega con caritas (CSAT, vía Ventas)" (bloque al pie de `OrderDetail` con caritas 5/3/1), que reemplazó al Requisito 2 anterior al archivar el cambio `ajustar-calificacion-compra-y-entrega`. Se llama con el token del cliente (rol `CLIENTE`, sin scope) y un `403` de Ventas indica que el pedido no es del cliente. Depende del detalle del pedido de SPEC-17 (EP-07).
 
 ---
 
@@ -490,7 +490,7 @@
 
 **Prioridad:** Could: mide la experiencia de compra en el chat, pero no forma parte del flujo de pago ni de un lineamiento del curso.
 
-**Notas:** requisito agregado por el cambio `ajustar-calificacion-compra-y-entrega`, todavía sin archivar. No se envía a Ventas. `PurchaseRatingModal` se monta junto con `OrderConfirmation` (SPEC-15, EP-06).
+**Notas:** requisito agregado por el cambio `ajustar-calificacion-compra-y-entrega` (archivado el 2026-10-16). No se envía a Ventas. `PurchaseRatingModal` se monta junto con `OrderConfirmation` (SPEC-15, EP-06).
 
 ---
 

@@ -23,7 +23,7 @@ El sistema DEBE (SHALL) consultar la disponibilidad comercial del SKU (`GET /api
 #### Scenario: Disponibilidad indeterminada
 - **DADO** un SKU cuyo estado o verificación es `INDETERMINADO`
 - **CUANDO** el cliente lo agrega
-- **ENTONCES** la operación se acepta con el aviso "No pudimos confirmar el stock en este momento; lo verificaremos antes del pago", sin tratarlo como `AGOTADO`
+- **ENTONCES** la operación se acepta con el aviso "No pudimos confirmar el stock en este momento; lo verificaremos antes del pago", sin tratarlo como `AGOTADO` (comportamiento interino: Productos no define aún qué hace el cliente con `INDETERMINADO`, y Ventas confirma el stock al crear el pedido)
 
 #### Scenario: SKU agotado
 - **DADO** un SKU con estado `AGOTADO`
@@ -43,7 +43,7 @@ El sistema DEBE (SHALL) revalidar la disponibilidad comercial de todas las líne
 #### Scenario: Línea con disponibilidad indeterminada
 - **DADO** un carrito en el que una línea responde `INDETERMINADO`
 - **CUANDO** se inicia el checkout
-- **ENTONCES** el checkout continúa con el aviso de esa línea y Ventas confirma el stock al crear el pedido
+- **ENTONCES** el checkout continúa con el aviso de esa línea y Ventas confirma el stock al crear el pedido (comportamiento interino, no contrato de Productos)
 
 #### Scenario: Todas las líneas disponibles
 - **DADO** un carrito en el que ninguna línea está `AGOTADO`

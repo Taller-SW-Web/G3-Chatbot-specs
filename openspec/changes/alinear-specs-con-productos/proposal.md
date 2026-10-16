@@ -6,7 +6,7 @@ Productos y Ofertas publicó su contrato HTTP 0.5.0 y su `ALINEACION_CHATBOT.md`
 
 ## What Changes
 
-- **Stock:** pasa de cantidades (`available`) a la proyección comercial `DISPONIBLE`, `STOCK_BAJO`, `AGOTADO`, `INDETERMINADO` (`GET /inventario/disponibilidad/comercial`) y a la verificación por cantidad no vinculante (`POST .../verificar`). Se elimina el escenario "Stock parcial" y la acción "Ajustar a N"; la validación exacta de cantidades queda en Ventas (`409`).
+- **Stock:** pasa de cantidades (`available`) a la proyección comercial `DISPONIBLE`, `STOCK_BAJO`, `AGOTADO`, `INDETERMINADO` (`GET /inventario/disponibilidad/comercial`) y a la verificación por cantidad no vinculante (`POST .../verificar`). El escenario "Stock parcial" se reinterpreta para `STOCK_BAJO` (ya no ajusta a una cantidad) y se elimina la acción "Ajustar a N"; la validación exacta de cantidades queda en Ventas (`409`).
 - **Búsqueda:** solo filtros reales (`q`, categoría, marca, precio mínimo y máximo, orden por nombre). Talla y color viajan en `q`. "Más baratas" reduce `precioMax`. Precio y disponibilidad se piden aparte por SKU.
 - **Ofertas:** el listado de promociones muestra nombre y vigencia; las ofertas por producto vienen de `precio_oferta`. Se elimina el filtrado de promociones por categoría o marca y la exclusión por modalidad.
 - **Carrito:** el descuento es un único importe con el nombre resuelto por `promotion_id`.

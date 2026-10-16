@@ -143,7 +143,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 |---|---|---|
 | `REQUIERE_SESION` | 401 | La acción necesita sesión de cliente. |
 | `CELULAR_NO_VERIFICADO` | 403 | El checkout requiere el celular verificado. |
-| `STOCK_INSUFICIENTE` | 409 | Incluye `disponible` por SKU. |
+| `STOCK_INSUFICIENTE` | 409 | Cantidad no disponible para uno o más SKU; no incluye cantidades, porque Productos no las expone (A16). |
 | `PRODUCTO_NO_DISPONIBLE` | 409 | Producto o SKU inactivo. |
 | `LIMITE_CANTIDAD` | 422 | Más de 10 unidades por línea o más de 20 líneas. |
 | `SIN_COBERTURA` | 422 | El destino no tiene cobertura de Despacho. |

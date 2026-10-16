@@ -6,12 +6,12 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `GET /productos?q=&categoriaId=&marcaId=&canal=&pagina=&tamanio=&estado=&precioMin=&precioMax=&orden=` (`orden`: `NOMBRE_ASC`, `NOMBRE_DESC`) | 🟡 A5, A7 · scopes `catalogo:leer` pendientes |
+| Productos | `GET /productos?q=&categoriaId=&marcaId=&canal=&pagina=&tamanio=&estado=&precioMin=&precioMax=&orden=` (`orden`: `NOMBRE_ASC`, `NOMBRE_DESC`) | 🟡 A5 · scopes `catalogo:leer` pendientes |
 | Productos | `GET /categorias` · `GET /marcas` | 🟡 A5 · scopes pendientes |
 | Productos | `GET /precios?skus=&canal=CHATBOT` (la búsqueda no trae precio) | 🟡 A5 · scopes pendientes |
 | Productos | `GET /inventario/disponibilidad/comercial?skus=&canal=CHATBOT` (la búsqueda no trae disponibilidad) | 🟡 A5 · scopes pendientes |
 
-🧩 El contrato real devuelve un contenedor paginado `{ items, pagina, tamanio, total }`; no es `productos` ni `tamaño`. Cada item trae `product_id`, `name`, `description` (nulable), `marca_id`, `categoria_id`, `tiene_variantes`, `sku_base` (nulable), `images` y `attributes`; **no** trae precio ni disponibilidad. Productos no filtra por talla, color ni ofertas, y solo ordena por nombre. 🧩 Pendiente con Productos: los SKU de productos con variantes solo vienen en `GET /productos/{id}`; hay que confirmar si la búsqueda puede traerlos o si el BFF consultará el detalle (hasta 10 llamadas por página, con caché de 60 s).
+🧩 El contrato real devuelve un contenedor paginado `{ items, pagina, tamanio, total }`; no es `productos` ni `tamaño`. Cada item trae `product_id`, `name`, `description` (nulable), `marca_id`, `categoria_id`, `tiene_variantes`, `sku_base` (nulable), `images` y `attributes`; **no** trae precio ni disponibilidad. Productos no filtra por talla, color ni ofertas, y solo ordena por nombre. Productos confirmó (A16) que no hay endpoint masivo de detalle: los SKU de productos con variantes solo vienen en `GET /productos/{id}`, así que el BFF consulta el detalle (hasta 10 llamadas por página) y agrupa los SKU en consultas de hasta 100. No hay TTL de caché contractual: los resultados solo se reutilizan dentro del turno. 🧩 Pendiente de Productos (etapa posterior): filtros de variantes, como talla y color.
 
 ## Frontend
 

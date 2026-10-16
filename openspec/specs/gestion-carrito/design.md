@@ -6,11 +6,11 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `GET /precios` | 🟡 A5 · scope `precios:leer` pendiente |
-| Productos | `POST /promociones/evaluar {channel_id, at, lines[], coupon_code, customer_ref}` | 🟡 A5 · scope `promociones:evaluar` pendiente |
-| Productos | Disponibilidad (SPEC-10) | 🟡 A5 |
+| Productos | `GET /precios?skus=&canal=CHATBOT` | 🟡 A5 · scope `precios:leer` pendiente |
+| Productos | `POST /promociones/evaluar {channel_id, at, lines[], coupon_code, customer_ref}` → un único `discount_amount` para toda la cesta (sin desglose por línea), con `promotion_id` y `reason`; ante `429` se respeta `Retry-After` | 🟡 A5 · scope `promociones:evaluar` pendiente |
+| Productos | Disponibilidad comercial y verificación por cantidad (SPEC-10) | 🟡 A5 |
 
-🧩 El carrito ya no debe armar `canal`, `lineas` ni `cupon`; el payload del contrato real usa `channel_id`, `lines`, `quantity`, `coupon_code` y `customer_ref`.
+🧩 El carrito ya no debe armar `canal`, `lineas` ni `cupon`; el payload del contrato real usa `channel_id`, `lines`, `quantity`, `coupon_code` y `customer_ref`. El nombre del descuento se resuelve por `promotion_id` contra `GET /promociones`; si no se encuentra o es nulo, la línea dice "Descuento" (comportamiento interino, no es contrato de Productos).
 
 ## Frontend
 

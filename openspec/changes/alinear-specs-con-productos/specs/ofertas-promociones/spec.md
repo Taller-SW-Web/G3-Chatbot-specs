@@ -43,7 +43,7 @@ El sistema DEBE (SHALL) mostrar en el carrito el resultado de la evaluación de 
 #### Scenario: Promoción automática aplicada
 - **DADO** un carrito elegible para una promoción
 - **CUANDO** se recalcula el carrito
-- **ENTONCES** el bloque `CARRITO` muestra una línea "Promoción <nombre>: -S/ 24.90" con el importe de `discount_amount`; si el `promotion_id` no se encuentra en el listado o es nulo, la línea dice "Descuento: -S/ 24.90"
+- **ENTONCES** el bloque `CARRITO` muestra una línea "Promoción <nombre>: -S/ 24.90" con el importe de `discount_amount`; si el `promotion_id` no se encuentra en el listado o es nulo, la línea dice "Descuento: -S/ 24.90" (comportamiento interino, no contrato de Productos)
 
 #### Scenario: El cliente pregunta por qué no se aplicó una promoción
 - **DADO** un carrito sin descuento

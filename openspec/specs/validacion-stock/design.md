@@ -16,7 +16,7 @@
 | Componente | Responsabilidad |
 |---|---|
 | `StockConflictNotice` | Mensaje de línea agotada con la acción "Quitar" y aviso de stock bajo. |
-| `AvailabilityBadge` | Disponible, pocas unidades o agotado (en tarjeta y detalle). |
+| `AvailabilityBadge` | `DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO` (en tarjeta y detalle). |
 | Manejo de `409` y `503` en `useCartMutations` | Muestra el aviso adecuado sin perder el estado del carrito. |
 
 ## Backend

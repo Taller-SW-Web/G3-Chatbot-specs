@@ -8,7 +8,7 @@ El sistema DEBE (SHALL) mostrar el bloque `CARRITO` recalculando en cada lectura
 #### Scenario: Resumen del carrito
 - **DADO** 2 líneas con una promoción aplicable
 - **CUANDO** el cliente escribe "¿cuánto llevo?"
-- **ENTONCES** se muestra el bloque `CARRITO` con las líneas (imagen, nombre, variante, cantidad y precio), el subtotal, una línea de descuento con el nombre de la promoción (se busca por `promotion_id` en `GET /promociones`, pero Productos no garantiza que figure ahí, y `promotion_id` puede ser nulo; si no se resuelve, "Descuento") y su importe, "Envío: se calcula al elegir la dirección" y el total
+- **ENTONCES** se muestra el bloque `CARRITO` con las líneas (imagen, nombre, variante, cantidad y precio), el subtotal, una línea de descuento con el nombre de la promoción (se busca por `promotion_id` en `GET /promociones`, pero Productos no garantiza que figure ahí, y `promotion_id` puede ser nulo; si no se resuelve, "Descuento", comportamiento interino que no es contrato de Productos) y su importe, "Envío: se calcula al elegir la dirección" y el total
 
 #### Scenario: El precio cambió
 - **DADO** una línea agregada a S/ 239.90 cuyo precio vigente ahora es S/ 299.90
@@ -23,7 +23,7 @@ El sistema DEBE (SHALL) mostrar el bloque `CARRITO` recalculando en cada lectura
 #### Scenario: Disponibilidad indeterminada en el carrito
 - **DADO** una línea con estado `INDETERMINADO`
 - **CUANDO** se muestra el carrito
-- **ENTONCES** la línea se mantiene y suma al total, con el aviso "No pudimos confirmar el stock"
+- **ENTONCES** la línea se mantiene y suma al total, con el aviso "No pudimos confirmar el stock" (comportamiento interino, no contrato de Productos)
 
 #### Scenario: Carrito vacío
 - **DADO** un carrito sin líneas

@@ -32,7 +32,7 @@ La PO confirmó el 2026-10-16 el vínculo entre cada cuenta de GitHub y su integ
 | H2-07 | Mathias Torres Lezama | MathiasTL | frontend | sin PR asociado (está en `main`) | `cb49bfc` | 2026-10-02 | ci(frontend): add pnpm workflow |
 | H2-08 (parcial) | Diego | Diego-ArevaloM | frontend | `feat/paridad-mockups` (#15) | `b01d76b` | 2026-10-03 | feat: paridad UI con Mockups |
 | H2-08 (parcial) | Diego | Diego-ArevaloM | specs | `docs/design-system` (#8) | `2582579` | 2026-10-05 | docs: agregar design system Inka Athletics |
-| H2-09 | Nikol Medrano | nikaaat | specs | `docs/h2-09-evidencia` | este documento | 2026-10-16 | Pendiente de PR y merge |
+| H2-09 | Nikol Medrano | nikaaat | specs | `docs/h2-09-evidencia` (#13) | `f705f6e` | 2026-10-16 | docs(h2-09): agregar evidencia del hito 2 |
 | H2-10 | Sebastian | SebJoq21 | backend | `feature/h2-10-migracion-0001` (#33) | `7d12c68` | 2026-10-02 | feat(h2-10): migracion 0001 initial schema + uuidv7/set_updated_at + deploy Supabase (Sebastian) |
 | H2-10 | Sebastian | SebJoq21 | backend | `feature/h2-10-migracion-0001` (#33) | `abda0e8` | 2026-10-02 | feat: Se agregó el archivo .env.template |
 
@@ -136,7 +136,7 @@ Estos casos solo cubren los entregables del Hito 2. Los casos funcionales del Hi
 | CP-H2-02 | Commit propio de Sonny en `main` | Fetch de backend | `git log origin/main --author=Gabriel --no-merges` y comprobar el login `SOoOnny` en GitHub | Al menos un commit | Hash y PR en la sección 1 |
 | CP-H2-03 | Commit propio de Diego en `main` | Fetch de frontend y specs | `git log origin/main --author=Diego-ArevaloM --no-merges` en cada repo | Al menos un commit | Hash y PR en la sección 1 |
 | CP-H2-04 | Commit propio de Alonso en `main` | Fetch de backend | `git log origin/main --author=Lume03 --no-merges` | Al menos un commit | Hash y PR en la sección 1 |
-| CP-H2-05 | Commits de Sebastian, Mathias y Nikol en `main` | Fetch de los tres repos | `git log origin/main --author=<autor> --no-merges` | Al menos un commit por integrante | Hash y PR en la sección 1. El de Nikol queda cumplido cuando se mergee este documento |
+| CP-H2-05 | Commits de Sebastian, Mathias y Nikol en `main` | Fetch de los tres repos | `git log origin/main --author=<autor> --no-merges` | Al menos un commit por integrante | Hash y PR en la sección 1. El de Nikol es `f705f6e` (PR #13) |
 | CP-H2-06 | `conversation` con modelo, adapter y test | Backend en `main`, dependencias instaladas | Comprobar que los archivos no estén vacíos y ejecutar `python -m pytest tests/unit/test_conversation_adapter.py` | Archivos con contenido y tests en verde | Salida de pytest y `git ls-tree -l` |
 | CP-H2-07 | `message` con modelo, adapter y test | Igual que CP-H2-06 | Igual, con `test_message_adapter.py` | Igual que CP-H2-06 | Igual que CP-H2-06 |
 | CP-H2-08 | `local_phone_verification` con modelo, adapter y test | Igual que CP-H2-06 | Igual, con `test_local_phone_verification_adapter.py` | Igual que CP-H2-06 | Igual que CP-H2-06 |
@@ -163,7 +163,7 @@ Estos casos solo cubren los entregables del Hito 2. Los casos funcionales del Hi
 | ID | Resultado | Detalle |
 |---|---|---|
 | CP-H2-01 a CP-H2-04 | Pasa | Sección 1 |
-| CP-H2-05 | Parcial | Sebastian y Mathias pasan. Nikol pasa cuando se mergee este documento |
+| CP-H2-05 | Pasa | Sebastian, Mathias y Nikol tienen commits en `main`; el de Nikol es `f705f6e` (PR #13, merge `c8c5e7b`) |
 | CP-H2-06 a CP-H2-19 | Pasa | Tabla 2.1 y ejecución de pytest |
 | CP-H2-20 y CP-H2-21 | Pasa en local | PostgreSQL 16.15 local, base vacía. No se ejecutó contra Supabase |
 | CP-H2-22 | Pasa | `0001 (head)` |
@@ -185,4 +185,3 @@ Los tests de integración de `development` (`tests/integration`) se omitieron to
 ## 5. Lo que no se pudo verificar
 
 - La migración contra el Supabase del equipo: solo se probó en PostgreSQL 16 local.
-- El commit propio de Nikol en `main`, hasta que se mergee este documento.

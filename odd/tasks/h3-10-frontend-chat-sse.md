@@ -35,7 +35,7 @@ Estado verificado el 2026-10-16 sobre `development` del frontend (con el PR #19 
 | H3-10F-5 | Verificación completa, prueba manual con el backend local y OpenAI real, y corrección de la captura visual de Playwright | Pendiente |
 
 - [x] H3-10F-1
-- [ ] H3-10F-2
+- [x] H3-10F-2
 - [ ] H3-10F-3
 - [ ] H3-10F-4
 - [ ] H3-10F-5
@@ -60,11 +60,11 @@ Puede ir en un solo PR o en uno por tarea. Se decide al cerrar H3-10F-3, según 
 
 ## Progreso
 
-Estado al 2026-10-16: H3-10F-1 hecha; H3-10F-2 es la siguiente. Copia en Engram: tema `odd/h3-10-frontend-chat-sse/tasks`.
+Estado al 2026-10-16: H3-10F-1 y H3-10F-2 hechas; H3-10F-3 es la siguiente. Copia en Engram: tema `odd/h3-10-frontend-chat-sse/tasks`.
 
 ## Siguiente paso
 
-Iniciar H3-10F-2: retirar WebSocket y `suscribirBloques`, reemplazar `enviarMensaje` por el stream, historial real y sin `conFallback` en los métodos del chat.
+Iniciar H3-10F-3: borrador en el store (tokens, bloques, `degradado` y `error`) y reescritura de `useChat` sobre `container.stream` y `cargarHistorial`. Decidir ahí qué hacer con un turno que termina sin `fin` ni `error`.
 
 ### Cierre de H3-10F-1 (2026-10-16)
 
@@ -73,3 +73,16 @@ Iniciar H3-10F-2: retirar WebSocket y `suscribirBloques`, reemplazar `enviarMens
 | H3-10F-1 | Delegada (un redactor; cinco archivos nuevos, ninguno existente modificado) | `ChatStreamPort` (unión `ChatStreamEvento` discriminada por `tipo` y `ChatStreamError`), parser SSE incremental puro y `ChatbotSseAdapter` con `fetch`, `credentials: "include"` y `AbortSignal`. Campos tomados de `sse.py`: `aceptado{mensajeId}`, `token{texto}`, `bloque{bloque}`, `degradado{motivo}`, `fin{mensajeId}`, `error{code}`. Un frame conocido con JSON inválido o campos faltantes se convierte en `error` con `STREAM_INVALIDO`; tras un `error` se cancela la lectura; un cuerpo de error que no es JSON da `ERROR_DESCONOCIDO`. 42 pruebas pasan (15 del parser, con corte en cada byte, y 18 del adaptador). `typecheck` y `build` pasan; `lint` sin errores y con 3 advertencias previas de `react-hooks/incompatible-library` | Código leído por el orquestador; `typecheck`, `test` y `lint` repetidos | Commit pendiente de confirmación del responsable, en `feature/h3-10-chat-sse` del frontend |
 
 Nota: el adaptador aún no está conectado al `container` ni a ningún caso de uso (H3-10F-2 y H3-10F-3). El token se lee de `useChatStore.getState().accessToken`; mientras H3-09 no entregue el validador de JWT, el backend responde `501` si llega la cabecera `Authorization`, y hoy no hay token en el store.
+
+### Cierre de H3-10F-2 (2026-10-16)
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-10F-2 | Delegada (un redactor; más de dos archivos no triviales) | Verificado en el backend: el historial es un arreglo simple de los últimos 50 mensajes, `rol` ya llega como `user` o `bot` y `bloques` llega como `{"blocks": [...]}` o `null`. Se eliminan `WebSocketPort`, `ChatbotWebSocketAdapter`, `useChat` (sin importadores), `suscribirBloques`, `enviarMensaje`, `wsReintentos` y `MOCK_MENSAJES`. `container.ws` pasa a `container.stream`. `cargarHistorial` es un `GET` real sin fallback, con `mapearHistorial` (desenvuelve `blocks`, lanza ante un mensaje mal formado) y sin parámetro `desde`. `enviarMensajeUseCase` usa el puerto de streaming y valida de 1 a 1000 caracteres. 59 pruebas pasan (17 nuevas); `typecheck`, `lint` (0 errores, 3 advertencias previas) y `build` pasan | Código central leído por el orquestador; `typecheck`, `test`, `lint` y `build` repetidos | Commit pendiente de confirmación del responsable, en `feature/h3-10-chat-sse` del frontend |
+
+Pendientes que deja H3-10F-2:
+
+- `docs/arquitectura-frontend.md` sigue describiendo WebSocket, polling con `?desde=`, `WebSocketPort`, `ChatbotWebSocketAdapter` y `useChat` (líneas 15-16, 31-36, 51, 84, 102 y 113-118). Se reescribe para SSE en una pasada de documentación al cerrar H3-10F-5.
+- `pollingMs` en `apiConfig.ts` quedó sin consumidor; decidir en H3-10F-3 si el polling de respaldo se mantiene o se elimina.
+- `ChatPage.tsx` línea 47 conserva un comentario sobre `useChat` que quedará obsoleto; se corrige en H3-10F-4.
+- Resuelto: la forma del historial (pregunta abierta de este documento).

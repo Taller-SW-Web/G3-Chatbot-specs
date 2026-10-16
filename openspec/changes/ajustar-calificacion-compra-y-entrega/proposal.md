@@ -13,7 +13,7 @@ SPEC-24 mostraba un modal de calificación justo tras el pago y lo enviaba a Ven
 
 ## Capabilities
 
-- `retroalimentacion-cliente`: MODIFIED requisito 2; ADDED requisito 7.
+- `retroalimentacion-cliente`: el requisito 2 se reemplaza (REMOVED "Calificación de la entrega (CSAT, vía Ventas)" y ADDED "Calificación de la entrega con caritas (CSAT, vía Ventas)", porque OpenSpec no permite renombrar el escenario "Sin estrellas seleccionadas" dentro de un MODIFIED); ADDED requisito 7.
 - `retroalimentacion-cliente/design.md`: componentes, tablas en inglés (`message_reaction`, `feedback_suggestion`, `purchase_rating`) y `order_ref.csat_sent`.
 
 ## Questions to Confirm

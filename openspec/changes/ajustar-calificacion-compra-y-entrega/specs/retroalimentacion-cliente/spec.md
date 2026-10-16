@@ -1,19 +1,25 @@
-## MODIFIED Requirements
+## REMOVED Requirements
 
 ### Requirement: Calificación de la entrega (CSAT, vía Ventas)
-El sistema DEBE (SHALL) ofrecer la calificación del pedido (CSAT de Ventas) al pie de la pantalla de detalle de un pedido cuyo estado sea `ENTREGADO`, con tres caritas (feliz, neutral, triste) y un comentario opcional, y DEBE (SHALL) enviarla a Ventas (`POST /api/v2/csat`) en vez de almacenarla como calificación propia. Las caritas se envían como `puntuacion` 5 (feliz), 3 (neutral) y 1 (triste), la escala acordada por Ventas con Marketplace. El `clienteId` del cuerpo DEBE (MUST) ser igual al `sub` del token del cliente. No es una ventana emergente: es un bloque fijo al pie de la pantalla.
+**Reason**: Se reemplaza por "Calificación de la entrega con caritas (CSAT, vía Ventas)": la calificación pasa de un modal de estrellas tras el pago a un bloque con caritas al pie de un pedido `ENTREGADO`, y su escenario de selección vacía se llama "Sin carita seleccionada". OpenSpec no permite renombrar un escenario dentro de un requisito MODIFIED.
+**Migration**: Sigue siendo SPEC-24 · Requisito 2; su comportamiento vigente está en el requisito añadido "Calificación de la entrega con caritas (CSAT, vía Ventas)".
 
-*Trazabilidad: SPEC-24 · Requisito 2. Conecta con Ventas F5 — CSAT; ver `docs/contratos-integracion.md`. Ventas solo acepta calificar pedidos `ENTREGADO` (`422 ORDER_NOT_DELIVERED`).*
+## ADDED Requirements
+
+### Requirement: Calificación de la entrega con caritas (CSAT, vía Ventas)
+El sistema DEBE (SHALL) ofrecer la calificación del pedido (CSAT de Ventas) en un bloque fijo al pie del detalle de un pedido `ENTREGADO`, no en una ventana emergente, con tres caritas (feliz, neutral, triste) y un comentario opcional, y DEBE (SHALL) enviarla a Ventas (`POST /api/v2/csat`) en vez de almacenarla como calificación propia.
+
+*Trazabilidad: SPEC-24 · Requisito 2. Ventas F5 — CSAT (`docs/contratos-integracion.md`); solo acepta pedidos `ENTREGADO`.*
 
 #### Scenario: Calificación enviada
 - **DADO** el detalle de un pedido `ENTREGADO` que el cliente no ha calificado
 - **CUANDO** el cliente toca una carita y pulsa "Enviar calificación"
-- **ENTONCES** se llama a `POST /api/v2/csat {pedidoId, clienteId, canal: "CHATBOT", puntuacion, comentario}`, Ventas responde `201`, y el bloque se reemplaza por un agradecimiento breve
+- **ENTONCES** se llama a `POST /api/v2/csat {pedidoId, clienteId, canal: "CHATBOT", puntuacion, comentario}`, con el `clienteId` igual al `sub` del token del cliente y `puntuacion` 5 (feliz), 3 (neutral) o 1 (triste), la escala acordada por Ventas con Marketplace; Ventas responde `201`, y el bloque se reemplaza por el agradecimiento "¡Gracias por tu calificación!"
 
-#### Scenario: Sin estrellas seleccionadas
+#### Scenario: Sin carita seleccionada
 - **DADO** el bloque de calificación visible al pie del detalle del pedido
-- **CUANDO** el cliente no ha tocado ninguna carita
-- **ENTONCES** el botón "Enviar calificación" permanece deshabilitado
+- **CUANDO** el cliente no ha tocado ninguna de las tres caritas
+- **ENTONCES** el botón "Enviar calificación" permanece deshabilitado hasta que elija una carita
 
 #### Scenario: El cliente lo descarta
 - **DADO** el bloque de calificación visible
@@ -45,7 +51,6 @@ El sistema DEBE (SHALL) ofrecer la calificación del pedido (CSAT de Ventas) al 
 - **CUANDO** se muestra la pantalla
 - **ENTONCES** el bloque de calificación no aparece
 
-## ADDED Requirements
 
 ### Requirement: Valoración de la experiencia de compra (propia del chatbot)
 El sistema DEBE (SHALL) mostrar, después del pago y una vez confirmado el pedido, un popup "Califica tu compra" con estrellas (1 a 5) y comentario opcional, y DEBE (SHALL) guardar la valoración en el propio chatbot, sin enviarla a Ventas. No bloquea la confirmación del pedido.
@@ -55,7 +60,7 @@ El sistema DEBE (SHALL) mostrar, después del pago y una vez confirmado el pedid
 #### Scenario: Valoración enviada
 - **DADO** un pedido recién pagado y confirmado, con el popup abierto
 - **CUANDO** el cliente toca una cantidad de estrellas y pulsa "Enviar calificación"
-- **ENTONCES** se guarda `purchase_rating` con el pedido, el cliente, las estrellas (1 a 5) y el comentario, y el popup se reemplaza por un agradecimiento breve
+- **ENTONCES** se guarda `purchase_rating` con el pedido, el cliente, las estrellas (1 a 5) y el comentario, y el popup se reemplaza por el agradecimiento "¡Gracias por tu calificación!"
 
 #### Scenario: Sin estrellas seleccionadas
 - **DADO** el popup abierto

@@ -155,7 +155,7 @@ Recopilado de la sección *Fuera de alcance* de las 24 specs, sin duplicados. Cu
 | Pedir la calificación de la entrega de forma proactiva cuando el pedido se entrega (el chatbot no recibe aviso de entrega; se ofrece al abrir el pedido) | SPEC-24 |
 | Enviar la encuesta de satisfacción por correo, o encuestas periódicas o proactivas (NPS) | SPEC-16, SPEC-24 |
 | Bandeja o panel de revisión de sugerencias, bugs, valoraciones o calificaciones dentro de la app; el seguimiento con el cliente es por correo | SPEC-24 |
-| Editar o borrar una reacción, valoración o calificación ya enviada | SPEC-24 |
+| Borrar una reacción ya enviada (cambiarla de 👍 a 👎 o al revés sí está incluido), y editar o borrar una valoración o calificación ya enviada | SPEC-24 |
 | Mapa o rastreo GPS en tiempo real | SPEC-18 |
 | Reprogramar la entrega o cambiar la dirección desde el chat | SPEC-18 |
 | Contacto directo con el repartidor | SPEC-18 |

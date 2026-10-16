@@ -24,6 +24,8 @@ Documentos transversales:
 | [`docs/producto/`](docs/producto/README.md) | Capa de producto sobre las specs: alcance, épicas, historias de usuario, reglas de negocio, Definición de Listo y de Terminado, y trazabilidad (no reemplaza a las specs) |
 | [`docs/conversacion/`](docs/conversacion/README.md) | Diseño conversacional sobre las specs: persona y tono, catálogo de intenciones, diálogos de ejemplo, flujos, KPIs del chatbot y privacidad (no reemplaza a las specs) |
 | [`docs/arquitectura/`](docs/arquitectura/README.md) | Modelo C4 (contexto, contenedores y componentes del backend) y registro de decisiones de arquitectura (ADR) sobre las specs (no reemplaza a las specs) |
+| [`docs/design-system.md`](docs/design-system.md) | Sistema de diseño de los mockups: marca, tokens de color, tipografía, espaciado, componentes base, patrones por pantalla y accesibilidad |
+| [`docs/propuestas-ux.md`](docs/propuestas-ux.md) | Las 3 propuestas de UX de retroalimentación del cliente (SPEC-24): reacción a una respuesta, calificación de la entrega y valoración de la compra |
 
 > Esta versión incorpora la arquitectura hexagonal (frontend y backend) y los wireframes mobile ya definidos por el equipo. Las secciones marcadas 🧩 reflejan decisiones tomadas a partir de esos artefactos; lo que no estaba explícito en ellos queda anotado como supuesto.
 
@@ -144,7 +146,7 @@ El frontend guarda el `accessToken` en **`chatStore` respaldado por LocalStorage
 | Imágenes del chat (SPEC-23) | Puerto `AttachmentStorage` con `SupabaseAttachmentStorage` (bucket privado de Supabase Storage); el LLM (`gpt-6-luna`, visión sin verificar) recibe las imágenes en base64 |
 | Correo | SMTP (Mailtrap en desarrollo) |
 | Pruebas | pytest, respx (mocks HTTP), Prism para el mock de Seguridad, Vitest + Testing Library, Playwright (E2E) |
-| Diseño | Figma |
+| Diseño | [Figma](https://www.figma.com/design/RjFXUJR82LQ2vSd6UP2xEj/Chatbot?node-id=1116-2&p=f&t=o8r5m6UtTPqXuxOn-0) · [sistema de diseño](docs/design-system.md) · [propuestas de UX](docs/propuestas-ux.md) |
 
 > ✅ **Aprobado por el profesor:** los lineamientos del curso listan Java Spring Boot, .NET Core o Node.js como backend; el equipo optó por Python/FastAPI y el profesor lo aceptó.
 

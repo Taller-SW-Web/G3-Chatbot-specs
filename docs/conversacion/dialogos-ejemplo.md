@@ -23,7 +23,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 |---|---|---|---|
 | D-01 | Primer contacto anónimo | SPEC-05 · Req. 2, 12 | INT-SIS-01, INT-CAT-05 |
 | D-02 | Compra completa: búsqueda → detalle → carrito → pago → confirmación | SPEC-05, 06, 07, 09, 11, 12, 14, 15, 16 | INT-CAT-01, INT-CAT-08, INT-CAT-09, INT-CAT-11, INT-CHK-03 |
-| D-03 | Stock parcial, agotado y variante inexistente | SPEC-09 · Req. 4; SPEC-10 · Req. 1, 4 | INT-CAR-01, INT-CAR-02, INT-CAT-09 |
+| D-03 | Stock bajo, agotado y variante inexistente | SPEC-09 · Req. 4; SPEC-10 · Req. 1, 4 | INT-CAR-01, INT-CAR-02, INT-CAT-09 |
 | D-04 | Pedido ambiguo con aclaración | SPEC-05 · Req. 3, 5; SPEC-07 · Req. 1 | INT-SIS-05, INT-CAT-04 |
 | D-05 | Cupón inválido | SPEC-08 · Req. 4; SPEC-13 · Req. 1, 2, 5 | INT-CAT-06, INT-CHK-01 |
 | D-06 | Pago rechazado 3 veces | SPEC-14 · Req. 5; SPEC-15 · Req. 3 | INT-CHK-03 |
@@ -82,7 +82,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 **Usuario:** negra
 `⟶ tool: agregar_al_carrito({productoRef: 2, talla: "41", color: "negro", cantidad: 1})`
-`⟵ SKU resuelto; stock validado en vivo (available ≥ 1); línea creada`
+`⟵ SKU resuelto; estado comercial `DISPONIBLE` y verificación `SUFICIENTE`; línea creada`
 `⟵ Productos devuelve 2 candidatos de complemento con stock`
 **Botleta:** Agregué Zapatillas X talla 41 (S/ 289.90). Tu carrito: 1 producto · S/ 289.90
 `[CARRITO]` resumido · `[Ver carrito]` `[Seguir comprando]` `[Pagar]`
@@ -108,10 +108,10 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 ---
 
-## D-03 · Stock parcial, agotado y variante inexistente
+## D-03 · Stock bajo, agotado y variante inexistente
 
-- **Precondiciones:** carrito con 2 unidades de las medias running (SKU con `available = 3`); carrusel previo de zapatillas.
-- **Referencias:** SPEC-10 · Req. 1 (Stock parcial; SKU agotado), SPEC-10 · Req. 4 (Consulta de talla), SPEC-09 · Req. 4 (Combinación inexistente o agotada), SPEC-10 · RNF *Transparencia*.
+- **Precondiciones:** carrito con 2 unidades de las medias running (SKU con estado `STOCK_BAJO`); carrusel previo de zapatillas.
+- **Referencias:** SPEC-10 · Req. 1 (Stock parcial reinterpretado para `STOCK_BAJO`; cantidad mayor a la disponible; SKU agotado), SPEC-10 · Req. 4 (Consulta de talla), SPEC-09 · Req. 4 (Combinación inexistente o agotada), SPEC-10 · RNF *Transparencia*.
 - **Intenciones:** INT-CAR-02, INT-CAR-01, INT-CAT-09.
 
 **Usuario:** agrégame 2 medias más
@@ -127,7 +127,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 **Usuario:** tienen las Ultraboost en 40?
 `⟶ tool: consultar_disponibilidad({producto: "Ultraboost", talla: "40"})`
-`⟵ available = 4 (≤ 5)`
+`⟵ estado STOCK_BAJO`
 **Botleta:** Quedan pocas unidades.
 `[Agregar]`
 
@@ -139,7 +139,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 **Usuario:** y la primera?
 `⟶ tool: agregar_al_carrito({productoRef: 1, talla: "42", color: "rojo"})`
-`⟵ available = 0 en todas las variantes`
+`⟵ estado AGOTADO en todas las variantes`
 **Botleta:** Ese modelo está agotado. Estos productos similares sí tienen stock:
 `[CARRUSEL_PRODUCTOS]` hasta 3 similares con stock
 

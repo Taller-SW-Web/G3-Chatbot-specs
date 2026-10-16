@@ -524,7 +524,7 @@ Los datos sensibles (**contraseña, OTP, tarjeta, dirección y documento**) **no
 | `pagina` | entero | ≥ 1; 10 resultados por página | "ver más" | SPEC-06 · Req. 4 |
 | `productoRef` | entero | 1..N del `contexto.ultimoCarrusel` de **esa** conversación (N ≤ 10); sin carrusel, se pregunta | "el segundo", "la tercera", "esa" | Memoria de trabajo (SPEC-05 · Req. 5) |
 | `sku` | texto | SKU activo; lo resuelve el backend, no el LLM | — | Productos (SPEC-09) |
-| `cantidad` | entero | 1–10 al agregar; 0–10 al cambiar (0 elimina); `cantidadEnCarrito + solicitada ≤ available` | "dos", "un par" (= 2), "una más" | SPEC-11 · Req. 1–2; SPEC-10 · Req. 1 |
+| `cantidad` | entero | 1–10 al agregar; 0–10 al cambiar (0 elimina); estado distinto de `AGOTADO` y verificación no `INSUFICIENTE` | "dos", "un par" (= 2), "una más" | SPEC-11 · Req. 1–2; SPEC-10 · Req. 1 |
 | `itemId` | texto | Línea del carrito del cliente; se resuelve por nombre; si es ambigua, "¿Cuáles?" | "las medias", "las zapatillas" | Carrito propio (SPEC-11 · Req. 2) |
 | `actividad` | texto | — | "running", "pádel", "fútbol" | SPEC-07 · Alcance |
 | `nivel` | texto | — | "principiante", "competencia" | SPEC-07 · Alcance |

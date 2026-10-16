@@ -96,7 +96,7 @@ flowchart TD
     C1 --> C
     C -- "Sí" --> D{"3. ¿Carrito válido?<br/>revalidación masiva de stock"}
     D -- "Vacío o sin líneas válidas" --> D1["'Tu carrito no tiene productos disponibles para comprar'"]
-    D -- "Cambió el stock" --> D2["409 CARRITO_DESACTUALIZADO<br/>Ajustar o Quitar"]
+    D -- "Cambió el stock" --> D2["409 CARRITO_DESACTUALIZADO<br/>Quitar"]
     D2 --> D
     D -- "OK" --> E["Navega a CheckoutPage"]
     E --> F{"4. ¿Dirección y cotización vigentes?<br/>(en CheckoutPage)"}

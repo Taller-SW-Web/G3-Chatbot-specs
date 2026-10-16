@@ -10,7 +10,7 @@
 
 | Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
 |---|---|---|---|---|---|---|
-| EP-04 | Must | 5 | Hito 3 | `SPEC-10 · Req. 1` | RN-CAR-01, RN-CAR-02 | Productos 🟡 (A5: `/inventario/disponibilidad`) |
+| EP-04 | Must | 5 | Hito 3 | `SPEC-10 · Req. 1` | RN-CAR-01, RN-CAR-02 | Productos 🟡 (A5: `/inventario/disponibilidad/comercial`) |
 
 **Como** cliente, **quiero** que el chat me avise si pido más unidades de las que hay y me proponga alternativas, **para** no llegar al pago con un carrito imposible de cumplir.
 
@@ -32,7 +32,7 @@
 **Como** cliente, **quiero** enterarme antes de pagar si algo de mi carrito se agotó mientras elegía, **para** ajustar mi compra sin que se me cobre algo que no se puede entregar.
 
 **Criterios de aceptación**
-- `SPEC-10 · Req. 2 · Scenario: El stock cambió desde que se agregó` — se responde `409 CARRITO_DESACTUALIZADO` con detalle por línea y las acciones "Ajustar a N" y "Quitar del carrito".
+- `SPEC-10 · Req. 2 · Scenario: El stock cambió desde que se agregó` — se responde `409 CARRITO_DESACTUALIZADO` con detalle por línea y la acción "Quitar del carrito".
 - `SPEC-10 · Req. 2 · Scenario: Todas las líneas disponibles` — la validación pasa y el checkout continúa.
 - `SPEC-10 · Req. 2 · Scenario: Ventas rechaza por stock al crear el pedido` — se vuelve al carrito con la revalidación completa y sin cobrar.
 
@@ -67,7 +67,7 @@
 **Como** cliente, **quiero** preguntar "¿tienen las Ultraboost en 40?" y obtener una respuesta directa, **para** decidir sin abrir el detalle del producto.
 
 **Criterios de aceptación**
-- `SPEC-10 · Req. 4 · Scenario: Consulta de talla` — se responde si hay disponibilidad (o "Quedan pocas unidades" si son ≤ 5) con el botón "Agregar".
+- `SPEC-10 · Req. 4 · Scenario: Consulta de talla` — se responde si hay disponibilidad (o "Quedan pocas unidades" si el estado es `STOCK_BAJO`) con el botón "Agregar".
 - `SPEC-10 · Req. 4 · Scenario: Consulta de una variante inexistente` — se informan las tallas que maneja el producto.
 
 **Prioridad:** Should: mejora la conversación; la disponibilidad ya se ve en la tarjeta y en el detalle.

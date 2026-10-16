@@ -222,6 +222,14 @@ Cierre de H3-00 (2026-10-16):
 
 Fuera de H3-03, en H3-18: `DATABASE_URL`, migraciones como paso del despliegue, secretos por entorno, `MODULES_MODE` ([ADR-0022](../../docs/arquitectura/adr/ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md)), entorno de producción para `main` y prueba del SSE sin búfer a través del proxy de Vercel ([ADR-0023](../../docs/arquitectura/adr/ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md)).
 
+Avance de H3-16 (2026-10-16):
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-16 (en revisión) | Hecha por Nikol | `docs/casos-prueba-hito-3.md`: 126 casos, uno por escenario de las specs del hito (SPEC-01, 02, 03, 05, 06, 09, 10 y 11), con Dado, Cuando y Entonces tomados de la spec, nivel (23 E2E, 63 API, 3 de unidad y 28 de evaluación del LLM), tarea responsable y la prueba del backend que ya cita el escenario (10 casos). 9 escenarios quedan marcados fuera del hito (imágenes, checkout, pedido y promociones). Frontend: `tests/e2e/smoke.spec.ts` con siete pruebas de humo sin respuestas simuladas; E2E-01 (inicio) y E2E-02 (barra lateral) activas, E2E-03 a E2E-07 en `test.fixme` hasta que H3-09, H3-10, H3-12, H3-13 y H3-14 conecten su funcionalidad; `playwright.config.ts` acepta `E2E_BASE_URL` para correr contra un entorno desplegado. Verificado en local contra el backend y PostgreSQL 18: E2E-01 y E2E-02 pasan con H3-15 incluido; sin H3-15, E2E-02 falla porque "Nuevo chat" no llama al backend | Pendiente | `bb107d1` en `feature/h3-16-e2e-humo` del frontend |
+
+Pendientes de H3-16 para H3-19: definir cómo obtiene la prueba el enlace de verificación de correo en staging (buzón de pruebas o token del mock de Seguridad) y una cuenta de prueba (`E2E_CORREO`, `E2E_CLAVE`) para E2E-05; la URL del frontend en Vercel (H3-04) para correr las pruebas con `E2E_BASE_URL`.
+
 ## Siguiente paso
 
 Cerrar la Fase 0: Mathias termina H3-04 en Vercel (H3-00 cerrada el 2026-10-16). Arranca la Fase 1 con el reparto vertical del 2026-10-15: Alonso en H3-11 y Sonny en H3-12 (ajustada a Productos 0.5.0 cuando se mergee specs #11), y el resto según su funcionalidad. Actualizar la división de responsabilidades del equipo con el nuevo reparto. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.

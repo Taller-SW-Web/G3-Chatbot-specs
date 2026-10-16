@@ -6,21 +6,24 @@ Diseño visual: [archivo de Figma del chatbot](https://www.figma.com/design/RjFX
 
 **Fuente de las propuestas 2 y 3.** El `spec.md` base de SPEC-24 todavía describe el Requisito 2 con su redacción anterior: un modal de estrellas tras el pago que se envía a Ventas. El cambio [`ajustar-calificacion-compra-y-entrega`](../openspec/changes/ajustar-calificacion-compra-y-entrega/specs/retroalimentacion-cliente/spec.md), aún sin archivar, separa esa calificación en dos:
 
-- el Requisito 2 modificado, con las caritas al pie del pedido `ENTREGADO`;
+- el Requisito 2 reemplazado por "Calificación de la entrega con caritas (CSAT, vía Ventas)", con las caritas al pie del pedido `ENTREGADO`;
 - un Requisito 7 nuevo, con el popup de estrellas que se guarda en el chatbot.
 
 El `design.md`, el Alcance y las preguntas resueltas del `spec.md` ya siguen esa separación. Este documento también la sigue y cita los escenarios de ese cambio.
 
+Las decisiones de la PO sobre SPEC-24 están en ese cambio, en el `spec.md` y en el `design.md`: la reacción enviada se puede cambiar; el escenario de las caritas se llama "Sin carita seleccionada"; el agradecimiento de ambas calificaciones es "¡Gracias por tu calificación!"; y el límite de frecuencia de las calificaciones queda pendiente hasta el Hito 5-6.
+
 | # | Propuesta | Componente (`design.md`) | Destino del dato | Requisito |
 |---|---|---|---|---|
 | 1 | Reacción 👍/👎 a una respuesta del asistente | `MessageFeedback` + `useReaction` | Chatbot, tabla `message_reaction` | SPEC-24 · Requisito 1 |
-| 2 | Calificación de la entrega (caritas 5/3/1) | `DeliveryRatingFooter` | Ventas, `POST /api/v2/csat` | SPEC-24 · Requisito 2 (modificado) |
+| 2 | Calificación de la entrega (caritas 5/3/1) | `DeliveryRatingFooter` | Ventas, `POST /api/v2/csat` | SPEC-24 · Requisito 2 (reemplazado) |
 | 3 | Valoración de la propia compra (estrellas 1 a 5) | `PurchaseRatingModal` | Chatbot, tabla `purchase_rating` | SPEC-24 · Requisito 7 (nuevo) |
 
 Reglas comunes a las tres:
 
 - **No bloquean el flujo principal.** Ninguna puede impedir ni demorar conversar, pagar o ver el pedido. Los fallos se degradan en silencio o con un mensaje breve, nunca con un bloqueo (requisito no funcional "No bloqueante").
-- **No se editan ni se eliminan.** Una calificación ya enviada no se edita ni se elimina (Fuera de alcance). La reacción es la excepción, porque la spec permite cambiarla (propuesta 1).
+- **Lo enviado no se borra.** Una calificación ya enviada no se edita ni se elimina, y una reacción no se elimina (Fuera de alcance). Una reacción sí se puede cambiar de 👍 a 👎 o al revés (propuesta 1).
+- **Límites de frecuencia.** Las reacciones tienen un límite de 30 por minuto y las sugerencias de 5 por hora. El límite de las calificaciones queda pendiente hasta el Hito 5-6, sin valor fijado (`design.md`).
 
 ---
 
@@ -48,7 +51,7 @@ Reglas comunes a las tres:
 | Éxito | El pulgar tocado queda marcado; no hay mensaje adicional | "Reacción positiva" |
 | Cambio | El nuevo pulgar queda marcado y el anterior se desmarca | "Cambiar de reacción" |
 | Error | El ícono se marca igual. El registro se reintenta en segundo plano, sin mostrar error ni bloquear el chat | "Registro falla" |
-| Ya enviado | Se ve la reacción vigente y puede cambiarse al otro pulgar; la spec no define cómo retirarla | "Cambiar de reacción" |
+| Ya enviado | Se ve la reacción vigente y se puede cambiar al otro pulgar; no se puede retirar | "Cambiar de reacción" |
 | Límite de uso | Por encima de 30 reacciones en 1 minuto (por cliente o `chat_sid`), las siguientes se ignoran en silencio, sin mensaje | "Exceso de reacciones" (Requisito 6) |
 
 **Accesibilidad.** Se aplican las reglas de `design-system.md` §5.4, §8 y §9:
@@ -89,26 +92,27 @@ Reglas comunes a las tres:
 2. Al pie ve "¿Qué tal fue tu pedido?", tres caritas (feliz, neutral y triste), un comentario opcional y el botón "Enviar calificación", deshabilitado.
 3. Toca una carita y el botón se habilita. Las caritas se envían como `puntuacion` 5 (feliz), 3 (neutral) y 1 (triste).
 4. Pulsa "Enviar calificación". El backend valida que el pedido sea suyo y esté `ENTREGADO`, y llama a `POST /api/v2/csat {pedidoId, clienteId, canal: "CHATBOT", puntuacion, comentario}` con el token del cliente. El `clienteId` del cuerpo es el `sub` del token.
-5. Ventas responde `201` y el bloque se reemplaza por un agradecimiento breve.
+5. Ventas responde `201` y el bloque se reemplaza por "¡Gracias por tu calificación!".
 
 **Estados.**
 
 | Estado | Qué ve el cliente | Escenario |
 |---|---|---|
-| Vacío | Bloque con las tres caritas sin seleccionar y "Enviar calificación" deshabilitado | "Sin estrellas seleccionadas" (así se llama en el cambio, aunque son caritas) |
+| Vacío | Bloque con las tres caritas sin seleccionar y "Enviar calificación" deshabilitado | "Sin carita seleccionada" |
 | No aplica | Pedido no `ENTREGADO`: el bloque no aparece | "Pedido aún no entregado" |
 | Descartado | Si sale sin responder, no se envía nada y el bloque vuelve a aparecer al reabrir ese pedido | "El cliente lo descarta" |
-| Éxito | Ventas responde `201`; el bloque se reemplaza por un agradecimiento breve. La spec no fija el texto | "Calificación enviada" |
+| Éxito | Ventas responde `201`; el bloque se reemplaza por "¡Gracias por tu calificación!" | "Calificación enviada" |
 | Ya enviado | Ventas responde `409 CSAT_ALREADY_SUBMITTED`; el bloque se reemplaza por "Ya calificaste este pedido", sin presentarlo como error, y se marca `order_ref.csat_sent` | "Encuesta ya registrada para ese pedido" |
 | Error: Ventas no responde | "No pudimos enviar tu calificación, intenta de nuevo más tarde". El bloque se conserva para reintentar y el detalle del pedido sigue usable | "Ventas no disponible al calificar" |
 | Error: pedido ajeno (`403`) | "No pudimos enviar tu calificación, intenta de nuevo". El bloque se conserva | "El pedido no es del cliente" |
 | Error: no entregado según Ventas (`422 ORDER_NOT_DELIVERED`) | El bloque se oculta y el detalle se refresca con el estado vigente | "Pedido no entregado según Ventas" |
+| Límite de uso | Pendiente hasta el Hito 5-6: no hay un límite de frecuencia fijado para las calificaciones | `design.md` |
 
 **Accesibilidad.** Se aplican las reglas de `design-system.md` §2.6, §5.1 y §9:
 
 - Las caritas son un grupo de opción única con `role="group"` y una etiqueta visible, como el selector de talla.
 - Cada carita tiene `aria-label` con su significado y `aria-pressed` cuando está seleccionada. El estado nunca se indica solo con color.
-- El agradecimiento y "Ya calificaste este pedido" se anuncian con `role="status" aria-live="polite"`.
+- "¡Gracias por tu calificación!" y "Ya calificaste este pedido" se anuncian con `role="status" aria-live="polite"`.
 - El botón deshabilitado usa `disabled:opacity-45 disabled:cursor-not-allowed`.
 - El comentario es un `textarea` con estilo `.wf-input` y `aria-label`.
 
@@ -118,7 +122,7 @@ Reglas comunes a las tres:
 - Cumple con la grilla base de 16 px de margen en menos de 576 px (§4.4).
 
 **Correspondencia con SPEC-24.**
-- Requisito 2 "Calificación de la entrega (CSAT, vía Ventas)" en su versión modificada por `ajustar-calificacion-compra-y-entrega`, con los escenarios citados en la tabla.
+- Requisito 2 "Calificación de la entrega con caritas (CSAT, vía Ventas)", que en el cambio `ajustar-calificacion-compra-y-entrega` reemplaza a "Calificación de la entrega (CSAT, vía Ventas)", con los escenarios citados en la tabla.
 - Requisitos no funcionales:
   - Rendimiento: enviar la calificación a Ventas, p95 ≤ 1 s.
   - Idempotencia: `pedidoId` como clave natural; Ventas responde `409` ante duplicados.
@@ -139,7 +143,7 @@ Reglas comunes a las tres:
 
 1. El cliente paga y se confirma el pedido. Sobre la confirmación aparece el popup "Califica tu compra" con estrellas de 1 a 5, un comentario opcional y los botones "Enviar calificación" (deshabilitado) y "Ahora no".
 2. Toca una cantidad de estrellas y el botón "Enviar calificación" se habilita.
-3. Pulsa "Enviar calificación". Se guarda `purchase_rating` con el pedido, el cliente, las estrellas y el comentario, que tiene un máximo de 500 caracteres según el modelo de `design.md`. El popup se reemplaza por un agradecimiento breve.
+3. Pulsa "Enviar calificación". Se guarda `purchase_rating` con el pedido, el cliente, las estrellas y el comentario, que tiene un máximo de 500 caracteres según el modelo de `design.md`. El popup se reemplaza por "¡Gracias por tu calificación!".
 4. Si en cambio toca "Ahora no", el popup se cierra sin guardar nada y no vuelve a mostrarse para ese pedido en ese navegador.
 
 **Estados.**
@@ -148,16 +152,17 @@ Reglas comunes a las tres:
 |---|---|---|
 | Vacío | Popup con las estrellas sin seleccionar y "Enviar calificación" deshabilitado | "Sin estrellas seleccionadas" |
 | Descartado | "Ahora no" cierra el popup. El descarte se recuerda por pedido en el navegador (LocalStorage, con `orderId` como clave) y no en el backend: si se borra el almacenamiento o se usa otro dispositivo, el popup puede volver a mostrarse | "El cliente lo descarta" |
-| Éxito | La valoración se guarda y el popup se reemplaza por un agradecimiento breve. La spec no fija el texto | "Valoración enviada" |
+| Éxito | La valoración se guarda y el popup se reemplaza por "¡Gracias por tu calificación!" | "Valoración enviada" |
 | Ya enviado | Si el pedido ya tiene valoración, el popup no aparece y no admite una segunda | "Una sola valoración por pedido" |
 | Error | "No pudimos guardar tu opinión". La confirmación del pedido sigue visible y sin cambios | "Falla el guardado" |
+| Límite de uso | Pendiente hasta el Hito 5-6: no hay un límite de frecuencia fijado para las calificaciones | `design.md` |
 
 **Accesibilidad.** Se aplican las reglas de `design-system.md` §6 (fila 12) y §9:
 
 - El popup sigue el patrón de modal: overlay `bg-surface-ink/60` con `fade-in` y hoja `sheet bg-white rounded-t-lg p-4`.
 - Se cierra tocando fuera o con `IconBtn X`, que lleva `aria-label`.
 - Las estrellas forman un grupo con `role="group"` y etiqueta visible. Cada estrella tiene `aria-label` con su número ("1 estrella" a "5 estrellas") y `aria-pressed` en la seleccionada, y la cantidad se distingue por forma, no solo por color.
-- El agradecimiento y el error se anuncian con `role="status" aria-live="polite"`.
+- "¡Gracias por tu calificación!" y el error se anuncian con `role="status" aria-live="polite"`.
 - Foco visible en `accent/signal`.
 - `prefers-reduced-motion` desactiva `sheet-up`.
 

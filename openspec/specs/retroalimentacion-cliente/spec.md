@@ -37,7 +37,7 @@ Incluye:
 
 ### Fuera de alcance
 
-- Edición o eliminación de una reacción ya enviada, o de una calificación ya enviada.
+- Eliminación de una reacción ya enviada (cambiarla de 👍 a 👎 o al revés sí está incluido, ver Requisito 1), y edición o eliminación de una calificación ya enviada.
 - Esta spec solo registra y notifica por correo (outbox); no hay bandeja ni interfaz de revisión dentro de la app. Cualquier seguimiento posterior con el cliente ocurre por correo, fuera del chat — tal como ya lo anticipa el texto de consentimiento del formulario.
 - La calificación del pedido (CSAT) no tiene panel propio: vive en Ventas, fuera de este repo. La valoración de la experiencia de compra se guarda en `purchase_rating`, sin interfaz de revisión en la app.
 - Pedir la calificación de forma proactiva cuando el pedido se entrega: el chatbot no recibe aviso de entrega; se ofrece solo cuando el cliente abre el pedido.

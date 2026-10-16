@@ -17,8 +17,8 @@
 |---|---|
 | `MessageFeedback` (en `MessageRenderer`) | Fila de 👍, 👎 y "Copiar" debajo de cada bloque de respuesta; estado optimista al tocar un ícono. |
 | `useReaction` (hook) | Envía la reacción al backend, con reintento silencioso en segundo plano si falla. |
-| `PurchaseRatingModal` | Popup "Califica tu compra" tras el pago: estrellas (1–5), comentario opcional, "Enviar calificación" (deshabilitado sin estrellas) y "Ahora no". Se monta junto con `OrderConfirmation` (SPEC-15). Se guarda en el chatbot. "Ahora no" se recuerda por pedido en el navegador (LocalStorage, con `orderId` como clave): es por dispositivo por diseño y no se guarda en el backend, así que al borrar el almacenamiento o abrir otro dispositivo el popup puede volver a mostrarse. |
-| `DeliveryRatingFooter` | Bloque al pie del detalle de un pedido (`OrderDetail`), solo si el estado es `ENTREGADO` y no está calificado: "¿Qué tal fue tu pedido?", tres caritas (5, 3, 1) y "Enviar calificación". Se envía a Ventas. |
+| `PurchaseRatingModal` | Popup "Califica tu compra" tras el pago: estrellas (1–5), comentario opcional, "Enviar calificación" (deshabilitado sin estrellas) y "Ahora no". Al guardar con éxito, el popup se reemplaza por "¡Gracias por tu calificación!". Se monta junto con `OrderConfirmation` (SPEC-15). Se guarda en el chatbot. "Ahora no" se recuerda por pedido en el navegador (LocalStorage, con `orderId` como clave): es por dispositivo por diseño y no se guarda en el backend, así que al borrar el almacenamiento o abrir otro dispositivo el popup puede volver a mostrarse. |
+| `DeliveryRatingFooter` | Bloque al pie del detalle de un pedido (`OrderDetail`), solo si el estado es `ENTREGADO` y no está calificado: "¿Qué tal fue tu pedido?", tres caritas (5, 3, 1) y "Enviar calificación" (deshabilitado sin carita). Se envía a Ventas; con `201`, el bloque se reemplaza por "¡Gracias por tu calificación!". |
 | `FeedbackEntryPoint` (en `AccountPage` / "Mi cuenta") | Sección "Ayúdanos a mejorar" con el botón "Enviar sugerencia / Reportar bug". |
 | `FeedbackForm` | Toggle Sugerencia/Bug, campo de título, descripción con contador (0/1000), correo prellenado desde el perfil, `AttachmentPicker` opcional (reutiliza el componente de selección de imagen de SPEC-23) y botones "Cancelar"/"Enviar". |
 | Puerto `ChatbotApiPort` (ampliado) | `enviarReaccion`, `enviarCalificacion`, `enviarSugerencia`. |
@@ -46,7 +46,7 @@
 
 **`order_ref.csat_sent`** (`boolean NOT NULL DEFAULT false`): marca que la calificación del pedido ya se envió a Ventas (o que Ventas respondió `409`), para no volver a mostrar el bloque sin preguntarle a Ventas en cada carga. Solo se actualiza cuando existe una fila de `order_ref` para el pedido (puede haberse creado en otro canal).
 
-Pendiente: límites de tasa de calificaciones y 429 de POST /sugerencias
+Pendiente hasta el Hito 5-6: el límite de frecuencia de las calificaciones (caritas de la entrega y estrellas de la compra). No se fija un valor por ahora; el `RateLimiter` solo aplica los límites vigentes de 30 reacciones por minuto y 5 sugerencias por hora. También queda pendiente la respuesta `429` de `POST /sugerencias`.
 
 La calificación del pedido (CSAT) **no se guarda** como calificación propia: vive en Ventas (`POST /api/v2/csat`). La valoración de la compra sí es propia del chatbot (`purchase_rating`). ✅ Acuerdo A15 (Ventas, 12/10/2026): el endpoint se llama con el token del cliente (rol `CLIENTE`, sin scope); Ventas valida el `sub` del JWT contra el dueño del `pedidoId` y responde `403` si no coincide. El scope `postventa:csat:escribir` no existe.
 

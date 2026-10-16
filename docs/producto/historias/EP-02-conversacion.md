@@ -458,8 +458,8 @@
 **Como** cliente autenticado con un pedido entregado, **quiero** calificar la entrega con una carita y un comentario opcional desde el detalle del pedido, **para** contarle a la tienda cómo me fue sin que me interrumpan con encuestas.
 
 **Criterios de aceptación**
-- `SPEC-24 · Req. 2 · Scenario: Calificación enviada` — al elegir una carita y pulsar "Enviar calificación" se llama a `POST /api/v2/csat` con `canal: "CHATBOT"` y, con `201`, el bloque se reemplaza por un agradecimiento.
-- `SPEC-24 · Req. 2 · Scenario: Sin estrellas seleccionadas` — sin una carita elegida, "Enviar calificación" sigue deshabilitado.
+- `SPEC-24 · Req. 2 · Scenario: Calificación enviada` — al elegir una carita y pulsar "Enviar calificación" se llama a `POST /api/v2/csat` con `canal: "CHATBOT"` y, con `201`, el bloque se reemplaza por "¡Gracias por tu calificación!".
+- `SPEC-24 · Req. 2 · Scenario: Sin carita seleccionada` — sin una carita elegida, "Enviar calificación" sigue deshabilitado.
 - `SPEC-24 · Req. 2 · Scenario: El cliente lo descarta` — si sale sin responder, no se envía nada y el bloque vuelve a aparecer al reabrir el pedido.
 - `SPEC-24 · Req. 2 · Scenario: Encuesta ya registrada para ese pedido` — un `409 CSAT_ALREADY_SUBMITTED` muestra "Ya calificaste este pedido", sin error, y marca `order_ref.csat_sent`.
 - `SPEC-24 · Req. 2 · Scenario: Ventas no disponible al calificar` — se informa que no se pudo enviar, el bloque se conserva para reintentar y el detalle sigue usable.
@@ -469,7 +469,7 @@
 
 **Prioridad:** Should: conecta el canal con la encuesta CSAT de Ventas (F5), pero no bloquea la compra ni el seguimiento.
 
-**Notas:** los criterios siguen el requisito modificado por el cambio `ajustar-calificacion-compra-y-entrega` (bloque al pie de `OrderDetail` con caritas 5/3/1), todavía sin archivar en la spec base. El nombre del escenario "Sin estrellas seleccionadas" se conserva del requisito original aunque ahora son caritas. Se llama con el token del cliente (rol `CLIENTE`, sin scope) y un `403` de Ventas indica que el pedido no es del cliente. Depende del detalle del pedido de SPEC-17 (EP-07).
+**Notas:** los criterios siguen el requisito "Calificación de la entrega con caritas (CSAT, vía Ventas)" del cambio `ajustar-calificacion-compra-y-entrega` (bloque al pie de `OrderDetail` con caritas 5/3/1), que reemplaza al Requisito 2 de la spec base y todavía no está archivado. Se llama con el token del cliente (rol `CLIENTE`, sin scope) y un `403` de Ventas indica que el pedido no es del cliente. Depende del detalle del pedido de SPEC-17 (EP-07).
 
 ---
 
@@ -482,7 +482,7 @@
 **Como** cliente que acaba de pagar en el chat, **quiero** valorar con estrellas cómo fue comprar aquí, **para** ayudar a mejorar el asistente sin retrasar la confirmación de mi pedido.
 
 **Criterios de aceptación**
-- `SPEC-24 · Req. 7 · Scenario: Valoración enviada` — al elegir las estrellas y pulsar "Enviar calificación" se guarda `purchase_rating` y el popup se reemplaza por un agradecimiento.
+- `SPEC-24 · Req. 7 · Scenario: Valoración enviada` — al elegir las estrellas y pulsar "Enviar calificación" se guarda `purchase_rating` y el popup se reemplaza por "¡Gracias por tu calificación!".
 - `SPEC-24 · Req. 7 · Scenario: Sin estrellas seleccionadas` — sin estrellas, "Enviar calificación" sigue deshabilitado.
 - `SPEC-24 · Req. 7 · Scenario: El cliente lo descarta` — "Ahora no" cierra el popup sin guardar y no vuelve a mostrarse para ese pedido en ese navegador (el descarte se recuerda en LocalStorage, por dispositivo).
 - `SPEC-24 · Req. 7 · Scenario: Una sola valoración por pedido` — un pedido ya valorado no vuelve a mostrar el popup ni admite otra valoración.

@@ -258,7 +258,7 @@ Cada uno de los **119 requisitos** de las 24 specs (con los cambios pendientes d
 | `SPEC-23 · Req. 9` | Límites de uso de las imágenes | HU-CNV-19 |
 | `SPEC-23 · Req. 10` | Conversaciones archivadas y referencias de adjuntos | HU-CNV-19 |
 | `SPEC-24 · Req. 1` | Reacciones rápidas tras un bloque de respuesta | HU-CNV-22 |
-| `SPEC-24 · Req. 2` | Calificación de la entrega (CSAT, vía Ventas) | HU-CNV-23 |
+| `SPEC-24 · Req. 2` | Calificación de la entrega con caritas (CSAT, vía Ventas) | HU-CNV-23 |
 | `SPEC-24 · Req. 3` | Acceso a retroalimentación desde "Mi cuenta" | HU-CNV-25 |
 | `SPEC-24 · Req. 4` | Formulario de sugerencia o reporte de bug | HU-CNV-25 |
 | `SPEC-24 · Req. 5` | Notificación interna de sugerencias y bugs | HU-CNV-26 |

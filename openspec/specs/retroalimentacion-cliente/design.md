@@ -32,7 +32,7 @@
 | `POST /api/v1/pedidos/{pedidoId}/valoracion-compra` | Guarda la valoración de la experiencia de compra en `purchase_rating` (una por pedido). |
 | `POST /api/v1/sugerencias` | Crea la sugerencia o el bug, sube la captura (si existe) vía `AttachmentStorage`, y encola la notificación interna por outbox. |
 | `VentasClient.registrarCsat()` | Cliente de `POST /api/v2/csat`; reenvía el token del cliente (rol `CLIENTE`, sin scope; acuerdo A15), propaga el `403` de Ventas cuando el `sub` no es el dueño del pedido y normaliza errores de Ventas (`codigo` → `code` interno). |
-| `SugerenciaService` | Orquesta la validación, la subida opcional de la captura y el registro; aplica el límite de 5 por hora. |
+| `SugerenciaService` | Orquesta la validación, la subida opcional de la captura y el registro; aplica el límite de 5 por hora y, al superarlo, `POST /sugerencias` responde `429`. |
 | `RateLimiter` (ampliado) | Agrega el límite de 30 reacciones/minuto y 5 sugerencias/hora por cliente o IP. |
 | Tablas `message_reaction`, `feedback_suggestion` y `purchase_rating` | Ver más abajo. |
 
@@ -46,7 +46,9 @@
 
 **`order_ref.csat_sent`** (`boolean NOT NULL DEFAULT false`): marca que la calificación del pedido ya se envió a Ventas (o que Ventas respondió `409`), para no volver a mostrar el bloque sin preguntarle a Ventas en cada carga. Solo se actualiza cuando existe una fila de `order_ref` para el pedido (puede haberse creado en otro canal).
 
-Pendiente hasta el Hito 5-6: el límite de frecuencia de las calificaciones (caritas de la entrega y estrellas de la compra). No se fija un valor por ahora; el `RateLimiter` solo aplica los límites vigentes de 30 reacciones por minuto y 5 sugerencias por hora. También queda pendiente la respuesta `429` de `POST /sugerencias`.
+Pendiente hasta el Hito 5-6: el límite de frecuencia de las calificaciones (caritas de la entrega y estrellas de la compra). No se fija un valor por ahora; el `RateLimiter` solo aplica los límites vigentes de 30 reacciones por minuto y 5 sugerencias por hora.
+
+`POST /sugerencias` responde `429` cuando el cliente supera las 5 sugerencias o bugs por hora; el frontend muestra "Ya enviaste varias sugerencias, intenta en un rato" (escenario "Exceso de sugerencias") y no se registra nada.
 
 La calificación del pedido (CSAT) **no se guarda** como calificación propia: vive en Ventas (`POST /api/v2/csat`). La valoración de la compra sí es propia del chatbot (`purchase_rating`). ✅ Acuerdo A15 (Ventas, 12/10/2026): el endpoint se llama con el token del cliente (rol `CLIENTE`, sin scope); Ventas valida el `sub` del JWT contra el dueño del `pedidoId` y responde `403` si no coincide. El scope `postventa:csat:escribir` no existe.
 

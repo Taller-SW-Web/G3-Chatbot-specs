@@ -7,6 +7,7 @@
 | Módulo | Endpoint | Estado |
 |---|---|---|
 | Productos | `GET /inventario/disponibilidad/comercial?skus=A,B,C&canal=CHATBOT` → `{ items: [{ sku, status }] }` con `status ∈ DISPONIBLE, STOCK_BAJO, AGOTADO, INDETERMINADO` (máx. 100 SKU) | 🟡 A5 · scope `inventario:disponibilidad:leer` pendiente · provisional (`D-INV-01`) |
+| Productos | `POST /inventario/disponibilidad/comercial/verificar {channel_id, lines[{sku, quantity}]}` → `SUFICIENTE`, `INSUFICIENTE` o `INDETERMINADO`, no vinculante y sin reserva | 🟡 A16 · provisional; falta implementación y scope |
 
 🧩 Productos publicó (HTTP 0.5.0) solo la proyección comercial: el chatbot no recibe `location_id`, `on_hand`, `reserved`, `available` ni cantidades. La validación exacta de cantidades la hace Ventas con `409` al crear el pedido. La ruta sigue provisional hasta que se resuelva `D-INV-01`.
 
@@ -16,7 +17,6 @@
 |---|---|
 | `StockConflictNotice` | Mensaje de línea agotada con la acción "Quitar" y aviso de stock bajo. |
 | `AvailabilityBadge` | Disponible, pocas unidades o agotado (en tarjeta y detalle). |
-| Productos | `POST /inventario/disponibilidad/comercial/verificar {channel_id, lines[{sku, quantity}]}` → `SUFICIENTE`, `INSUFICIENTE` o `INDETERMINADO`, no vinculante y sin reserva | 🟡 A16 · provisional; falta implementación y scope |
 | Manejo de `409` y `503` en `useCartMutations` | Muestra el aviso adecuado sin perder el estado del carrito. |
 
 ## Backend

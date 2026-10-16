@@ -80,7 +80,7 @@ Criterios de aceptación:
 
 | Criterio | Estado | Evidencia |
 |---|---|---|
-| David, Sonny, Diego y Alonso tienen al menos un commit propio en `main` | Cumplido (usuarios por confirmar) | David = Ankarmin (`ee3238f`, `1709805`), Sonny = SOoOnny, autor git "Gabriel" (`9e1e9d5`), Diego = Diego-ArevaloM (`b01d76b`, `2582579`), Alonso = Lume03 (`ea0ca2b`, `58052b1`). El vínculo entre cada usuario de GitHub y la persona es inferido del reparto y de las etiquetas `h2-NN` |
+| David, Sonny, Diego y Alonso tienen al menos un commit propio en `main` | Cumplido | David = Ankarmin (`ee3238f`, `1709805`), Sonny = SOoOnny, autor git "Gabriel" (`9e1e9d5`), Diego = Diego-ArevaloM (`b01d76b`, `2582579`), Alonso = Lume03 (`ea0ca2b`, `58052b1`). Vínculo cuenta-persona confirmado por la PO el 2026-10-16; el resto del equipo: SEBASTIAN / SebJoq21 = Sebastian, Mathias Torres Lezama / MathiasTL = Mathias, nikaaat / Nikol Medrano = Nikol |
 | Las 14 tablas tienen modelo y adapter con contenido, y cada adapter tiene al menos un test | Cumplido | 14/14 en `main` del backend; `cart_item` se prueba dentro de `test_cart_adapter.py` (ver `docs/evidencia-hito-2.md` §2.1) |
 | Una sola migración `0001` con las tablas, los triggers de `updated_at` y `downgrade` | Cumplido | `0001_initial_schema.py` es la única en `versions/` de `main` y `development`; un solo head. Probada en local (PostgreSQL 16, base vacía) el 2026-10-16; no se repitió contra Supabase |
 | El README enlaza los mockups, el sistema de diseño y las 3 propuestas de UX | Cumplido | README de specs, fila "Diseño": Figma, `docs/design-system.md` y `docs/propuestas-ux.md` (PR #14, merge `3b6fa53`) |
@@ -96,4 +96,4 @@ Commits de la convención de nombres en inglés: specs `e095041` (`main`).
 
 ## Siguiente paso
 
-Dar por cerrado el Hito 2: las diez tareas tienen evidencia en `main` y se cumplen los cuatro criterios de aceptación. Los pendientes de arriba (archivos vacíos y `psycopg2` en `main`) se resuelven en el Hito 3, y los integrantes confirman su usuario de GitHub.
+Dar por cerrado el Hito 2: las diez tareas tienen evidencia en `main` y se cumplen los cuatro criterios de aceptación. Los pendientes de arriba (archivos vacíos y `psycopg2` en `main`) se resuelven en el Hito 3.

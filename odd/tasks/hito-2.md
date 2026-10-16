@@ -31,17 +31,17 @@ Cubrir los cuatro entregables del Hito 2 (25 %) con evidencia de commits de todo
 ### Fase 2: en paralelo (modelo + adapter + test, sin migración)
 
 - [x] **H2-02** Sebastian: `local_phone_verification` (modelo + adapter; no existe tabla `customer`, `customer_id` es el `sub` del token); revisión técnica de los PR, empezando por los que tienen FKs entre sí (`cart` → `cart_item`, `checkout` → `payment_attempt`).
-- [ ] **H2-03** Sonny: `cart`, `cart_item`, `order_ref`, `outbox` (SPEC-10, 11, 15).
-- [ ] **H2-04** David (BD): `checkout`, `payment_attempt`, `claim_ref`, `return_ref`, `notification` (SPEC-12, 14, 16, 19 a 22).
-- [ ] **H2-05** David (frontend): `MessageBubble` y `ProductCard` estáticos con datos mock, usando los tokens de Diego.
-- [ ] **H2-06** Alonso: `message` y `evidence`; configuración de pytest con un test por adapter.
+- [x] **H2-03** Sonny: `cart`, `cart_item`, `order_ref`, `outbox` (SPEC-10, 11, 15).
+- [x] **H2-04** David (BD): `checkout`, `payment_attempt`, `claim_ref`, `return_ref`, `notification` (SPEC-12, 14, 16, 19 a 22).
+- [x] **H2-05** David (frontend): `MessageBubble` y `ProductCard` estáticos con datos mock, usando los tokens de Diego.
+- [x] **H2-06** Alonso: `message` y `evidence`; configuración de pytest con un test por adapter.
 - [x] **H2-07** Mathias: `conversation` y `attachment` (SPEC-23) con sus adapters; CI que ejecute pytest (backend) y CI de frontend con pnpm.
-- [ ] **H2-08** Diego: tokens y tema Tailwind, componentes base (Button, Input, Card), enlace al Figma en el README y 3 propuestas de UX en `docs/`.
-- [ ] **H2-09** Nikol: checklist de evidencia del hito, casos de prueba iniciales y verificación de commits por integrante.
+- [x] **H2-08** Diego: tokens y tema Tailwind, componentes base (Button, Input, Card), enlace al Figma en el README y 3 propuestas de UX en `docs/`.
+- [x] **H2-09** Nikol: checklist de evidencia del hito, casos de prueba iniciales y verificación de commits por integrante.
 
 ### Fase 3: cierre (Sebastian)
 
-- [ ] **H2-10** Generar la migración inicial con `alembic revision --autogenerate --rev-id 0001 -m "initial schema"`, agregar a mano en esa migración la función `set_updated_at()` y un trigger `BEFORE UPDATE` en cada tabla con `updated_at` (`conversation`, `attachment`, `cart`, `cart_item`, `checkout`, `order_ref`, `notification`, `evidence`, `outbox`), porque autogenerate no detecta funciones ni triggers (regla de la fila Tiempos en `docs/modelo-datos.md`), y su `downgrade` debe eliminarlos; probarla contra Supabase (`alembic upgrade head` y `alembic downgrade base`) y hacer push.
+- [x] **H2-10** Generar la migración inicial con `alembic revision --autogenerate --rev-id 0001 -m "initial schema"`, agregar a mano en esa migración la función `set_updated_at()` y un trigger `BEFORE UPDATE` en cada tabla con `updated_at` (`conversation`, `attachment`, `cart`, `cart_item`, `checkout`, `order_ref`, `notification`, `evidence`, `outbox`), porque autogenerate no detecta funciones ni triggers (regla de la fila Tiempos en `docs/modelo-datos.md`), y su `downgrade` debe eliminarlos; probarla contra Supabase (`alembic upgrade head` y `alembic downgrade base`) y hacer push.
 
 ## Criterios de aceptación
 
@@ -59,24 +59,41 @@ Cubrir los cuatro entregables del Hito 2 (25 %) con evidencia de commits de todo
 
 ## Progreso
 
-Estado al 2026-10-02, verificado contra `origin/development` del backend (refs locales, sin fetch).
+Estado al 2026-10-16, verificado con `git fetch` contra `origin/main` y `origin/development` del backend (`Taller-SW-Web/G3-Chatbot-backend`) y del frontend (`Taller-SW-Web/G3-Chatbot-frontend`), y contra `origin/main` de specs. El detalle por tabla, la prueba de la migración y los casos de prueba están en [`docs/evidencia-hito-2.md`](../../docs/evidencia-hito-2.md).
+
+La rama de integración del backend es `development`; el frontend también tiene una rama `development`. Todo lo del Hito 2 llegó a `main` del backend con el PR #34 (`development` → `main`, merge `da03d62`), incluida la migración `0001`. En el frontend llegó a `main` con el PR #16 (merge `8ac3667`).
 
 | Tarea | Estado | Evidencia |
 |---|---|---|
-| H2-01 | Hecha (pendiente confirmar documentación de IDs, `models/__init__.py` y regla `jsonb`) | `581065c`, PR #28 |
-| H2-02 | Hecha | `70818de`, PR #29; el test pasó a `test_local_phone_verification_adapter.py` con el renombre a inglés |
-| H2-07 | Hecha | Backend `development`: `cd76f00` (modelos, adapters y tests de `conversation` y `attachment`, 23 tests en verde) y `2b65b7b` (CI con pip). Frontend `main`: `cb49bfc` (CI con pnpm, activo cuando exista `package.json` con lockfile) |
-| H2-03 a H2-06, H2-08, H2-09 | No iniciadas | Los demás archivos de `persistence/` siguen con 0 bytes; no hay commits de David, Sonny, Diego y Alonso |
-| H2-10 | Pendiente | `versions/` vacía; depende de H2-03, 04, 06 y 07 |
+| H2-01 | Hecha (pendiente confirmar documentación de IDs, `models/__init__.py` y regla `jsonb`) | Backend `581065c`, PR #28 |
+| H2-02 | Hecha | Backend `70818de` y `2d8267e`, PR #29; el test pasó a `test_local_phone_verification_adapter.py` con el renombre a inglés |
+| H2-03 | Hecha | Backend `9e1e9d5` (`cart`, `cart_item`, `order_ref` y `outbox` con adapters y tests), PR #31 |
+| H2-04 | Hecha | Backend `ee3238f` (`checkout`, `payment_attempt`, `notification`, `claim_ref` y `return_ref` con adapters y tests), PR #32 |
+| H2-05 | Hecha | Frontend `1709805` (`MessageBubble` y `ProductCard` estáticos con mock) y `fd6141a` (rutas de import), PR #14 del frontend |
+| H2-06 | Hecha | Backend `ea0ca2b` (`message` y `evidence` con pruebas) y `58052b1` (alineación con las specs en inglés), PR #30 |
+| H2-07 | Hecha | Backend `cd76f00` (modelos, adapters y tests de `conversation` y `attachment`) y `2b65b7b` (CI con pip). Frontend `cb49bfc` (CI con pnpm) |
+| H2-08 | Hecha | Frontend `b01d76b` ("paridad UI con Mockups", PR #15 del frontend): tokens en el `@theme` de `src/app/globals.css` y componentes base como clases `.wf-btn`, `.wf-input` y `.wf-card` (no hay componentes React `Button`, `Input` ni `Card` separados). Specs `2582579` (`docs/design-system.md`, PR #8) y `8f8423f` (enlace a Figma en el README y `docs/propuestas-ux.md`, PR #14) |
+| H2-09 | Hecha | Specs `f705f6e` (`docs/evidencia-hito-2.md`), PR #13 |
+| H2-10 | Hecha | Backend `7d12c68` (migración `0001_initial_schema.py` con `uuidv7()`, `set_updated_at()`, 9 triggers y su `downgrade`), PR #33 |
 
-Criterios de aceptación: commits de los 4 integrantes 0/4; tablas con modelo y adapter 3/14 (`local_phone_verification`, `conversation` y `attachment` en `development`); migración `0001` inexistente; README sin enlaces a mockups, sistema de diseño ni UX.
+Criterios de aceptación:
+
+| Criterio | Estado | Evidencia |
+|---|---|---|
+| David, Sonny, Diego y Alonso tienen al menos un commit propio en `main` | Cumplido | David = Ankarmin (`ee3238f`, `1709805`), Sonny = SOoOnny, autor git "Gabriel" (`9e1e9d5`), Diego = Diego-ArevaloM (`b01d76b`, `2582579`), Alonso = Lume03 (`ea0ca2b`, `58052b1`). Vínculo cuenta-persona confirmado por la PO el 2026-10-16; el resto del equipo: SEBASTIAN / SebJoq21 = Sebastian, Mathias Torres Lezama / MathiasTL = Mathias, nikaaat / Nikol Medrano = Nikol |
+| Las 14 tablas tienen modelo y adapter con contenido, y cada adapter tiene al menos un test | Cumplido | 14/14 en `main` del backend; `cart_item` se prueba dentro de `test_cart_adapter.py` (ver `docs/evidencia-hito-2.md` §2.1) |
+| Una sola migración `0001` con las tablas, los triggers de `updated_at` y `downgrade` | Cumplido | `0001_initial_schema.py` es la única en `versions/` de `main` y `development`; un solo head. Probada en local (PostgreSQL 16, base vacía) el 2026-10-16; no se repitió contra Supabase |
+| El README enlaza los mockups, el sistema de diseño y las 3 propuestas de UX | Cumplido | README de specs, fila "Diseño": Figma, `docs/design-system.md` y `docs/propuestas-ux.md` (PR #14, merge `3b6fa53`) |
+
+Pendientes verificados:
+
+- Archivos vacíos (0 bytes) en `src/adapters/outbound/persistence/` de `main` del backend: `cliente_postgres_adapter.py` y `producto_postgres_adapter.py`, con nombre en español, y `__init__.py`, marcador de paquete. En `development` los dos primeros se renombraron a `customer_postgres_adapter.py` y `product_postgres_adapter.py`, pero siguen vacíos. Ninguno corresponde a una de las 14 tablas.
+- `alembic upgrade head` falla en una instalación limpia desde `main` del backend: `env.py` convierte la URL a `psycopg2` y `requirements.txt` de `main` no lo incluye (hallazgo del Hito 3, según `odd/tasks/hito-3.md`). En `development` ya figura `psycopg2-binary` desde `4758b14` (H3-05); falta que llegue a `main`.
 
 Renombre a inglés del modelo de datos (2026-10-02): `docs/modelo-datos.md`, el resto de los specs y el diagrama `mer-logico` ya usan los nombres en inglés. El diagrama `mer-conceptual` se deja sin cambios por decisión del equipo.
-
-Nota: la rama de integración del backend es `development` (no `develop`) y solo existe en backend.
 
 Commits de la convención de nombres en inglés: specs `e095041` (`main`).
 
 ## Siguiente paso
 
-Sonny, David, Alonso y Diego inician sus tareas de la Fase 2 sobre `development`, usando los nombres en inglés de `docs/modelo-datos.md`.
+Dar por cerrado el Hito 2: las diez tareas tienen evidencia en `main` y se cumplen los cuatro criterios de aceptación. Los pendientes de arriba (archivos vacíos y `psycopg2` en `main`) se resuelven en el Hito 3.

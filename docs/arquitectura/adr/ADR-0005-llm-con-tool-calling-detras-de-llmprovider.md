@@ -18,7 +18,7 @@ Aceptada
 ## Decisión
 
 - La interpretación usa un **LLM con tool calling**: el backend envía el mensaje, el contexto acotado (resumen y últimos 12 mensajes) y el catálogo de herramientas, y ejecuta la herramienta que el LLM elige (`InterpretarYResponderUseCase`, `ToolRegistry`; máx. 5 iteraciones).
-- El proveedor queda detrás del puerto outbound **`LLMProvider`**, con las implementaciones `ClaudeProvider` y `OpenAIProvider`. Proveedor, modelo, temperatura (≤ 0,3; modificado por la enmienda del 2026-10-11), `max_tokens` y timeouts se configuran por variables de entorno.
+- El proveedor queda detrás del puerto outbound **`LLMProvider`**, con las implementaciones `ClaudeProvider` y `OpenAIProvider`. Proveedor, modelo, temperatura (≤ 0,3; modificado por la enmienda del 2026-10-11), `max_tokens`, razonamiento (enmienda del 2026-10-16) y timeouts se configuran por variables de entorno.
 - **Veracidad:** precios, stock, descuentos, totales y estados provienen siempre de las herramientas y se renderizan en bloques estructurados, no con el texto del LLM. `OutputValidator` compara los montos del texto con los resultados y corrige en el evento `fin`.
 - **Ejecución segura:** argumentos validados con Pydantic, identidad tomada siempre del token, sesión exigida en herramientas protegidas y confirmación en la UI para acciones con efecto económico o irreversible. El pago, los reclamos y las devoluciones solo se envían con botón.
 
@@ -53,7 +53,22 @@ Mathias (líder) decidió el 2026-10-11 dos cambios sobre la configuración del 
 
 Consecuencia aceptada: una temperatura más alta aumenta la variabilidad del texto. La veracidad de precios, stock, descuentos y estados no depende de la temperatura, porque esos datos provienen de las herramientas y pasan por `OutputValidator`.
 
-Pendiente de verificar cuando el equipo tenga la clave de API: que `gpt-6-luna` acepte el parámetro de temperatura.
+Pendiente de verificar cuando el equipo tenga la clave de API: que `gpt-6-luna` acepte el parámetro de temperatura. Verificado el 2026-10-16: lo acepta solo con el razonamiento desactivado (ver la enmienda siguiente).
+
+## Enmienda (2026-10-16): Responses API y razonamiento configurable
+
+La prueba contra la API real del 2026-10-16 mostró dos restricciones de `gpt-6-luna`:
+
+- En Chat Completions, el modelo rechaza las herramientas cuando razona; solo las admite con `reasoning_effort` en `none`.
+- Con el razonamiento activo, solo admite la temperatura por defecto (1). Con el razonamiento en `none` acepta 0,6 junto con herramientas.
+
+Mathias (líder) decidió el 2026-10-16:
+
+- **API:** `OpenAIProvider` usa la **Responses API** en lugar de Chat Completions. Es la API que OpenAI recomienda y la única que admite herramientas con razonamiento activo. El cambio queda dentro del adaptador; el puerto `LLMProvider` y el motor de conversación no cambian.
+- **Razonamiento:** se configura por variable de entorno (`LLM_REASONING_EFFORT`) con valor por defecto **`none`**. Con el razonamiento activo no se envía la temperatura.
+- **Sin estado en el proveedor:** las respuestas se piden con `store=false`; el backend envía el contexto completo en cada llamada.
+
+Consecuencias aceptadas: activar el razonamiento aumentaría la latencia y el costo por turno (riesgo R9) y fijaría la temperatura en 1. Además exigiría devolver al modelo sus elementos de razonamiento entre iteraciones de herramientas, lo que hoy el puerto no transporta; queda fuera de alcance mientras el valor sea `none`.
 
 ## Referencias
 

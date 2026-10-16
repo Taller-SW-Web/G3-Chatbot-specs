@@ -34,7 +34,7 @@ De los 117 casos del hito: 23 de nivel E2E, 63 de nivel API, 3 de nivel Unidad, 
 
 ## E2E de humo
 
-Archivo: `tests/e2e/smoke.spec.ts` del frontend. Recorren el criterio de aceptación del hito (registrarse, verificar el correo, iniciar sesión, conversar, buscar productos y armar un carrito) contra la aplicación desplegada, sin respuestas simuladas.
+Archivo: `tests/e2e/smoke.spec.ts` del frontend. Recorren el criterio de aceptación del hito (registrarse, verificar el correo, iniciar sesión, conversar, buscar productos y armar un carrito) contra el backend real, sin respuestas simuladas. Vercel solo publica producción (`main`), sin *staging* ni vistas previas por PR (decisión de H3-04): sobre *staging* se corren con el frontend en local apuntando al backend de *staging*.
 
 | ID | Recorrido | Casos | Estado al 2026-10-16 |
 |---|---|---|---|
@@ -49,11 +49,14 @@ Archivo: `tests/e2e/smoke.spec.ts` del frontend. Recorren el criterio de aceptac
 Cómo ejecutarlas:
 
 ```bash
-# Contra un entorno desplegado (staging o la vista previa de un PR en Vercel)
-E2E_BASE_URL=https://<url-del-frontend> pnpm test:e2e tests/e2e/smoke.spec.ts
+# Sobre staging (H3-19): Next en local reenvía /api/* al backend de staging (ADR-0023)
+API_PROXY_TARGET=https://g3-chatbot-backend-staging.up.railway.app pnpm test:e2e tests/e2e/smoke.spec.ts
 
-# En local: Playwright levanta Next y este reenvía /api/* al backend (ADR-0023)
+# Con el backend en local
 API_PROXY_TARGET=http://localhost:8000 pnpm test:e2e tests/e2e/smoke.spec.ts
+
+# Contra producción, ya desplegada en Vercel (H3-20)
+E2E_BASE_URL=https://g3-chatbot-frontend.vercel.app pnpm test:e2e tests/e2e/smoke.spec.ts
 ```
 
 Al terminar cada tarea de la Fase 1, su responsable cambia el `test.fixme` correspondiente por `test` y ajusta los selectores si la interfaz cambió. En H3-19 todas deben pasar contra staging.

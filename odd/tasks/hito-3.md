@@ -238,6 +238,14 @@ Cierre de H3-04 (2026-10-16):
 
 Decisiones de H3-04 (Mathias, 2026-10-16): una sola URL del frontend, la de producción (`main`), sin entorno ni dominio de *staging* en Vercel. Las vistas previas por PR no forman parte del alcance: los cambios se prueban en local y luego en el despliegue. Lo mergeado en `development` no aparece en la URL hasta que se promueve a `main`. Con el proxy de [ADR-0023](../../docs/arquitectura/adr/ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md), producción del frontend apunta a producción del backend (H3-18).
 
+Avance de H3-16 (2026-10-16):
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-16 (en revisión) | Hecha por Nikol | `docs/casos-prueba-hito-3.md`: 126 casos, uno por escenario de las specs del hito (SPEC-01, 02, 03, 05, 06, 09, 10 y 11), con Dado, Cuando y Entonces tomados de la spec, nivel (23 E2E, 63 API, 3 de unidad y 28 de evaluación del LLM), tarea responsable y la prueba del backend que ya cita el escenario (10 casos). 9 escenarios quedan marcados fuera del hito (imágenes, checkout, pedido y promociones). Frontend: `tests/e2e/smoke.spec.ts` con siete pruebas de humo sin respuestas simuladas; E2E-01 (inicio) y E2E-02 (barra lateral) activas, E2E-03 a E2E-07 en `test.fixme` hasta que H3-09, H3-10, H3-12, H3-13 y H3-14 conecten su funcionalidad; `playwright.config.ts` acepta `E2E_BASE_URL` para correr contra un entorno desplegado. Verificado en local contra el backend y PostgreSQL 18: E2E-01 y E2E-02 pasan con H3-15 incluido; sin H3-15, E2E-02 falla porque "Nuevo chat" no llama al backend | Pendiente | `bb107d1` en `feature/h3-16-e2e-humo` del frontend |
+
+Pendientes de H3-16 para H3-19: definir cómo obtiene la prueba el enlace de verificación de correo en staging (buzón de pruebas o token del mock de Seguridad) y una cuenta de prueba (`E2E_CORREO`, `E2E_CLAVE`) para E2E-05; con la decisión de H3-04 (solo producción en Vercel), la corrida sobre *staging* de H3-19 usa el frontend en local con `API_PROXY_TARGET` hacia el backend de *staging*; `E2E_BASE_URL=https://g3-chatbot-frontend.vercel.app` sirve para la verificación final en producción (H3-20).
+
 Avance de H3-15 (2026-10-16):
 
 | Tarea | Ruta | Evidencia | Revisión | Commit |

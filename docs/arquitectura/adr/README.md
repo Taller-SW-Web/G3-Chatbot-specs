@@ -35,5 +35,7 @@ Reglas:
 | [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md) | Imágenes como entrada del LLM, con almacenamiento propio privado detrás de `AttachmentStorage` | Aceptada | 2026-09-26 |
 | [ADR-0020](ADR-0020-despliegue-en-railway-vercel-y-supabase.md) | Despliegue en Railway, Vercel y Supabase, con el worker como servicio único (provisional) | Aceptada | 2026-10-10 |
 | [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md) | Streaming de la respuesta por SSE en la respuesta del `POST`, sin WebSocket | Aceptada | 2026-10-11 |
+| [ADR-0022](ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md) | Módulos simulados en proceso para los entornos desplegados | Aceptada | 2026-10-16 |
+| [ADR-0023](ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md) | Proxy del frontend hacia la API (mismo origen) | Aceptada | 2026-10-16 |
 
 Las vistas que estas decisiones explican están en el [modelo C4](../c4.md).

@@ -175,10 +175,10 @@ Diferencias detectadas entre el contrato y el frontend: el frontend espera un ar
 
 Hallazgos que afectan al despliegue:
 
-- `alembic upgrade head` falla en una instalación limpia: `env.py` convierte la URL a `psycopg2` y ese paquete no está en `requirements.txt`. Bloquea las migraciones de H3-03 y H3-18.
-- La cookie `chat_sid` usa `SameSite=Lax` y no hay CORS: con el frontend en Vercel y el backend en Railway el navegador no la enviará. Afecta también a la cookie de refresh (ADR-0008). Requiere decisión de arquitectura.
+- Resuelto (H3-05): `alembic upgrade head` fallaba en una instalación limpia porque `env.py` convierte la URL a `psycopg2` y ese paquete no estaba en `requirements.txt`. Se añadió `psycopg2-binary` en el commit `4758b14` del backend.
+- Decidido (2026-10-16): la cookie `chat_sid` usa `SameSite=Lax` y no hay CORS, por lo que con el frontend en Vercel y el backend en Railway el navegador no la enviaría (afecta también a la cookie de refresh, ADR-0008). El frontend llamará a la API en su propio origen mediante un proxy: [ADR-0023](../../docs/arquitectura/adr/ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md). La verificación del streaming SSE a través del proxy es el primer paso de H3-18.
 
-Pendientes que deja H3-01: dónde se alojan los mocks en el entorno desplegado (afecta a H3-03, H3-06 y H3-07) y quién aporta el medio de pago de Railway.
+Pendientes que deja H3-01: quién aporta el medio de pago de Railway. Decidido (2026-10-16): los mocks del entorno desplegado se resuelven con adaptadores falsos en proceso, seleccionados con `MODULES_MODE` ([ADR-0022](../../docs/arquitectura/adr/ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md)); afecta a H3-03, H3-06 y H3-07, y exige antes el puerto de salida de Seguridad (H3-09).
 
 Cierre de H3-05 y avance de H3-04 (2026-10-14):
 

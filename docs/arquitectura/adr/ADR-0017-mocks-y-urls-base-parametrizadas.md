@@ -51,3 +51,7 @@ Aceptada
 - `openspec/specs/busqueda-filtrado/design.md`, `creacion-reclamo/design.md`, `solicitud-devolucion-cambio/design.md` (mocks por cliente)
 - `docs/producto/definicion-listo-terminado.md` R3 y D2.1
 - `docs/producto/alcance.md` §8, supuestos 1 y 2; §9, riesgos R1 y R8
+
+## Enmienda (2026-10-16): los entornos desplegados usan adaptadores falsos en proceso
+
+Sin cambiar la decisión original, el [ADR-0022](ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md) precisa que en los entornos desplegados (Railway) los módulos se simulan con adaptadores falsos en memoria, seleccionados con `MODULES_MODE`, porque Prism y respx no están disponibles allí. Prism queda solo para las pruebas `[INT]` locales.

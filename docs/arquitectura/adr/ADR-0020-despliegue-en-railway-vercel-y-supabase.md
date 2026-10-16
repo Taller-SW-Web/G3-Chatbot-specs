@@ -37,7 +37,7 @@ Mathias (líder y DevOps) decidió el 2026-10-10 los destinos de despliegue. **L
 - Los secretos se configuran por entorno: LLM, Supabase y URLs base de los mocks.
 - En el Hito 3 los entornos desplegados usan los mocks de los módulos ([ADR-0017](ADR-0017-mocks-y-urls-base-parametrizadas.md)); pasar a los servicios reales es un cambio de configuración.
 
-**Límites.** Este ADR no diseña el pipeline de CD (tarea H3-18) ni define dónde se alojan los mocks desplegados.
+**Límites.** Este ADR no diseña el pipeline de CD (tarea H3-18) ni define dónde se alojan los mocks desplegados; eso lo decide [ADR-0022](ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md).
 
 ## Alternativas consideradas
 

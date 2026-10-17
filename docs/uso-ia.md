@@ -72,7 +72,7 @@ Con esto, la IA genera código a partir de requisitos escritos, versionados y re
 | Sebastian | [completar] | [completar] |
 | Sonny | [completar] | [completar] |
 | David | [completar] | [completar] |
-| Alonso | [completar] | [completar] |
+| Alonso | Deska (Codex) | Apoyo en la implementación y revisión de H3-11: integración de herramientas y acciones rápidas en backend y frontend y ejecución de pruebas. |
 | Diego | [completar] | [completar] |
 
 Además del asistente de código, el flujo usa:

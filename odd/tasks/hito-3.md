@@ -94,14 +94,14 @@ Tareas transversales:
 
 Diego mantiene además el cuidado del design system (`docs/design-system.md`). Revisión cruzada para quienes escriben backend por primera vez: Sebastian revisa los PR de H3-14 y Mathias los de H3-15.
 
-- [ ] H3-09
-- [ ] H3-10
-- [ ] H3-11
-- [ ] H3-12
-- [ ] H3-13
-- [ ] H3-14
+- [x] H3-09
+- [x] H3-10
+- [x] H3-11
+- [x] H3-12
+- [x] H3-13
+- [x] H3-14
 - [x] H3-15
-- [ ] H3-16
+- [x] H3-16 (E2E-03 a E2E-07 siguen en `test.fixme`; se activan en H3-19)
 - [ ] H3-17
 - [ ] H3-18
 
@@ -275,6 +275,28 @@ Estado del backend al 2026-10-16 (verificado con `git fetch` de backend y fronte
 - **H3-17:** el CI del backend sigue ejecutando solo `python -m pytest tests/unit`.
 - **Ramas del backend:** `main` en `da03d62` (2026-10-02, PR #34); `development` en `77722dd` (2026-10-16), 31 commits adelante de `main`.
 
+Cierre de las funcionalidades de la Fase 1 (2026-10-17):
+
+Verificado con `gh pr list` en backend y frontend: no quedan PR abiertos del hito. Todos entraron a `development` con squash y una aprobación de Mathias; cuando hubo bloqueantes, Mathias los corrigió en la rama del responsable antes del merge (documentos `h3-09-pr-cleanup.md` y `h3-14-pr-cleanup.md`).
+
+| Tarea | Responsable | Backend | Frontend |
+|---|---|---|---|
+| H3-09 | Sebastian | #47 (`fd30846`) | #26 (`bac0839`) |
+| H3-10 | Mathias | #36 y commits directos (`7bd2321`, `69f184a`) | #25 (`d594044`) |
+| H3-11 | Alonso | #45 (`5eb5213`) | #23 (`d357c4b`) |
+| H3-12 | Sonny | #44 (`77722dd`) | #22 (`0cec2d2`) |
+| H3-13 | David | #46 (`7550f84`) | #24 (`f5d9ffc`) |
+| H3-14 | Diego | #43 (`dd3cb2f`) | #21 (`65523eb`) |
+| H3-15 | Nikol | #42 (`6ccaa8c`) | #19 (`4d29e84`) |
+| H3-16 | Nikol | No aplica | #20 (`55ee13d`); casos de prueba en specs |
+
+Estado de las tareas transversales, verificado en `origin/development`:
+
+- **H3-17 (abierta):** `.github/workflows/ci.yml` del backend solo ejecuta `python -m pytest tests/unit`. Faltan lint, las pruebas de integración con PostgreSQL como servicio y `alembic upgrade head`.
+- **H3-18 (parcial):** el backend de *staging* ya se despliega solo desde `development` en Railway (H3-03) y el frontend de producción desde `main` en Vercel (H3-04). Falta: `DATABASE_URL` y secretos por entorno en Railway, migraciones como paso del despliegue, `MODULES_MODE` (ADR-0022), entorno de producción del backend para `main`, `API_PROXY_TARGET` en Vercel y la prueba del SSE a través del proxy (ADR-0023).
+
+Seguimiento sin bloqueo: los PR se aprobaron con mejoras pendientes, listadas en el comentario de aprobación de cada uno. `DireccionForm.tsx` todavía importa `DISTRITOS` de `mockData`, pero pertenece al checkout, que queda fuera del hito.
+
 ## Siguiente paso
 
-Fase 0 cerrada y H3-15 integrada. El foco inmediato es el backend: mergear a `development` los PR de H3-11 (#45), H3-13 (#46) y H3-14 (#43), abrir el trabajo de H3-09 (que además debe renderizar el bloque `FORMULARIO`) y resolver H3-17 y H3-18. Después se mergea el frontend de H3-10, H3-11, H3-12, H3-13, H3-14 y H3-16. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.
+Funcionalidades de la Fase 1 integradas. Antes de la Fase 2 falta cerrar H3-18, porque H3-19 necesita un *staging* con base de datos y secretos; H3-17 puede ir en paralelo. Con eso, Nikol activa E2E-03 a E2E-07 y se corre H3-19 sobre *staging*. Sigue por definir la fecha de la demo, que ordena la Fase 2.

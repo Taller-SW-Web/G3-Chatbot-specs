@@ -73,7 +73,7 @@ Con esto, la IA genera código a partir de requisitos escritos, versionados y re
 | Sonny | [completar] | [completar] |
 | David | [completar] | [completar] |
 | Alonso | Deska (Codex) | Apoyo en la implementación y revisión de H3-11: integración de herramientas y acciones rápidas en backend y frontend y ejecución de pruebas. |
-| Diego | [completar] | [completar] |
+| Diego | Gemini con Opencode | Implementación y revisión de frontend y backend: design system (tokens y componentes base, H2-08), páginas de carrito, checkout e historial, `ChatPage`/`Sidebar` y autenticación (login, MFA y sesión, H3-14) |
 
 Además del asistente de código, el flujo usa:
 

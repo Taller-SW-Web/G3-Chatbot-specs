@@ -1,6 +1,6 @@
 # Uso de IA y código generado
 
-> Explica las dos formas en que el proyecto usa inteligencia artificial: como parte del producto (el asistente conversacional) y como apoyo para especificar, programar y revisar. Todo lo que se afirma aquí tiene respaldo en los repositorios; lo que falta completar está marcado como **[completar]**.
+> Explica las dos formas en que el proyecto usa inteligencia artificial: como parte del producto (el asistente conversacional) y como apoyo para especificar, programar y revisar. Todo lo que se afirma aquí tiene respaldo en los repositorios.
 
 ## 1. IA dentro del producto: el asistente Botleta
 
@@ -70,8 +70,8 @@ Con esto, la IA genera código a partir de requisitos escritos, versionados y re
 | Nikol | Claude Code | Documentación y specs (evidencia de entregas, propuestas de UX, correcciones de SPEC-24), casos de prueba por escenario, verificación de commits y gestión de conversaciones (SPEC-05, Req. 1) |
 | Mathias | Claude Code | Revisión de PR del equipo en backend y frontend. Backend: motor de conversación de SPEC-05 (conversaciones, bucle del agente, `LLMProvider` con OpenAI según ADR-0005, streaming por SSE según ADR-0021 y búsqueda), persistencia de conversaciones y adjuntos (SPEC-05 y SPEC-23) y despliegue en Railway (ADR-0020). Frontend: chat por SSE conectado al backend (ADR-0021) y migración a pnpm con CI. Specs: ADR, modelo C4 y planes de trabajo |
 | Sebastian | opencode (LLM DeepSeek V4.1 Flash) | Contratos de módulos y cliente httpx base, cliente y mock de Seguridad (ADR-0017) y registro y verificación de correo (SPEC-01 y SPEC-02); specs SDD en OpenSpec, revisión de PRs y cierre con pruebas (pytest/Vitest) y CI |
-| Sonny | OpenCode Go (LLM Muse Spark 1.3 XHigh) | Mocks de Productos e Inventario con respx (H3-06); catálogo del SPEC-06/09 en backend (ManageCatalogUseCase: búsqueda, detalle y similares, con fan-out agrupado, caché inyectable y errores de módulo)|
-| David | opencode (LLM DeepSeek V4.1 Flash) | Carrito y validación de stock en backend y frontend (SPEC-10 y 11): `ManageCartUseCase` con carrito anónimo por conversación, validación de stock y errores problem+json, y `CartPage`, `BloqueCarrito` y `useCarrito` conectados al backend real; del Hito 2, checkout y postventa en backend (H2-04) y `MessageBubble`/`ProductCard` (H2-05); cierre con pruebas (pytest/Vitest) y CI |
+| Sonny | OpenCode Go (LLM Muse Spark 1.3 XHigh) | Mocks de Productos e Inventario con respx (ADR-0017); catálogo de SPEC-06 y SPEC-09 en backend (`ManageCatalogUseCase`: búsqueda, detalle y similares, con fan-out agrupado, caché inyectable y errores de módulo) |
+| David | opencode (LLM DeepSeek V4.1 Flash) | Carrito y validación de stock en backend y frontend (SPEC-10 y 11): `ManageCartUseCase` con carrito anónimo por conversación, validación de stock y errores problem+json, y `CartPage`, `BloqueCarrito` y `useCarrito` conectados al backend real; persistencia de checkout y postventa en backend y `MessageBubble`/`ProductCard`; cierre con pruebas (pytest/Vitest) y CI |
 | Alonso | Deska (Codex) | Apoyo en la implementación y revisión de la integración de herramientas, acciones rápidas y modo degradado (SPEC-05) en backend y frontend, y ejecución de pruebas. |
 | Diego | Gemini con Opencode | Implementación y revisión de frontend y backend: design system (tokens y componentes base), páginas de carrito, checkout e historial, `ChatPage`/`Sidebar` y autenticación (login, MFA y sesión, SPEC-03) |
 

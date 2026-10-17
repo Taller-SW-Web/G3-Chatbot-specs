@@ -26,6 +26,7 @@ Documentos transversales:
 | [`docs/arquitectura/`](docs/arquitectura/README.md) | Modelo C4 (contexto, contenedores y componentes del backend) y registro de decisiones de arquitectura (ADR) sobre las specs (no reemplaza a las specs) |
 | [`docs/design-system.md`](docs/design-system.md) | Sistema de diseño de los mockups: marca, tokens de color, tipografía, espaciado, componentes base, patrones por pantalla y accesibilidad |
 | [`docs/propuestas-ux.md`](docs/propuestas-ux.md) | Las 3 propuestas de UX de retroalimentación del cliente (SPEC-24): reacción a una respuesta, calificación de la entrega y valoración de la compra |
+| [`docs/uso-ia.md`](docs/uso-ia.md) | Uso de IA en el producto (LLM con tool calling y sus controles) y en el desarrollo (SDD con OpenSpec, roles delegados y cómo se revisa el código generado) |
 
 > Esta versión incorpora la arquitectura hexagonal (frontend y backend) y los wireframes mobile ya definidos por el equipo. Las secciones marcadas 🧩 reflejan decisiones tomadas a partir de esos artefactos; lo que no estaba explícito en ellos queda anotado como supuesto.
 

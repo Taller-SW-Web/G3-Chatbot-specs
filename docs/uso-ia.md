@@ -9,7 +9,7 @@ El Canal Chatbot es un asistente de compras en lenguaje natural. El backend inte
 ### 1.1 Cómo funciona un turno
 
 1. El cliente envía un mensaje: `POST /api/v1/chat/conversaciones/{id}/mensajes`.
-2. El backend arma el contexto acotado (system prompt, resumen y últimos mensajes) y el catálogo de herramientas del hito, y llama al modelo a través del puerto `LLMProvider`.
+2. El backend arma el contexto acotado (system prompt, resumen y últimos mensajes) y el catálogo de herramientas habilitadas, y llama al modelo a través del puerto `LLMProvider`.
 3. Si el modelo pide una herramienta (buscar productos, ver el detalle, agregar al carrito, solicitar el registro), el backend valida los argumentos, la ejecuta y le devuelve el resultado. El bucle tiene un máximo de 5 iteraciones por turno.
 4. La respuesta llega al navegador por SSE en la misma respuesta del `POST` ([ADR-0021](arquitectura/adr/ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md)): eventos `token` con el texto y `bloque` con los datos estructurados (carrusel, carrito, formularios).
 
@@ -30,7 +30,7 @@ Cambiar de proveedor o de modelo es configuración, no código: el motor de conv
 
 | Riesgo | Control | Dónde |
 |---|---|---|
-| El modelo inventa precios, stock o descuentos | Los datos comerciales salen siempre de las herramientas y se muestran en bloques estructurados, no en el texto del LLM. `OutputValidator` compara los montos, porcentajes y descuentos del texto con los resultados; está implementado y entra al turno con H3-11 (PR #45 del backend, sin mergear al 2026-10-17) | ADR-0005; `src/domain/services/output_validator.py` (backend) |
+| El modelo inventa precios, stock o descuentos | Los datos comerciales salen siempre de las herramientas y se muestran en bloques estructurados, no en el texto del LLM. `OutputValidator` compara los montos, porcentajes y descuentos del texto con los resultados; está implementado y entra al turno con la integración de herramientas de SPEC-05 (PR #45 del backend, sin mergear al 2026-10-17) | ADR-0005; `src/domain/services/output_validator.py` (backend) |
 | El modelo ejecuta acciones no deseadas | Argumentos validados, identidad tomada siempre del token (nunca de los argumentos del modelo) y confirmación en pantalla para acciones con efecto económico o irreversible | ADR-0005; SPEC-05 |
 | *Prompt injection* desde los datos | Los resultados de las herramientas se envuelven en `<datos_herramienta>` y el system prompt indica tratarlos como datos, no como instrucciones | `src/application/prompts/system_prompt.py` (backend) |
 | Datos sensibles hacia el proveedor | `SensitiveDataFilter` redacta contraseñas, tarjetas y documentos de identidad antes de enviar el texto al LLM | `src/domain/services/sensitive_data_filter.py` (backend); [`privacidad.md`](conversacion/privacidad.md) |
@@ -39,7 +39,7 @@ Cambiar de proveedor o de modelo es configuración, no código: el motor de conv
 
 ### 1.4 Prueba con el modelo real
 
-El 2026-10-16 se probó por primera vez contra la API real de OpenAI ([`odd/tasks/hito-3.md`](../odd/tasks/hito-3.md), séptimo tramo de H3-10). De esa prueba salieron decisiones concretas:
+El 2026-10-16 se probó por primera vez contra la API real de OpenAI ([ADR-0005](arquitectura/adr/ADR-0005-llm-con-tool-calling-detras-de-llmprovider.md), enmienda del 2026-10-16). De esa prueba salieron decisiones concretas:
 
 - Pasar de Chat Completions a la Responses API, porque `gpt-6-luna` rechazaba herramientas al razonar.
 - Restringir la descripción de `solicitar_registro`, que el modelo usaba fuera de lugar.
@@ -59,7 +59,7 @@ El equipo trabaja con desarrollo guiado por especificaciones (*Spec-Driven Devel
 2. **Cambios:** todo cambio de comportamiento se propone en `openspec/changes/<cambio>/` con propuesta, specs delta, diseño y tareas. Ningún requisito se edita a mano en la spec base.
 3. **Validación:** `npx @fission-ai/openspec validate --strict` revisa el formato antes de integrar.
 4. **Archivo:** al aprobarse, el cambio se fusiona en la spec base y queda en `openspec/changes/archive/` con su fecha. Ejemplo: `2026-10-16-ajustar-calificacion-compra-y-entrega`, que separó la calificación de la entrega y la valoración de la compra (SPEC-24).
-5. **Trazabilidad:** cada requisito lleva su línea *Trazabilidad*. `docs/producto/trazabilidad.md` enlaza requisito, historia de usuario, regla de negocio y endpoint, y [`casos-prueba-hito-3.md`](casos-prueba-hito-3.md) tiene un caso por escenario (126 casos).
+5. **Trazabilidad:** cada requisito lleva su línea *Trazabilidad*. `docs/producto/trazabilidad.md` enlaza requisito, historia de usuario, regla de negocio y endpoint, y el [documento de casos de prueba](casos-prueba-hito-3.md) tiene un caso por escenario (126 casos).
 
 Con esto, la IA genera código a partir de requisitos escritos, versionados y revisados, no a partir de pedidos sueltos.
 
@@ -67,13 +67,13 @@ Con esto, la IA genera código a partir de requisitos escritos, versionados y re
 
 | Integrante | Herramienta | Uso principal |
 |---|---|---|
-| Nikol | Claude Code | Documentación y specs (evidencia del Hito 2, propuestas de UX, correcciones de SPEC-24), verificación de commits y gestión de conversaciones (H3-15) |
-| Mathias | Claude Code | Revisión de PR del equipo en backend y frontend. Backend: motor de conversación de H3-10 (conversaciones, bucle del agente, `LLMProvider` con OpenAI, streaming por SSE y búsqueda), persistencia de H2-07 y despliegue en Railway (H3-03). Frontend: chat por SSE conectado al backend (H3-10) y migración a pnpm con CI (H3-04). Specs: ADR, modelo C4 y planes de `odd/tasks/` |
-| Sebastian | opencode (LLM DeepSeek V4.1 Flash) | Contratos de módulos y cliente httpx base (H3-05), cliente y mock de Seguridad (H3-07) y registro y verificación de correo (H3-09); specs SDD en OpenSpec, revisión de PRs (H3-08) y cierre con pruebas (pytest/Vitest) y CI |
+| Nikol | Claude Code | Documentación y specs (evidencia de entregas, propuestas de UX, correcciones de SPEC-24), casos de prueba por escenario, verificación de commits y gestión de conversaciones (SPEC-05, Req. 1) |
+| Mathias | Claude Code | Revisión de PR del equipo en backend y frontend. Backend: motor de conversación de SPEC-05 (conversaciones, bucle del agente, `LLMProvider` con OpenAI según ADR-0005, streaming por SSE según ADR-0021 y búsqueda), persistencia de conversaciones y adjuntos (SPEC-05 y SPEC-23) y despliegue en Railway (ADR-0020). Frontend: chat por SSE conectado al backend (ADR-0021) y migración a pnpm con CI. Specs: ADR, modelo C4 y planes de trabajo |
+| Sebastian | opencode (LLM DeepSeek V4.1 Flash) | Contratos de módulos y cliente httpx base, cliente y mock de Seguridad (ADR-0017) y registro y verificación de correo (SPEC-01 y SPEC-02); specs SDD en OpenSpec, revisión de PRs y cierre con pruebas (pytest/Vitest) y CI |
 | Sonny | [completar] | [completar] |
 | David | [completar] | [completar] |
-| Alonso | Deska (Codex) | Apoyo en la implementación y revisión de H3-11: integración de herramientas y acciones rápidas en backend y frontend y ejecución de pruebas. |
-| Diego | Gemini con Opencode | Implementación y revisión de frontend y backend: design system (tokens y componentes base, H2-08), páginas de carrito, checkout e historial, `ChatPage`/`Sidebar` y autenticación (login, MFA y sesión, H3-14) |
+| Alonso | Deska (Codex) | Apoyo en la implementación y revisión de la integración de herramientas, acciones rápidas y modo degradado (SPEC-05) en backend y frontend, y ejecución de pruebas. |
+| Diego | Gemini con Opencode | Implementación y revisión de frontend y backend: design system (tokens y componentes base), páginas de carrito, checkout e historial, `ChatPage`/`Sidebar` y autenticación (login, MFA y sesión, SPEC-03) |
 
 Además del asistente de código, el flujo usa:
 
@@ -82,7 +82,7 @@ Además del asistente de código, el flujo usa:
 
 ### 2.3 Cómo se genera el código: orquestador y roles delegados
 
-Las tareas grandes se ejecutan con un agente orquestador que reparte el trabajo en roles delegados. La columna *Ruta* de [`odd/tasks/hito-3.md`](../odd/tasks/hito-3.md) registra cuál se usó en cada tramo:
+Las tareas grandes se ejecutan con un agente orquestador que reparte el trabajo en roles delegados. Los planes de trabajo de `odd/tasks/` registran cuál se usó en cada tramo:
 
 - **Mapeador:** lee el código existente y resume dónde tocar, sin escribir.
 - **Redactor:** escribe el código o la documentación de un tramo acotado.
@@ -97,23 +97,23 @@ Ningún código generado entra sin pasar por los mismos controles que el código
 
 | Control | Cómo se aplica | Evidencia |
 |---|---|---|
-| Specs como contrato | El código implementa requisitos y escenarios ya escritos; las pruebas citan el escenario que cubren | `docs/casos-prueba-hito-3.md` |
-| Pruebas | Backend: más de 420 pruebas unitarias y más de 30 de integración contra PostgreSQL 18. Frontend: pruebas unitarias con Vitest y E2E con Playwright; las E2E de humo del hito están en revisión (PR #20 del frontend) | `odd/tasks/hito-3.md` (cierres de H3-10 y H3-15); `tests/` de cada repo |
+| Specs como contrato | El código implementa requisitos y escenarios ya escritos; las pruebas citan el escenario que cubren | [Casos de prueba](casos-prueba-hito-3.md) |
+| Pruebas | Backend: más de 420 pruebas unitarias y más de 30 de integración contra PostgreSQL 18. Frontend: pruebas unitarias con Vitest y E2E con Playwright; las E2E de humo están en revisión (PR #20 del frontend) | `tests/` de cada repo |
 | CI obligatorio | `pytest` en el backend; `lint`, `typecheck`, `test` y `build` en el frontend | `.github/workflows/` de cada repo |
-| Revisión humana | `main` y `development` protegidas: PR obligatorio con una aprobación, y se descartan aprobaciones si llegan commits nuevos | Cierre de H3-02 en `odd/tasks/hito-3.md` |
-| Prueba manual | Los tramos con riesgo se verifican por HTTP o en el navegador contra una base migrada y, desde el 2026-10-16, contra el modelo real | Cierres de H3-10 y H3-15 |
-| Reglas de estilo | Código del backend en inglés, sin referencias a hitos ni tareas; identificadores de base de datos en inglés | Restricciones de `odd/tasks/hito-3.md` |
+| Revisión humana | `main` y `development` protegidas: PR obligatorio con una aprobación, y se descartan aprobaciones si llegan commits nuevos | Protección de ramas en GitHub (backend y frontend) |
+| Prueba manual | Los tramos con riesgo se verifican por HTTP o en el navegador contra una base migrada y, desde el 2026-10-16, contra el modelo real | ADR-0005 (enmienda del 2026-10-16) |
+| Reglas de estilo | Archivos de código e identificadores de base de datos en inglés | [README §6](../README.md#6-cómo-trabajar-con-openspec) |
 
 ### 2.5 Ejemplos de correcciones sobre código generado
 
 La revisión humana encontró y corrigió fallas reales en código asistido por IA:
 
-- **Filtro de datos sensibles (PR #35, H3-08):** la primera versión dejaba pasar contraseñas y tarjetas hacia el LLM. La revisión pidió cambios y el PR se aprobó tras la corrección (`d50a3c8`).
-- **Clientes de Productos (PR #39, H3-06):** las respuestas 4xx llegaban como datos válidos y una prueba no ejercitaba el cliente. Se corrigió antes del merge (`8cc6e61`).
-- **Herramienta fuera de lugar (H3-10, `d215350`):** el modelo mostraba el formulario de registro ante preguntas de producto. Se corrigió la descripción de la herramienta y se verificó contra OpenAI.
+- **Filtro de datos sensibles (PR #35, SPEC-05):** la primera versión dejaba pasar contraseñas y tarjetas hacia el LLM. La revisión pidió cambios y el PR se aprobó tras la corrección (`d50a3c8`).
+- **Clientes de Productos (PR #39, ADR-0017):** las respuestas 4xx llegaban como datos válidos y una prueba no ejercitaba el cliente. Se corrigió antes del merge (`8cc6e61`).
+- **Herramienta fuera de lugar (SPEC-01, `d215350`):** el modelo mostraba el formulario de registro ante preguntas de producto. Se corrigió la descripción de la herramienta y se verificó contra OpenAI.
 
 ## 3. Límites y riesgos aceptados
 
 - La salida del LLM no es determinista; cualquier cambio de prompt o de modelo debería pasar por la evaluación de intenciones, que aún no existe (sección 1.4).
 - Costo y latencia por turno (riesgo R9 de `docs/producto/alcance.md`): se acotan con contexto limitado y un timeout de 15 s por llamada al modelo (`LLM_TIMEOUT_SECONDS`). El límite de mensajes por minuto (SPEC-05, límites de uso) está especificado, pero aún no está implementado en el backend.
-- El código asistido por IA puede verse correcto y fallar en casos borde; por eso cada tramo se cierra con pruebas, CI y una aprobación humana, y los hallazgos se registran en `odd/tasks/`.
+- El código asistido por IA puede verse correcto y fallar en casos borde; por eso cada tramo se cierra con pruebas, CI y una aprobación humana, y los hallazgos se registran en los planes de trabajo (`odd/tasks/`).

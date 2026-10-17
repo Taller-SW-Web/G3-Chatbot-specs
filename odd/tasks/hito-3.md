@@ -100,7 +100,7 @@ Diego mantiene además el cuidado del design system (`docs/design-system.md`). R
 - [ ] H3-12
 - [ ] H3-13
 - [ ] H3-14
-- [ ] H3-15
+- [x] H3-15
 - [ ] H3-16
 - [ ] H3-17
 - [ ] H3-18
@@ -267,6 +267,14 @@ Hallazgos de la prueba en navegador que afectan a otras tareas:
 - **H3-18:** el backend lee `LLM_API_KEY` solo del entorno del proceso (no del archivo `.env`), y en desarrollo Next 16 bloquea `/_next` si se entra por `127.0.0.1` (usar `localhost`). La verificación del streaming por el proxy en local quedó hecha; falta repetirla en Vercel.
 - **Latencia:** un turno con herramienta tardó más de 8 s una vez en el navegador; por script dio 3,4 s en dos corridas. No se reprodujo.
 
+Estado del backend al 2026-10-16 (verificado con `git fetch` de backend y frontend; el último commit de `development` del backend es del 2026-10-16 a las 20:55, hora de Lima):
+
+- **Integrado en `development` del backend:** H3-15 (`6ccaa8c`, PR #42, aprobado por Mathias); de H3-10, conversaciones, streaming por SSE y proveedor de OpenAI (PR #36 y commits posteriores, incluido `69f184a`); de H3-12, catálogo y carrito con datos de Productos (`77722dd`, PR #44, aprobado por Mathias). El frontend de H3-15 está en `development` del frontend (`4d29e84`, PR #19, aprobado por Mathias).
+- **Ramas del backend con trabajo sin mergear** (commits adelante de `development`): `feature/h3-11-tool-integration`, 2 (PR #45); `feature/h3-13-carrito-stock`, 4 (PR #46); `feature/h3-14-session-auth`, 4 (PR #43). `feature/catalog-cart-stock` figura 5 commits adelante, pero su contenido ya entró a `development` con el *squash* del PR #44: no tiene trabajo pendiente.
+- **H3-09:** sin rama ni commits en el backend ni en el frontend.
+- **H3-17:** el CI del backend sigue ejecutando solo `python -m pytest tests/unit`.
+- **Ramas del backend:** `main` en `da03d62` (2026-10-02, PR #34); `development` en `77722dd` (2026-10-16), 31 commits adelante de `main`.
+
 ## Siguiente paso
 
-Fase 0 cerrada. En la Fase 1, H3-15 está integrada (backend #42 y frontend #19) y la parte frontend de H3-10 está terminada en `feature/h3-10-chat-sse`: falta abrir el PR contra `development` (una sola entrega, porque las piezas dependen entre sí), empujar el commit `69f184a` del backend y marcar H3-10. Siguen H3-09 (que debe renderizar `FORMULARIO`), H3-11 (Alonso), H3-12 (Sonny, ajustada a Productos 0.5.0 cuando se mergee specs #11) y el resto según el reparto vertical del 2026-10-15. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.
+Fase 0 cerrada y H3-15 integrada. El foco inmediato es el backend: mergear a `development` los PR de H3-11 (#45), H3-13 (#46) y H3-14 (#43), abrir el trabajo de H3-09 (que además debe renderizar el bloque `FORMULARIO`) y resolver H3-17 y H3-18. Después se mergea el frontend de H3-10, H3-11, H3-12, H3-13, H3-14 y H3-16. Siguen por decidir la fecha de la demo y la política de cookies entre dominios.

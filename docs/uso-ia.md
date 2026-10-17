@@ -69,7 +69,7 @@ Con esto, la IA genera código a partir de requisitos escritos, versionados y re
 |---|---|---|
 | Nikol | Claude Code | Documentación y specs (evidencia del Hito 2, propuestas de UX, correcciones de SPEC-24), verificación de commits y gestión de conversaciones (H3-15) |
 | Mathias | [completar] | [completar] |
-| Sebastian | [completar] | [completar] |
+| Sebastian | opencode (LLM DeepSeek V4.1 Flash) | Contratos de módulos y cliente httpx base (H3-05), cliente y mock de Seguridad (H3-07) y registro y verificación de correo (H3-09); specs SDD en OpenSpec, revisión de PRs (H3-08) y cierre con pruebas (pytest/Vitest) y CI |
 | Sonny | [completar] | [completar] |
 | David | [completar] | [completar] |
 | Alonso | Deska (Codex) | Apoyo en la implementación y revisión de H3-11: integración de herramientas y acciones rápidas en backend y frontend y ejecución de pruebas. |

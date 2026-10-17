@@ -17,7 +17,7 @@ El Canal Chatbot es un asistente de compras en lenguaje natural. El backend inte
 
 | Aspecto | Valor vigente | Fuente |
 |---|---|---|
-| Proveedor | OpenAI (`OpenAIProvider`), detrás del puerto `LLMProvider`; `ClaudeProvider` previsto sin implementar | ADR-0005, enmienda del 2026-10-11 |
+| Proveedor | OpenAI (`OpenAILLMProvider` en el código; `OpenAIProvider` en el ADR), detrás del puerto `LLMProvider`; `ClaudeProvider` previsto sin implementar | ADR-0005, enmienda del 2026-10-11 |
 | Modelo | `gpt-6-luna` | ADR-0005 |
 | API | Responses API, con `store=false` (el proveedor no guarda la conversación) | ADR-0005, enmienda del 2026-10-16 |
 | Razonamiento | `LLM_REASONING_EFFORT=none` por defecto | ADR-0005, enmienda del 2026-10-16 |
@@ -30,7 +30,7 @@ Cambiar de proveedor o de modelo es configuración, no código: el motor de conv
 
 | Riesgo | Control | Dónde |
 |---|---|---|
-| El modelo inventa precios, stock o descuentos | Los datos comerciales salen siempre de las herramientas y se muestran en bloques estructurados, no en el texto del LLM. `OutputValidator` compara los montos del texto con los resultados | ADR-0005; `src/domain/services/output_validator.py` (backend) |
+| El modelo inventa precios, stock o descuentos | Los datos comerciales salen siempre de las herramientas y se muestran en bloques estructurados, no en el texto del LLM. `OutputValidator` compara los montos, porcentajes y descuentos del texto con los resultados; está implementado y entra al turno con H3-11 (PR #45 del backend, sin mergear al 2026-10-17) | ADR-0005; `src/domain/services/output_validator.py` (backend) |
 | El modelo ejecuta acciones no deseadas | Argumentos validados, identidad tomada siempre del token (nunca de los argumentos del modelo) y confirmación en pantalla para acciones con efecto económico o irreversible | ADR-0005; SPEC-05 |
 | *Prompt injection* desde los datos | Los resultados de las herramientas se envuelven en `<datos_herramienta>` y el system prompt indica tratarlos como datos, no como instrucciones | `src/application/prompts/system_prompt.py` (backend) |
 | Datos sensibles hacia el proveedor | `SensitiveDataFilter` redacta contraseñas, tarjetas y documentos de identidad antes de enviar el texto al LLM | `src/domain/services/sensitive_data_filter.py` (backend); [`privacidad.md`](conversacion/privacidad.md) |
@@ -98,7 +98,7 @@ Ningún código generado entra sin pasar por los mismos controles que el código
 | Control | Cómo se aplica | Evidencia |
 |---|---|---|
 | Specs como contrato | El código implementa requisitos y escenarios ya escritos; las pruebas citan el escenario que cubren | `docs/casos-prueba-hito-3.md` |
-| Pruebas | Backend: más de 460 pruebas unitarias y pruebas de integración contra PostgreSQL 18. Frontend: Vitest, Testing Library y Playwright (E2E de humo) | `odd/tasks/hito-3.md` (cierres de H3-10 y H3-15) |
+| Pruebas | Backend: más de 420 pruebas unitarias y más de 30 de integración contra PostgreSQL 18. Frontend: pruebas unitarias con Vitest y E2E con Playwright; las E2E de humo del hito están en revisión (PR #20 del frontend) | `odd/tasks/hito-3.md` (cierres de H3-10 y H3-15); `tests/` de cada repo |
 | CI obligatorio | `pytest` en el backend; `lint`, `typecheck`, `test` y `build` en el frontend | `.github/workflows/` de cada repo |
 | Revisión humana | `main` y `development` protegidas: PR obligatorio con una aprobación, y se descartan aprobaciones si llegan commits nuevos | Cierre de H3-02 en `odd/tasks/hito-3.md` |
 | Prueba manual | Los tramos con riesgo se verifican por HTTP o en el navegador contra una base migrada y, desde el 2026-10-16, contra el modelo real | Cierres de H3-10 y H3-15 |
@@ -115,5 +115,5 @@ La revisión humana encontró y corrigió fallas reales en código asistido por 
 ## 3. Límites y riesgos aceptados
 
 - La salida del LLM no es determinista; cualquier cambio de prompt o de modelo debería pasar por la evaluación de intenciones, que aún no existe (sección 1.4).
-- Costo y latencia por turno (riesgo R9 de `docs/producto/alcance.md`): se acotan con un límite de mensajes por minuto, contexto limitado y un timeout de 15 s por llamada al modelo.
+- Costo y latencia por turno (riesgo R9 de `docs/producto/alcance.md`): se acotan con contexto limitado y un timeout de 15 s por llamada al modelo (`LLM_TIMEOUT_SECONDS`). El límite de mensajes por minuto (SPEC-05, límites de uso) está especificado, pero aún no está implementado en el backend.
 - El código asistido por IA puede verse correcto y fallar en casos borde; por eso cada tramo se cierra con pruebas, CI y una aprobación humana, y los hallazgos se registran en `odd/tasks/`.

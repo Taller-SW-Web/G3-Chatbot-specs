@@ -68,7 +68,7 @@ Con esto, la IA genera código a partir de requisitos escritos, versionados y re
 | Integrante | Herramienta | Uso principal |
 |---|---|---|
 | Nikol | Claude Code | Documentación y specs (evidencia del Hito 2, propuestas de UX, correcciones de SPEC-24), verificación de commits y gestión de conversaciones (H3-15) |
-| Mathias | [completar] | [completar] |
+| Mathias | Claude Code | Revisión de PR del equipo en backend y frontend. Backend: motor de conversación de H3-10 (conversaciones, bucle del agente, `LLMProvider` con OpenAI, streaming por SSE y búsqueda), persistencia de H2-07 y despliegue en Railway (H3-03). Frontend: chat por SSE conectado al backend (H3-10) y migración a pnpm con CI (H3-04). Specs: ADR, modelo C4 y planes de `odd/tasks/` |
 | Sebastian | opencode (LLM DeepSeek V4.1 Flash) | Contratos de módulos y cliente httpx base (H3-05), cliente y mock de Seguridad (H3-07) y registro y verificación de correo (H3-09); specs SDD en OpenSpec, revisión de PRs (H3-08) y cierre con pruebas (pytest/Vitest) y CI |
 | Sonny | [completar] | [completar] |
 | David | [completar] | [completar] |

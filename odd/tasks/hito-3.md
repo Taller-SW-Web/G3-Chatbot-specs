@@ -102,7 +102,7 @@ Diego mantiene además el cuidado del design system (`docs/design-system.md`). R
 - [x] H3-14
 - [x] H3-15
 - [x] H3-16 (E2E-03 a E2E-07 siguen en `test.fixme`; se activan en H3-19)
-- [ ] H3-17
+- [x] H3-17 (en `development`; llega a `main` con la próxima promoción)
 - [ ] H3-18 (parcial: despliegue automático y migraciones en el pre-deploy de Railway; falta `DB_POOL_SIZE` y `DB_MAX_OVERFLOW`, y verificar un merge a `main` sin redespliegue manual)
 
 ### Fase 2: integración y demo
@@ -318,10 +318,27 @@ Estado verificado el 2026-10-23 con `git fetch` y `gh pr list` en backend y fron
 
 Documentos pendientes de alinear con el entorno único: enmienda del ADR-0020; menciones a *staging* en `casos-prueba-hito-3.md`, `c4.md`, ADR-0022 y ADR-0023; comentarios de `next.config.ts`, `playwright.config.ts` y `smoke.spec.ts` en el frontend.
 
+Avance del 2026-10-24:
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| Sincronización de ramas | En línea | `main` integrado en `development` con merge commit (sin squash), con el árbol resultante idéntico a `origin/main`. Los conflictos venían del squash de la promoción y se resolvieron tomando `main`, porque `development` no tenía cambios propios | CI en verde; mergeado por Mathias como admin | Backend #53 y #54, frontend #31 |
+| Supabase pausado | Dashboard (Mathias) | El proyecto gratuito de Supabase se pausó tras 7 días sin actividad: toda llamada que tocaba la base respondía 500 y `/health`, que no la toca, respondía 200. Restaurado desde el dashboard | No aplica | No aplica |
+| Hotfix: sesión del cliente en chat y carrito | Delegada (un redactor) | `get_caller_identity` respondía 501 `AUTENTICACION_NO_DISPONIBLE` a todo `Authorization`, y el frontend envía `Bearer` tras el inicio de sesión: un cliente con sesión no podía listar ni crear conversaciones, chatear ni usar el carrito (la demo solo funcionaba sin sesión). Además, `get_access_token_validator` usaba siempre JWKS e ignoraba `MODULES_MODE`, lo que rompía `/sesion/perfil` en modo falso. Ahora el validador sale del contenedor, el `sub` se convierte a UUID, un token inválido responde 401 `TOKEN_INVALIDO` y el `Bearer` tiene prioridad sobre `chat_sid`. 649 pruebas unitarias. Verificado en producción con `cliente@demo.pe`: listar (200), crear, turno SSE completo y `/sesion/perfil` (200) | RDD desactivado; diff revisado por el orquestador | `793fbc1` directo en `main` del backend, por decisión de Mathias |
+| H3-17 | En línea | Job `test` único (es el check obligatorio de las ramas protegidas) con servicio PostgreSQL 18: `ruff check .`, pruebas unitarias, `alembic upgrade head` → `downgrade base` → `upgrade head` y pruebas de integración. `ruff.toml` con reglas E, F, W, I; E501 sin exigir por ahora (afectaría a casi todos los archivos) y migraciones excluidas (no se editan). `ruff --fix` ordenó imports y quitó 10 imports sin uso en 36 archivos. La prueba de integración que fallaba estaba desactualizada desde #45 (el menú degradado solo ofrece acciones con herramienta registrada): ahora registra las herramientas. CI en GitHub: lint OK, 649 unitarias, migraciones OK, 42 de integración ejecutadas | CI en verde; mergeado por Mathias como admin | `55e15ad` (squash del #55) en `development` del backend |
+
+Pendientes que deja el hotfix: las conversaciones anónimas no pasan a la cuenta del cliente al iniciar sesión; en modo falso, las sesiones viven en memoria y se pierden en cada redespliegue.
+
+Integración con Seguridad real (análisis del 2026-10-24, decisión de Mathias de hacer la demo con el servicio real):
+
+- `MODULES_MODE` es global: con `http`, Productos apunta a `localhost:4011` y se cae el catálogo. Hay que separar Seguridad (por ejemplo, `SECURITY_MODE`).
+- Nombres de campos: el login envía `email`/`password` y `correo`/`contrasena`; registro, reenvío, MFA, refresh y logout no se contrastaron con el `openapi.yaml` de `Modulo-de-Seguridad`.
+- A1: falta el issue que comunica a Seguridad nuestra URL `https://g3-chatbot-frontend.vercel.app/verificar-correo` y confirmar el parámetro `token`.
+- `iss` real, claim de roles y formato de `sub`, por confirmar con un token real; los cambios sin commitear de Mathias ya hacen configurable el issuer (`SECURITY_EXPECTED_ISSUER`).
+
 ## Siguiente paso
 
-1. Sincronizar `development` con `main` en backend y frontend, para no perder los hotfixes.
-2. H3-17: lint, pruebas de integración con PostgreSQL como servicio y `alembic upgrade head` en el CI del backend; corregir la prueba de integración que falla.
-3. Resolver la verificación de correo en el modo falso, para que el flujo de registro de la demo funcione en producción.
-4. H3-19: Nikol activa E2E-03 a E2E-07 y se corren en local y luego contra producción.
-5. H3-20: guion de la demo. Sigue por definir la fecha de la demo y quién aporta el medio de pago de Railway.
+1. Integración con Seguridad real: separar el modo de Seguridad, obtener el `openapi.yaml` de Seguridad, abrir el issue de A1 y commitear los cambios del issuer.
+2. Promover `development` a `main` para que el CI nuevo (H3-17) quede también en `main`.
+3. H3-19: Nikol activa E2E-03 a E2E-07 y se corren en local y luego contra producción.
+4. H3-20: guion de la demo. Sigue por definir la fecha de la demo y quién aporta el medio de pago de Railway. Entrar a la app el día anterior a la demo para que Supabase no esté pausado.

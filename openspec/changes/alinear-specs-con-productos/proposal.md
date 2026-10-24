@@ -16,7 +16,7 @@ Productos y Ofertas publicó su contrato HTTP 0.5.0 y su `ALINEACION_CHATBOT.md`
 
 ## Capabilities
 
-- `validacion-stock`: MODIFIED requisitos 1, 2 y 4.
+- `validacion-stock`: MODIFIED requisitos 1 a 4.
 - `busqueda-filtrado`: MODIFIED requisitos 1 y 3.
 - `ofertas-promociones`: MODIFIED requisitos 1 a 4.
 - `gestion-carrito`: MODIFIED requisito 3.
@@ -39,5 +39,14 @@ Decisiones interinas asumidas (confirmar con el equipo; se reemplazan cuando Pro
 3. **Promociones:** se muestran con nombre y vigencia; el nombre de la promoción aplicada en el carrito se busca por `promotion_id` y, si no aparece, se dice "Descuento".
 4. **`INDETERMINADO`:** se acepta con aviso y no bloquea el checkout; Ventas confirma el stock al crear el pedido.
 5. **Verificación por cantidad:** es provisional; si no está disponible, se usa solo el estado comercial.
+
+Cierre de compatibilidad de Productos (20/10, acuerdo A17), sin reabrir A16:
+
+- **D1:** la verificación por cantidad envía siempre `fulfillment: {mode: ENVIO_DOMICILIO}`, sin `fulfillment_ref`, y su resultado se lee de `items[].result`.
+- **D2:** una respuesta incompleta o incompatible (SKU ausente o que no coincide, estado desconocido, payload fuera del esquema) es disponibilidad no obtenida, distinta de `INDETERMINADO`, y nunca se trata como `AGOTADO`. Por eso este cambio también modifica el requisito 3 de `validacion-stock`.
+- **D3:** la homologación HTTP se hará con `MODULES_MODE=http`, separada de los adaptadores falsos; el entorno lo define Mathias.
+- `INDETERMINADO` nunca se comunica como "pocas unidades"; un producto sin precio vigente muestra "Precio no disponible", nunca `S/ 0.00`, y no se puede agregar.
+- El chatbot no envía `estado` en `GET /productos`; envía `canal=CHATBOT` en `GET /promociones`, en el detalle y en el precio individual.
+- Las correcciones de código (token de servicio, DTO, mensajes y adaptadores falsos) se piden por issue en los repositorios de backend y frontend.
 
 Pendiente de Productos (etapa posterior, sin fecha): filtros de variantes, orden por precio, resumen y alcance de promociones, desglose por línea, monto faltante del cupón, pauta de caché y concurrencia, y la matriz de errores y límites (SKU inexistente o inactivo, validaciones, `429`).

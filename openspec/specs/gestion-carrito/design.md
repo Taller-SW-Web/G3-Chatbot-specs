@@ -6,7 +6,7 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `GET /precios?skus=&canal=CHATBOT` | 🟡 A5 · scope `precios:leer` pendiente |
+| Productos | `GET /precios?skus=&canal=CHATBOT` y, para una sola línea, `GET /precios/skus/{sku}?canal=CHATBOT` (sin `canal` Pricing devuelve el precio global, no el del canal) | 🟡 A5 · scope `precios:leer` pendiente |
 | Productos | `POST /promociones/evaluar {channel_id, at, lines[], coupon_code, customer_ref}` → un único `discount_amount` para toda la cesta (sin desglose por línea), con `promotion_id` y `reason`; ante `429` se respeta `Retry-After` | 🟡 A5 · scope `promociones:evaluar` pendiente |
 | Productos | Disponibilidad comercial y verificación por cantidad (SPEC-10) | 🟡 A5 |
 

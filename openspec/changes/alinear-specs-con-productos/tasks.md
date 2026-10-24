@@ -16,7 +16,7 @@
 
 ## 3. Pendiente
 
-- [ ] 3.1 Actualizar historias de usuario y reglas (`docs/producto/historias/EP-03-descubrimiento.md`, `EP-04-carrito.md`, reglas RN-CAR-01 y RN-CAR-02) que mencionan cantidades, "pocas unidades ≤ 5", talla/color en búsqueda y beneficio de promociones. Ya se corrigieron los términos de stock (ruta `/inventario/disponibilidad/comercial`, `available`, `POCAS_UNIDADES`, "Ajustar a N", "Stock parcial") en `docs/producto/trazabilidad.md`, `docs/producto/historias/EP-04-carrito.md`, `docs/producto/reglas-negocio.md`, `docs/conversacion/dialogos-ejemplo.md`, `docs/conversacion/intenciones.md` y `docs/conversacion/flujos-conversacion.md`; falta lo de talla y color y el beneficio de promociones. Ya corregidos los términos de stock (ruta `/inventario/disponibilidad/comercial`, `available`, `POCAS_UNIDADES`, "Ajustar a N", "Stock parcial") en `docs/producto/trazabilidad.md`, `historias/EP-04-carrito.md`, `reglas-negocio.md`, `docs/conversacion/dialogos-ejemplo.md`, `intenciones.md` y `flujos-conversacion.md`; falta lo de talla/color y beneficio de promociones. Ya se corrigieron los términos de stock (ruta `/inventario/disponibilidad/comercial`, `available`, `POCAS_UNIDADES`, "Ajustar a N", "Stock parcial") en `docs/producto/trazabilidad.md`, `docs/producto/historias/EP-04-carrito.md`, `docs/producto/reglas-negocio.md`, `docs/conversacion/dialogos-ejemplo.md`, `docs/conversacion/intenciones.md` y `docs/conversacion/flujos-conversacion.md`; falta lo de talla y color y el beneficio de promociones.
+- [ ] 3.1 Actualizar historias de usuario y reglas (`docs/producto/historias/EP-03-descubrimiento.md`, `EP-04-carrito.md`, reglas RN-CAR-01 y RN-CAR-02) que mencionan cantidades, "pocas unidades ≤ 5", talla/color en búsqueda y beneficio de promociones. Ya se corrigieron los términos de stock (ruta `/inventario/disponibilidad/comercial`, `available`, `POCAS_UNIDADES`, "Ajustar a N", "Stock parcial") en `docs/producto/trazabilidad.md`, `docs/producto/historias/EP-04-carrito.md`, `docs/producto/reglas-negocio.md`, `docs/conversacion/dialogos-ejemplo.md`, `docs/conversacion/intenciones.md` y `docs/conversacion/flujos-conversacion.md`; falta lo de talla y color y el beneficio de promociones.
 - [ ] 3.2 Recalcular totales de requisitos y escenarios en README y trazabilidad.
 - [x] 3.3 Responder las preguntas pendientes a Productos y ajustar según su respuesta (respondidas por Productos el 15/10, acuerdo A16; ver 5.1).
 - [ ] 3.4 Archivar el cambio en un PR aparte.
@@ -30,3 +30,12 @@
 ## 5. Respuesta de Productos (15/10)
 
 - [x] 5.1 Ajustar los deltas y diseños a la respuesta de Productos (`INDETERMINADO`, verificación por cantidad, SKU por variantes, tratamiento de errores, acuerdo A16).
+
+## 6. Cierre de compatibilidad de Productos (20/10, A17)
+
+- [x] 6.1 `validacion-stock`: `fulfillment` con `ENVIO_DOMICILIO` y `items[].result` (D1); requisito 3 con respuestas incompletas o incompatibles distintas de `INDETERMINADO` (D2); aviso de `INDETERMINADO` distinto del de `STOCK_BAJO`.
+- [x] 6.2 `tarjetas-detalle-producto`: "Precio no disponible" en lugar de `S/ 0.00` y disponibilidad sin valor por defecto.
+- [x] 6.3 Diseños de `validacion-stock`, `busqueda-filtrado`, `gestion-carrito` y `tarjetas-detalle-producto`, y `docs/contratos-integracion.md` §3.2 y acuerdo A17 (token de servicio, `X-Correlation-Id`, `canal`, sin `estado`, adaptadores falsos).
+- [ ] 6.4 Responder D1 a D3 en G6-Productos-Ofertas-docs #87.
+- [ ] 6.5 Abrir los issues de backend y frontend con las correcciones de código.
+- [ ] 6.6 Definir con Mathias el entorno de la homologación con `MODULES_MODE=http` (D3).

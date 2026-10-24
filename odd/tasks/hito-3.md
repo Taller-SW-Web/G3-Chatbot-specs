@@ -90,7 +90,7 @@ Tareas transversales:
 |---|---|---|---|
 | H3-16 | Nikol | specs, frontend | Casos de prueba a partir de los escenarios de las specs del hito y E2E de humo con Playwright |
 | H3-17 | Mathias | backend | CI: lint, pruebas de integración con PostgreSQL como servicio y verificación de `alembic upgrade head` |
-| H3-18 | Mathias | backend, frontend | CD: `development` → staging y `main` → producción, con las migraciones como paso del despliegue; secretos por entorno (LLM, Supabase, URLs base de los mocks) |
+| H3-18 | Mathias | backend, frontend | CD: `main` → producción (único entorno desde el 2026-10-17; ver "Promoción a producción"), con las migraciones como paso del despliegue; secretos por entorno (LLM, Supabase, `MODULES_MODE`) |
 
 Diego mantiene además el cuidado del design system (`docs/design-system.md`). Revisión cruzada para quienes escriben backend por primera vez: Sebastian revisa los PR de H3-14 y Mathias los de H3-15.
 
@@ -103,17 +103,17 @@ Diego mantiene además el cuidado del design system (`docs/design-system.md`). R
 - [x] H3-15
 - [x] H3-16 (E2E-03 a E2E-07 siguen en `test.fixme`; se activan en H3-19)
 - [ ] H3-17
-- [ ] H3-18
+- [ ] H3-18 (parcial: despliegue automático y migraciones en el pre-deploy de Railway; falta `DB_POOL_SIZE` y `DB_MAX_OVERFLOW`, y verificar un merge a `main` sin redespliegue manual)
 
 ### Fase 2: integración y demo
 
 | ID | Responsable | Repositorio | Tarea |
 |---|---|---|---|
-| H3-19 | Todos, coordina Nikol | backend, frontend | E2E sobre staging y corrección de fallas |
+| H3-19 | Todos, coordina Nikol | backend, frontend | E2E en local antes de promover y verificación final contra producción; corrección de fallas |
 | H3-20 | Mathias | backend, frontend | Promoción a producción y guion de la demo |
 
 - [ ] H3-19
-- [ ] H3-20
+- [ ] H3-20 (parcial: promoción hecha el 2026-10-17; falta el guion de la demo)
 
 ## Criterios de aceptación
 
@@ -128,7 +128,7 @@ Diego mantiene además el cuidado del design system (`docs/design-system.md`). R
 
 - Backend: `python -m pytest tests/unit`, pruebas de integración contra PostgreSQL y `alembic upgrade head` seguido de `alembic downgrade base`.
 - Frontend: `lint`, `typecheck`, `test` y `build`.
-- E2E: Playwright sobre staging.
+- E2E: Playwright en local antes de promover y contra producción después.
 
 ## Entrega
 
@@ -297,6 +297,31 @@ Estado de las tareas transversales, verificado en `origin/development`:
 
 Seguimiento sin bloqueo: los PR se aprobaron con mejoras pendientes, listadas en el comentario de aprobación de cada uno. `DireccionForm.tsx` todavía importa `DISTRITOS` de `mockData`, pero pertenece al checkout, que queda fuera del hito.
 
+Promoción a producción (2026-10-17):
+
+Decisión de Mathias: se elimina *staging* y queda un único entorno, producción. Motivo: *staging* y producción compartirían la misma base de Supabase, y las migraciones del pre-deploy de *staging* alterarían producción; se descartó un segundo proyecto de Supabase. El servicio de Railway pasa a desplegar desde `main`. Esta decisión deja sin efecto las menciones a *staging* de este documento anteriores a esta sección.
+
+| Tarea | Ruta | Evidencia | Revisión | Commit |
+|---|---|---|---|---|
+| H3-20 (promoción) | En línea; configuración de Railway y Vercel hecha por Mathias desde los dashboards | Backend #48 y frontend #27 (`development` → `main`) mergeados. Backend en `https://g3-chatbot-backend.up.railway.app` (rama `main`, pre-deploy `alembic upgrade head`, `MODULES_MODE=fake`); frontend en `https://g3-chatbot-frontend.vercel.app` con `API_PROXY_TARGET` (variable de build). Streaming SSE verificado a través del proxy de Vercel (ADR-0023). El despliegue de #48 falló en Railway y Mathias redesplegó desde el dashboard. La integración de GitHub de Vercel se había desconectado y Mathias la reconectó | Aprobación de Mathias; RDD desactivado | `90e2bbf` (backend #48) y `4304aa7` (frontend #27) en `main` |
+| Hotfixes de producción | En línea; PR directos a `main` | Backend #49: búsqueda del catálogo falso por palabras (nombre, descripción, marca y categoría, sin tildes ni mayúsculas). Backend #50: la memoria de conversación respondía 500 por modificar una entidad inmutable. Backend #51: valores `Decimal` en bloques JSONB terminaban el turno en `ERROR_INTERNO`. Frontend #28: el chat no renderizaba los bloques de catálogo, carrito, variantes y formulario del backend. Frontend #29: ubicación del cuadro de mensaje dentro del marco móvil. Inicio de sesión verificado en producción con la cuenta de demostración del modo falso | Aprobación de Mathias | Backend `e093c29`, `c25161d`, `0b7bfa3`; frontend `ebd50d0`, `bd24db0` en `main` |
+
+Aprendizajes del despliegue: `DATABASE_URL` debe usar `postgresql+asyncpg://` sobre el *session pooler* de Supabase (puerto 5432) y sin `?pgbouncer=true`; el modo transacción (6543) rompe las sentencias preparadas de asyncpg. El modo sesión limita los clientes al tamaño del pool de Supabase y SQLAlchemy abre hasta 15 conexiones por proceso, de ahí `DB_POOL_SIZE` y `DB_MAX_OVERFLOW` pendientes en H3-18. Aún no hay worker: un solo proceso de uvicorn.
+
+Estado verificado el 2026-10-23 con `git fetch` y `gh pr list` en backend y frontend:
+
+- Sin PR abiertos en ninguno de los dos repositorios.
+- `development` no contiene los hotfixes: `main` tiene 5 commits del backend y 6 del frontend que no están en `development`. Como `main` se integra con squash, las historias divergen; la próxima rama creada desde `development` reintroduciría los fallos corregidos.
+- H3-17: el `ci.yml` del backend en `main` sigue ejecutando solo `python -m pytest tests/unit`.
+- H3-19: `tests/e2e/smoke.spec.ts` en `main` mantiene E2E-03 a E2E-07 en `test.fixme`.
+- Fallos sin resolver: la verificación de correo del modo falso no expone el token, por lo que en producción el registro no se puede completar; la prueba de integración `test_a_degraded_turn_streams_the_spec_shaped_quick_actions` falla desde antes de la promoción; filtro por color del catálogo y controles del bloque de carrito pendientes.
+
+Documentos pendientes de alinear con el entorno único: enmienda del ADR-0020; menciones a *staging* en `casos-prueba-hito-3.md`, `c4.md`, ADR-0022 y ADR-0023; comentarios de `next.config.ts`, `playwright.config.ts` y `smoke.spec.ts` en el frontend.
+
 ## Siguiente paso
 
-Funcionalidades de la Fase 1 integradas. Antes de la Fase 2 falta cerrar H3-18, porque H3-19 necesita un *staging* con base de datos y secretos; H3-17 puede ir en paralelo. Con eso, Nikol activa E2E-03 a E2E-07 y se corre H3-19 sobre *staging*. Sigue por definir la fecha de la demo, que ordena la Fase 2.
+1. Sincronizar `development` con `main` en backend y frontend, para no perder los hotfixes.
+2. H3-17: lint, pruebas de integración con PostgreSQL como servicio y `alembic upgrade head` en el CI del backend; corregir la prueba de integración que falla.
+3. Resolver la verificación de correo en el modo falso, para que el flujo de registro de la demo funcione en producción.
+4. H3-19: Nikol activa E2E-03 a E2E-07 y se corren en local y luego contra producción.
+5. H3-20: guion de la demo. Sigue por definir la fecha de la demo y quién aporta el medio de pago de Railway.

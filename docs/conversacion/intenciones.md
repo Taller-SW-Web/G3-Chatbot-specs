@@ -519,8 +519,8 @@ Los datos sensibles (**contraseña, OTP, tarjeta, dirección y documento**) **no
 | `precioMin` / `precioMax` | decimal (PEN) | ≥ 0; `precioMin ≤ precioMax` | "menos de 300 soles", "entre 50 y 100 lucas" | Mensaje del cliente (SPEC-06 · Req. 1) |
 | `talla` | texto | Debe existir en las variantes activas del producto; si no, se informan las tallas que maneja | "42", "M", "40 y medio" | Variantes de Productos (SPEC-09 · Req. 4; SPEC-10 · Req. 4) |
 | `color` | texto | Debe existir en las variantes activas; se ofrecen alternativas cercanas | "negra", "rojo" | Variantes de Productos (SPEC-09 · Req. 4) |
-| `soloOfertas` | booleano | — | "en oferta", "en promo" | SPEC-06 · Alcance |
-| `orden` | enumeración | `PRECIO_ASC`, `PRECIO_DESC`, `RELEVANCIA`, `NOVEDAD` | "más baratas" → `PRECIO_ASC` | SPEC-06 · Alcance y Req. 3 |
+| `soloOfertas` | booleano | — (lo resuelve el BFF con `precio_oferta`; Productos no lo filtra) | "en oferta", "en promo" | SPEC-06 · Alcance |
+| `orden` | enumeración | `NOMBRE_ASC`, `NOMBRE_DESC` (Productos no ordena por precio todavía) | "de la A a la Z"; "más baratas" no cambia el orden, reduce `precioMax` | SPEC-06 · Alcance y Req. 3 |
 | `pagina` | entero | ≥ 1; 10 resultados por página | "ver más" | SPEC-06 · Req. 4 |
 | `productoRef` | entero | 1..N del `contexto.ultimoCarrusel` de **esa** conversación (N ≤ 10); sin carrusel, se pregunta | "el segundo", "la tercera", "esa" | Memoria de trabajo (SPEC-05 · Req. 5) |
 | `sku` | texto | SKU activo; lo resuelve el backend, no el LLM | — | Productos (SPEC-09) |

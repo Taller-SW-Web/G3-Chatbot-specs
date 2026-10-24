@@ -57,12 +57,12 @@ El sistema DEBE (SHALL) interpretar la necesidad, ejecutar las búsquedas corres
 - **ENTONCES** se recomienda con la información disponible, priorizando productos versátiles, y se indica que puede afinar después
 
 ### Requirement: Recomendaciones veraces y disponibles
-El sistema DEBE (SHALL) recomendar únicamente productos activos con stock disponible y DEBE generar las justificaciones solo a partir de los atributos devueltos por Productos.
+El sistema DEBE (SHALL) recomendar únicamente productos activos que no estén `AGOTADO` (con `INDETERMINADO` se puede recomendar sin afirmar que hay stock) y DEBE generar las justificaciones solo a partir de los atributos devueltos por Productos.
 
 *Trazabilidad: SPEC-07 · Requisito 2.*
 
 #### Scenario: Producto recomendado sin stock
-- **DADO** que un candidato tiene `available = 0` en todas sus variantes
+- **DADO** que un candidato tiene todos sus SKU en `AGOTADO`
 - **CUANDO** se arma la recomendación
 - **ENTONCES** se excluye y se reemplaza por el siguiente candidato
 

@@ -25,7 +25,7 @@
 | Componente | Responsabilidad |
 |---|---|
 | Herramienta `consultar_promociones` | Esquema `{categoria?, marca?}`. |
-| `PromocionesService` | Consulta, filtra por modalidad `AUTOMATICA` y canal, y mapea a `PromocionResumen`. |
+| `PromocionesService` | Consulta `GET /promociones?canal=CHATBOT&vigentes=true` (`canal` es obligatorio) y mapea nombre y vigencia a `PromocionResumen`; no filtra por modalidad porque el listado no la trae. |
 | `PricingAdapter` | Normaliza `precio_regular`, `precio_oferta`, `currency` y `ahorroPct`. |
 | `EvaluacionClient` | Wrapper de `POST /promociones/evaluar` usando `channel_id`, `lines`, `coupon_code` y `customer_ref`. |
 
@@ -35,4 +35,4 @@
 - [ ] `[BE]` Herramienta `consultar_promociones` y `PromocionesService`
 - [ ] `[BE]` `PricingAdapter` y `EvaluacionClient`
 - [ ] `[FE]` `PromotionList`, `PriceTag` y `CartDiscountLines`
-- [ ] `[QA]` Pruebas de todos los escenarios (incluida la exclusión por canal y por modalidad `CUPON`)
+- [ ] `[QA]` Pruebas de todos los escenarios (incluido que nunca se muestre un código de cupón)

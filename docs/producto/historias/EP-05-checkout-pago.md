@@ -122,8 +122,9 @@
 **Como** cliente, **quiero** saber en términos claros por qué no se aplicó mi cupón, **para** corregirlo o decidir si agrego productos.
 
 **Criterios de aceptación**
-- `SPEC-13 · Req. 2 · Scenario: Monto mínimo no alcanzado` — se responde `422 CUPON_INVALIDO {motivo: MONTO_MINIMO}` con el monto faltante y "Ver productos".
+- `SPEC-13 · Req. 2 · Scenario: Monto mínimo no alcanzado` — con `code: MONTO_MINIMO_NO_ALCANZADO` se responde `422 CUPON_INVALIDO` con el mensaje de la tabla y "Ver productos", sin el monto faltante (Productos no lo entrega).
 - `SPEC-13 · Req. 2 · Scenario: Cupón no combinable` — se informa que ya se aplica un beneficio mayor y el cupón no queda aplicado.
+- `SPEC-13 · Req. 2 · Scenario: Cupón que exige cliente identificado` — con `CUSTOMER_REF_REQUERIDO` se pide iniciar sesión y se conserva la acción pendiente.
 
 **Prioridad:** Must: un rechazo sin motivo genera reclamos y abandono del pago.
 

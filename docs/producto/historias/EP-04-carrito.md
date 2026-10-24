@@ -15,9 +15,12 @@
 **Como** cliente, **quiero** que el chat me avise si pido más unidades de las que hay y me proponga alternativas, **para** no llegar al pago con un carrito imposible de cumplir.
 
 **Criterios de aceptación**
-- `SPEC-10 · Req. 1 · Scenario: Stock suficiente` — con stock suficiente la adición se acepta.
-- `SPEC-10 · Req. 1 · Scenario: Stock parcial` — se responde `409 STOCK_INSUFICIENTE` y se ofrece agregar solo lo disponible.
-- `SPEC-10 · Req. 1 · Scenario: SKU agotado` — se ofrecen otras variantes o hasta 3 productos similares con stock.
+- `SPEC-10 · Req. 1 · Scenario: Stock suficiente` — con `DISPONIBLE` la adición se acepta.
+- `SPEC-10 · Req. 1 · Scenario: Stock parcial` — con `STOCK_BAJO` se acepta con el aviso "Quedan pocas unidades".
+- `SPEC-10 · Req. 1 · Scenario: Cantidad mayor a la disponible` — si la verificación responde `INSUFICIENTE`, no se agrega y se ofrece probar con menos unidades, sin decir una cantidad.
+- `SPEC-10 · Req. 1 · Scenario: Disponibilidad indeterminada` — con `INDETERMINADO` se acepta con el aviso "No pudimos confirmar el stock", sin tratarlo como agotado.
+- `SPEC-10 · Req. 1 · Scenario: SKU agotado` — se ofrecen otras variantes o hasta 3 productos similares que no estén agotados.
+- `SPEC-10 · Req. 1 · Scenario: Contexto de cumplimiento de la verificación` — la verificación envía `fulfillment: {mode: ENVIO_DOMICILIO}` sin `fulfillment_ref` y lee `items[].result`.
 
 **Prioridad:** Must: la validación de stock es parte del lineamiento "agregar productos al carrito".
 
@@ -33,6 +36,7 @@
 
 **Criterios de aceptación**
 - `SPEC-10 · Req. 2 · Scenario: El stock cambió desde que se agregó` — se responde `409 CARRITO_DESACTUALIZADO` con detalle por línea y la acción "Quitar del carrito".
+- `SPEC-10 · Req. 2 · Scenario: Línea con disponibilidad indeterminada` — una línea `INDETERMINADO` no bloquea el checkout y muestra su aviso.
 - `SPEC-10 · Req. 2 · Scenario: Todas las líneas disponibles` — la validación pasa y el checkout continúa.
 - `SPEC-10 · Req. 2 · Scenario: Ventas rechaza por stock al crear el pedido` — se vuelve al carrito con la revalidación completa y sin cobrar.
 
@@ -52,7 +56,9 @@
 
 **Criterios de aceptación**
 - `SPEC-10 · Req. 3 · Scenario: Inventario no disponible al agregar` — tras 3 s sin respuesta, no se agrega, se responde `503` y se ofrece "Reintentar".
+- `SPEC-10 · Req. 3 · Scenario: Respuesta incompleta o incompatible` — un SKU ausente, un estado desconocido o un payload fuera del esquema se tratan como si Productos no respondiera, nunca como agotado.
 - `SPEC-10 · Req. 3 · Scenario: Disponibilidad no disponible solo para mostrar` — las tarjetas se muestran sin badge y la validación se hace al agregar.
+- `SPEC-10 · Req. 3 · Scenario: Error de autorización o límite de frecuencia` — `401`, `403` y `429` no se convierten en `AGOTADO` ni en `INDETERMINADO`; ante `429` se respeta `Retry-After`.
 
 **Prioridad:** Must, por el principio "nunca se asume disponibilidad".
 
@@ -68,6 +74,7 @@
 
 **Criterios de aceptación**
 - `SPEC-10 · Req. 4 · Scenario: Consulta de talla` — se responde si hay disponibilidad (o "Quedan pocas unidades" si el estado es `STOCK_BAJO`) con el botón "Agregar".
+- `SPEC-10 · Req. 4 · Scenario: Disponibilidad que no se puede confirmar` — con `INDETERMINADO` se dice que no se puede confirmar el stock, sin afirmar ni negar.
 - `SPEC-10 · Req. 4 · Scenario: Consulta de una variante inexistente` — se informan las tallas que maneja el producto.
 
 **Prioridad:** Should: mejora la conversación; la disponibilidad ya se ve en la tarjeta y en el detalle.
@@ -124,8 +131,10 @@
 - `SPEC-11 · Req. 3 · Scenario: Resumen del carrito` — el bloque `CARRITO` muestra líneas, subtotal, descuentos, nota de envío y total.
 - `SPEC-11 · Req. 3 · Scenario: El precio cambió` — el total usa el precio vigente y se avisa el cambio.
 - `SPEC-11 · Req. 3 · Scenario: Producto desactivado en el carrito` — la línea queda "Ya no disponible", no suma y se excluye del checkout.
+- `SPEC-11 · Req. 3 · Scenario: Disponibilidad indeterminada en el carrito` — la línea `INDETERMINADO` se mantiene, suma al total y muestra "No pudimos confirmar el stock".
 - `SPEC-11 · Req. 3 · Scenario: Carrito vacío` — se informa y se ofrecen "Ver ofertas" y "Buscar productos".
 - `SPEC-11 · Req. 3 · Scenario: Evaluación de promociones no disponible` — se muestra el subtotal con la nota correspondiente y el checkout queda bloqueado.
+- `SPEC-11 · Req. 3 · Scenario: Límite de frecuencia en la evaluación` — ante `429` se respeta `Retry-After` y se trata como una falla de la evaluación, sin suponer una cuota.
 
 **Prioridad:** Must: el total del carrito es la base del total a cobrar.
 

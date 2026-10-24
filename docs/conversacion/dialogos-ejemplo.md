@@ -51,9 +51,9 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 **Usuario:** hola, qué ofertas tienen?
 *(Se crea la conversación en este momento y la app navega a `ChatPage` con el mensaje ya enviado.)*
 `⟶ tool: consultar_promociones({})`
-`⟵ 3 promociones AUTOMATICA vigentes para CHATBOT (la de RETAIL no se incluye)`
+`⟵ 3 promociones vigentes para CHATBOT (la de RETAIL no se incluye)`
 **Botleta:** Hola, soy Botleta, tu asistente virtual de la tienda. Estas son las promociones vigentes:
-`[LISTA_PROMOCIONES]` 3 promociones con nombre, beneficio ("20 % en toda la línea running"), vigencia y `[Ver productos]`
+`[LISTA_PROMOCIONES]` 3 promociones con nombre, vigencia ("válido hasta 30/10") y `[Ver productos]` (Productos no entrega todavía el beneficio de cada una)
 
 ---
 
@@ -65,7 +65,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 **Usuario:** busco zapatillas adidas de menos de 300 soles
 `⟶ tool: buscar_productos({categoria: "zapatillas", marca: "Adidas", precioMax: 300})`
-`⟵ 2 productos ACTIVO (S/ 199.90 y S/ 289.90), orden RELEVANCIA`
+`⟵ 2 productos ACTIVO; precios S/ 199.90 y S/ 289.90 desde GET /precios`
 **Botleta:** Hola, María. Soy Botleta, tu asistente virtual de la tienda. Encontré 2 opciones:
 `[CARRUSEL_PRODUCTOS]` 2 tarjetas · chips "Categoría: Zapatillas", "Marca: Adidas", "Hasta S/ 300"
 
@@ -116,13 +116,14 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 **Usuario:** agrégame 2 medias más
 `⟶ tool: agregar_al_carrito({sku: "<SKU de las medias running>", cantidad: 2})` *(el backend resuelve la línea existente por nombre)*
-`⟵ 409 STOCK_INSUFICIENTE {disponible: 3}`
-**Botleta:** Solo quedan 3 unidades; ya tienes 2 en tu carrito. ¿Agrego 1 más?
-`[Sí, agregar 1]` `[No]`
+`⟵ estado STOCK_BAJO; verificación de 4 unidades: result INSUFICIENTE → 409 STOCK_INSUFICIENTE (sin cantidades)`
+**Botleta:** No hay stock suficiente para esa cantidad. ¿Quieres probar con menos unidades?
+`[Agregar 1]` `[No]`
 
-**Usuario:** *(pulsa `[Sí, agregar 1]`)*
+**Usuario:** *(pulsa `[Agregar 1]`)*
 `⟶ acción: AGREGAR_AL_CARRITO({sku, cantidad: 1})`
-**Botleta:** Listo, ya tienes 3 pares de medias running. Te recomendamos completar tu compra pronto.
+`⟵ verificación de 3 unidades: result SUFICIENTE; estado STOCK_BAJO`
+**Botleta:** Listo, ya tienes 3 pares de medias running. Quedan pocas unidades; el stock no se reserva hasta completar el pago.
 `[CARRITO]` resumido
 
 **Usuario:** tienen las Ultraboost en 40?

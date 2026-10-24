@@ -17,9 +17,12 @@
 **Como** cliente, **quiero** pedir productos mezclando categoría, marca y rango de precio en una sola frase, **para** ver solo lo que me interesa y con el precio vigente del canal.
 
 **Criterios de aceptación**
-- `SPEC-06 · Req. 1 · Scenario: Categoría, marca y precio máximo` — la frase se traduce a `categoria`, `marca` y `precioMax`, y el carrusel muestra solo los que cumplen, por relevancia.
+- `SPEC-06 · Req. 1 · Scenario: Categoría, marca y precio máximo` — la frase se traduce a `categoriaId`, `marcaId` y `precioMax`, y el carrusel muestra solo los que cumplen.
 - `SPEC-06 · Req. 1 · Scenario: Rango de precios en lenguaje coloquial` — "entre 50 y 100 lucas" aplica `precioMin=50` y `precioMax=100` en PEN.
-- `SPEC-06 · Req. 1 · Scenario: Solo productos activos` — los productos `BORRADOR` o `INACTIVO` no aparecen.
+- `SPEC-06 · Req. 1 · Scenario: Talla o color como texto libre` — talla y color viajan en `q` solo como ayuda, sin afirmar que todos los resultados cumplen, y se confirman en el detalle.
+- `SPEC-06 · Req. 1 · Scenario: Solo productos activos` — los productos `BORRADOR` o `INACTIVO` no aparecen, sin usar el filtro `estado`.
+- `SPEC-06 · Req. 1 · Scenario: Precio y disponibilidad de las tarjetas` — los SKU salen de `sku_base` o del detalle, y precio y disponibilidad se piden aparte en lotes de hasta 100.
+- `SPEC-06 · Req. 1 · Scenario: Sin caché contractual` — precio, stock y detalle solo se reutilizan dentro del mismo turno.
 
 **Prioridad:** Must: el curso exige la búsqueda por precio, categoría y marca.
 
@@ -206,7 +209,7 @@
 
 **Criterios de aceptación**
 - `SPEC-08 · Req. 4 · Scenario: El cliente pide cupones` — se explica que los cupones se distribuyen por campañas y que puede escribir el suyo.
-- `SPEC-08 · Req. 4 · Scenario: Promoción con cupón en el listado de Productos` — las promociones de modalidad `CUPON` se excluyen de `LISTA_PROMOCIONES`.
+- `SPEC-08 · Req. 4 · Scenario: Promoción con cupón en el listado de Productos` — si el listado de Productos incluye una promoción de cupón, `LISTA_PROMOCIONES` muestra solo su nombre y vigencia, nunca un código.
 
 **Prioridad:** Should: protege las campañas; el esfuerzo es bajo y puede entrar junto con HU-CAT-09.
 
@@ -223,7 +226,11 @@
 **Criterios de aceptación**
 - `SPEC-09 · Req. 1 · Scenario: Carrusel estándar` — se muestran las tarjetas desplazables con los datos de `ProductoResumen` y `alt` descriptivo.
 - `SPEC-09 · Req. 1 · Scenario: Imagen no disponible` — se muestra una imagen de reemplazo por categoría sin romper el diseño.
+- `SPEC-09 · Req. 1 · Scenario: Producto sin descripción` — sin `description` no se muestra el bloque de descripción y el diseño no se rompe.
 - `SPEC-09 · Req. 1 · Scenario: Producto agotado` — la tarjeta indica "Agotado", deshabilita "Agregar" y ofrece "Ver similares".
+- `SPEC-09 · Req. 1 · Scenario: Pocas unidades` — con `STOCK_BAJO` la tarjeta muestra "Pocas unidades" sin cantidad.
+- `SPEC-09 · Req. 1 · Scenario: Disponibilidad indeterminada` — con `INDETERMINADO` no hay etiqueta de stock ni "Pocas unidades", y "Agregar" sigue habilitado.
+- `SPEC-09 · Req. 1 · Scenario: Precio no disponible` — sin precio vigente se muestra "Precio no disponible" y "Agregar" queda deshabilitado; nunca `S/ 0.00`.
 
 **Prioridad:** Must: todas las respuestas con productos se presentan con este bloque.
 

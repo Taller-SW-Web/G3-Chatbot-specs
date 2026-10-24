@@ -16,10 +16,10 @@
 
 ## 3. Pendiente
 
-- [ ] 3.1 Actualizar historias de usuario y reglas (`docs/producto/historias/EP-03-descubrimiento.md`, `EP-04-carrito.md`, reglas RN-CAR-01 y RN-CAR-02) que mencionan cantidades, "pocas unidades ≤ 5", talla/color en búsqueda y beneficio de promociones. Ya se corrigieron los términos de stock (ruta `/inventario/disponibilidad/comercial`, `available`, `POCAS_UNIDADES`, "Ajustar a N", "Stock parcial") en `docs/producto/trazabilidad.md`, `docs/producto/historias/EP-04-carrito.md`, `docs/producto/reglas-negocio.md`, `docs/conversacion/dialogos-ejemplo.md`, `docs/conversacion/intenciones.md` y `docs/conversacion/flujos-conversacion.md`; falta lo de talla y color y el beneficio de promociones.
-- [ ] 3.2 Recalcular totales de requisitos y escenarios en README y trazabilidad.
+- [x] 3.1 Actualizar historias de usuario y reglas (`docs/producto/historias/EP-03-descubrimiento.md`, `EP-04-carrito.md`, reglas RN-CAR-01 y RN-CAR-02) que mencionan cantidades, "pocas unidades ≤ 5", talla/color en búsqueda y beneficio de promociones. Hecho al archivar: términos de stock, talla y color, orden por precio, beneficio y modalidad de promociones (RN-CAT-11, RN-CAT-14, RN-CAR-01, `intenciones.md`, `dialogos-ejemplo.md`), criterios de aceptación con los escenarios nuevos (EP-03, EP-04, EP-05) y `docs/casos-prueba-hito-3.md` (SPEC-06, 09, 10 y 11).
+- [x] 3.2 Recalcular totales de requisitos y escenarios en README y trazabilidad (119 requisitos, 399 escenarios, 374 citados por historias).
 - [x] 3.3 Responder las preguntas pendientes a Productos y ajustar según su respuesta (respondidas por Productos el 15/10, acuerdo A16; ver 5.1).
-- [ ] 3.4 Archivar el cambio en un PR aparte.
+- [x] 3.4 Archivar el cambio en un PR aparte.
 - [ ] 3.5 Cuando Productos publique las ampliaciones (filtros de variantes, orden por precio, resumen de promociones, desglose por línea, monto faltante, matriz de errores y límites), reemplazar los comportamientos interinos y actualizar los specs.
 - [ ] 3.6 Confirmar con Seguridad (#33) el registro y la concesión de los siete scopes.
 

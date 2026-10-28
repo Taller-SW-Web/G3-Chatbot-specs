@@ -28,8 +28,8 @@ El cliente pregunta "¿qué ofertas tienen?", "¿hay descuentos en zapatillas Pu
 ## Alcance
 
 Incluye:
-- Listado de promociones automáticas vigentes del canal `CHATBOT`, filtrable por categoría o marca.
-- Listado de productos con oferta de precio (`soloOfertas=true`, SPEC-06).
+- Listado de promociones vigentes del canal `CHATBOT`, con nombre y vigencia (Productos no entrega todavía beneficio, alcance ni modalidad, ni permite filtrarlas por categoría o marca; A16).
+- Productos con oferta de precio (`precio_oferta` vigente de `GET /precios`) dentro de los resultados de búsqueda (SPEC-06).
 - Presentación del precio regular tachado, el precio de oferta y el porcentaje de ahorro en las tarjetas.
 - Explicación de la vigencia ("válido hasta el 30/09").
 - Uso de la evaluación de promociones de Productos para los totales del carrito (lo consume SPEC-11).
@@ -43,19 +43,19 @@ Incluye:
 ## Requirements
 
 ### Requirement: Listar promociones vigentes del canal
-El sistema DEBE (SHALL) consultar las promociones activas y vigentes habilitadas para `CHATBOT` (una lista de canales vacía significa todos los canales) y mostrarlas con su descripción, beneficio y vigencia.
+El sistema DEBE (SHALL) consultar las promociones vigentes del canal (`GET /api/v1/promociones?canal=CHATBOT&vigentes=true`) y mostrarlas con su nombre y vigencia. Productos no entrega todavía el beneficio ni el alcance de cada promoción, y comprometió ampliarlo para una etapa posterior; mientras tanto el chatbot no los inventa. El listado tampoco garantiza incluir todas las promociones que pueden aparecer en una evaluación (por ejemplo las de cupón privado).
 
 *Trazabilidad: SPEC-08 · Requisito 1.*
 
 #### Scenario: Consulta general de ofertas
-- **DADO** 3 promociones automáticas vigentes para `CHATBOT` y 1 solo para `RETAIL`
+- **DADO** 3 promociones vigentes para `CHATBOT`
 - **CUANDO** el cliente pregunta "¿qué ofertas tienen?"
-- **ENTONCES** se muestra el bloque `LISTA_PROMOCIONES` con las 3 del canal (nombre, beneficio como "20 % en toda la línea running", vigencia y el botón "Ver productos"), y no aparece la de `RETAIL`
+- **ENTONCES** se muestra el bloque `LISTA_PROMOCIONES` con las 3 (nombre y "válido hasta dd/mm") y, debajo, un carrusel de productos con `precio_oferta` vigente cuando existan
 
 #### Scenario: Promociones filtradas
 - **DADO** el mensaje "¿hay descuentos en zapatillas Puma?"
 - **CUANDO** se consulta
-- **ENTONCES** se muestran las promociones cuyo alcance incluye productos Puma de la categoría zapatillas, y además un carrusel de productos Puma con `precioOferta`
+- **ENTONCES** se buscan productos Puma de la categoría zapatillas (SPEC-06) y se muestran los que tengan `precio_oferta` vigente; el listado de promociones no se filtra por categoría ni marca porque Productos no lo permite
 
 #### Scenario: Sin promociones vigentes
 - **DADO** que no hay promociones vigentes para el canal
@@ -63,12 +63,12 @@ El sistema DEBE (SHALL) consultar las promociones activas y vigentes habilitadas
 - **ENTONCES** se responde "Por ahora no tenemos promociones activas" y se ofrece ver los productos más vendidos o nuevos
 
 ### Requirement: Mostrar precio de oferta en tarjetas y detalle
-El sistema DEBE (SHALL) mostrar, cuando exista `precioOferta` vigente para el canal, el precio regular tachado, el precio de oferta y el porcentaje de ahorro redondeado.
+El sistema DEBE (SHALL) mostrar, cuando `precio_oferta` no sea nulo y esté vigente para el canal, el precio regular tachado, el precio de oferta y el porcentaje de ahorro redondeado.
 
 *Trazabilidad: SPEC-08 · Requisito 2.*
 
 #### Scenario: Producto con oferta de precio
-- **DADO** un SKU con `precioRegular = 299.90` y `precioOferta = 239.90`
+- **DADO** un SKU con `precio_regular = 299.90` y `precio_oferta = 239.90`
 - **CUANDO** se renderiza la tarjeta
 - **ENTONCES** se ve ~~S/ 299.90~~ **S/ 239.90** y la etiqueta "-20 %"
 
@@ -78,34 +78,34 @@ El sistema DEBE (SHALL) mostrar, cuando exista `precioOferta` vigente para el ca
 - **ENTONCES** se muestra el precio regular y, si estaba en el carrito, se informa "La oferta de X terminó; el precio ahora es S/ 299.90"
 
 ### Requirement: Explicar los beneficios aplicados en el carrito
-El sistema DEBE (SHALL) mostrar en el carrito el descuento que devuelve la evaluación de Productos (promoción seleccionada, importe original, descuento e importe resultante), sin calcular reglas de promoción por su cuenta.
+El sistema DEBE (SHALL) mostrar en el carrito el resultado de la evaluación de Productos (`promotion_id`, `original_amount`, `discount_amount`, `result_amount`), sin calcular reglas de promoción por su cuenta y sin desglosar por línea.
 
 *Trazabilidad: SPEC-08 · Requisito 3.*
 
 #### Scenario: Promoción automática aplicada
-- **DADO** un carrito elegible para "2x1 en medias"
+- **DADO** un carrito elegible para una promoción
 - **CUANDO** se recalcula el carrito
-- **ENTONCES** el bloque `CARRITO` muestra la línea "Promoción 2x1 en medias: -S/ 24.90" con los datos de la evaluación
+- **ENTONCES** el bloque `CARRITO` muestra una línea "Promoción <nombre>: -S/ 24.90" con el importe de `discount_amount`; si el `promotion_id` no se encuentra en el listado o es nulo, la línea dice "Descuento: -S/ 24.90" (comportamiento interino, no contrato de Productos)
 
 #### Scenario: El cliente pregunta por qué no se aplicó una promoción
-- **DADO** un carrito que no alcanza la condición de una promoción
+- **DADO** un carrito sin descuento
 - **CUANDO** el cliente pregunta "¿por qué no me hicieron el descuento?"
-- **ENTONCES** el asistente responde con el `motivo` que devuelve la evaluación de Productos (por ejemplo, "La promoción aplica a partir de S/ 200") y no inventa condiciones
+- **ENTONCES** el asistente responde con el campo `reason` de la evaluación si existe, y si viene vacío dice que no tiene el detalle y no inventa condiciones
 
 ### Requirement: No revelar códigos de cupón
-El sistema NO DEBE (SHALL NOT) listar códigos de cupón en la consulta de ofertas; los cupones se aplican solo si el cliente ya tiene el código (SPEC-13).
+El sistema NO DEBE (SHALL NOT) mostrar ni inferir códigos de cupón en la consulta de ofertas; los cupones se aplican solo si el cliente ya tiene el código (SPEC-13).
 
 *Trazabilidad: SPEC-08 · Requisito 4.*
 
 #### Scenario: El cliente pide cupones
-- **DADO** que existen promociones de modalidad `CUPON`
+- **DADO** que existen cupones activos
 - **CUANDO** el cliente pregunta "¿me das un cupón?"
 - **ENTONCES** se responde que los cupones se distribuyen por campañas y que, si tiene uno, puede escribirlo para aplicarlo
 
 #### Scenario: Promoción con cupón en el listado de Productos
-- **DADO** que la consulta de promociones devuelve una de modalidad `CUPON`
+- **DADO** que el listado de promociones incluya una promoción cuyo beneficio se obtiene con cupón
 - **CUANDO** se arma `LISTA_PROMOCIONES`
-- **ENTONCES** se excluye del listado
+- **ENTONCES** solo se muestran su nombre y vigencia, nunca un código (el listado de Productos no trae códigos)
 
 ## Requisitos no funcionales
 

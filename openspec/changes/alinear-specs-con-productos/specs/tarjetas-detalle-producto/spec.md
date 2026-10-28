@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Tarjetas en carrusel
-El sistema DEBE (SHALL) representar cada lista de productos como un bloque `CARRUSEL_PRODUCTOS` con tarjetas que contienen los datos de `ProductoResumen`: `productoId`, `nombre`, `marca`, `imagenUrl`, `precio` (`PriceTag`), `descripcionBreve` (máx. 90 caracteres, a partir de `description`, omitida si es nula), `tieneVariantes`, `disponibilidad` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO`, tal como las entrega Productos) y `skuUnico` (si no tiene variantes).
+El sistema DEBE (SHALL) representar cada lista de productos como un bloque `CARRUSEL_PRODUCTOS` con tarjetas que contienen los datos de `ProductoResumen`: `productoId`, `nombre`, `marca`, `imagenUrl`, `precio` (`PriceTag`), `descripcionBreve` (máx. 90 caracteres, a partir de `description`, omitida si es nula), `tieneVariantes`, `disponibilidad` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO`, tal como las entrega Productos, o vacía si no se obtuvo) y `skuUnico` (si no tiene variantes). La disponibilidad de un producto sin variantes es la de su `sku_base`; nunca se supone `DISPONIBLE` por defecto. Si no hay precio vigente para ningún SKU del producto, `precio` queda vacío: la tarjeta NO DEBE (SHALL NOT) mostrar un importe de `S/ 0.00`.
 
 *Trazabilidad: SPEC-09 · Requisito 1.*
 
@@ -33,7 +33,12 @@ El sistema DEBE (SHALL) representar cada lista de productos como un bloque `CARR
 #### Scenario: Disponibilidad indeterminada
 - **DADO** un SKU con estado `INDETERMINADO`
 - **CUANDO** se renderiza
-- **ENTONCES** la tarjeta no muestra etiqueta de stock y el botón "Agregar" sigue habilitado (la verificación ocurre al agregar; comportamiento interino, no contrato de Productos)
+- **ENTONCES** la tarjeta no muestra etiqueta de stock ni "Pocas unidades", y el botón "Agregar" sigue habilitado (la verificación ocurre al agregar; comportamiento interino, no contrato de Productos)
+
+#### Scenario: Precio no disponible
+- **DADO** un producto para el que `GET /precios` no devuelve un precio vigente en ninguno de sus SKU
+- **CUANDO** se renderiza la tarjeta
+- **ENTONCES** en lugar del precio se muestra "Precio no disponible", el botón "Agregar" queda deshabilitado y "Ver detalle" sigue disponible; nunca se muestra `S/ 0.00`
 
 ### Requirement: Detalle del producto
 El sistema DEBE (SHALL) mostrar el detalle completo (`GET /api/v1/productos/{productoId}?canal=CHATBOT`) con sus variantes y la disponibilidad comercial por SKU al pulsar "Ver detalle" o al pedirlo por texto.
@@ -43,7 +48,7 @@ El sistema DEBE (SHALL) mostrar el detalle completo (`GET /api/v1/productos/{pro
 #### Scenario: Detalle desde la tarjeta
 - **DADO** un producto con variantes
 - **CUANDO** se pulsa "Ver detalle"
-- **ENTONCES** se muestra `DETALLE_PRODUCTO` (hoja expandible dentro de `ChatPage` o `HomePage`) con galería, descripción (si existe), características, selector de talla y color a partir de `variants[].identifying_attributes`, precio de la variante elegida, cantidad (1–10) y "Agregar al carrito"
+- **ENTONCES** se muestra `DETALLE_PRODUCTO` (hoja expandible dentro de `ChatPage` o `HomePage`) con galería, descripción (si existe), características, selector de talla y color a partir de `variants[].identifying_attributes`, precio de la variante elegida (o "Precio no disponible", con "Agregar al carrito" deshabilitado, si esa variante no tiene precio vigente), cantidad (1–10) y "Agregar al carrito"
 
 #### Scenario: Detalle pedido por texto
 - **DADO** un carrusel previo

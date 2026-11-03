@@ -119,7 +119,7 @@ El sistema DEBE (SHALL) usar un token de servicio vigente para consultar a Despa
 - **Seguridad:** el token de servicio se obtiene y cachea en el backend; nunca llega al frontend.
 - **Rendimiento:** la consulta tarda p95 ≤ 600 ms; caché de 30 s por pedido para evitar golpear a Despacho con consultas repetidas.
 - **Coherencia:** el estado del pedido lo decide Ventas; si Ventas dice `ENTREGADO` y Despacho aún no, se muestra "Entregado".
-- **Manejo de `SCOPE_INSUFICIENTE`:** si el token de servicio del chatbot no tiene el rol `SERVICIO_INTEGRACION` que exige Despacho (acuerdo A4, aún abierto), la llamada falla con `403 SCOPE_INSUFICIENTE`; el sistema no reintenta (pedir el scope no es un error transitorio) y muestra el mismo aviso de "no disponible" del Requisito 4.
+- **Manejo de `SCOPE_INSUFICIENTE`:** si al token de servicio del chatbot le falta el scope `seguimientos:leer` o la audiencia `api-despacho` que valida Despacho (el rol `SERVICIO_INTEGRACION` no existe; acuerdo A4 retirado el 03/11), la llamada falla con `403 SCOPE_INSUFICIENTE`; el sistema no reintenta (pedir el scope no es un error transitorio) y muestra el mismo aviso de "no disponible" del Requisito 4.
 
 ## Criterio de completitud
 

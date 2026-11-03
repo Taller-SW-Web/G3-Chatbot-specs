@@ -8,7 +8,7 @@
 |---|---|---|
 | Ventas | `GET /api/v1/pedidos/me?estado=&page=&pageSize=` con token del cliente (rol `CLIENTE`) | ✅ `api-ventas.md` §1.4b (A15) |
 | Ventas | `GET /api/v1/pedidos/{id}` (detalle, estado e historial) | ✅ §1.3, con token del cliente (A15) |
-| Despacho | `GET /api/v1/seguimientos/pedidos/{idPedido}` (SPEC-18), scope `seguimientos:leer` concedido | ✅ contrato y scope (Seguridad #31); rol `SERVICIO_INTEGRACION` y credenciales reales pendientes |
+| Despacho | `GET /api/v1/seguimientos/pedidos/{idPedido}` (SPEC-18), scope `seguimientos:leer` concedido | ✅ contrato y scope (Seguridad #31); credenciales reales pendientes (el rol `SERVICIO_INTEGRACION` no existe; A4 retirado el 03/11) |
 
 ## Frontend
 

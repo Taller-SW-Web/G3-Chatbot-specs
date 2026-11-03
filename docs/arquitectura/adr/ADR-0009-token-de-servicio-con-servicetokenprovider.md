@@ -13,7 +13,7 @@ Aceptada
 - Varias llamadas del chatbot no tienen un token de cliente disponible o no deben usarlo:
   - el `OutboxWorker` notifica pagos y solicita anulaciones a Ventas en segundo plano (SPEC-15);
   - la introspección previa al pago se hace con credenciales del módulo (SPEC-14, acuerdo A3);
-  - el seguimiento de Despacho exige token de servicio (SPEC-18; A11 resuelto el 02/10 y rol `SERVICIO_INTEGRACION` aún pendiente por A4).
+  - el seguimiento de Despacho exige token de servicio (SPEC-18; A11 resuelto el 02/10; el rol `SERVICIO_INTEGRACION` no existe y A4 quedó retirado el 03/11: el servicio se identifica por `tipo: servicio` y `sub: modulo-chatbot`, y Despacho valida `aud` y scope).
 - El `ServiceTokenProvider` figuraba en el desglose de SPEC-18 (Hito 5–6), pero SPEC-14 y SPEC-15, del Hito 4, ya lo necesitaban.
 - La validación del token del cliente se hace en local con el JWKS de Seguridad.
 
@@ -22,7 +22,7 @@ Aceptada
 - El backend obtiene un **token de servicio** con `POST /auth/token` (`grant_type=client_credentials`, `client_id=modulo-chatbot`) mediante un componente único, **`ServiceTokenProvider`**, que lo **cachea hasta 60 s antes de su `exp`** y lo renueva ante `401`.
 - Se construye en el **Hito 4** dentro de HU-CHK-14 (SPEC-14); SPEC-15 y SPEC-18 lo reutilizan.
 - Reglas de autenticación entre componentes:
-  - Token del cliente → validación local con JWKS cacheado (`iss=auth-service`, `tipo=acceso`, rol `CLIENTE`).
+  - Token del cliente → validación local con JWKS cacheado (emisor `iss` tomado de la configuración por entorno `SECURITY_EXPECTED_ISSUER`, nunca del token; valor en producción `https://g7-auth-service.onrender.com/api/v1/auth`, según el descubrimiento `/api/v1/auth/.well-known/openid-configuration`; `tipo=acceso`, rol `CLIENTE`).
   - Recurso del titular (p. ej. direcciones) → se reenvía el token del cliente.
   - Operación a nombre del sistema → token de servicio.
   - Antes de cada pago → `POST /auth/introspeccion` con scope `tokens:introspeccion`, sin caché y con timeout de 3 s.
@@ -43,7 +43,7 @@ Aceptada
 
 **Negativas y riesgos aceptados**
 - Las credenciales reales llegan recién en el Hito 4 (riesgo R8); hasta entonces solo se prueba contra el mock.
-- El rol `SERVICIO_INTEGRACION` para consultar Despacho sigue sin emitirse (A4, riesgo R3).
+- La espera del rol `SERVICIO_INTEGRACION` (A4, riesgo R3) se retiró el 03/11: ese rol no existe. Despacho valida `aud` (`api-despacho`) y los scopes `seguimientos:leer` y `cotizaciones:calcular`; las credenciales reales siguen llegando en el Hito 4.
 
 ## Referencias
 

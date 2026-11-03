@@ -163,7 +163,7 @@ El sistema DEBE (SHALL) cerrar la sesión en Seguridad y en el chatbot cuando el
 ## Requisitos no funcionales
 
 - **Seguridad:** el access token se guarda en `chatStore` respaldado por LocalStorage (riesgo XSS aceptado, ver README §1.4) y el refresh token vive solo en la cookie `httpOnly`, nunca en LocalStorage. La cookie tiene `Path=/api/v1/sesion`. Hay protección CSRF en `/sesion/refresh` y `/sesion/logout` con la cabecera `X-Requested-With` y la verificación del `Origin`.
-- **Seguridad:** la validación local verifica firma RS256, `iss=auth-service`, `exp` y `tipo=acceso`. El JWKS se cachea y se refresca ante un `kid` desconocido.
+- **Seguridad:** la validación local verifica firma RS256, el emisor (`iss`) contra la configuración por entorno (`SECURITY_EXPECTED_ISSUER`, tomado del documento de descubrimiento de Seguridad; en producción `https://g7-auth-service.onrender.com/api/v1/auth`; nunca del token), `exp` y `tipo=acceso`. El JWKS se cachea y se refresca ante un `kid` desconocido.
 - **Mitigación XSS:** todo contenido que proviene del LLM o de otros módulos se sanitiza antes de renderizarse (nunca `dangerouslySetInnerHTML` con texto no controlado), el frontend aplica una cabecera `Content-Security-Policy` estricta y el access token es de vida corta (15 min), de modo que un XSS robe como máximo 15 minutos de sesión.
 - **Continuidad:** al recargar la página se restaura el access token desde LocalStorage; si ya expiró o no existe, se intenta un refresh con la cookie.
 - **Rendimiento:** la validación local del JWT tarda menos de 5 ms.

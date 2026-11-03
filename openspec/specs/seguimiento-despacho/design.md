@@ -8,7 +8,7 @@
 |---|---|---|
 | Despacho | `GET /api/v1/seguimientos/pedidos/{idPedido}` con token de servicio, scope `seguimientos:leer`, audience `api-despacho` | ✅ contrato y scope concedido a `modulo-chatbot` (Seguridad #31); credenciales reales en Hito 4 |
 | Seguridad | `POST /auth/token` (`client_credentials`, `client_id=modulo-chatbot`) | ✅ |
-| Seguridad / Despacho | Rol `SERVICIO_INTEGRACION` en el token de servicio del chatbot | 🟡 A4 pendiente; no confundir con los scopes concedidos en Seguridad #31 |
+| Seguridad / Despacho | Token de servicio del chatbot (`tipo: servicio`, `sub: modulo-chatbot`) con `aud` `api-despacho` y scope `seguimientos:leer` | ✅ A4 retirado (03/11): el rol `SERVICIO_INTEGRACION` no existe; scopes concedidos en Seguridad #31 |
 
 ## Frontend
 
@@ -30,7 +30,7 @@
 
 ## Desglose para issues
 
-- [ ] `[INT]` Obtener y configurar las credenciales reales en Hito 4; gestionar con Seguridad el rol `SERVICIO_INTEGRACION` aún pendiente (A4)
+- [ ] `[INT]` Obtener y configurar las credenciales reales en Hito 4; el rol `SERVICIO_INTEGRACION` (A4) quedó retirado el 03/11 porque no existe; Despacho valida `aud` y scope
 - [ ] `[BE]` `ServiceTokenProvider` (compartido con otros clientes; se construye en Hito 4 con SPEC-14, HU-CHK-14, y aquí solo se reutiliza)
 - [ ] `[BE]` `DespachoClient.seguimiento` y `SeguimientoMapper` con lista blanca
 - [ ] `[BE]` Endpoint de seguimiento y herramienta `consultar_seguimiento`

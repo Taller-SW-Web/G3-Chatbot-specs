@@ -98,7 +98,7 @@ graph LR
 - **Valor de negocio:** cubre el lineamiento "consulta del estado de un pedido" y reduce consultas a soporte.
 - **Specs:** SPEC-17 Consulta de estado · SPEC-18 Seguimiento del despacho.
 - **Hito:** Hito 5–6.
-- **Dependencias:** EP-06 (pedidos existentes); Ventas ✅ (A8); Despacho ✅ (A11, contrato y scopes concedidos en Seguridad #31); Seguridad/Despacho 🟡 (A4: rol `SERVICIO_INTEGRACION`; credenciales reales en Hito 4) para SPEC-18.
+- **Dependencias:** EP-06 (pedidos existentes); Ventas ✅ (A8); Despacho ✅ (A11, contrato y scopes concedidos en Seguridad #31); Seguridad/Despacho ✅ (A4 retirado el 03/11: el rol `SERVICIO_INTEGRACION` no existe; Despacho valida `aud` y scope; credenciales reales en Hito 4) para SPEC-18.
 - **Historias:** [historias/EP-07-seguimiento.md](historias/EP-07-seguimiento.md)
 
 ## EP-08 · Reclamos

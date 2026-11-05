@@ -136,7 +136,8 @@ El flujo principal de la demo es el checkout: SPEC-12 → 13 → 14 → 15 → 1
 ## Progreso
 
 - 2026-11-03: auditoría del Hito 4 y desglose de tareas. CI de H3-17 promovido a `main` (PR #56). PR #57 de Seguridad G7 abierto. H4-F8 movida al siguiente hito.
+- 2026-11-05 (H4-A1, Sebastian): contratos detallados de `cupones` (`POST/DELETE /carrito/cupon`), `envio` (`GET /direcciones`, `POST /envio/cotizar`), `checkout` (`POST /checkout`, `GET /checkout/{id}`, `POST /checkout/{id}/pago`) y `pedidos` (`GET /pedidos`, `GET /pedidos/{id}`, `GET /pedidos/{id}/seguimiento`, `POST /pedidos/{id}/reenviar-confirmacion`) documentados en `docs/contratos-integracion.md` (§2.4, §2.5 y §2.8) e implementados en el backend (`commerce_contracts_dto.py`, `shipping_router.py`, `orders_router.py`, `cart_router.py`, `dispatch_port.py`, `order_repository_port.py`, `status_mapper.py`, `tracking_mapper.py` y 31 pruebas unitarias en `test_h4_api_contracts.py`).
 
 ## Siguiente paso
 
-Repartir las tareas al equipo y arrancar la fase 0 (H4-A1, H4-S1 y H4-S3).
+Integrar H4-A1 y H4-S1 (`#57` y `#58`), cerrar H4-S3 con G7 y avanzar la Fase 1 (H4-S2, H4-S6 y H4-F1 a H4-F7).

@@ -148,6 +148,21 @@ El flujo principal de la demo es el checkout: SPEC-12 → 13 → 14 → 15 → 1
 
 - 2026-11-06 (noche): **#35 mergeado** (`9573c90`) y **H4-F1 frontend cerrado**. El merge dejó `development` en rojo: el #38 había añadido un caso de `CheckoutPage` que renderiza sin `QueryClientProvider` y la página ya cotiza con React Query; **hotfix #40** (CI verde) lo corrige. **H4-F2 frontend** en el **#39** (CI verde): cupón en el carrito con aplicar, confirmar reemplazo y quitar, con descuento y total del servidor. El #39 incluye el mismo commit del #40; al mergear el hotfix, rebasa sin duplicar. G2 respondió que su cotización espera su conexión con Productos: la demo va con `DISPATCH_MODE=fake` y la validación real queda agendada.
 
+- 2026-11-06 (cierre del día): **#65, #66 y #39 mergeados**; el #40 se cerró porque su commit ya entró con el #39. **H4-F5** mergeado (backend #67, frontend #38) y **H4-S6** mergeado (backend #68: `require_customer` canónico y rate limit en login y chat). Promoción a `main`: backend #69 y frontend #41. **Importes del checkout en el servidor** (`checkout-server-amounts.md`): backend #70 y frontend #42, promovidos en #71 y #43. El checkout recotiza el envío con Despacho, rechaza `lineas` e importes del cliente con `400 VALIDACION` y responde `409 CARRITO_DESACTUALIZADO`. Queda un solo `CreateCheckoutRequest`, el del contrato. **H4-F6** (Alonso) en revisión: backend #72 y frontend #44, con CI en verde.
+- 2026-11-06, auditoría de pendientes:
+  - **H4-F4 (SPEC-15)** sin empezar: `ventas_api_adapter.py`, `manage_order_use_case.py` y `outbox_worker.py` siguen vacíos, y no hay rama ni PR.
+  - **H4-S7** parcial: el token de servicio solo lo usan los clientes de Despacho y Seguridad; faltan Productos y Ventas.
+  - **H4-C3** pendiente: `tests/e2e/smoke.spec.ts` mantiene 7 `test.fixme` y ningún workflow ejecuta Playwright.
+  - **H4-Q2** y **H4-C4** pendientes: `docs/evidencia-hito-4.md` no existe.
+  - Siguen pendientes las tareas 🟡 H4-S8, H4-A2 y H4-F7. El DTO estricto del checkout descarta `contacto.celular`, por lo que la validación de SPEC-04 no se ejecuta en el checkout.
+
 ## Siguiente paso
 
-Merge de #65, #66, #39 y #40; integrar la cotización del #65 y el cupón del #66 en el cálculo del checkout (hoy toma importes del cliente o `12.50`); decidir el `CreateCheckoutRequest` canónico; H4-C1 en Vercel; credenciales reales de Despacho; prueba de introspección con G7 y documentar `APP_ENV` y `ALLOW_FAKE_SECURITY` en `.env.template` del backend.
+1. Revisar y mergear #72 y #44 (H4-F6), y promover a `main`.
+2. Decidir el plan de H4-F4 (SPEC-15) para la demo: implementarla o mostrarla con mock.
+3. Configurar H4-C1 en Vercel.
+4. Preparar la evidencia y el guion de la demo (H4-C4 y H4-Q2).
+5. Probar en producción el flujo con sesión (envío, pago, pedido y correo).
+6. Coordinar con G7 la prueba de introspección.
+7. Conseguir las credenciales reales de Despacho.
+8. Documentar `APP_ENV` y `ALLOW_FAKE_SECURITY` en el `.env.template` del backend.

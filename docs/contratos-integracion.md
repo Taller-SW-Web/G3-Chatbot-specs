@@ -140,7 +140,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     - `409 PRODUCTO_NO_DISPONIBLE`: SKU inexistente en Despacho/Productos (`DESP_ERROR_PRODUCTO_NO_ENCONTRADO`).
     - `422 SIN_COBERTURA`: Despacho responde `coberturaDisponible: false` para el distrito indicado; incluye `distrito`.
     - `429 DEMASIADAS_SOLICITUDES`: límite de cotizaciones excedido (`DESP_ERROR_LIMITE_COTIZACION`).
-    - `503 MODULO_NO_DISPONIBLE`: timeout (> 4 s) o caída de Despacho/Productos (`modulo: "dispatch"`).
+    - `503 MODULO_NO_DISPONIBLE`: timeout (> 4 s), caída de Despacho/Productos o respuesta de Despacho sin `costoEnvio` o sin plazo (`plazoEstimadoDiasHabiles` o `plazoEstimadoDias`); incluye `modulo: "dispatch"`. No se supone un costo de cero ni un plazo de un día.
 
 ### 2.5 Checkout, pago y pedidos (SPEC-14 a SPEC-18)
 | Método | Ruta | Sesión | Descripción |
@@ -151,7 +151,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | GET | `/pedidos` | Obligatoria (`CLIENTE`) | Pedidos del cliente (proxy de Ventas `/api/v1/pedidos/me`, filtrado por `sub`). |
 | GET | `/pedidos/{pedidoId}` | Obligatoria (`CLIENTE`) | Detalle, estado e historial del pedido (proxy de Ventas con token del titular). |
 | GET | `/pedidos/{pedidoId}/seguimiento` | Obligatoria (`CLIENTE`) | Hitos del despacho (proxy de Despacho con token de servicio, tras verificar pertenencia). |
-| POST | `/pedidos/{pedidoId}/reenviar-confirmacion` | Obligatoria (`CLIENTE`) | Reenvía el correo de confirmación del pedido (máx. 2 por pedido, SPEC-16 · Req. 3). Se invoca desde la acción "Reenviar" de la UI, no como herramienta del LLM. |
+| POST | `/pedidos/{pedidoId}/reenviar-confirmacion` | Obligatoria (`CLIENTE`) | Reenvía el correo de confirmación del pedido (máx. 2 por pedido, SPEC-16 · Req. 3). Requiere `Idempotency-Key`. Se invoca desde la acción "Reenviar" de la UI, no como herramienta del LLM. |
 
 #### 2.5.1 Contratos detallados de Checkout y Simulación de Pago (SPEC-14, SPEC-15)
 - **`POST /api/v1/checkout`** (requiere sesión `CLIENTE` y cabecera `Idempotency-Key`):
@@ -177,22 +177,16 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
         "numeroDocumento": "72458912",
         "telefono": "+51999888777",
         "email": "juan.perez@example.com"
-      },
-      "lineas": [
-        { "productoId": "P-100", "sku": "ZAP-RUN-42-NEG", "nombre": "Zapatilla X 42/Negro", "cantidad": 1, "precio": 299.90 }
-      ],
-      "subtotal": 299.90,
-      "descuento": 30.00,
-      "costoEnvio": 12.50,
-      "total": 282.40
+      }
     }
     ```
+  - `cartId` es opcional; si se indica, debe identificar un carrito del cliente autenticado. El servidor obtiene las líneas del carrito propio y resuelve precios, disponibilidad, descuentos y cupón con Productos, y costo y plazo de envío con Despacho, según SPEC-14. El cliente y el LLM no envían líneas ni importes. La respuesta contiene el resumen calculado por el servidor.
   - **Validación de `contacto.tipoDocumento` / `numeroDocumento` (SPEC-12 Req. 1, A14):**
     - `DNI`: `^[0-9]{8}$`
     - `RUC`: `^(10|15|17|20)[0-9]{9}$`
     - `CE`: `^[a-zA-Z0-9]{8,12}$`
     - `PASAPORTE`: `^[a-zA-Z0-9]{6,12}$`
-    - Si no cumple el patrón del tipo seleccionado, responde `400 DATO_INVALIDO`.
+    - `contacto` se valida con `BuyerContactDTO`: `nombreCompleto` es obligatorio y se aplican los patrones de documento anteriores. Si falta o es inválido un dato de `contacto`, responde `400 DATO_INVALIDO`.
   - **Respuesta `201 Created`:**
     ```json
     {
@@ -210,13 +204,16 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     ```
     *(Si `guardarDireccion` es `true` y Seguridad falla al guardar la dirección, el checkout continúa igual y `avisoDireccion` informa `"No pudimos guardar tu dirección para la próxima vez"`, SPEC-12 Req. 3).*
   - **Errores (`application/problem+json`):**
-    - `400 VALIDACION`: falta cabecera `Idempotency-Key`, dirección incompleta o importes incoherentes (`subtotal - descuento + costoEnvio != total`).
-    - `400 DATO_INVALIDO`: `tipoDocumento` o `numeroDocumento` no cumple las reglas de Ventas (A14).
+    - `400 VALIDACION`: falta cabecera `Idempotency-Key`, dirección incompleta o el cuerpo contiene campos no admitidos, incluidos líneas e importes.
+    - `400 DATO_INVALIDO`: falta o es inválido un dato de `contacto`, incluidos `nombreCompleto`, `tipoDocumento` y `numeroDocumento` (A14).
     - `401 REQUIERE_SESION` / `401 TOKEN_INVALIDO`: sin sesión o token inválido.
     - `403 CELULAR_NO_VERIFICADO`: el cliente aún no tiene el celular verificado (SPEC-04 / SPEC-14 Req. 1).
     - `409 CARRITO_VACIO`: el carrito no tiene líneas disponibles para comprar.
     - `409 STOCK_INSUFICIENTE` / `409 PRODUCTO_NO_DISPONIBLE`: validación de stock fallida en Productos o Ventas.
-    - `409 CARRITO_DESACTUALIZADO`: cambió el precio, el stock, el cupón o la cotización respecto al resumen confirmado; incluye `summary` actualizado.
+    - `409 CARRITO_DESACTUALIZADO`: cambió el precio, el stock, el cupón o la cotización respecto al resumen confirmado; incluye `summary` actualizado por el servidor. No se crea el pedido hasta que el cliente confirme el nuevo resumen.
+      ```json
+      { "status": 409, "code": "CARRITO_DESACTUALIZADO", "title": "Cart changed", "summary": { "lineas": [{ "sku": "ZAP-RUN-42-NEG", "cantidad": 1, "precioUnitario": 299.90 }], "subtotal": 299.90, "descuento": 30.00, "costoEnvio": 12.50, "total": 282.40 } }
+      ```
     - `422 SIN_COBERTURA`: el distrito no tiene cobertura de Despacho.
     - `503 MODULO_NO_DISPONIBLE` / `503 SERVICIO_NO_DISPONIBLE`: Ventas, Productos o Despacho no disponible.
 
@@ -337,8 +334,9 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     ```
   - **Errores:** `401 REQUIERE_SESION`, `404 RECURSO_NO_ENCONTRADO` (pedido ajeno o inexistente en Ventas), `503 MODULO_NO_DISPONIBLE`.
 
-- **`POST /api/v1/pedidos/{pedidoId}/reenviar-confirmacion`** (requiere sesión `CLIENTE`):
+- **`POST /api/v1/pedidos/{pedidoId}/reenviar-confirmacion`** (requiere sesión `CLIENTE` y cabecera `Idempotency-Key`):
   - Verifica pertenencia del pedido y encola un reenvío de confirmación (`CONFIRMATION_RESEND`, máx. 2 reenvíos por pedido, SPEC-16 Req. 3).
+  - La deduplicación se identifica por cliente, pedido y `Idempotency-Key`: repetir la misma clave devuelve el mismo resultado sin encolar otro correo ni consumir otro reenvío.
   - **Respuesta `202 Accepted`:**
     ```json
     {
@@ -348,7 +346,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
       "correoEnmascarado": "j***z@example.com"
     }
     ```
-  - **Errores:** `401 REQUIERE_SESION`, `404 RECURSO_NO_ENCONTRADO`, `429 LIMITE_REENVIOS_EXCEDIDO` (ya se realizaron los 2 reenvíos permitidos para ese pedido).
+  - **Errores (`application/problem+json`):** `400 VALIDACION` (falta `Idempotency-Key`), `401 REQUIERE_SESION`, `404 RECURSO_NO_ENCONTRADO`, `429 LIMITE_REENVIOS_EXCEDIDO` (ya se realizaron los 2 reenvíos permitidos para ese pedido).
 
 ### 2.6 Reclamos (SPEC-19, SPEC-20) ✅
 | Método | Ruta | Descripción |
@@ -369,6 +367,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `code` | HTTP | Significado |
 |---|---|---|
 | `REQUIERE_SESION` | 401 | La acción necesita sesión de cliente. |
+| `DATO_INVALIDO` | 400 | Un dato de `contacto` del checkout falta o no cumple las reglas de nombre y documento de Ventas (A14). |
 | `CELULAR_NO_VERIFICADO` | 403 | El checkout requiere el celular verificado. |
 | `STOCK_INSUFICIENTE` | 409 | Cantidad no disponible para uno o más SKU; no incluye cantidades, porque Productos no las expone (A16). |
 | `PRODUCTO_NO_DISPONIBLE` | 409 | Producto o SKU inactivo. |
@@ -381,7 +380,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `CUPON_INVALIDO` | 422 | Incluye `motivo` (`INEXISTENTE`, `EXPIRADO`, `NO_VIGENTE`, `AGOTADO`, `LIMITE_CLIENTE`, `MONTO_MINIMO`, `NO_APLICA_PRODUCTOS`, `NO_APLICA_CANAL`, `NO_COMBINABLE`). |
 | `REQUIERE_CONFIRMACION_REEMPLAZO` | 409 | El carrito ya tiene un cupón aplicado y se debe confirmar su reemplazo (`cuponActual`, `cuponNuevo`). |
 | `CARRITO_VACIO` | 409 | El carrito no contiene líneas disponibles para iniciar el checkout (SPEC-14 Req. 1). |
-| `CARRITO_DESACTUALIZADO` | 409 | Cambió el precio, el stock o el cupón desde el resumen. |
+| `CARRITO_DESACTUALIZADO` | 409 | Cambió el precio, el stock, el cupón o la cotización desde el resumen confirmado; el cuerpo incluye `summary` actualizado por el servidor para nueva confirmación. |
 | `PAGO_RECHAZADO` | 402 | Incluye `motivo` e `intentosRestantes`. |
 | `CHECKOUT_EXPIRADO` | 410 | Pasaron más de 15 minutos. |
 | `LIMITE_REENVIOS_EXCEDIDO` | 429 | Ya se enviaron los 2 reenvíos de confirmación por correo permitidos para el pedido (SPEC-16 Req. 3). |

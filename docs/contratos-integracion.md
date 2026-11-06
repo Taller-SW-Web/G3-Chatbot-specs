@@ -100,28 +100,253 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | GET | `/catalogo/disponibilidad?sku=` | Disponibilidad puntual de un SKU. |
 
 ### 2.4 Carrito, envío y cupones (SPEC-11 a SPEC-13)
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/carrito` | Carrito actual (anónimo o del cliente) con totales recalculados. |
-| POST | `/carrito/items` | `{ sku, cantidad }`: valida el stock y agrega o suma la línea. |
-| PATCH | `/carrito/items/{itemId}` | `{ cantidad }`: con cantidad 0 elimina la línea. |
-| DELETE | `/carrito/items/{itemId}` | Elimina la línea. |
-| DELETE | `/carrito` | Vacía el carrito (requiere confirmación en la UI). |
-| POST | `/carrito/cupon` | `{ codigo }`: valida el cupón y lo aplica. |
-| DELETE | `/carrito/cupon` | Quita el cupón. |
-| GET | `/direcciones` | Direcciones guardadas del cliente, usadas solo para prellenar el checkout (proxy de Seguridad). |
-| POST | `/envio/cotizar` | 🧩 `{ nombreCompleto, direccionExacta, distrito, referencia? }`: cotiza el envío con los campos libres del checkout (SPEC-12) y lo fija en el checkout. El guardado en Seguridad (`POST /usuarios/{id}/direcciones`) ocurre solo si el cliente marca "Guardar esta dirección", junto con la creación del pedido. |
+| Método | Ruta | Sesión | Descripción |
+|---|---|---|---|
+| GET | `/carrito` | Opcional | Carrito actual (anónimo o del cliente) con totales recalculados. |
+| POST | `/carrito/items` | Opcional | `{ sku, cantidad }`: valida el stock y agrega o suma la línea. |
+| PATCH | `/carrito/items/{itemId}` | Opcional | `{ cantidad }`: con cantidad 0 elimina la línea. |
+| DELETE | `/carrito/items/{itemId}` | Opcional | Elimina la línea. |
+| DELETE | `/carrito` | Opcional | Vacía el carrito (`{ confirmado: true }`; requiere confirmación en la UI). |
+| POST | `/carrito/cupon` | Obligatoria (`CLIENTE`) | `{ codigo }`: normaliza (`trim` + mayúsculas), valida contra Productos sin consumir y aplica al carrito. |
+| DELETE | `/carrito/cupon` | Obligatoria (`CLIENTE`) | Quita el cupón activo del carrito y recalcula los totales. |
+| GET | `/direcciones` | Obligatoria (`CLIENTE`) | Direcciones guardadas del cliente, usadas solo para prellenar el checkout (proxy de Seguridad con token del titular). |
+| POST | `/envio/cotizar` | Obligatoria (`CLIENTE`) | 🧩 `{ nombreCompleto?, destinatario?, direccionExacta?, direccion?, distrito, departamento?, provincia?, referencia? }`: cotiza el envío con los campos libres del checkout (SPEC-12) contra Despacho. El guardado en Seguridad (`POST /usuarios/{id}/direcciones`) ocurre solo si el cliente marca "Guardar esta dirección", junto con la creación del pedido. |
+
+#### 2.4.1 Contratos detallados de Cupones (SPEC-13)
+- **`POST /api/v1/carrito/cupon`** (requiere sesión `CLIENTE`; parámetro opcional de consulta `?conversacionId=<uuid>`):
+  - **Cuerpo de entrada:** `{ "codigo": "RUN10", "confirmarReemplazo": false }` (`codigo` de 1 a 40 caracteres, se normaliza con `strip().upper()`).
+  - **Respuesta `200 OK`:** `{ "mensaje": "...", "cupon": { "codigo": "RUN10", "descuento": 30.00, "moneda": "PEN", "promocionId": "PROMO-10" }, "carrito": { "lineas": [...], "subtotal": 300.00, "descuentos": [{ "nombre": "Cupón RUN10", "monto": 30.00 }], "costoEnvio": null, "total": 270.00, "avisos": [] } }`.
+  - **Errores (`application/problem+json`):**
+    - `400 VALIDACION`: código vacío o formato inválido.
+    - `401 REQUIERE_SESION`: visitante sin sesión (`customerRef` obligatorio para validar límites por cliente).
+    - `409 REQUIERE_CONFIRMACION_REEMPLAZO`: ya existe un cupón activo distinto y `confirmarReemplazo` es `false`; incluye `cuponActual` y `cuponNuevo`.
+    - `422 CUPON_INVALIDO`: cupón rechazado por Productos; incluye `motivo` (`INEXISTENTE`, `EXPIRADO`, `NO_VIGENTE`, `AGOTADO`, `LIMITE_CLIENTE`, `MONTO_MINIMO`, `NO_APLICA_PRODUCTOS`, `NO_APLICA_CANAL`, `NO_COMBINABLE`) y opcionalmente `montoMinimo` / `montoFaltante`.
+    - `429 DEMASIADAS_SOLICITUDES`: más de 5 intentos fallidos en 10 minutos para el mismo cliente (SPEC-13 Req. 5).
+    - `503 MODULO_NO_DISPONIBLE`: Productos no disponible (`modulo: "products"`).
+- **`DELETE /api/v1/carrito/cupon`** (requiere sesión `CLIENTE`):
+  - **Respuesta `200 OK`:** `{ "mensaje": "...", "carrito": { ... } }` con el carrito recalculado sin cupón.
+  - **Errores:** `401 REQUIERE_SESION`, `503 MODULO_NO_DISPONIBLE`.
+
+#### 2.4.2 Contratos detallados de Direcciones y Cotización de Envío (SPEC-12)
+- **`GET /api/v1/direcciones`** (requiere sesión `CLIENTE`):
+  - **Respuesta `200 OK`:** `{ "direcciones": [{ "id": "...", "etiqueta": "Casa", "destinatario": "Juan Pérez", "departamento": "Lima", "provincia": "Lima", "distrito": "Miraflores", "direccion": "Av. Larco 1234, dpto. 502", "referencia": "Frente al parque", "predeterminada": true }] }`.
+  - **Errores:** `401 REQUIERE_SESION`, `503 MODULO_NO_DISPONIBLE` (`modulo: "security"`).
+- **`POST /api/v1/envio/cotizar`** (requiere sesión `CLIENTE`):
+  - **Cuerpo de entrada:** acepta los nombres de campo de Ventas (`destinatario`, `direccion`) y sus alias del formulario de checkout (`nombreCompleto`, `direccionExacta`), además de `distrito` (obligatorio), `departamento` (por defecto `"Lima"`), `provincia` (por defecto `"Lima"`), `referencia` (opcional) y `conversacionId` (opcional).
+  - **Respuesta `200 OK`:** `{ "coberturaDisponible": true, "costoEnvio": 12.50, "moneda": "PEN", "plazoEstimadoDias": 1, "fechaEstimadaEntrega": "2026-11-06", "nombreZona": "Lima Metropolitana", "modalidad": "DELIVERY", "distrito": "Miraflores" }`.
+  - **Errores (`application/problem+json`):**
+    - `400 VALIDACION`: `destinatario`/`nombreCompleto` vacío, `direccion`/`direccionExacta` menor a 5 caracteres, `distrito` vacío o carrito sin líneas (`DESP_ERROR_DESTINO_REQUERIDO`, `DESP_ERROR_LINEAS_VACIAS`, `DESP_ERROR_CANTIDAD_INVALIDA`).
+    - `401 REQUIERE_SESION`: cliente no autenticado.
+    - `409 PRODUCTO_NO_DISPONIBLE`: SKU inexistente en Despacho/Productos (`DESP_ERROR_PRODUCTO_NO_ENCONTRADO`).
+    - `422 SIN_COBERTURA`: Despacho responde `coberturaDisponible: false` para el distrito indicado; incluye `distrito`.
+    - `429 DEMASIADAS_SOLICITUDES`: límite de cotizaciones excedido (`DESP_ERROR_LIMITE_COTIZACION`).
+    - `503 MODULO_NO_DISPONIBLE`: timeout (> 4 s), caída de Despacho/Productos o respuesta de Despacho sin `costoEnvio` o sin plazo (`plazoEstimadoDiasHabiles` o `plazoEstimadoDias`); incluye `modulo: "dispatch"`. No se supone un costo de cero ni un plazo de un día.
 
 ### 2.5 Checkout, pago y pedidos (SPEC-14 a SPEC-18)
-| Método | Ruta | Descripción |
-|---|---|---|
-| POST | `/checkout` | Crea la sesión de checkout y el pedido `CREADO` en Ventas, y devuelve el resumen. Requiere `Idempotency-Key`. |
-| GET | `/checkout/{checkoutId}` | Estado del checkout. |
-| POST | `/checkout/{checkoutId}/pago` | Datos de tarjeta, que se procesan en el simulador y **no se persisten**. Requiere `Idempotency-Key`. |
-| GET | `/pedidos` | Pedidos del cliente (proxy de Ventas, filtrado por `sub`). |
-| GET | `/pedidos/{pedidoId}` | Detalle, estado e historial. |
-| GET | `/pedidos/{pedidoId}/seguimiento` | Hitos del despacho (proxy de Despacho). |
-| POST | `/pedidos/{pedidoId}/reenviar-confirmacion` | Reenvía el correo de confirmación del pedido (máx. 2 por pedido, SPEC-16 · Req. 3). Se invoca desde la acción "Reenviar" de la UI, no como herramienta del LLM. |
+| Método | Ruta | Sesión | Descripción |
+|---|---|---|---|
+| POST | `/checkout` | Obligatoria (`CLIENTE`) | Crea la sesión de checkout (vigencia 15 min) y el pedido `CREADO` en Ventas, y devuelve el resumen. Requiere `Idempotency-Key`. |
+| GET | `/checkout/{checkoutId}` | Obligatoria (`CLIENTE`) | Estado del checkout, expiración e intentos restantes. |
+| POST | `/checkout/{checkoutId}/pago` | Obligatoria (`CLIENTE`) | Datos de tarjeta, que se procesan en el simulador y **no se persisten**. Requiere `Idempotency-Key`. |
+| GET | `/pedidos` | Obligatoria (`CLIENTE`) | Pedidos del cliente (proxy de Ventas `/api/v1/pedidos/me`, filtrado por `sub`). |
+| GET | `/pedidos/{pedidoId}` | Obligatoria (`CLIENTE`) | Detalle, estado e historial del pedido (proxy de Ventas con token del titular). |
+| GET | `/pedidos/{pedidoId}/seguimiento` | Obligatoria (`CLIENTE`) | Hitos del despacho (proxy de Despacho con token de servicio, tras verificar pertenencia). |
+| POST | `/pedidos/{pedidoId}/reenviar-confirmacion` | Obligatoria (`CLIENTE`) | Reenvía el correo de confirmación del pedido (máx. 2 por pedido, SPEC-16 · Req. 3). Requiere `Idempotency-Key`. Se invoca desde la acción "Reenviar" de la UI, no como herramienta del LLM. |
+
+#### 2.5.1 Contratos detallados de Checkout y Simulación de Pago (SPEC-14, SPEC-15)
+- **`POST /api/v1/checkout`** (requiere sesión `CLIENTE` y cabecera `Idempotency-Key`):
+  - **Cuerpo de entrada:**
+    ```json
+    {
+      "cartId": "uuid-opcional",
+      "conversacionId": "uuid-opcional",
+      "guardarDireccion": false,
+      "direccion": {
+        "destinatario": "Juan Pérez",
+        "nombreCompleto": "Juan Pérez",
+        "departamento": "Lima",
+        "provincia": "Lima",
+        "distrito": "Miraflores",
+        "direccion": "Av. Larco 1234, dpto. 502",
+        "direccionExacta": "Av. Larco 1234, dpto. 502",
+        "referencia": "Frente al parque Kennedy"
+      },
+      "contacto": {
+        "nombreCompleto": "Juan Pérez Rodríguez",
+        "tipoDocumento": "DNI",
+        "numeroDocumento": "72458912",
+        "telefono": "+51999888777",
+        "email": "juan.perez@example.com"
+      }
+    }
+    ```
+  - `cartId` es opcional; si se indica, debe identificar un carrito del cliente autenticado. El servidor obtiene las líneas del carrito propio y resuelve precios, disponibilidad, descuentos y cupón con Productos, y costo y plazo de envío con Despacho, según SPEC-14. El cliente y el LLM no envían líneas ni importes. La respuesta contiene el resumen calculado por el servidor.
+  - **Validación de `contacto.tipoDocumento` / `numeroDocumento` (SPEC-12 Req. 1, A14):**
+    - `DNI`: `^[0-9]{8}$`
+    - `RUC`: `^(10|15|17|20)[0-9]{9}$`
+    - `CE`: `^[a-zA-Z0-9]{8,12}$`
+    - `PASAPORTE`: `^[a-zA-Z0-9]{6,12}$`
+    - `contacto` se valida con `BuyerContactDTO`: `nombreCompleto` es obligatorio y se aplican los patrones de documento anteriores. Si falta o es inválido un dato de `contacto`, responde `400 DATO_INVALIDO`.
+  - **Respuesta `201 Created`:**
+    ```json
+    {
+      "id": "uuid-checkout",
+      "cartId": "uuid-cart",
+      "pedidoId": "PED-2026-00891",
+      "status": "PENDING_PAYMENT",
+      "total": 282.40,
+      "moneda": "PEN",
+      "expiresAt": "2026-11-05T18:15:00Z",
+      "intentosRestantes": 3,
+      "summary": { "contacto": { ... }, "direccion": { ... }, "lineas": [...], "subtotal": 299.90, "descuento": 30.00, "costoEnvio": 12.50, "total": 282.40 },
+      "avisoDireccion": null
+    }
+    ```
+    *(Si `guardarDireccion` es `true` y Seguridad falla al guardar la dirección, el checkout continúa igual y `avisoDireccion` informa `"No pudimos guardar tu dirección para la próxima vez"`, SPEC-12 Req. 3).*
+  - **Errores (`application/problem+json`):**
+    - `400 VALIDACION`: falta cabecera `Idempotency-Key`, dirección incompleta o el cuerpo contiene campos no admitidos, incluidos líneas e importes.
+    - `400 DATO_INVALIDO`: falta o es inválido un dato de `contacto`, incluidos `nombreCompleto`, `tipoDocumento` y `numeroDocumento` (A14).
+    - `401 REQUIERE_SESION` / `401 TOKEN_INVALIDO`: sin sesión o token inválido.
+    - `403 CELULAR_NO_VERIFICADO`: el cliente aún no tiene el celular verificado (SPEC-04 / SPEC-14 Req. 1).
+    - `409 CARRITO_VACIO`: el carrito no tiene líneas disponibles para comprar.
+    - `409 STOCK_INSUFICIENTE` / `409 PRODUCTO_NO_DISPONIBLE`: validación de stock fallida en Productos o Ventas.
+    - `409 CARRITO_DESACTUALIZADO`: cambió el precio, el stock, el cupón o la cotización respecto al resumen confirmado; incluye `summary` actualizado por el servidor. No se crea el pedido hasta que el cliente confirme el nuevo resumen.
+      ```json
+      { "status": 409, "code": "CARRITO_DESACTUALIZADO", "title": "Cart changed", "summary": { "lineas": [{ "sku": "ZAP-RUN-42-NEG", "cantidad": 1, "precioUnitario": 299.90 }], "subtotal": 299.90, "descuento": 30.00, "costoEnvio": 12.50, "total": 282.40 } }
+      ```
+    - `422 SIN_COBERTURA`: el distrito no tiene cobertura de Despacho.
+    - `503 MODULO_NO_DISPONIBLE` / `503 SERVICIO_NO_DISPONIBLE`: Ventas, Productos o Despacho no disponible.
+
+- **`GET /api/v1/checkout/{checkoutId}`** (requiere sesión `CLIENTE`):
+  - **Respuesta `200 OK`:** misma estructura que `POST /checkout` (`status` ∈ `PENDING_PAYMENT | PAYMENT_APPROVED | CONFIRMED | FAILED | EXPIRED`).
+  - **Errores:** `401 REQUIERE_SESION`, `404 RECURSO_NO_ENCONTRADO` (no existe o pertenece a otro cliente).
+
+- **`POST /api/v1/checkout/{checkoutId}/pago`** (requiere sesión `CLIENTE` y cabecera `Idempotency-Key`):
+  - **Cuerpo de entrada** (excluido de logs; nunca se persiste PAN, vencimiento ni CVV):
+    ```json
+    {
+      "numeroTarjeta": "4111111111111111",
+      "titular": "JUAN PEREZ",
+      "vencimiento": "12/28",
+      "cvv": "123"
+    }
+    ```
+  - **Respuesta `200 OK`:**
+    ```json
+    {
+      "id": "uuid-attempt",
+      "checkoutId": "uuid-checkout",
+      "pedidoId": "PED-2026-00891",
+      "resultado": "APROBADO",
+      "marca": "VISA",
+      "ultimos4": "1111",
+      "monto": 282.40,
+      "moneda": "PEN",
+      "idTransaccion": "SIM-7f8a9b0c"
+    }
+    ```
+  - **Errores (`application/problem+json`):**
+    - `400 VALIDACION`: falta `Idempotency-Key`, falla algoritmo de Luhn, marca no soportada, tarjeta vencida o CVV inválido (no descuenta intento, SPEC-14 Req. 3).
+    - `401 REQUIERE_SESION` / `401 TOKEN_INVALIDO`: el JWT no es válido o la introspección contra Seguridad (`POST /auth/introspeccion`, A3) devolvió `activo: false` (SPEC-14 Req. 4).
+    - `402 PAGO_RECHAZADO`: tarjeta rechazada por el simulador; incluye `motivo` (`FONDOS_INSUFICIENTES`, `RECHAZADO_POR_EMISOR`, `INTENTOS_AGOTADOS`) e `intentosRestantes` (`0..2`). En el 3.er rechazo (`intentosRestantes: 0`) el checkout pasa a `FAILED` y se encola la anulación del pedido `CREADO` en el outbox.
+    - `404 RECURSO_NO_ENCONTRADO`: el checkout no existe o pertenece a otro cliente.
+    - `410 CHECKOUT_EXPIRADO`: transcurrieron más de 15 minutos desde la creación del checkout; el checkout pasa a `EXPIRED` y se encola la anulación del pedido `CREADO`.
+    - `503 SERVICIO_NO_DISPONIBLE`: error transitorio del simulador (`4000 0000 0000 0119` -> `PROCESSING_ERROR`, se puede reintentar) o falla de `POST /auth/introspeccion` en Seguridad (nunca se asume `activo: true` por defecto).
+
+#### 2.5.2 Contratos detallados de Pedidos y Seguimiento (SPEC-16, SPEC-17, SPEC-18)
+- **`GET /api/v1/pedidos?estado=&page=1&pageSize=10`** (requiere sesión `CLIENTE`):
+  - Reenvía el token del cliente a `GET /api/v1/pedidos/me` de Ventas (A15).
+  - **Respuesta `200 OK`:**
+    ```json
+    {
+      "items": [
+        {
+          "pedidoId": "PED-2026-00891",
+          "canal": "CHATBOT",
+          "estado": "EN_PREPARACION",
+          "estadoEtiqueta": "En preparación",
+          "total": 282.40,
+          "moneda": "PEN",
+          "fechaCreacion": "2026-11-05T18:02:00Z"
+        }
+      ],
+      "total": 1,
+      "page": 1,
+      "pageSize": 10
+    }
+    ```
+  - **Errores:** `400 VALIDACION`, `401 REQUIERE_SESION`, `503 MODULO_NO_DISPONIBLE` (`modulo: "sales"`).
+
+- **`GET /api/v1/pedidos/{pedidoId}`** (requiere sesión `CLIENTE`):
+  - Reenvía el token del cliente a `GET /api/v1/pedidos/{pedidoId}` de Ventas (A15). Si Ventas responde `403` o `404`, el BFF responde `404 RECURSO_NO_ENCONTRADO` para no revelar la existencia de pedidos ajenos (SPEC-17 Req. 1).
+  - **Respuesta `200 OK`:**
+    ```json
+    {
+      "pedidoId": "PED-2026-00891",
+      "canal": "CHATBOT",
+      "estado": "DESPACHADO",
+      "estadoEtiqueta": "En camino",
+      "total": 282.40,
+      "moneda": "PEN",
+      "fechaCreacion": "2026-11-05T18:02:00Z",
+      "items": [
+        { "productoId": "P-100", "sku": "ZAP-RUN-42-NEG", "descripcion": "Zapatilla X 42/Negro", "cantidad": 1, "precioUnitario": 299.90 }
+      ],
+      "envio": {
+        "destinatario": "Juan Pérez",
+        "distrito": "Miraflores",
+        "direccion": "Av. Larco 1234, dpto. 502",
+        "costo": 12.50,
+        "plazoEstimadoDias": 1
+      },
+      "historial": [
+        { "estado": "CREADO", "etiqueta": "Pendiente de pago", "fecha": "2026-11-05T18:00:00Z", "completado": true },
+        { "estado": "PAGADO", "etiqueta": "Pago confirmado", "fecha": "2026-11-05T18:02:00Z", "completado": true },
+        { "estado": "EN_PREPARACION", "etiqueta": "En preparación", "fecha": "2026-11-05T19:00:00Z", "completado": true },
+        { "estado": "DESPACHADO", "etiqueta": "Despachado", "fecha": "2026-11-06T09:00:00Z", "completado": true }
+      ],
+      "seguimientoDisponible": true
+    }
+    ```
+  - **Errores:** `401 REQUIERE_SESION`, `404 RECURSO_NO_ENCONTRADO`, `503 MODULO_NO_DISPONIBLE`.
+
+- **`GET /api/v1/pedidos/{pedidoId}/seguimiento`** (requiere sesión `CLIENTE`):
+  - Verifica primero que `pedidoId` pertenezca al cliente en Ventas (SPEC-18 Req. 1) y luego consulta `GET /api/v1/seguimientos/pedidos/{pedidoId}` en Despacho con el token de servicio de `modulo-chatbot` (`aud=api-despacho`, scope `seguimientos:leer`, A11/A4).
+  - **Lista blanca obligatoria (SPEC-18 Req. 3 y RNF Privacidad):** solo se exponen `pedidoId`, `estado`, `estadoEtiqueta`, `fechaProgramada`, `distrito`, `hitos[{titulo, fecha, completado}]`, `recibidoPor` (solo para la UI del frontend, nunca para el LLM) y `detalleDisponible`. Se descartan coordenadas GPS, teléfono/datos del repartidor, dirección completa y motivos internos de fallo.
+  - Si el pedido está `PAGADO` o `EN_PREPARACION` y Despacho responde `404`, no es un error: devuelve `200 OK` con `detalleDisponible: false`, `estado: "EN_PREPARACION"`, `estadoEtiqueta: "En preparación"`, `hitos: []` y `mensaje: "Tu pedido aún se está preparando; te mostraremos el seguimiento cuando salga del centro de despacho"`.
+  - **Respuesta `200 OK`:**
+    ```json
+    {
+      "pedidoId": "PED-2026-00891",
+      "estado": "EN_CAMINO",
+      "estadoEtiqueta": "En camino",
+      "fechaProgramada": "2026-11-06",
+      "distrito": "Miraflores",
+      "hitos": [
+        { "titulo": "Recibido en centro de despacho", "fecha": "2026-11-06T10:00:00-05:00", "completado": true },
+        { "titulo": "Asignado a repartidor", "fecha": "2026-11-06T14:30:00-05:00", "completado": true },
+        { "titulo": "En camino", "fecha": "2026-11-06T16:00:00-05:00", "completado": true }
+      ],
+      "recibidoPor": null,
+      "detalleDisponible": true,
+      "mensaje": null
+    }
+    ```
+  - **Errores:** `401 REQUIERE_SESION`, `404 RECURSO_NO_ENCONTRADO` (pedido ajeno o inexistente en Ventas), `503 MODULO_NO_DISPONIBLE`.
+
+- **`POST /api/v1/pedidos/{pedidoId}/reenviar-confirmacion`** (requiere sesión `CLIENTE` y cabecera `Idempotency-Key`):
+  - Verifica pertenencia del pedido y encola un reenvío de confirmación (`CONFIRMATION_RESEND`, máx. 2 reenvíos por pedido, SPEC-16 Req. 3).
+  - La deduplicación se identifica por cliente, pedido y `Idempotency-Key`: repetir la misma clave devuelve el mismo resultado sin encolar otro correo ni consumir otro reenvío.
+  - **Respuesta `202 Accepted`:**
+    ```json
+    {
+      "ok": true,
+      "pedidoId": "PED-2026-00891",
+      "reenviosRestantes": 1,
+      "correoEnmascarado": "j***z@example.com"
+    }
+    ```
+  - **Errores (`application/problem+json`):** `400 VALIDACION` (falta `Idempotency-Key`), `401 REQUIERE_SESION`, `404 RECURSO_NO_ENCONTRADO`, `429 LIMITE_REENVIOS_EXCEDIDO` (ya se realizaron los 2 reenvíos permitidos para ese pedido).
 
 ### 2.6 Reclamos (SPEC-19, SPEC-20) ✅
 | Método | Ruta | Descripción |
@@ -142,6 +367,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `code` | HTTP | Significado |
 |---|---|---|
 | `REQUIERE_SESION` | 401 | La acción necesita sesión de cliente. |
+| `DATO_INVALIDO` | 400 | Un dato de `contacto` del checkout falta o no cumple las reglas de nombre y documento de Ventas (A14). |
 | `CELULAR_NO_VERIFICADO` | 403 | El checkout requiere el celular verificado. |
 | `STOCK_INSUFICIENTE` | 409 | Cantidad no disponible para uno o más SKU; no incluye cantidades, porque Productos no las expone (A16). |
 | `PRODUCTO_NO_DISPONIBLE` | 409 | Producto o SKU inactivo. |
@@ -151,12 +377,15 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `ADJUNTO_INVALIDO` | 400 | Imagen adjunta al chat (SPEC-23) mayor a 5 MB, de tipo no permitido, con contenido que no es una imagen válida o con dimensiones fuera de rango. |
 | `LIMITE_ADJUNTOS` | 422 | Más de 3 adjuntos por mensaje o más de 10 adjuntos pendientes por conversación (SPEC-23). |
 | `DEVOLUCION_NO_ELEGIBLE` | 422 | El pedido no está `ENTREGADO`, está fuera de plazo, o falta evidencia obligatoria. |
-| `CUPON_INVALIDO` | 422 | Incluye `motivo`. |
-| `CARRITO_DESACTUALIZADO` | 409 | Cambió el precio, el stock o el cupón desde el resumen. |
+| `CUPON_INVALIDO` | 422 | Incluye `motivo` (`INEXISTENTE`, `EXPIRADO`, `NO_VIGENTE`, `AGOTADO`, `LIMITE_CLIENTE`, `MONTO_MINIMO`, `NO_APLICA_PRODUCTOS`, `NO_APLICA_CANAL`, `NO_COMBINABLE`). |
+| `REQUIERE_CONFIRMACION_REEMPLAZO` | 409 | El carrito ya tiene un cupón aplicado y se debe confirmar su reemplazo (`cuponActual`, `cuponNuevo`). |
+| `CARRITO_VACIO` | 409 | El carrito no contiene líneas disponibles para iniciar el checkout (SPEC-14 Req. 1). |
+| `CARRITO_DESACTUALIZADO` | 409 | Cambió el precio, el stock, el cupón o la cotización desde el resumen confirmado; el cuerpo incluye `summary` actualizado por el servidor para nueva confirmación. |
 | `PAGO_RECHAZADO` | 402 | Incluye `motivo` e `intentosRestantes`. |
 | `CHECKOUT_EXPIRADO` | 410 | Pasaron más de 15 minutos. |
+| `LIMITE_REENVIOS_EXCEDIDO` | 429 | Ya se enviaron los 2 reenvíos de confirmación por correo permitidos para el pedido (SPEC-16 Req. 3). |
 | `RECURSO_NO_ENCONTRADO` | 404 | También se usa cuando el recurso existe pero no pertenece al cliente. |
-| `SERVICIO_NO_DISPONIBLE` | 503 | Falló un módulo externo; incluye `modulo`. |
+| `MODULO_NO_DISPONIBLE` / `SERVICIO_NO_DISPONIBLE` | 503 | Falló un módulo externo; incluye `modulo`. |
 | `DEMASIADAS_SOLICITUDES` | 429 | Se superó el rate limit. |
 | `VALIDACION` | 400 | Incluye `errores[{campo, mensaje}]`. |
 | `DATO_INVALIDO` | 400 | Específico del documento de identidad (`tipoDocumento`/`numeroDocumento`); el frontend lo evita validando antes con las reglas de `SPEC-12` · Requisito 1, pero Ventas también lo aplica del lado suyo. |

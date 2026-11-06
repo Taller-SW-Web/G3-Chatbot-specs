@@ -6,7 +6,7 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Productos | `GET /productos?q=&categoriaId=&marcaId=&canal=&pagina=&tamanio=&estado=&precioMin=&precioMax=&orden=` (`orden`: `NOMBRE_ASC`, `NOMBRE_DESC`) | 🟡 A5 · scopes `catalogo:leer` pendientes |
+| Productos | `GET /productos?q=&categoriaId=&marcaId=&canal=CHATBOT&pagina=&tamanio=&precioMin=&precioMax=&orden=` (`orden`: `NOMBRE_ASC`, `NOMBRE_DESC`). El chatbot no envía `estado`: es un filtro de backoffice y una identidad de canal no puede usarlo (A17) | 🟡 A5 · scopes `catalogo:leer` pendientes |
 | Productos | `GET /categorias` · `GET /marcas` | 🟡 A5 · scopes pendientes |
 | Productos | `GET /precios?skus=&canal=CHATBOT` (la búsqueda no trae precio) | 🟡 A5 · scopes pendientes |
 | Productos | `GET /inventario/disponibilidad/comercial?skus=&canal=CHATBOT` (la búsqueda no trae disponibilidad) | 🟡 A5 · scopes pendientes |

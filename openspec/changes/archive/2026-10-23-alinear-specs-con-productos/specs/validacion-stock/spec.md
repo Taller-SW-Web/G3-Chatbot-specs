@@ -1,7 +1,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Validar antes de agregar o incrementar
-El sistema DEBE (SHALL) consultar la disponibilidad comercial del SKU (`GET /api/v1/inventario/disponibilidad/comercial`, que devuelve `DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO`, sin cantidades) y verificar la cantidad pedida con la verificación no vinculante `POST /api/v1/inventario/disponibilidad/comercial/verificar` (`channel_id` y `lines[{sku, quantity}]`; responde `SUFICIENTE`, `INSUFICIENTE` o `INDETERMINADO`, sin reservar). La operación se rechaza si el SKU está `AGOTADO` o la verificación responde `INSUFICIENTE`. Con `DISPONIBLE` o `SUFICIENTE` se acepta; con `STOCK_BAJO` o `INDETERMINADO` se acepta con aviso, dentro del límite de 10 unidades por línea del carrito. La decisión final la toma Ventas al crear el pedido (`409` por falta de stock). Si la verificación por cantidad no estuviera disponible, se usa solo el estado comercial.
+El sistema DEBE (SHALL) consultar la disponibilidad comercial del SKU (`GET /api/v1/inventario/disponibilidad/comercial`, que devuelve `DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO`, sin cantidades) y verificar la cantidad pedida con la verificación no vinculante `POST /api/v1/inventario/disponibilidad/comercial/verificar` (`channel_id`, `fulfillment` y `lines[{sku, quantity}]`; responde `items[{sku, requested_quantity, result}]` con `result` igual a `SUFICIENTE`, `INSUFICIENTE` o `INDETERMINADO` y `binding=false`, sin reservar). El chatbot envía siempre `fulfillment: {mode: ENVIO_DOMICILIO}`, sin `fulfillment_ref`, porque este canal solo entrega a domicilio (RN-CHK-05) y no dispone de una referencia de cumplimiento de Productos; el resultado es informativo y no promete disponibilidad. La operación se rechaza si el SKU está `AGOTADO` o la verificación responde `INSUFICIENTE`. Con `DISPONIBLE` o `SUFICIENTE` se acepta; con `STOCK_BAJO` o `INDETERMINADO` se acepta con aviso, dentro del límite de 10 unidades por línea del carrito. El aviso de `STOCK_BAJO` es "Quedan pocas unidades" y el de `INDETERMINADO` es "No pudimos confirmar el stock"; `INDETERMINADO` nunca se comunica como pocas unidades. La decisión final la toma Ventas al crear el pedido (`409` por falta de stock). Si la verificación por cantidad no estuviera disponible, se usa solo el estado comercial.
 
 *Trazabilidad: SPEC-10 · Requisito 1.*
 
@@ -30,6 +30,11 @@ El sistema DEBE (SHALL) consultar la disponibilidad comercial del SKU (`GET /api
 - **CUANDO** se intenta agregar
 - **ENTONCES** no se agrega, se informa que está agotado y se ofrecen las variantes disponibles del mismo producto o, si no hay, hasta 3 productos similares que no estén agotados
 
+#### Scenario: Contexto de cumplimiento de la verificación
+- **DADO** un cliente que agrega un SKU, tenga o no una dirección elegida
+- **CUANDO** se llama a la verificación por cantidad
+- **ENTONCES** se envía `fulfillment: {mode: ENVIO_DOMICILIO}` sin `fulfillment_ref`, se lee `items[].result` y el mensaje al cliente no promete que el stock quedará disponible
+
 ### Requirement: Revalidar todo el carrito antes del checkout
 El sistema DEBE (SHALL) revalidar la disponibilidad comercial de todas las líneas en una sola consulta masiva al iniciar el checkout y bloquearlo si alguna línea está `AGOTADO` o la verificación por cantidad de todas las líneas (una sola llamada) responde `INSUFICIENTE`. Una línea en `STOCK_BAJO` o `INDETERMINADO` no bloquea el checkout y muestra un aviso.
 
@@ -54,6 +59,31 @@ El sistema DEBE (SHALL) revalidar la disponibilidad comercial de todas las líne
 - **DADO** que la revalidación pasó pero Ventas responde `409` por falta de stock al crear el pedido (por ejemplo, cantidad mayor a la disponible)
 - **CUANDO** ocurre
 - **ENTONCES** se vuelve al carrito con la revalidación de todas las líneas y se informa al cliente "No hay stock suficiente para alguna de tus cantidades; ajusta tu carrito", sin cobrar (SPEC-15)
+
+### Requirement: Nunca asumir disponibilidad
+El sistema DEBE (SHALL) rechazar la adición o el checkout cuando no puede obtener una disponibilidad válida, y NO DEBE (SHALL NOT) tomar decisiones comerciales positivas a partir de respuestas incompletas o incompatibles: un lote al que le falta un SKU pedido, un SKU que no coincide exactamente con el pedido, un estado o resultado fuera de la lista del contrato, o un payload que no respeta el OpenAPI de Productos. Esos casos se tratan como "disponibilidad no obtenida", distinta de un `INDETERMINADO` contractual válido (que sí se acepta con aviso, Requisito 1), y nunca se interpretan como `AGOTADO`. Las respuestas `401`, `403`, `422`, `429` y `503` se manejan según su semántica HTTP y no se convierten en estados comerciales.
+
+*Trazabilidad: SPEC-10 · Requisito 3.*
+
+#### Scenario: Inventario no disponible al agregar
+- **DADO** que Productos no responde en 3 s
+- **CUANDO** el cliente agrega un producto
+- **ENTONCES** no se agrega, se responde `503 SERVICIO_NO_DISPONIBLE` y el chat dice "No puedo confirmar el stock ahora; intenta en unos segundos" con el botón "Reintentar"
+
+#### Scenario: Respuesta incompleta o incompatible
+- **DADO** una consulta de disponibilidad cuya respuesta omite uno de los SKU pedidos, trae un estado desconocido o no respeta el esquema del contrato
+- **CUANDO** el cliente agrega ese SKU o inicia el checkout
+- **ENTONCES** se aplica el mismo tratamiento que si Productos no respondiera: no se agrega ni se continúa, no se informa que el SKU está agotado y el chat dice "No puedo confirmar el stock ahora; intenta en unos segundos"
+
+#### Scenario: Disponibilidad no disponible solo para mostrar
+- **DADO** una búsqueda en la que falla la consulta de disponibilidad, o falta la fila de un SKU, pero sí se obtuvieron los productos
+- **CUANDO** se renderizan las tarjetas
+- **ENTONCES** se muestran sin el badge de disponibilidad (ni "Disponible" ni "Agotado"), y la validación se hará al agregar
+
+#### Scenario: Error de autorización o límite de frecuencia
+- **DADO** que la consulta de disponibilidad responde `401`, `403` o `429`
+- **CUANDO** se procesa la respuesta
+- **ENTONCES** no se traduce en `AGOTADO` ni en `INDETERMINADO`: se trata como disponibilidad no obtenida, se registra con su `X-Correlation-Id` y, ante `429`, se respeta `Retry-After` si viene
 
 ### Requirement: Consulta explícita de disponibilidad
 El sistema DEBE (SHALL) responder preguntas de stock sobre un producto o una variante con el estado comercial (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO`), sin revelar cantidades (Productos no las expone ni las expondrá en el chatbot).

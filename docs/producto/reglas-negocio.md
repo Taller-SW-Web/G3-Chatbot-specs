@@ -115,10 +115,10 @@
 | RN-CAT-08 | Una recomendación muestra entre 3 y 5 productos activos que no estén `AGOTADO` (se excluye cualquier candidato agotado en todas sus variantes; con `INDETERMINADO` se puede recomendar sin afirmar que hay stock), cada uno con una razón basada solo en atributos devueltos por Productos. | SPEC-07 · Req. 1 y Req. 2 | Chatbot |
 | RN-CAT-09 | Antes de recomendar se hacen como máximo 2 preguntas aclaratorias, de una en una. | SPEC-07 · Req. 1 | Chatbot |
 | RN-CAT-10 | Los complementos (cross-sell) se sugieren como máximo una vez por producto agregado, con hasta 3 candidatos con stock; si el cliente los rechaza, no se vuelven a sugerir en esa conversación salvo que los pida. | SPEC-07 · Req. 3 | Chatbot (candidatos definidos por Productos) |
-| RN-CAT-11 | Se listan solo promociones de modalidad `AUTOMATICA`, activas, vigentes y habilitadas para `CHATBOT`; una lista de canales vacía significa todos los canales. | SPEC-08 · Req. 1 | Productos |
+| RN-CAT-11 | Se listan las promociones vigentes que Productos devuelve para `canal=CHATBOT`, con nombre y vigencia; el chatbot no filtra por modalidad ni inventa beneficio o alcance, porque Productos no los entrega todavía (A16). | SPEC-08 · Req. 1 | Productos |
 | RN-CAT-12 | Con `precioOferta` vigente se muestran el precio regular tachado, el precio de oferta y el porcentaje de ahorro redondeado; si la oferta vence, se vuelve al precio regular y se avisa si el producto estaba en el carrito. | SPEC-08 · Req. 2 | Productos (oferta); Chatbot (presentación) |
 | RN-CAT-13 | El chatbot no calcula reglas de promoción: el descuento del carrito y el motivo de no aplicación provienen de la evaluación de Productos (`POST /promociones/evaluar`). | SPEC-08 · Req. 3 | Productos |
-| RN-CAT-14 | La consulta de ofertas nunca lista códigos de cupón y excluye las promociones de modalidad `CUPON`. | SPEC-08 · Req. 4 | Chatbot |
+| RN-CAT-14 | La consulta de ofertas nunca lista códigos de cupón; si el listado de Productos incluye una promoción de cupón, se muestran solo su nombre y vigencia. | SPEC-08 · Req. 4 | Chatbot |
 | RN-CAT-15 | La disponibilidad en tarjeta es `DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO` (tal como las entrega Productos, sin cantidades); la descripción breve tiene como máximo 90 caracteres y un carrusel, como máximo 10 tarjetas. | SPEC-09 · Req. 1 | Chatbot |
 | RN-CAT-16 | Un producto con variantes no se agrega sin elegir la variante (SKU); las variantes agotadas se muestran deshabilitadas y solo se pregunta el atributo que falte. | SPEC-09 · Req. 2 y Req. 4 | Productos (el stock es por SKU); Chatbot (flujo) |
 | RN-CAT-17 | La cantidad seleccionable en el detalle del producto va de 1 a 10. | SPEC-09 · Req. 3 | Chatbot |
@@ -127,7 +127,7 @@
 
 | ID | Regla | Fuente | Dueño de la regla |
 |---|---|---|---|
-| RN-CAR-01 | Una adición o incremento se acepta si el estado comercial del SKU, consultado en vivo, no es `AGOTADO` y la verificación por cantidad (`/verificar`) no responde `INSUFICIENTE`; si no, no se agrega y no se exponen cantidades. Con `STOCK_BAJO` o `INDETERMINADO` se acepta con aviso. | SPEC-10 · Req. 1 | Chatbot (stock propiedad de Productos) |
+| RN-CAR-01 | Una adición o incremento se acepta si el estado comercial del SKU, consultado en vivo, no es `AGOTADO` y la verificación por cantidad (`/verificar`) no responde `INSUFICIENTE`; si no, no se agrega y no se exponen cantidades. Con `STOCK_BAJO` ("Quedan pocas unidades") o `INDETERMINADO` ("No pudimos confirmar el stock") se acepta con avisos distintos. Una respuesta incompleta o incompatible no es `INDETERMINADO`: se trata como disponibilidad no obtenida y no se agrega (A17). | SPEC-10 · Req. 1 y Req. 3 | Chatbot (stock propiedad de Productos) |
 | RN-CAR-02 | Si el SKU está agotado, se ofrecen las variantes disponibles del mismo producto o, si no hay, hasta 3 productos similares con stock. | SPEC-10 · Req. 1 | Chatbot |
 | RN-CAR-03 | Al iniciar el checkout se revalida todo el carrito en una sola consulta masiva; si alguna línea no se puede cumplir, el checkout se bloquea con `409 CARRITO_DESACTUALIZADO` y el detalle por línea. | SPEC-10 · Req. 2 | Chatbot |
 | RN-CAR-04 | Nunca se asume disponibilidad: si el inventario no responde en 3 s, la adición o el checkout se rechazan con `503 SERVICIO_NO_DISPONIBLE`. | SPEC-10 · Req. 3 | Chatbot |

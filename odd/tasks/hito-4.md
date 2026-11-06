@@ -136,7 +136,11 @@ El flujo principal de la demo es el checkout: SPEC-12 → 13 → 14 → 15 → 1
 ## Progreso
 
 - 2026-11-03: auditoría del Hito 4 y desglose de tareas. CI de H3-17 promovido a `main` (PR #56). PR #57 de Seguridad G7 abierto. H4-F8 movida al siguiente hito.
+- 2026-11-05: revisión de PRs delegada a Codex. Correcciones de Seguridad (T10 a T12 de `g7-security-integration.md`) mergeadas en `development`: backend #57 y #61 (reemplaza al #58, cerrado al borrarse su rama base) y frontend #32. Los PR #59 y #33 de Diego (H4-S5 y H4-F3) tienen cambios requeridos.
+- 2026-11-05: H4-C2 hecha: `alembic upgrade head` como comando pre-deploy en el panel de Railway (no se usa `railway.json` porque Config as Code de Railway quedó obsoleto). H4-C1, parte de Railway: opción "Wait for CI" activada. Falta Vercel.
+- 2026-11-06: H4-S3 cerrada con G7: cliente `modulo-chatbot`, scope `tokens:introspeccion`, issuer confirmado y retiro del rol `SERVICIO_INTEGRACION`. Sincronización de `main` en `development` (backend #63) y promoción a `main`: backend #62 y frontend #34, con merge commit para que `main` siga contenida en `development`.
+- 2026-11-06: H4-S1 y H4-S4 hechas. Producción con `SECURITY_MODE=http`: registro, verificación de correo y login con MFA probados contra G7. Pendiente: prueba de introspección con una sesión real, coordinada con G7.
 
 ## Siguiente paso
 
-Repartir las tareas al equipo y arrancar la fase 0 (H4-A1, H4-S1 y H4-S3).
+Correcciones de Diego en #59 y #33, H4-C1 en Vercel, prueba de introspección con G7 y documentar `APP_ENV` y `ALLOW_FAKE_SECURITY` en `.env.template` del backend.

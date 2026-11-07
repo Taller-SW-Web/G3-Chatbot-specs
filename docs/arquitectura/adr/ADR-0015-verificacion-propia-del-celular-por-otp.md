@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada
+Aceptada; implementación pospuesta (2026-11-07, ver [Actualización](#actualización-2026-11-07-implementación-pospuesta))
 
 ## Fecha
 
@@ -42,6 +42,17 @@ Aceptada
 **Negativas y riesgos aceptados**
 - La verificación no se comparte con otros canales (Marketplace, Retail) ni con el perfil de Seguridad: limitación conocida mientras A2 siga fuera de alcance.
 - El canal pasa a guardar el celular completo, sin plazo de retención definido (`privacidad.md` §2).
+
+## Actualización 2026-11-07: implementación pospuesta
+
+El equipo decide posponer la verificación del celular. La decisión de arriba sigue siendo el diseño objetivo, pero hoy no está activa:
+
+- Los endpoints `POST /api/v1/contacto/celular/solicitar-otp` y `/verificar-otp` no están implementados.
+- El checkout **no bloquea** la compra: la validación de `manage_checkout_use_case.py` solo se aplica si la solicitud trae `contacto.celular`, y el frontend no lo envía. No se devuelve `403 CELULAR_NO_VERIFICADO`.
+- El frontend muestra el aviso "Verifica tu número" en el carrito como recordatorio, pero el cliente puede continuar al pago.
+- Ya existen la tabla `local_phone_verification` y el código `CELULAR_NO_VERIFICADO`, que se reutilizarán cuando se retome.
+
+Riesgo aceptado: hasta que se implemente, el canal no cumple la validación del celular que pide el curso. Para retomarlo hay que implementar ambos endpoints con `SimulatedSmsSender`, conectar el flujo de verificación del frontend y hacer que el checkout exija la verificación del celular vigente del perfil.
 
 ## Referencias
 

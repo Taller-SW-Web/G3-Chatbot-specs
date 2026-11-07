@@ -73,8 +73,8 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 
 | Job | Mide | Bloqueante |
 |---|---|---|
-| `lint` | ruff | Sí |
-| `types` | mypy (gradual, `src/domain` y `src/application` primero) | Sí |
+| `lint` | ruff + bugbear (B) | Sí |
+| `types` | mypy sobre todo `src` | Sí |
 | `unit` | pytest + `pytest-cov` → `coverage.xml` | Sí |
 | `openapi` | exporta y valida `openapi.json` | Sí |
 | `integration` | PG18 + migraciones up/down/up | Sí |
@@ -87,7 +87,7 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 
 | Job | Mide | Bloqueante |
 |---|---|---|
-| `lint` | ESLint + `eslint-plugin-sonarjs` | Sí |
+| `lint` | ESLint + `eslint-plugin-sonarjs` (error) | Sí |
 | `types` | `tsc --noEmit` | Sí |
 | `unit` | Vitest + cobertura (`lcov.info`) | Sí |
 | `build` | Next build | Sí |
@@ -186,6 +186,8 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 - 2026-11-07: **Fase 0 y Fase 2 implementadas** en los PR [#98](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/98) (backend) y [#64](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/pull/64) (frontend), con CI en verde: permisos mínimos, `concurrency`, timeouts, cobertura como artifact, Dependabot, CODEOWNERS, plantilla de PR, CodeQL, `pip-audit`/`pnpm audit` (advisory), hadolint y validación del OpenAPI. **CI-11 aplicado**: piso de cobertura del **85 %** en backend (baseline 86.9 %) y **55/78/70/55** en frontend (baseline 57.7/82.2/75.4), como trinquete. **Dependency Review** quedó diferido: exige el **Dependency Graph**, que es un ajuste de admin (`Settings → Code security`).
 - 2026-11-07: **Fase 1 (CI-03 y CI-04) cerrada.** El `SONAR_TOKEN` quedó como **secreto de organización** con acceso a los dos repos; los proyectos `G3-Chatbot-backend` y `G3-Chatbot-frontend` se crearon solos en la primera ejecución y el job `SonarCloud` analiza con la cobertura del job de unitarias (backend 1m16s, frontend 59s). Con `sonar.qualitygate.wait=true` (timeout 600 s) el **Quality Gate es bloqueante** y el job ya es dependencia del gate único. Además: job `Type check` con **mypy** (alcance `src/domain`, 6 errores corregidos), **`eslint-plugin-sonarjs`** (5 reglas como warning) y **`docker build`** en el backend para no quedarse en hadolint. `Trivy fs` (`vuln,misconfig`, CRITICAL con `ignore-unfixed`) y **`smoke.yml`** (manual + diario: `/health`, catálogo y frontend 200) completan CI-08 y parte de CI-12.
 - 2026-11-07: **Paridad backend/frontend auditada.** Ambas tuberías tienen lint, tipos, unitarias con cobertura y umbral, build, auditoría de dependencias, CodeQL, gate único y Sonar. Huecos restantes: E2E en frontend (CI-10), integración con base de datos que el frontend no necesita, y `mypy` fuera de `src/domain` (`application` 19 errores, `adapters` 43, `infrastructure` 46).
+- 2026-11-07: **Trinquete cerrado.** `mypy` cubre **todo `src`** (181 módulos, 0 errores; se corrigieron 27 sin `type: ignore`, incluida una fábrica de sesiones tipada, el `Protocol` del outbox, `CursorResult.rowcount`, `retry_after` en los errores de módulo y `CallerIdentity.customer`). `ruff` activa **bugbear** (13 `B904` con `raise ... from`, `B905` con `zip(strict=True)`; FastAPI exento de `B008`). En el frontend las 5 reglas de `eslint-plugin-sonarjs` pasan a **error**. Cobertura: **87.21 %** (baseline 86.87 %) con 1097 tests; `connection.py` 48 % → 100 %.
+- 2026-11-07: **El gate de Sonar se probó contra un fallo real.** Con `sonar.qualitygate.wait`, el Quality Gate se puso rojo al subir código nuevo sin cobertura y volvió a verde al añadir los tests de infraestructura: queda demostrado que bloquea de verdad. Además se resolvió el conflicto con `development` (#90/#93/#95) y `smoke.yml` pasó a **"Daily production smoke"** para no duplicar `verify-production.yml`, que verifica el post-deploy.
 
 ## Adopción de `devsecops-templates`
 
@@ -197,7 +199,7 @@ El repo de referencia del curso (`Taller-SW-Web/devsecops-templates`) implementa
 | Least privilege y `persist-credentials: false` | Aplicado en todos los workflows |
 | CodeQL con set ampliado | `@v4` + `queries: security-extended` |
 | Sonar espera el Quality Gate | `sonar.qualitygate.wait=true` y `sonar` en el gate |
-| Smoke contra producción | `smoke.yml` (manual + diario) |
+| Smoke contra producción | `smoke.yml` (**Daily production smoke**, manual + diario), complementario a `verify-production.yml` (post-deploy) |
 | Deploy con rollback y healthcheck | Ya lo cubren Railway/Vercel; falta el environment con aprobación (CI-12) |
 | Caller → reusable workflow | **No adoptado**: la guía solo soporta Maven/Java y Node/TS; Python no está soportado y centralizar aquí añadiría un checkout extra y un punto único de fallo sin beneficio medible para dos repos |
 | Dependency Review | **Diferido**: requiere Dependency Graph (admin) |
@@ -208,4 +210,4 @@ El repo de referencia del curso (`Taller-SW-Web/devsecops-templates`) implementa
 2. Mergear #98 y #64 para que el gate endurecido quede activo en `development`.
 3. Pedir a Mathias los accesos que siguen bloqueados: **Dependency Graph**, **secret scanning + push protection**, **Code Owners en la protección de rama** y **Environment `production`**.
 4. Activar los E2E (CI-10) cuando Nikol tenga datos semilla.
-5. Subir el trinquete: `mypy` a `src/application`, reglas `sonarjs` a *error* y `ruff C90/B`.
+5. Subir el trinquete restante: `mypy --check-untyped-defs` en los módulos sin anotar y `ruff C90` (hoy delegado a Sonar).

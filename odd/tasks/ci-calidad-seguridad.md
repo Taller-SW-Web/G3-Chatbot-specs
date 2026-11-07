@@ -157,9 +157,11 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 | Dependabot security updates | David (admin) | ✅ Activadas por API |
 | Code scanning | David | ✅ CodeQL advanced (el default setup queda sin configurar a propósito) |
 | Environment `production` con aprobación | Mathias | ❌ **Pendiente**: `protection_rules: []`; el frontend no tiene environments |
-| Conversaciones resueltas / enforce admins / Code Owner reviews | Mathias | ❌ **Pendiente**: hoy `required_conversation_resolution=false`, `enforce_admins=false` (los admins se saltan el CI) y `require_code_owner_reviews=false` |
+| Conversaciones resueltas / enforce admins | David (admin) | ✅ Activados por API en `development` y `main` de ambos repos |
+| Code Owner reviews | Decisión del equipo | ❌ `require_code_owner_reviews=false`: con 1 aprobación alcanza y el owner es el team, así que se puede activar sin bloquear a nadie |
+| `strict` (rama al día) | Decisión del equipo | ❌ `strict=false`: obliga a rebasar antes de cada merge; se deja fuera a propósito para no frenar el ritmo |
 
-> David pasó a **admin** en los dos repos (2026-11-07), así que puede activar los ajustes de seguridad por API. La protección de rama y el environment siguen siendo decisión de equipo: `enforce_admins` quita el bypass de CI también a los admins.
+> David pasó a **admin** en los dos repos (2026-11-07), así que activa los ajustes de seguridad por API. Con `enforce_admins=true` **nadie** (tampoco un admin) puede mergear sin el gate verde ni sin la aprobación: el bypass desapareció.
 
 ## Riesgos y mitigaciones
 
@@ -191,6 +193,7 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 - 2026-11-07: **Trinquete cerrado.** `mypy` cubre **todo `src`** (181 módulos, 0 errores; se corrigieron 27 sin `type: ignore`, incluida una fábrica de sesiones tipada, el `Protocol` del outbox, `CursorResult.rowcount`, `retry_after` en los errores de módulo y `CallerIdentity.customer`). `ruff` activa **bugbear** (13 `B904` con `raise ... from`, `B905` con `zip(strict=True)`; FastAPI exento de `B008`). En el frontend las 5 reglas de `eslint-plugin-sonarjs` pasan a **error**. Cobertura: **87.21 %** (baseline 86.87 %) con 1097 tests; `connection.py` 48 % → 100 %.
 - 2026-11-07: **El gate de Sonar se probó contra un fallo real.** Con `sonar.qualitygate.wait`, el Quality Gate se puso rojo al subir código nuevo sin cobertura y volvió a verde al añadir los tests de infraestructura: queda demostrado que bloquea de verdad. Además se resolvió el conflicto con `development` (#90/#93/#95) y `smoke.yml` pasó a **"Daily production smoke"** para no duplicar `verify-production.yml`, que verifica el post-deploy.
 - 2026-11-07: **Auditoría de seguridad con permisos de admin.** Verificado: Dependabot alerts activas (las activó Mathias) y Code scanning operativo (CodeQL advanced); **secret scanning, push protection y Dependabot security updates activados por API** en ambos repos. `CODEOWNERS` validado contra el team `chatbot` (el endpoint de errores no reporta ninguno). Sigue pendiente: **Dependency Graph** (solo UI, bloquea Dependency Review), **environment `production`** sin `protection_rules` y tres reglas de rama (`required_conversation_resolution=false`, `enforce_admins=false` —los admins se saltan el CI— y `require_code_owner_reviews=false`). `secret_scanning_validity_checks` no se puede activar por API: responde 200 pero el estado sigue `disabled`.
+- 2026-11-07: **Protección de rama endurecida** en `development` y `main` de los dos repos: `enforce_admins=true` (los admins ya no pueden mergear con el CI en rojo ni sin aprobación) y `required_conversation_resolution=true`. Se preservaron los checks requeridos (`test`/`check`, ligados a la app de Actions) y `dismiss_stale_reviews`. Quedan como decisión de equipo `require_code_owner_reviews` y `strict`, y como acción de UI el **Dependency Graph**.
 
 ## Adopción de `devsecops-templates`
 

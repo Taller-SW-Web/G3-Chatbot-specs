@@ -79,6 +79,7 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 | `openapi` | exporta y valida `openapi.json` | Sí |
 | `integration` | PG18 + migraciones up/down/up | Sí |
 | `security` | `pip-audit` | Advisory → bloqueante |
+| `dependency-review` | dependencias nuevas del PR contra el Dependency Graph | Sí (`high`+) |
 | `docker` | hadolint + Trivy (filesystem e imagen) | Bloqueante en `CRITICAL` |
 | `sonar` | SonarCloud con `coverage.xml` | Sí (quality gate) |
 | **`test`** | **gate** que exige todo lo anterior | Sí |
@@ -93,6 +94,7 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 | `build` | Next build | Sí |
 | `e2e` | Playwright (flujos críticos) | Sí (fase 3) |
 | `security` | `pnpm audit` | Advisory → bloqueante |
+| `dependency-review` | dependencias nuevas del PR contra el Dependency Graph | Sí (`high`+) |
 | `sonar` | SonarCloud con `lcov.info` | Sí (quality gate) |
 | **`check`** | **gate** que exige todo lo anterior | Sí |
 
@@ -151,7 +153,7 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 |---|---|---|
 | `SONAR_TOKEN` (secreto de organización, con scope a los dos repos) | Mathias | ✅ Hecho |
 | Org/proyecto en SonarCloud | Mathias | ✅ Hecho: org `taller-sw-web`, proyectos `G3-Chatbot-backend` y `G3-Chatbot-frontend` |
-| **Dependency Graph** (habilita Dependency Review) | Mathias | ❌ **Pendiente**: solo se activa por UI (no hay endpoint REST). Verificado con SBOM 404 vs 200 en `G4-Retail-backend` |
+| **Dependency Graph** (habilita Dependency Review) | Mathias | ✅ Activado (backend 20 paquetes, frontend 709); default branch movido a `development` |
 | Secret scanning + push protection | David (admin) | ✅ Activados por API en ambos repos |
 | Dependabot alerts | Mathias | ✅ Activas |
 | Dependabot security updates | David (admin) | ✅ Activadas por API |
@@ -194,6 +196,7 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 - 2026-11-07: **El gate de Sonar se probó contra un fallo real.** Con `sonar.qualitygate.wait`, el Quality Gate se puso rojo al subir código nuevo sin cobertura y volvió a verde al añadir los tests de infraestructura: queda demostrado que bloquea de verdad. Además se resolvió el conflicto con `development` (#90/#93/#95) y `smoke.yml` pasó a **"Daily production smoke"** para no duplicar `verify-production.yml`, que verifica el post-deploy.
 - 2026-11-07: **Auditoría de seguridad con permisos de admin.** Verificado: Dependabot alerts activas (las activó Mathias) y Code scanning operativo (CodeQL advanced); **secret scanning, push protection y Dependabot security updates activados por API** en ambos repos. `CODEOWNERS` validado contra el team `chatbot` (el endpoint de errores no reporta ninguno). Sigue pendiente: **Dependency Graph** (solo UI, bloquea Dependency Review), **environment `production`** sin `protection_rules` y tres reglas de rama (`required_conversation_resolution=false`, `enforce_admins=false` —los admins se saltan el CI— y `require_code_owner_reviews=false`). `secret_scanning_validity_checks` no se puede activar por API: responde 200 pero el estado sigue `disabled`.
 - 2026-11-07: **Protección de rama endurecida** en `development` y `main` de los dos repos: `enforce_admins=true` (los admins ya no pueden mergear con el CI en rojo ni sin aprobación) y `required_conversation_resolution=true`. Se preservaron los checks requeridos (`test`/`check`, ligados a la app de Actions) y `dismiss_stale_reviews`. Quedan como decisión de equipo `require_code_owner_reviews` y `strict`, y como acción de UI el **Dependency Graph**.
+- 2026-11-07: **Fase 2 cerrada al 100 %.** Mathias activó el **Dependency Graph** (SBOM: 20 paquetes en backend, 709 en frontend) y movió el **default branch a `development`**; con eso se añadió **Dependency Review** (`dependency-review-action@v5.0.0`, falla con `high`+) como job bloqueante del gate en ambos repos. Verificado en #98 y #64: `Dependency review` en verde, 7 s y 6 s. Detalle de diseño: el job corre siempre y solo revisa en `pull_request`, para no romper el chequeo de `skipped` del gate en los push a `development`/`main`.
 
 ## Adopción de `devsecops-templates`
 
@@ -208,12 +211,12 @@ El repo de referencia del curso (`Taller-SW-Web/devsecops-templates`) implementa
 | Smoke contra producción | `smoke.yml` (**Daily production smoke**, manual + diario), complementario a `verify-production.yml` (post-deploy) |
 | Deploy con rollback y healthcheck | Ya lo cubren Railway/Vercel; falta el environment con aprobación (CI-12) |
 | Caller → reusable workflow | **No adoptado**: la guía solo soporta Maven/Java y Node/TS; Python no está soportado y centralizar aquí añadiría un checkout extra y un punto único de fallo sin beneficio medible para dos repos |
-| Dependency Review | **Diferido**: requiere Dependency Graph (admin) |
+| Dependency Review | **Adoptado**: job bloqueante que falla con vulnerabilidades `high`+ |
 
 ## Siguiente paso
 
 1. Revisar y aceptar el [ADR-0024](../../docs/arquitectura/adr/ADR-0024-calidad-y-seguridad-en-el-pipeline.md).
-2. Mergear #98 y #64 para que el gate endurecido quede activo en `development`.
-3. Pedir a Mathias los accesos que siguen bloqueados: **Dependency Graph**, **secret scanning + push protection**, **Code Owners en la protección de rama** y **Environment `production`**.
-4. Activar los E2E (CI-10) cuando Nikol tenga datos semilla.
+2. Mergear #98 y #64 para que el gate endurecido quede activo en `development` (y desde ahí promover a `main`).
+3. Decidir con Mathias: **Environment `production`** con aprobación (CI-12), `require_code_owner_reviews` y `strict`.
+4. Activar los E2E (CI-10) cuando Nikol tenga datos semilla: es el último hueco funcional del plan.
 5. Subir el trinquete restante: `mypy --check-untyped-defs` en los módulos sin anotar y `ruff C90` (hoy delegado a Sonar).

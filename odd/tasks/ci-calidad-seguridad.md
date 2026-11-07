@@ -182,6 +182,7 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 ## Progreso
 
 - 2026-11-07: plan creado a partir de la auditoría del pipeline de los dos repositorios. Sin implementación todavía.
+- 2026-11-07: **Fase 0 y Fase 2 implementadas** en los PR [#98](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/98) (backend) y [#64](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/pull/64) (frontend), con CI en verde: permisos mínimos, `concurrency`, timeouts, cobertura como artifact, Dependabot, CODEOWNERS, plantilla de PR, CodeQL, `pip-audit`/`pnpm audit` (advisory), hadolint y validación del OpenAPI. **Dependency Review** quedó diferido: exige el **Dependency Graph**, que es un ajuste de admin (`Settings → Code security`). **Fase 1** pendiente de que existan los proyectos en SonarCloud (el token ya está como secreto en ambos repos; la org `taller-sw-web` no tiene proyectos y el usuario es `Members`).
 
 ## Siguiente paso
 

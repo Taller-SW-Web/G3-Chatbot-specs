@@ -92,7 +92,8 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 | `types` | `tsc --noEmit` | Sí |
 | `unit` | Vitest + cobertura (`lcov.info`) | Sí |
 | `build` | Next build | Sí |
-| `e2e` | Playwright (flujos críticos) | Sí (fase 3) |
+| `e2e` | Playwright contra el stack real con módulos fake (15 tests) | Sí |
+| `e2e-real` (nocturno) | Playwright con LLM real: E2E-03, E2E-06, E2E-07 | Fuera del gate |
 | `security` | `pnpm audit` | Advisory → bloqueante |
 | `dependency-review` | dependencias nuevas del PR contra el Dependency Graph | Sí (`high`+) |
 | `sonar` | SonarCloud con `lcov.info` | Sí (quality gate) |
@@ -137,7 +138,7 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 
 | ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
 |---|---|---|---|---|
-| CI-10 | Activar los 7 E2E de Playwright en CI (datos semilla, artifacts, retry) | Nikol + David | 1–2 días | Flujo de checkout roto rompe el PR; E2E < 10 min |
+| CI-10 | E2E de Playwright en CI: 15 tests bloqueantes contra el stack real; 3 flujos con LLM real en workflow nocturno | David | 1 día | Un flujo roto rompe el PR; job E2E 1m21s (tests 23,5 s) |
 | CI-11 | Gate de cobertura con trinquete (baseline y subida por hito) | David | 2 h | La cobertura no puede bajar del baseline |
 
 ### Fase 4 — Despliegue y gobierno
@@ -197,6 +198,7 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 - 2026-11-07: **Auditoría de seguridad con permisos de admin.** Verificado: Dependabot alerts activas (las activó Mathias) y Code scanning operativo (CodeQL advanced); **secret scanning, push protection y Dependabot security updates activados por API** en ambos repos. `CODEOWNERS` validado contra el team `chatbot` (el endpoint de errores no reporta ninguno). Sigue pendiente: **Dependency Graph** (solo UI, bloquea Dependency Review), **environment `production`** sin `protection_rules` y tres reglas de rama (`required_conversation_resolution=false`, `enforce_admins=false` —los admins se saltan el CI— y `require_code_owner_reviews=false`). `secret_scanning_validity_checks` no se puede activar por API: responde 200 pero el estado sigue `disabled`.
 - 2026-11-07: **Protección de rama endurecida** en `development` y `main` de los dos repos: `enforce_admins=true` (los admins ya no pueden mergear con el CI en rojo ni sin aprobación) y `required_conversation_resolution=true`. Se preservaron los checks requeridos (`test`/`check`, ligados a la app de Actions) y `dismiss_stale_reviews`. Quedan como decisión de equipo `require_code_owner_reviews` y `strict`, y como acción de UI el **Dependency Graph**.
 - 2026-11-07: **Fase 2 cerrada al 100 %.** Mathias activó el **Dependency Graph** (SBOM: 20 paquetes en backend, 709 en frontend) y movió el **default branch a `development`**; con eso se añadió **Dependency Review** (`dependency-review-action@v5.0.0`, falla con `high`+) como job bloqueante del gate en ambos repos. Verificado en #98 y #64: `Dependency review` en verde, 7 s y 6 s. Detalle de diseño: el job corre siempre y solo revisa en `pull_request`, para no romper el chequeo de `skipped` del gate en los push a `development`/`main`.
+- 2026-11-07: **Fase 3 cerrada (CI-10 y CI-11).** Job `E2E` bloqueante en el gate del frontend: Postgres 18 + backend clonado con `MODULES_MODE=fake` (ADR-0022) + Next, **15 tests en 23,5 s** (job completo 1m21s). Se des-fixmearon **E2E-04** (registro → pendiente de verificación) y **E2E-05** (login/logout con la cuenta semilla `cliente@demo.pe`), y se eliminó `visual.spec.ts` (generaba PNGs en `docs/` sin comparar nada). Los tres flujos que dependen del LLM real (**E2E-03/06/07**) se movieron a `chat.real.spec.ts` y corren en el workflow **nocturno** contra producción, fuera del gate, porque no son deterministas. Validado localmente contra el stack completo antes de subirlo.
 
 ## Adopción de `devsecops-templates`
 
@@ -218,5 +220,4 @@ El repo de referencia del curso (`Taller-SW-Web/devsecops-templates`) implementa
 1. Revisar y aceptar el [ADR-0024](../../docs/arquitectura/adr/ADR-0024-calidad-y-seguridad-en-el-pipeline.md).
 2. Mergear #98 y #64 para que el gate endurecido quede activo en `development` (y desde ahí promover a `main`).
 3. Decidir con Mathias: **Environment `production`** con aprobación (CI-12), `require_code_owner_reviews` y `strict`.
-4. Activar los E2E (CI-10) cuando Nikol tenga datos semilla: es el último hueco funcional del plan.
-5. Subir el trinquete restante: `mypy --check-untyped-defs` en los módulos sin anotar y `ruff C90` (hoy delegado a Sonar).
+4. Subir el trinquete restante: `mypy --check-untyped-defs` en los módulos sin anotar y `ruff C90` (hoy delegado a Sonar).

@@ -154,7 +154,8 @@ El flujo principal de la demo es el checkout: SPEC-12 → 13 → 14 → 15 → 1
   - **H4-S7** parcial: el token de servicio solo lo usan los clientes de Despacho y Seguridad; faltan Productos y Ventas.
   - **H4-C3** pendiente: `tests/e2e/smoke.spec.ts` mantiene 7 `test.fixme` y ningún workflow ejecuta Playwright.
   - **H4-Q2** y **H4-C4** pendientes: `docs/evidencia-hito-4.md` no existe.
-  - Siguen pendientes las tareas 🟡 H4-S8, H4-A2 y H4-F7. El DTO estricto del checkout descarta `contacto.celular`, por lo que la validación de SPEC-04 no se ejecuta en el checkout.
+  - Siguen pendientes las tareas 🟡 H4-S8 y H4-F7. El DTO estricto del checkout descarta `contacto.celular`, por lo que la validación de SPEC-04 no se ejecuta en el checkout.
+- 2026-11-06 (H4-A2, Sebastian): script `scripts/export_openapi.py` creado, `docs/openapi.json` exportado (30 rutas) y paso de exportación + artefacto `openapi-spec` añadido en `.github/workflows/ci.yml`, con pruebas unitarias en `tests/unit/test_openapi_export.py` que verifican `/docs` (Swagger UI en `https://g3-chatbot-backend.up.railway.app/docs`) y `/openapi.json` (backend PR #74, rama `feature/h4-a2-exportar-openapi-ci`, commit `75d3905`).
 
 ## Siguiente paso
 

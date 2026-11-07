@@ -147,17 +147,19 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 
 ## Requisitos de secretos y permisos
 
-| Necesito | Quién | Cómo |
+| Necesito | Quién | Estado |
 |---|---|---|
-| `SONAR_TOKEN` (**secreto de organización**, con scope a los dos repos) | Mathias (owner) | Settings → Secrets → Organization |
-| Org/proyecto en SonarCloud | Mathias | Ya existen: org `taller-sw-web`, proyectos `G3-Chatbot-backend` y `G3-Chatbot-frontend` |
-| Dependency Graph (habilita Dependency Review) | Mathias | Settings → Code security |
-| Secret scanning + push protection | Mathias | Settings → Code security |
-| Dependabot alerts + Code scanning | Mathias | Settings → Code security |
-| Environment `production` con aprobación | Mathias | Settings → Environments |
-| Code Owners + conversaciones resueltas en protección de rama | Mathias | Settings → Branches |
+| `SONAR_TOKEN` (secreto de organización, con scope a los dos repos) | Mathias | ✅ Hecho |
+| Org/proyecto en SonarCloud | Mathias | ✅ Hecho: org `taller-sw-web`, proyectos `G3-Chatbot-backend` y `G3-Chatbot-frontend` |
+| **Dependency Graph** (habilita Dependency Review) | Mathias | ❌ **Pendiente**: solo se activa por UI (no hay endpoint REST). Verificado con SBOM 404 vs 200 en `G4-Retail-backend` |
+| Secret scanning + push protection | David (admin) | ✅ Activados por API en ambos repos |
+| Dependabot alerts | Mathias | ✅ Activas |
+| Dependabot security updates | David (admin) | ✅ Activadas por API |
+| Code scanning | David | ✅ CodeQL advanced (el default setup queda sin configurar a propósito) |
+| Environment `production` con aprobación | Mathias | ❌ **Pendiente**: `protection_rules: []`; el frontend no tiene environments |
+| Conversaciones resueltas / enforce admins / Code Owner reviews | Mathias | ❌ **Pendiente**: hoy `required_conversation_resolution=false`, `enforce_admins=false` (los admins se saltan el CI) y `require_code_owner_reviews=false` |
 
-> David es `maintain`, no `admin`: puede mergear y configurar workflows, pero no secretos ni ajustes de seguridad del repositorio.
+> David pasó a **admin** en los dos repos (2026-11-07), así que puede activar los ajustes de seguridad por API. La protección de rama y el environment siguen siendo decisión de equipo: `enforce_admins` quita el bypass de CI también a los admins.
 
 ## Riesgos y mitigaciones
 
@@ -188,6 +190,7 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 - 2026-11-07: **Paridad backend/frontend auditada.** Ambas tuberías tienen lint, tipos, unitarias con cobertura y umbral, build, auditoría de dependencias, CodeQL, gate único y Sonar. Huecos restantes: E2E en frontend (CI-10), integración con base de datos que el frontend no necesita, y `mypy` fuera de `src/domain` (`application` 19 errores, `adapters` 43, `infrastructure` 46).
 - 2026-11-07: **Trinquete cerrado.** `mypy` cubre **todo `src`** (181 módulos, 0 errores; se corrigieron 27 sin `type: ignore`, incluida una fábrica de sesiones tipada, el `Protocol` del outbox, `CursorResult.rowcount`, `retry_after` en los errores de módulo y `CallerIdentity.customer`). `ruff` activa **bugbear** (13 `B904` con `raise ... from`, `B905` con `zip(strict=True)`; FastAPI exento de `B008`). En el frontend las 5 reglas de `eslint-plugin-sonarjs` pasan a **error**. Cobertura: **87.21 %** (baseline 86.87 %) con 1097 tests; `connection.py` 48 % → 100 %.
 - 2026-11-07: **El gate de Sonar se probó contra un fallo real.** Con `sonar.qualitygate.wait`, el Quality Gate se puso rojo al subir código nuevo sin cobertura y volvió a verde al añadir los tests de infraestructura: queda demostrado que bloquea de verdad. Además se resolvió el conflicto con `development` (#90/#93/#95) y `smoke.yml` pasó a **"Daily production smoke"** para no duplicar `verify-production.yml`, que verifica el post-deploy.
+- 2026-11-07: **Auditoría de seguridad con permisos de admin.** Verificado: Dependabot alerts activas (las activó Mathias) y Code scanning operativo (CodeQL advanced); **secret scanning, push protection y Dependabot security updates activados por API** en ambos repos. `CODEOWNERS` validado contra el team `chatbot` (el endpoint de errores no reporta ninguno). Sigue pendiente: **Dependency Graph** (solo UI, bloquea Dependency Review), **environment `production`** sin `protection_rules` y tres reglas de rama (`required_conversation_resolution=false`, `enforce_admins=false` —los admins se saltan el CI— y `require_code_owner_reviews=false`). `secret_scanning_validity_checks` no se puede activar por API: responde 200 pero el estado sigue `disabled`.
 
 ## Adopción de `devsecops-templates`
 

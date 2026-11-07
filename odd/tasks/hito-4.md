@@ -157,13 +157,11 @@ El flujo principal de la demo es el checkout: SPEC-12 → 13 → 14 → 15 → 1
   - Siguen pendientes las tareas 🟡 H4-S8, H4-A2 y H4-F7. El DTO estricto del checkout descarta `contacto.celular`, por lo que la validación de SPEC-04 no se ejecuta en el checkout.
 - 2026-11-06: frontend #44 (H4-F6) mergeado y promovido a `main` (`e58a2d0`). **H4-C1 hecha**: Deployment Checks de Vercel exige el check `check` del CI (`.github/workflows/ci.yml`) antes de asignar el deployment al dominio de producción. Se eligió esta opción sobre desactivar los deploys automáticos y desplegar desde GitHub Actions con `vercel deploy --prebuilt`, porque no necesita token ni workflow nuevo. El bloqueo se puede saltar con *Force Promote*. Pendiente: confirmar en el próximo deploy a `main` que el deployment espera el check.
 - 2026-11-06: **H4-C4 hecha**: diagrama del pipeline en `docs/diagrams/pipeline-ci-cd.excalidraw` y `.svg` (`98096ae`), con los pasos de los `ci.yml` de `main` y los checks requeridos por la protección de rama. Las capturas no se incluyen: la evidencia del pipeline (runs de Actions, protección de `main`, "Wait for CI" y pre-deploy en Railway, Deployment Checks en Vercel) se presenta en vivo en la demo. Si cambia el CI del backend (#74), hay que actualizar el diagrama.
+- 2026-11-07: **H4-P1 hecha**. Backend #72 (H4-F6), #73 (H4-S7 y H4-F4, pedidos con Ventas y outbox) y #74 (H4-A2, exportación de OpenAPI en CI) mergeados en `development` y promovidos a `main` en el #75. La prueba E2E en producción (pedido `PED-2026-FACFFE`) encontró dos fallos, corregidos en `h4-prod-e2e-fixes.md`: la sesión se perdía al recargar y `/pedidos` respondía 500 (frontend #46/#47, backend #76/#77). `development` y `main` quedan iguales en ambos repositorios. Seguimientos fuera de alcance: la oferta no llega al precio del carrito, `/pedidos` usa datos fijos (SPEC-17), el checkout no exige el celular verificado (SPEC-04) y el fake de Ventas pierde los pedidos con cada deploy, por lo que no conviene desplegar justo antes de la demo.
 
 ## Siguiente paso
 
-1. Revisar y mergear el backend #72 (H4-F6), y promoverlo a `main`.
-2. Decidir el plan de H4-F4 (SPEC-15) para la demo: implementarla o mostrarla con mock.
-3. Preparar el guion de la demo (H4-Q2), incluyendo la presentación en vivo del pipeline con el diagrama de H4-C4.
-4. Probar en producción el flujo con sesión (envío, pago, pedido y correo).
-5. Coordinar con G7 la prueba de introspección.
-6. Conseguir las credenciales reales de Despacho.
-7. Documentar `APP_ENV` y `ALLOW_FAKE_SECURITY` en el `.env.template` del backend.
+1. Preparar el guion de la demo (H4-Q2), incluyendo la presentación en vivo del pipeline con el diagrama de H4-C4. Revisar y mergear el specs #30 (H4-A2).
+2. Coordinar con G7 la prueba de introspección.
+3. Conseguir las credenciales reales de Despacho.
+4. Documentar `APP_ENV` y `ALLOW_FAKE_SECURITY` en el `.env.template` del backend.

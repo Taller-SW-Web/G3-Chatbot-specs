@@ -36,30 +36,27 @@ De los 131 casos del hito: 23 de nivel E2E, 75 de nivel API, 3 de nivel Unidad, 
 
 Archivo: `tests/e2e/smoke.spec.ts` del frontend. Recorren el criterio de aceptación del hito (registrarse, verificar el correo, iniciar sesión, conversar, buscar productos y armar un carrito) contra el backend real, sin respuestas simuladas. Vercel solo publica producción (`main`), sin *staging* ni vistas previas por PR (decisión de H3-04): sobre *staging* se corren con el frontend en local apuntando al backend de *staging*.
 
-| ID | Recorrido | Casos | Estado al 2026-10-16 |
+| ID | Recorrido | Casos | Estado al 2026-11-07 |
 |---|---|---|---|
-| E2E-01 | La pantalla de inicio carga el banner, las ofertas y el campo de conversación | CP-H3-05-06 | Activa |
-| E2E-02 | Barra lateral: Recientes carga sin error, una búsqueda sin coincidencias muestra "Sin resultados." y "Nuevo chat" abre una conversación nueva | CP-H3-05-01, CP-H3-05-02, CP-H3-05-03 | Activa; requiere H3-15 (`Sidebar` conectado) y `DATABASE_URL` en el entorno (H3-18) |
-| E2E-03 | Escribir en el inicio, llegar a `ChatPage` y recibir la respuesta del asistente en streaming | CP-H3-05-08, CP-H3-05-14 | Pendiente (`test.fixme`) hasta H3-10 en el frontend |
-| E2E-04 | Registro desde el modal y canje del enlace de verificación | CP-H3-01-06, CP-H3-02-01 | Pendiente (`test.fixme`) hasta H3-09; necesita un buzón de pruebas o el token del mock de Seguridad |
-| E2E-05 | Inicio y cierre de sesión con una cuenta de prueba | CP-H3-03-01, CP-H3-03-16 | Pendiente (`test.fixme`) hasta H3-14 |
-| E2E-06 | Pedir productos en el chat, ver el carrusel y abrir el detalle | CP-H3-09-01, CP-H3-09-10 | Pendiente (`test.fixme`) hasta H3-12 |
-| E2E-07 | Agregar un producto desde la tarjeta y ver el resumen en `CartPage` | CP-H3-09-08, CP-H3-11-09 | Pendiente (`test.fixme`) hasta H3-13 |
+| E2E-01 | La pantalla de inicio carga el banner, las ofertas y el campo de conversación | CP-H3-05-06 | Activa en CI |
+| E2E-02 | Barra lateral: Recientes carga sin error, una búsqueda sin coincidencias muestra "Sin resultados." y "Nuevo chat" abre una conversación nueva | CP-H3-05-01, CP-H3-05-02, CP-H3-05-03 | Activa en CI (job `E2E`: Postgres 18 + backend con módulos fake) |
+| E2E-03 | Escribir en el inicio, llegar a `ChatPage` y recibir la respuesta del asistente en streaming | CP-H3-05-08, CP-H3-05-14 | Nocturno con LLM real (`chat.real.spec.ts`): no es determinista para el gate |
+| E2E-04 | Registro desde el modal y canje del enlace de verificación | CP-H3-01-06, CP-H3-02-01 | Registro y estado pendiente: activo en CI. El canje del enlace sigue pendiente de un buzón de pruebas |
+| E2E-05 | Inicio y cierre de sesión con una cuenta de prueba | CP-H3-03-01, CP-H3-03-16 | Activa en CI (cuenta semilla `cliente@demo.pe`) |
+| E2E-06 | Pedir productos en el chat, ver el carrusel y abrir el detalle | CP-H3-09-01, CP-H3-09-10 | Nocturno con LLM real (`chat.real.spec.ts`) |
+| E2E-07 | Agregar un producto desde la tarjeta y ver el resumen en `CartPage` | CP-H3-09-08, CP-H3-11-09 | Nocturno con LLM real (`chat.real.spec.ts`) |
 
 Cómo ejecutarlas:
 
 ```bash
-# Sobre staging (H3-19): Next en local reenvía /api/* al backend de staging (ADR-0023)
-API_PROXY_TARGET=https://g3-chatbot-backend-staging.up.railway.app pnpm test:e2e tests/e2e/smoke.spec.ts
+# Gate del PR: levanta Next y usa el backend que le indiques (módulos fake en CI)
+API_PROXY_TARGET=http://localhost:8000 pnpm test:e2e
 
-# Con el backend en local
-API_PROXY_TARGET=http://localhost:8000 pnpm test:e2e tests/e2e/smoke.spec.ts
-
-# Contra producción, ya desplegada en Vercel (H3-20)
-E2E_BASE_URL=https://g3-chatbot-frontend.vercel.app pnpm test:e2e tests/e2e/smoke.spec.ts
+# Los flujos con LLM real, contra el entorno desplegado
+E2E_REAL=1 E2E_BASE_URL=https://g3-chatbot-frontend.vercel.app pnpm test:e2e tests/e2e/chat.real.spec.ts
 ```
 
-Al terminar cada tarea de la Fase 1, su responsable cambia el `test.fixme` correspondiente por `test` y ajusta los selectores si la interfaz cambió. En H3-19 todas deben pasar contra staging.
+Los 15 tests del gate corren en el job `E2E` de CI (Postgres 18 + backend con `MODULES_MODE=fake` + Next). Los tres que dependen del LLM real (E2E-03, E2E-06, E2E-07) viven en `tests/e2e/chat.real.spec.ts` y corren en el workflow nocturno `E2E (LLM real)`: la respuesta del modelo no es determinista, así que no pueden bloquear un PR.
 
 ## Casos por spec
 

@@ -1,0 +1,222 @@
+# CI/CD con calidad, seguridad y pruebas
+
+## Objetivo
+
+Llevar el pipeline de los dos repositorios de "compila y pasa tests" a un **gate de calidad real**: que mida errores, seguridad, cobertura, calidad estructural (code smells, duplicación, complejidad) y flujos críticos, con un único check requerido que bloquee merge y despliegue. Todo el stack propuesto es de coste cero porque los tres repositorios son **públicos**.
+
+## Estado actual (verificado el 2026-11-07)
+
+### Lo que ya funciona
+
+- **Gate único** en ambos repos: `test` (backend) y `check` (frontend) como único check requerido, con jobs paralelos detrás ([#88](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/88) y [#61](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/pull/61)).
+- **Backend**: `Lint` (ruff), `Unit tests`, `Export OpenAPI` (artifact), `Migrations and integration tests` (PostgreSQL 18, migraciones up/down/up).
+- **Frontend**: `Lint and type check`, `Unit tests`, `Build`.
+- **Deploy condicionado**: Railway con *Wait for CI* y pre-deploy `alembic upgrade head`; Vercel con *Deployment Checks* que exige `check`.
+- **Ramas protegidas**: `main` y `development`, PR + 1 aprobación + check requerido + descarte de aprobaciones con commits nuevos.
+
+### Hallazgos
+
+| Falta | Consecuencia hoy |
+|---|---|
+| `permissions`, `concurrency`, `timeout-minutes` | Token con permisos de más, runs viejos que no se cancelan, jobs que pueden colgarse 6 h |
+| SAST (CodeQL) | Vulnerabilidades de código no detectadas |
+| SCA (Dependabot, Dependency Review, audits) | CVE en `requirements.txt`/`pnpm-lock.yaml` sin aviso |
+| Secret scanning / push protection | Un secreto commiteado no se bloquea |
+| Cobertura | No se sabe si una PR baja la calidad de tests |
+| **Calidad estructural** (Sonar) | Code smells, duplicación, complejidad y deuda técnica no se miden |
+| Contenedor | `Dockerfile` sin hadolint/Trivy |
+| E2E | `tests/e2e/smoke.spec.ts` tiene 7 `test.fixme` y ningún workflow ejecuta Playwright |
+| Contrato | El `openapi.json` se exporta pero no se valida ni se compara |
+| Deploy | Sin aprobación de entorno ni smoke post-deploy ni rollback probado |
+
+## Alcance
+
+- Workflows de ambos repositorios y configuración de seguridad de GitHub.
+- Medición de calidad, seguridad, cobertura y E2E.
+- Documentación de umbrales y criterios de aceptación.
+
+**Fuera de alcance:** mutation testing, DAST completo, SBOM firmado, escaneo de Kubernetes, SonarQube self-hosted y cobertura global al 90 %.
+
+## Stack: qué mide cada herramienta
+
+| Dimensión | Herramienta | Coste | Gate |
+|---|---|---|---|
+| Estilo y errores obvios | `ruff` (backend), ESLint (frontend) | 0 | Bloqueante |
+| Tipos | `mypy` gradual (backend), `tsc` (frontend) | 0 | Bloqueante |
+| Bugs, vulnerabilidades, code smells, duplicación, complejidad, deuda | **SonarCloud** | 0 (repos públicos) | Bloqueante en código nuevo |
+| Seguridad semántica (SAST) | **CodeQL** | 0 (repos públicos) | Bloqueante en `high`/`critical` |
+| Dependencias | Dependabot + Dependency Review + `pip-audit`/`pnpm audit` | 0 | Dependency Review bloqueante; audits advisory al inicio |
+| Secretos | GitHub Secret Scanning + Push Protection | 0 | Bloqueante |
+| Contenedor | **Trivy** + **hadolint** | 0 | Bloqueante en `CRITICAL` |
+| Comportamiento | pytest/Vitest + cobertura | 0 | Cobertura con trinquete |
+| Flujos críticos | Playwright E2E | 0 | Bloqueante (fase 3) |
+| Contrato API | `openapi-spec-validator` (+ `oasdiff` en fase posterior) | 0 | Bloqueante |
+
+## Quality gate
+
+Regla **Clean as You Code**: el gate se aplica al **código nuevo**, no al legado, para no bloquear el ritmo.
+
+| Condición (código nuevo) | Umbral |
+|---|---|
+| Cobertura de líneas nuevas | ≥ 80 % |
+| Duplicación | ≤ 3 % |
+| Bugs / vulnerabilidades | 0 |
+| Security hotspots revisados | 100 % |
+| Deuda técnica nueva | ≤ 5 % del tiempo de desarrollo |
+| Cobertura global | Nunca por debajo del baseline (trinquete) |
+
+El baseline se fija el día que se active la medición y sube por hito, no de golpe.
+
+## Pipeline objetivo
+
+### Backend
+
+| Job | Mide | Bloqueante |
+|---|---|---|
+| `lint` | ruff + bugbear (B) | Sí |
+| `types` | mypy sobre todo `src` | Sí |
+| `unit-tests` | pytest + `pytest-cov` → `coverage.xml` | Sí |
+| `openapi` | exporta y valida `openapi.json` | Sí |
+| `integration-tests` | PG18 + migraciones up/down/up | Sí |
+| `security` | `pip-audit` | Advisory → bloqueante |
+| `dependency-review` | dependencias nuevas del PR contra el Dependency Graph | Sí (`high`+) |
+| `docker` | hadolint + Trivy (filesystem e imagen) | Bloqueante en `CRITICAL` |
+| `sonar` | SonarCloud con `coverage.xml` | Sí (quality gate) |
+| **`test`** | **gate** que exige todo lo anterior | Sí |
+
+### Frontend
+
+| Job | Mide | Bloqueante |
+|---|---|---|
+| `lint` | ESLint + `eslint-plugin-sonarjs` (error) y `tsc --noEmit` | Sí |
+| `test` | Vitest + cobertura (`lcov.info`) | Sí |
+| `build` | Next build | Sí |
+| `e2e` | Playwright contra el stack real con módulos fake (15 tests) | Sí |
+| `e2e-real.yml` (workflow nocturno aparte) | Playwright con LLM real: E2E-03, E2E-06, E2E-07 | Fuera del gate |
+| `security` | `pnpm audit` | Advisory → bloqueante |
+| `dependency-review` | dependencias nuevas del PR contra el Dependency Graph | Sí (`high`+) |
+| `sonar` | SonarCloud con `lcov.info` | Sí (quality gate) |
+| **`check`** | **gate** que exige todo lo anterior | Sí |
+
+### Transversal
+
+- **CodeQL** (Python + TypeScript) en push/PR + semanal.
+- **Dependency Review** en PRs.
+- **Secret scanning + push protection** (Settings).
+- **Dependabot** semanal: pip, pnpm, github-actions, docker.
+- `permissions: contents: read`, `concurrency` con `cancel-in-progress`, `timeout-minutes` en todos los workflows.
+- Escaneo programado semanal además del de PR.
+
+## Fases y tareas
+
+### Fase 0 — Higiene del pipeline
+
+| ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
+|---|---|---|---|---|
+| CI-01 | `permissions`, `concurrency`, `timeout-minutes`, Dependabot, CODEOWNERS, plantilla de PR | David | 1–2 h | Un push cancela el run anterior; ningún job pasa de 15 min; Dependabot abre PRs |
+| CI-02 | Medir cobertura sin bloquear (`pytest-cov`, `@vitest/coverage-v8`) y subir artifact | David | 1 h | El reporte se descarga del run |
+
+### Fase 1 — Calidad estática
+
+| ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
+|---|---|---|---|---|
+| CI-03 | `mypy` gradual + `eslint-plugin-sonarjs` | David | 2–3 h | `types` en verde y sin `ignore` nuevos |
+| CI-04 | SonarCloud: org/proyecto, `SONAR_TOKEN`, `sonar-project.properties`, job y quality gate | David (código) + Mathias (secreto/admin) | 2–3 h | Un PR con code smell nuevo o cobertura nueva < 80 % queda en rojo con comentario de Sonar |
+
+### Fase 2 — Seguridad
+
+| ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
+|---|---|---|---|---|
+| CI-05 | CodeQL (workflow, Python + TypeScript) | David | 1 h | Hallazgos en la pestaña Security |
+| CI-06 | Dependency Review + `pip-audit` + `pnpm audit` | David | 1–2 h | PR con dependencia vulnerable conocida bloqueado |
+| CI-07 | Secret scanning + push protection (Settings) | Mathias | 15 min | Un secreto en un push se bloquea |
+| CI-08 | Trivy + hadolint en el Dockerfile del backend | David | 1–2 h | Sin `CRITICAL` en la imagen |
+| CI-09 | Validar `openapi.json` antes de subirlo | David | 30 min | Esquema inválido rompe el job |
+
+### Fase 3 — Pruebas
+
+| ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
+|---|---|---|---|---|
+| CI-10 | E2E de Playwright en CI: 15 tests bloqueantes contra el stack real; 3 flujos con LLM real en workflow nocturno | David | 1 día | Un flujo roto rompe el PR; job E2E 1m21s (tests 23,5 s) |
+| CI-11 | Gate de cobertura con trinquete (baseline y subida por hito) | David | 2 h | La cobertura no puede bajar del baseline |
+
+### Fase 4 — Despliegue y gobierno
+
+| ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
+|---|---|---|---|---|
+| CI-12 | Environment `production` con aprobación + smoke post-deploy + rollback documentado | Mathias + David | 1 día | Deploy requiere aprobación; smoke falla → alerta y reversión < 5 min. La aprobación de un environment solo detiene jobs de GitHub Actions: para que bloquee el deploy, el despliegue debe ejecutarse desde un job de Actions con `environment: production` y desactivarse el autodeploy de Railway y Vercel |
+| CI-13 | Protección de rama con Code Owners y conversaciones resueltas; escaneo semanal; métricas | Mathias | 1 h | Ramas protegidas con las nuevas reglas; reporte semanal |
+
+## Requisitos de secretos y permisos
+
+| Requisito | Quién | Estado |
+|---|---|---|
+| `SONAR_TOKEN` (secreto de organización, con scope a los dos repos) | Mathias | ✅ Hecho |
+| Org/proyecto en SonarCloud | Mathias | ✅ Hecho: org `taller-sw-web`, proyectos `G3-Chatbot-backend` y `G3-Chatbot-frontend` |
+| **Dependency Graph** (habilita Dependency Review) | Mathias | ✅ Activado (backend 20 paquetes, frontend 709); default branch movido a `development` |
+| Secret scanning + push protection | David (admin) | ✅ Activados por API en ambos repos |
+| Dependabot alerts | Mathias | ✅ Activas |
+| Dependabot security updates | David (admin) | ✅ Activadas por API |
+| Code scanning | David | ✅ CodeQL advanced (el default setup queda sin configurar a propósito) |
+| Environment `production` con aprobación | Mathias | ❌ **Pendiente**: `protection_rules: []`; el frontend no tiene environments |
+| Conversaciones resueltas / enforce admins | David (admin) | ✅ Activados por API en `development` y `main` de ambos repos |
+| Code Owner reviews | Decisión del equipo | ❌ `require_code_owner_reviews=false`: con 1 aprobación alcanza y el owner es el team, así que se puede activar sin bloquear a nadie |
+| `strict` (rama al día) | Decisión del equipo | ❌ `strict=false`: obliga a rebasar antes de cada merge; se deja fuera a propósito para no frenar el ritmo |
+
+> David pasó a **admin** en los dos repos (2026-11-07), así que activa los ajustes de seguridad por API. Con `enforce_admins=true` **nadie** (tampoco un admin) puede mergear sin el gate verde ni sin la aprobación: el bypass desapareció.
+
+## Riesgos y mitigaciones
+
+| Riesgo | Mitigación |
+|---|---|
+| SonarCloud recibe el código (tercero) | Los repos son públicos; si no se acepta, self-hosted o solo CodeQL |
+| Ruido inicial por el legado | *Clean as You Code* + baseline, nunca gate global al 90 % |
+| Pipeline más lento | Jobs paralelos, cache de dependencias, `concurrency` y timeouts |
+| Duplicar SAST (Sonar + CodeQL + Bandit + Semgrep) | Stack curado: Sonar (calidad) + CodeQL (semántico); sin Bandit/Semgrep |
+| E2E inestables | Datos semilla deterministas, `retries: 1`, artifacts de traza, cuarentena etiquetada |
+| mypy sobre todo el legado | Adopción gradual por capas (`domain` → `application` → `adapters`) |
+
+## Métricas de éxito
+
+- Cobertura global por encima del baseline y subiendo por hito.
+- 0 bugs y 0 vulnerabilidades nuevas en Sonar.
+- 0 secretos commiteados.
+- 0 dependencias con CVE alta sin resolver.
+- Duración del pipeline < 10 min (p95).
+- Tasa de flaky < 2 %.
+- Tiempo de recuperación tras un deploy fallido < 5 min.
+
+## Progreso
+
+- 2026-11-07: plan creado a partir de la auditoría del pipeline de los dos repositorios. Sin implementación todavía.
+- 2026-11-07: **Fase 0 y Fase 2 implementadas** en los PR [#98](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/98) (backend) y [#64](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/pull/64) (frontend), con CI en verde: permisos mínimos, `concurrency`, timeouts, cobertura como artifact, Dependabot, CODEOWNERS, plantilla de PR, CodeQL, `pip-audit`/`pnpm audit` (advisory), hadolint y validación del OpenAPI. **CI-11 aplicado**: piso de cobertura del **85 %** en backend (baseline 86.9 %) y **55/78/70/55** en frontend (baseline 57.7/82.2/75.4), como trinquete. **Dependency Review** quedó diferido: exige el **Dependency Graph**, que es un ajuste de admin (`Settings → Code security`).
+- 2026-11-07: **Fase 1 (CI-03 y CI-04) cerrada.** El `SONAR_TOKEN` quedó como **secreto de organización** con acceso a los dos repos; los proyectos `G3-Chatbot-backend` y `G3-Chatbot-frontend` se crearon solos en la primera ejecución y el job `SonarCloud` analiza con la cobertura del job de unitarias (backend 1m16s, frontend 59s). Con `sonar.qualitygate.wait=true` (timeout 600 s) el **Quality Gate es bloqueante** y el job ya es dependencia del gate único. Además: job `Type check` con **mypy** (alcance `src/domain`, 6 errores corregidos), **`eslint-plugin-sonarjs`** (5 reglas como warning) y **`docker build`** en el backend para no quedarse en hadolint. `Trivy fs` (`vuln,misconfig`, CRITICAL con `ignore-unfixed`) y **`smoke.yml`** (manual + diario: `/health`, catálogo y frontend 200) completan CI-08 y parte de CI-12.
+- 2026-11-07: **Paridad backend/frontend auditada.** Ambas tuberías tienen lint, tipos, unitarias con cobertura y umbral, build, auditoría de dependencias, CodeQL, gate único y Sonar. Huecos restantes: E2E en frontend (CI-10), integración con base de datos que el frontend no necesita, y `mypy` fuera de `src/domain` (`application` 19 errores, `adapters` 43, `infrastructure` 46).
+- 2026-11-07: **Trinquete cerrado.** `mypy` cubre **todo `src`** (181 módulos, 0 errores; se corrigieron 27 sin `type: ignore`, incluida una fábrica de sesiones tipada, el `Protocol` del outbox, `CursorResult.rowcount`, `retry_after` en los errores de módulo y `CallerIdentity.customer`). `ruff` activa **bugbear** (13 `B904` con `raise ... from`, `B905` con `zip(strict=True)`; FastAPI exento de `B008`). En el frontend las 5 reglas de `eslint-plugin-sonarjs` pasan a **error**. Cobertura: **87.21 %** (baseline 86.87 %) con 1097 tests; `connection.py` 48 % → 100 %.
+- 2026-11-07: **El gate de Sonar se probó contra un fallo real.** Con `sonar.qualitygate.wait`, el Quality Gate se puso rojo al subir código nuevo sin cobertura y volvió a verde al añadir los tests de infraestructura: queda demostrado que bloquea de verdad. Además se resolvió el conflicto con `development` (#90/#93/#95) y `smoke.yml` pasó a **"Daily production smoke"** para no duplicar `verify-production.yml`, que verifica el post-deploy.
+- 2026-11-07: **Auditoría de seguridad con permisos de admin.** Verificado: Dependabot alerts activas (las activó Mathias) y Code scanning operativo (CodeQL advanced); **secret scanning, push protection y Dependabot security updates activados por API** en ambos repos. `CODEOWNERS` validado contra el team `chatbot` (el endpoint de errores no reporta ninguno). Sigue pendiente: **Dependency Graph** (solo UI, bloquea Dependency Review), **environment `production`** sin `protection_rules` y tres reglas de rama (`required_conversation_resolution=false`, `enforce_admins=false` —los admins se saltan el CI— y `require_code_owner_reviews=false`). `secret_scanning_validity_checks` no se puede activar por API: responde 200 pero el estado sigue `disabled`.
+- 2026-11-07: **Protección de rama endurecida** en `development` y `main` de los dos repos: `enforce_admins=true` (los admins ya no pueden mergear con el CI en rojo ni sin aprobación) y `required_conversation_resolution=true`. Se preservaron los checks requeridos (`test`/`check`, ligados a la app de Actions) y `dismiss_stale_reviews`. Quedan como decisión de equipo `require_code_owner_reviews` y `strict`, y como acción de UI el **Dependency Graph**.
+- 2026-11-07: **Fase 2 cerrada al 100 %.** Mathias activó el **Dependency Graph** (SBOM: 20 paquetes en backend, 709 en frontend) y movió el **default branch a `development`**; con eso se añadió **Dependency Review** (`dependency-review-action@v5.0.0`, falla con `high`+) como job bloqueante del gate en ambos repos. Verificado en #98 y #64: `Dependency review` en verde, 7 s y 6 s. Detalle de diseño: el job corre siempre y solo revisa en `pull_request`, para no romper el chequeo de `skipped` del gate en los push a `development`/`main`.
+- 2026-11-07: **Fase 3 cerrada (CI-10 y CI-11).** Job `E2E` bloqueante en el gate del frontend: Postgres 18 + backend clonado con `MODULES_MODE=fake` (ADR-0022) + Next, **15 tests en 23,5 s** (job completo 1m21s). Se des-fixmearon **E2E-04** (registro → pendiente de verificación) y **E2E-05** (login/logout con la cuenta semilla `cliente@demo.pe`), y se eliminó `visual.spec.ts` (generaba PNGs en `docs/` sin comparar nada). Los tres flujos que dependen del LLM real (**E2E-03/06/07**) se movieron a `chat.real.spec.ts` y corren en el workflow **nocturno** contra producción, fuera del gate, porque no son deterministas. Validado localmente contra el stack completo antes de subirlo.
+
+## Adopción de `devsecops-templates`
+
+El repo de referencia del curso (`Taller-SW-Web/devsecops-templates`) implementa **caller → reusable workflow → acciones compartidas**, con política por contexto, un único gate (`Security Policy Result`), Sonar separado del gate y deploy por tags con healthcheck y rollback. Se adoptaron las partes que aplican a estas tuberías:
+
+| Patrón de la guía | Estado aquí |
+|---|---|
+| Un único check requerido | Ya existía (`test` / `check`); se mantiene |
+| Least privilege y `persist-credentials: false` | Aplicado en todos los workflows |
+| CodeQL con set ampliado | `@v4` + `queries: security-extended` |
+| Sonar espera el Quality Gate | `sonar.qualitygate.wait=true` y `sonar` en el gate |
+| Smoke contra producción | `smoke.yml` (**Daily production smoke**, manual + diario), complementario a `verify-production.yml` (post-deploy) |
+| Deploy con rollback y healthcheck | Ya lo cubren Railway/Vercel; falta el environment con aprobación (CI-12) |
+| Caller → reusable workflow | **No adoptado**: la guía solo soporta Maven/Java y Node/TS; Python no está soportado y centralizar aquí añadiría un checkout extra y un punto único de fallo sin beneficio medible para dos repos |
+| Dependency Review | **Adoptado**: job bloqueante que falla con vulnerabilidades `high`+ |
+
+## Siguiente paso
+
+1. Revisar y aceptar el [ADR-0024](../../docs/arquitectura/adr/ADR-0024-calidad-y-seguridad-en-el-pipeline.md).
+2. Mergear #98 y #64 para que el gate endurecido quede activo en `development` (y desde ahí promover a `main`).
+3. Decidir con Mathias: **Environment `production`** con aprobación (CI-12), `require_code_owner_reviews` y `strict`.
+4. Subir el trinquete restante: `mypy --check-untyped-defs` en los módulos sin anotar y `ruff C90` (hoy delegado a Sonar).

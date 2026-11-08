@@ -75,9 +75,9 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 |---|---|---|
 | `lint` | ruff + bugbear (B) | Sí |
 | `types` | mypy sobre todo `src` | Sí |
-| `unit` | pytest + `pytest-cov` → `coverage.xml` | Sí |
+| `unit-tests` | pytest + `pytest-cov` → `coverage.xml` | Sí |
 | `openapi` | exporta y valida `openapi.json` | Sí |
-| `integration` | PG18 + migraciones up/down/up | Sí |
+| `integration-tests` | PG18 + migraciones up/down/up | Sí |
 | `security` | `pip-audit` | Advisory → bloqueante |
 | `dependency-review` | dependencias nuevas del PR contra el Dependency Graph | Sí (`high`+) |
 | `docker` | hadolint + Trivy (filesystem e imagen) | Bloqueante en `CRITICAL` |
@@ -88,12 +88,11 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 
 | Job | Mide | Bloqueante |
 |---|---|---|
-| `lint` | ESLint + `eslint-plugin-sonarjs` (error) | Sí |
-| `types` | `tsc --noEmit` | Sí |
-| `unit` | Vitest + cobertura (`lcov.info`) | Sí |
+| `lint` | ESLint + `eslint-plugin-sonarjs` (error) y `tsc --noEmit` | Sí |
+| `test` | Vitest + cobertura (`lcov.info`) | Sí |
 | `build` | Next build | Sí |
 | `e2e` | Playwright contra el stack real con módulos fake (15 tests) | Sí |
-| `e2e-real` (nocturno) | Playwright con LLM real: E2E-03, E2E-06, E2E-07 | Fuera del gate |
+| `e2e-real.yml` (workflow nocturno aparte) | Playwright con LLM real: E2E-03, E2E-06, E2E-07 | Fuera del gate |
 | `security` | `pnpm audit` | Advisory → bloqueante |
 | `dependency-review` | dependencias nuevas del PR contra el Dependency Graph | Sí (`high`+) |
 | `sonar` | SonarCloud con `lcov.info` | Sí (quality gate) |
@@ -145,12 +144,12 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 
 | ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
 |---|---|---|---|---|
-| CI-12 | Environment `production` con aprobación + smoke post-deploy + rollback documentado | Mathias + David | 1 día | Deploy requiere aprobación; smoke falla → alerta y reversión < 5 min |
+| CI-12 | Environment `production` con aprobación + smoke post-deploy + rollback documentado | Mathias + David | 1 día | Deploy requiere aprobación; smoke falla → alerta y reversión < 5 min. La aprobación de un environment solo detiene jobs de GitHub Actions: para que bloquee el deploy, el despliegue debe ejecutarse desde un job de Actions con `environment: production` y desactivarse el autodeploy de Railway y Vercel |
 | CI-13 | Protección de rama con Code Owners y conversaciones resueltas; escaneo semanal; métricas | Mathias | 1 h | Ramas protegidas con las nuevas reglas; reporte semanal |
 
 ## Requisitos de secretos y permisos
 
-| Necesito | Quién | Estado |
+| Requisito | Quién | Estado |
 |---|---|---|
 | `SONAR_TOKEN` (secreto de organización, con scope a los dos repos) | Mathias | ✅ Hecho |
 | Org/proyecto en SonarCloud | Mathias | ✅ Hecho: org `taller-sw-web`, proyectos `G3-Chatbot-backend` y `G3-Chatbot-frontend` |

@@ -28,6 +28,6 @@ Esta carpeta documenta la arquitectura del Canal Chatbot con tres herramientas c
 
 ## Preguntas abiertas
 
-1. **Verificación cruzada de OpenAPI.** El manifiesto del frontend declara endpoints y existe un gate de contrato por módulo, pero la cobertura es parcial. El test manual (`api-rutas-contrato.test.ts`) incluye `/contacto/celular/verificar-otp`, que está en implementación (D1). ¿Se convierte el gate en bloqueante para todos los endpoints antes del cierre?
-2. ✅ **SPEC-04 y SPEC-23.** Resueltas el 2026-11-21: entran en el alcance completo (D1 y D2) y están en implementación. Se añaden el almacén OTP, `CheckoutGuard`, los endpoints de adjuntos y `AttachmentStorage`; el seguimiento está en [`auditoria-specs-2026-11.md`](../auditoria-specs-2026-11.md) §6.
+1. **Verificación cruzada de OpenAPI.** El manifiesto del frontend declara endpoints y existe un gate de contrato por módulo, pero la cobertura es parcial. El test manual (`api-rutas-contrato.test.ts`) incluye `/contacto/celular/verificar-otp`, ya implementado y mergeado (D1). ¿Se convierte el gate en bloqueante para todos los endpoints antes del cierre?
+2. ✅ **SPEC-04 y SPEC-23.** Resueltas e implementadas el 2026-11-21: OTP, `CheckoutGuard`, endpoints de adjuntos y `AttachmentStorage` están en `development` (backend #141 · `b75fbea6`, frontend #109 · `7432d463`). El detalle está en [`auditoria-specs-2026-11.md`](../auditoria-specs-2026-11.md) §5.
 3. **`shared/` y el worker.** El worker de outbox vive en `shared/`; si crece con jobs de un módulo concreto, hay que decidir si se mueve al módulo dueño o se queda como kernel.

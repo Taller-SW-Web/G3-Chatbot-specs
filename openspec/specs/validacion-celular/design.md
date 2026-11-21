@@ -8,7 +8,7 @@
 |---|---|---|
 | Seguridad | `GET /auth/me` → `celular` (solo para saber qué número está vigente hoy) | ✅ |
 | Seguridad | Mecanismo de validación de celular por canal | ✅ **Decidido fuera de alcance del ciclo** (acuerdo A2, acta de integración 23/09) — no se vuelve a asumir como pendiente; se reevalúa en Hito 4 solo si se abre un issue nuevo con un caso concreto |
-| Propio | `POST /contacto/celular/solicitar-otp` y `POST /contacto/celular/verificar-otp` | 🟡 En implementación (D1, 2026-11-21) |
+| Propio | `POST /contacto/celular/solicitar-otp` y `POST /contacto/celular/verificar-otp` | ✅ Implementado (D1, 2026-11-21; backend #141 · `b75fbea6`, frontend #109 · `7432d463`) |
 
 ## Frontend
 

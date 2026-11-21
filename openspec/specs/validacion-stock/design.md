@@ -8,8 +8,8 @@
 |---|---|---|
 | Productos | `GET /inventario/disponibilidad/comercial?skus=A,B,C&canal=CHATBOT` → `{ items: [{ sku, status }] }` con `status ∈ DISPONIBLE, STOCK_BAJO, AGOTADO, INDETERMINADO` (máx. 100 SKU) | 🟡 A5 · scope `inventario:disponibilidad:leer` pendiente · provisional (`D-INV-01`) |
 | Productos | `POST /inventario/disponibilidad/comercial/verificar {channel_id: CHATBOT, fulfillment: {mode: ENVIO_DOMICILIO}, lines[{sku, quantity}]}` → `{evaluated_at, binding: false, items[{sku, requested_quantity, result, reason_code}]}` con `result` ∈ `SUFICIENTE`, `INSUFICIENTE`, `INDETERMINADO`; no vinculante y sin reserva | 🟡 A16 y A17 · provisional; falta implementación y scope |
-| `mod-cart` | `ManageCartUseCase.validate_cart(cart)` vía `mod_cart.public` (validación masiva, una sola llamada) | 🟡 En implementación (D3, 2026-11-21) |
-| `mod-checkout` | `POST /checkout` invoca `validate_cart` antes de crear checkout/pedido y mapea el resultado a `409 CARRITO_DESACTUALIZADO` | 🟡 En implementación (D3, 2026-11-21) |
+| `mod-cart` | `ManageCartUseCase.validate_cart(cart)` vía `mod_cart.public` (validación masiva, una sola llamada) | ✅ Implementado (D3, 2026-11-21) |
+| `mod-checkout` | `POST /checkout` invoca `validate_cart` antes de crear checkout/pedido y mapea el resultado a `409 CARRITO_DESACTUALIZADO` | ✅ Implementado (D3, 2026-11-21; backend #141 · `b75fbea6`) |
 
 🧩 Productos publicó solo la proyección comercial: el chatbot no recibe `location_id`, `on_hand`, `reserved`, `available` ni cantidades. La validación exacta de cantidades la hace Ventas con `409` al crear el pedido. La ruta sigue provisional hasta que se resuelva `D-INV-01`.
 

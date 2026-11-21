@@ -58,7 +58,7 @@ Riesgo aceptado: hasta que se implemente, el canal no cumple la validación del 
 
 El dueño decidió retomar la implementación completa (D1 de la [auditoría](../../auditoria-specs-2026-11.md)): OTP de 6 dígitos, TTL de 5 minutos, 3 intentos, 3 reenvíos cada 15 minutos, código hasheado, `SmsSender`/`SimulatedSmsSender`, `CheckoutGuard` contra el celular vigente y bandera `REQUIRE_PHONE_VERIFICATION`. La posposición del 2026-11-07 queda sin efecto.
 
-El almacenamiento del desafío, el guard y los límites se detallan en [ADR-0026](ADR-0026-almacen-de-otp-y-guard-de-celular.md); esta decisión original no se reescribe. El estado de la spec es **en implementación** hasta que el código mergee.
+El almacenamiento del desafío, el guard y los límites se detallan en [ADR-0026](ADR-0026-almacen-de-otp-y-guard-de-celular.md); esta decisión original no se reescribe. La implementación quedó mergeada el 2026-11-21 (backend #141 · `b75fbea6`, frontend #109 · `7432d463`).
 
 ## Referencias
 

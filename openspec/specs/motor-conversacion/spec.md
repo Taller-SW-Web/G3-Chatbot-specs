@@ -176,7 +176,7 @@ El sistema DEBE (SHALL) transmitir la respuesta del asistente en fragmentos, con
 #### Scenario: Envío con imágenes adjuntas
 - **DADO** una conversación abierta y adjuntos ya cargados (SPEC-23)
 - **CUANDO** el cliente envía `POST /conversaciones/{id}/mensajes` con `{texto, adjuntoIds}`
-- **ENTONCES** el backend responde con el mismo contrato de eventos (`aceptado`, `token`, `bloque`, `fin`); el texto es opcional si hay al menos un adjunto. Las acciones directas (`accion`) ya se ejecutan por REST con `DispatchDirectActionUseCase`; el contrato de `adjuntoIds` sigue pendiente de implementación en el backend (SPEC-23)
+- **ENTONCES** el backend responde con el mismo contrato de eventos (`aceptado`, `token`, `bloque`, `fin`); el texto es opcional si hay al menos un adjunto. Las acciones directas (`accion`) se ejecutan por REST con `DispatchDirectActionUseCase` y `adjuntoIds` está implementado (SPEC-23, backend #141 / frontend #109)
 
 #### Scenario: El turno termina en modo degradado
 - **DADO** que el turno termina en modo degradado (Req. 10) cuando ya se emitieron `token`

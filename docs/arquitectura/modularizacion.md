@@ -255,21 +255,21 @@ módulo, sin lógica de negocio.
 - **Verificación cruzada de OpenAPI.** El manifiesto del frontend declara endpoints, pero el gate de
   contrato por módulo (H-04) todavía no cubre todos los endpoints del backend. El test
   `api-rutas-contrato.test.ts` fija rutas a mano e incluye `POST /contacto/celular/verificar-otp`, que
-  sigue en implementación. Se cierra cuando el backend publique el endpoint y el manifiesto quede
-  alineado; es el hallazgo principal de la [auditoría 2026-11](../auditoria-specs-2026-11.md).
+  ya existe en la rama pero aún no está mergeado. Se cierra cuando el backend lo publique y el
+  manifiesto quede alineado; es el hallazgo principal de la [auditoría 2026-11](../auditoria-specs-2026-11.md).
 - **SPEC-04 (validación de celular).** 🟡 En implementación desde 2026-11-21 (D1). Existen
-  `local_phone_verification` y su adaptador; se añaden `phone_otp_challenge`, los endpoints de OTP,
-  `SimulatedSmsSender`, el `CheckoutGuard` real y `REQUIRE_PHONE_VERIFICATION`. Hasta el merge, el
-  checkout no exige el celular verificado.
-- **SPEC-23 (adjuntos).** 🟡 En implementación desde 2026-11-21 (D2). El modelo `attachment` existe;
-  faltan los endpoints de carga, borrado y URL firmada, el `AttachmentStorage` y el job de limpieza. El
-  `POST` de mensajes deja de responder `501` cuando llega `adjuntoIds` al mergear.
+  `phone_otp_challenge`, los endpoints de OTP, `SimulatedSmsSender` y la bandera
+  `REQUIRE_PHONE_VERIFICATION` en la rama; el `CheckoutGuard` real y el bloqueo efectivo del checkout
+  siguen pendientes. Hasta el merge, el checkout no exige el celular verificado.
+- **SPEC-23 (adjuntos).** 🟡 En implementación desde 2026-11-21 (D2). El modelo `attachment` y los
+  endpoints de carga, borrado y URL firmada están en la rama; el `POST` de mensajes ya acepta
+  `adjuntoIds` y no responde `501`. Faltan merge, job de limpieza verificado y pruebas de seguridad.
 - **SPEC-24 (retroalimentación).** 🟡 En implementación desde 2026-11-21 (D5). Solo el CSAT está
   conectado (`POST /pedidos/{id}/csat`); reacciones, sugerencias/bugs y valoración de compra tienen UI
   y tablas definidas, pero aún no endpoints.
-- **Cupones, stock y direcciones.** 🟡 En implementación (D3 y D6). La evaluación de cupones existe; el
-  checkout pasa a invocar `validate_cart` y a guardar la dirección opcional en Seguridad sin bloquear
-  si falla.
+- **Cupones, stock y direcciones.** 🟡 En implementación (D3 y D6). La evaluación de cupones existe;
+  el checkout ya invoca `validate_cart` en la rama y `_save_address` está escrito, pero el router aún
+  no propaga `guardarDireccion`. Faltan pruebas y merge.
 - **Orden de búsqueda (SPEC-06).** 🟡 En implementación (D7). El router acepta `orden` y lo ignora;
   pasa a un conjunto cerrado con `relevancia` por defecto y `400 VALIDACION` para valores fuera del
   conjunto.

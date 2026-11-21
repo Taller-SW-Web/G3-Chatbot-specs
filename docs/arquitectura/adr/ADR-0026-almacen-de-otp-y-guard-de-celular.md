@@ -17,9 +17,9 @@ Aceptada
 
 ## Decisión
 
-1. **Separar el desafío de la prueba.** La tabla `local_phone_verification` sigue siendo el registro de verificaciones exitosas (solo inserción). Los desafíos OTP viven en una tabla propia, `phone_otp_challenge` (nombre propuesto), con `customer_id`, `phone`, `code_hash`, `expires_at`, `attempts`, `resend_count`, `window_started_at` y `consumed_at`.
-2. **Código hasheado.** El código de 6 dígitos se guarda solo como hash con sal por desafío; nunca en claro, en logs, en `message` ni en el prompt. La comparación se hace contra el hash del desafío vigente.
-3. **Un desafío activo por cliente.** Un nuevo `solicitar-otp` marca `consumed_at` en el anterior y crea otro; así no conviven códigos válidos. El contador de intentos se agota a los 3 fallos y el de reenvíos a los 3 envíos dentro de la ventana de 15 minutos.
+1. **Separar el desafío de la prueba.** La tabla `local_phone_verification` sigue siendo el registro de verificaciones exitosas (solo inserción). Los desafíos OTP viven en una tabla propia, `phone_otp_challenge`, con `customer_id`, `phone`, `code_hash`, `expires_at`, `attempts`, `consumed_at` y `created_at`.
+2. **Código hasheado.** El código de 6 dígitos se guarda solo como `HMAC-SHA256` con `PHONE_OTP_SECRET`; nunca en claro, en logs, en `message` ni en el prompt. La comparación se hace contra el hash del desafío vigente con comparación en tiempo constante.
+3. **Un desafío activo por cliente.** Un nuevo `solicitar-otp` marca `consumed_at` en el anterior y crea otro; así no conviven códigos válidos. El contador de intentos se agota a los 3 fallos y el de reenvíos se calcula contando los desafíos creados en los últimos 15 minutos (`created_at`), no con una columna aparte.
 4. **Puerto `SmsSender`.** La interfaz y `SimulatedSmsSender` se mantienen; el código solo se expone con `MODO_QA=true` en el entorno de pruebas. No se integra un proveedor SMS real.
 5. **Endpoints propios.** `POST /api/v1/contacto/celular/solicitar-otp` (sin cuerpo; lee el celular vigente de `GET /auth/me`) y `POST /api/v1/contacto/celular/verificar-otp` (`{codigo}`). La respuesta y los errores están en `validacion-celular/design.md`.
 6. **`CheckoutGuard` real.** `POST /checkout` compara el celular vigente del perfil con `local_phone_verification.phone` por valor exacto; si no coincide o no hay fila, responde `403 CELULAR_NO_VERIFICADO`. Si Seguridad no responde, el checkout se bloquea (no se omite la verificación).

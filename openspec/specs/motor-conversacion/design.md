@@ -7,7 +7,7 @@
 | Componente | Uso | Estado |
 |---|---|---|
 | Proveedor LLM (Claude/OpenAI) | Interpretación y redacción; con SPEC-23, también contenido multimodal (imágenes en base64) | Definido por configuración; soporte de visión sin verificar (SPEC-23) |
-| Supabase Storage (`AttachmentStorage`) | Lectura de las imágenes adjuntas al armar el turno (detalle en SPEC-23) | ✅ Implementado (SPEC-23, backend #141 / frontend #109) |
+| Supabase Storage (`AttachmentStorage`) | Lectura de las imágenes adjuntas al armar el turno (detalle en SPEC-23) | ✅ Implementado (SPEC-23, 2026-11-21; backend #141 / frontend #109) |
 | Todos los clientes de módulos | A través de las herramientas | Ver `contratos-integracion.md` |
 
 ## Frontend

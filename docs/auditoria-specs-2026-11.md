@@ -54,8 +54,9 @@ a cada repositorio y todas las rutas backend llevan el prefijo `/api/v1`.
 
 **Nota operativa (fuera de las 24 capabilities).** El contrato de `/health` cambió con la validación de
 capacidades: `discovery.configure_modules` aborta si falta una `REQUIRED_CAPABILITIES` y, si falta una
-`OPTIONAL_CAPABILITIES`, registra un `ERROR` y `/health` responde `200 {"status": "degraded",
-"missingCapabilities": [...]}` en vez de `{"status": "ok"}`. No hay una spec de operación que cubra
+`OPTIONAL_CAPABILITIES`, registra un `ERROR` y `/health` responde `200` con
+`{"status": "degraded", "missingCapabilities": [...]}` en vez de `{"status": "ok"}`. No hay una spec
+de operación que cubra
 `/health`; el comportamiento queda documentado en
 [`modularizacion.md`](arquitectura/modularizacion.md#3-dag-de-dependencias). Evidencia:
 `BE/src/infrastructure/discovery.py:54-74` y `BE/src/shared/infrastructure/http/health_router.py:10-14`.

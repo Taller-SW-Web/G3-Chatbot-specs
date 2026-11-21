@@ -63,7 +63,7 @@
 |---|---|---|
 | `VALIDACION` | 400 | Faltan campos o la evidencia obligatoria no cumple. |
 | `DEVOLUCION_NO_ELEGIBLE` | 422 | Pedido no `ENTREGADO`, fuera de los 7 días o evidencia obligatoria faltante. |
-| `DEVOLUCION_DUPLICADA` | 409 | Existe una solicitud abierta para el mismo pedido y `forzar` es `false`. |
+| `DEVOLUCION_DUPLICADA` | 409 | Existe una solicitud abierta para el mismo pedido, motivo y líneas y `forzar` es `false`. |
 | `EVIDENCIA_INVALIDA` | 400 | Archivo mayor a 5 MB o tipo no permitido. |
 | `SERVICIO_NO_DISPONIBLE` | 503 | Ventas no responde; se conserva el borrador 24 h. |
 

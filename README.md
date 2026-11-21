@@ -244,7 +244,7 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 
 - **Formato de API:** JSON en `camelCase`, enumeraciones en `UPPER_SNAKE_CASE`, fechas ISO 8601 en UTC y moneda `PEN` con 2 decimales. En la interfaz, las fechas se muestran en hora de Lima (UTC-5).
 - **Errores de la API propia:** `application/problem+json` con campo `code`, alineado con Seguridad. El frontend ramifica por `code`, nunca por el texto.
-- **Idempotencia:** toda operación que crea algo en otro módulo o mueve dinero (pedido, pago, reclamo, solicitud de devolución) lleva un `Idempotency-Key`.
+- **Idempotencia:** toda operación que crea algo en otro módulo o mueve dinero (pedido, pago, reclamo, solicitud de devolución, reenvío de confirmación y sugerencia) lleva un `Idempotency-Key`; las reacciones, la valoración de compra y el CSAT usan clave natural (ver ADR-0012).
 - **Contratos provisionales:** donde el otro módulo aún no publicó su contrato, la spec lo marca como **(provisional)**. La lista completa está en [`docs/contratos-integracion.md`](docs/contratos-integracion.md) §6.
 - **Criterios de aceptación:** cada escenario DADO/CUANDO/ENTONCES debe tener al menos una prueba automatizada que lo referencie por nombre.
 - **Idioma de los nombres:**

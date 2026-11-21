@@ -28,6 +28,18 @@ Revisión basada en los repos al 22/09/2026:
 | Backend del chatbot → Supabase Storage (imágenes del chat, SPEC-23) | Credencial de servicio de Supabase en variables de entorno del backend, nunca en el frontend; bucket **privado**. El frontend solo recibe URLs firmadas de corta vida emitidas por el backend. |
 | Refresh token | Nunca llega al JavaScript. El BFF lo guarda en una cookie `httpOnly; Secure; SameSite=Strict; Path=/api/v1/sesion`. |
 
+**Cookies del canal** (alineado el 2026-11-21 con `BE/src/modules/mod_auth/adapters/http/session_router.py:224,272` y `mod_chat/adapters/http/chatbot_router.py:88`):
+
+| Cookie | Uso | Atributos | Vigencia |
+|---|---|---|---|
+| `chat_rt` | Refresh token de la sesión (SPEC-03) | `httpOnly; Secure; SameSite=Strict; Path=/api/v1/sesion` | 7 días (`REFRESH_MAX_AGE_SECONDS`) |
+| `chat_chg` | Desafío MFA pendiente (`challengeToken`, SPEC-03 Req. 2) | `httpOnly; Secure; SameSite=Strict; Path=/api/v1/sesion` | 5 minutos |
+| `chat_sid` | Identifica al visitante anónimo y sus conversaciones | `httpOnly; Secure; SameSite=Lax` (sin `Path` restringido) | 7 días |
+
+`Secure` se aplica según la configuración del entorno (`Secure` desactivado solo en desarrollo local por HTTP).
+
+`POST /sesion/refresh` y `POST /sesion/logout` exigen además la cabecera `X-Requested-With` y verifican el `Origin` (protección CSRF, ADR-0008).
+
 ---
 
 ## 2. API expuesta por el backend del chatbot (para su frontend)
@@ -383,7 +395,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `LIMITE_ADJUNTOS` | 422 | Más de 3 adjuntos por mensaje o más de 10 adjuntos pendientes por conversación (SPEC-23). |
 | `DEVOLUCION_NO_ELEGIBLE` | 422 | El pedido no está `ENTREGADO`, está fuera de plazo, o falta evidencia obligatoria. |
 | `RECLAMO_DUPLICADO` | 409 | Existe un reclamo abierto para el mismo pedido y motivo y no se envió `forzar: true`; incluye el `codigoSeguimiento` y el estado existentes. |
-| `DEVOLUCION_DUPLICADA` | 409 | Existe una solicitud abierta para el mismo pedido y no se envió `forzar: true`; incluye el `devolucionId` y el estado existentes. |
+| `DEVOLUCION_DUPLICADA` | 409 | Existe una solicitud abierta para el mismo pedido, motivo y líneas y no se envió `forzar: true`; incluye el `devolucionId` y el estado existentes. |
 | `VALORACION_YA_REGISTRADA` | 409 | El pedido ya tiene una valoración de compra; no se admite una segunda. |
 | `CODIGO_VENCIDO` | 410 | El desafío OTP superó los 5 minutos o ya fue consumido (SPEC-04). |
 | `OTP_INTENTOS_AGOTADOS` | 401 | Se agotaron los 3 intentos del OTP; hay que solicitar uno nuevo (SPEC-04). |

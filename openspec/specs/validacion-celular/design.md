@@ -57,7 +57,7 @@
 - Un desafío nuevo invalida el anterior del mismo `customer_id` y número (marca `consumed_at`); solo puede haber uno vigente por cliente.
 - La comparación con `local_phone_verification` es por valor exacto del celular (`+51` + 9 dígitos). Si el perfil cambia de número, la verificación anterior no aplica.
 - El código se guarda como HMAC-SHA256 con `PHONE_OTP_SECRET`; el hash no se devuelve, no se loguea y no se envía al LLM.
-- Los intentos se reinician con cada desafío nuevo. El límite de reenvíos se calcula contando los desafíos creados para el cliente en los últimos 15 minutos (`created_at`), no con un contador aparte; la ventana se cuenta desde el primer envío.
+- Los intentos se reinician con cada desafío nuevo. El límite de reenvíos se calcula contando los desafíos creados para el cliente en los últimos 15 minutos (`created_at`), no con un contador aparte. La ventana es **deslizante** (ADR-0026, punto 3; spec, Requisito 2): solo cuentan los envíos de los últimos 15 minutos contados hacia atrás desde la solicitud, no desde el primer envío. Un cliente que envió en t=0, t=10 y t=16 min puede enviar en t=16, porque el de t=0 ya salió de la ventana. `reintentarEn` indica cuándo sale de la ventana el envío más antiguo (`BE/src/modules/mod_auth/application/manage_phone_verification_use_case.py:101-108`). *Alineación 2026-11-21: este párrafo describía una ventana fija desde el primer envío, que contradecía al ADR, la spec y el código.*
 - La bandera `REQUIRE_PHONE_VERIFICATION` se lee al arranque. Supuesto explícito: por defecto `true` en producción; `false` solo para pruebas/demos.
 
 ## Desglose para issues

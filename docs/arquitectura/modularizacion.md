@@ -61,7 +61,7 @@ Cada módulo frontend contiene `MODULE.md`, `module.manifest.ts`, `public.ts`, `
 ## 3. DAG de dependencias
 
 El grafo es **dirigido y acíclico**. Se declara en `dependsOn` del manifiesto y se verifica contra los
-imports reales.
+imports reales. Todas las flechas van del **consumidor al proveedor**: `A --> B` significa que `A` declara a `B` en su `dependsOn` y puede importar su `public.py`. Es la misma convención de la tabla "Nuevos usos entre módulos" y del manifiesto (`cart` depende de `catalog`, `shipping` de `cart`, `checkout` de `cart` y `shipping`, `orders` de `checkout`, `postventa` de `orders`).
 
 ```mermaid
 graph TD
@@ -75,12 +75,12 @@ graph TD
     chat["mod-chat<br/>orquestador"]
     shared["shared/<br/>AttachmentStorage · OTP"]
 
-    catalog --> cart
+    cart --> catalog
     shipping --> cart
-    cart -->|"validate_cart"| checkout
-    shipping -->|"cotiza + guardarDireccion"| checkout
-    checkout --> orders
-    orders --> postventa
+    checkout -->|"validate_cart"| cart
+    checkout -->|"cotiza + guardarDireccion"| shipping
+    orders --> checkout
+    postventa --> orders
 
     chat --> catalog
     chat --> cart
@@ -109,8 +109,9 @@ Reglas:
 3. `mod-shipping` **depende de `mod-cart`**: lo declara en `dependsOn` y consume
    `provide_cart_repositories` desde `mod_cart.public`. Ya no existe la capacidad
    `cart_repositories` resuelta en runtime.
-4. `mod-checkout` necesita la confirmación de correo de `mod-orders`, pero el DAG prohíbe el import
-   inverso: la resuelve por la capacidad `order_confirmation`.
+4. `mod-orders` depende de `mod-checkout` (`orders --> checkout`), así que `mod-checkout` no puede
+   importar a `mod-orders` (sería un ciclo). Cuando checkout necesita encolar la confirmación de correo
+   que posee orders, la resuelve por la capacidad `order_confirmation`.
 5. `mod-orders` necesita el puerto de Despacho: lo resuelve por `dispatch_port`, registrado por
    `mod-shipping`.
 6. `mod-cart` y `mod-catalog` necesitan la memoria de conversación que posee `mod-chat`; como el DAG

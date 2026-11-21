@@ -19,7 +19,7 @@ Aceptada
 
 1. **La comprobación autoritativa vive en el `POST` del chatbot.** Antes de llamar a Ventas, `POST /api/v1/reclamos` y `POST /api/v1/devoluciones` consultan su listado `/me` y filtran en el backend del chatbot.
 2. **Criterio de reclamo duplicado:** mismo `pedidoId` y mismo `motivo`, con estado `REGISTRADO` o `EN_PROCESO`. `ATENDIDO` y `DERIVADO` son casos cerrados y no bloquean.
-3. **Criterio de devolución duplicada:** mismo `pedidoId` con estado `SOLICITADA`, `EN_EVALUACION` o `APROBADA`. `RECHAZADA` y `COMPLETADA` no bloquean.
+3. **Criterio de devolución duplicada:** mismo `pedidoId`, mismo `motivo` y misma firma de líneas (`productoId` + `cantidad`), con estado abierto (`SOLICITADA`, `EN_EVALUACION` o `APROBADA`). `RECHAZADA` y `COMPLETADA` no bloquean. Es el criterio único de SPEC-21 (Requisito 5), del contrato (§2.7) y del backend (`BE/src/modules/mod_postventa/application/postventa_service.py:329-366`, `_duplicate_return`). *Alineación 2026-11-21: este punto decía solo "mismo `pedidoId`", lo que contradecía a la spec y al código.*
 4. **Respuesta 409 con el código existente.** Sin confirmación, el backend responde `409 RECLAMO_DUPLICADO` o `409 DEVOLUCION_DUPLICADA` e incluye el identificador/código y el estado del registro existente; no se llama a Ventas.
 5. **Confirmación explícita con `forzar: true`.** El cuerpo de ambos `POST` acepta `forzar` (booleano, por defecto `false`). Con `true`, el chatbot registra uno nuevo y responde `201` con su propia constancia. `forzar` no se reenvía a Ventas.
 6. **La idempotencia no se sustituye.** Dos envíos con la misma `Idempotency-Key` y el mismo `forzar` devuelven la misma constancia y crean un solo registro.

@@ -28,7 +28,7 @@ Reglas de dependencia:
 
 1. Un módulo solo importa `shared/`, su propio árbol y el `public.py` / `public.ts` de los módulos declarados en `dependsOn`.
 2. Está prohibido importar `domain/`, `application/` o `adapters/` de otro módulo.
-3. El DAG base es `shipping → cart → checkout → orders → postventa`, con `catalog → cart` y `shipping` alimentando también a `checkout` por los helpers de cotización; `chat` orquesta a todos; `auth` es transversal a través de `shared/infrastructure/auth`.
+3. El DAG base se escribe de consumidor a proveedor, igual que `dependsOn` en el manifiesto: `postventa → orders → checkout → (cart, shipping)`, `shipping → cart` y `cart → catalog` (`checkout` consume también a `shipping` por los helpers de cotización); `chat` orquesta a todos; `auth` es transversal a través de `shared/infrastructure/auth`. *Alineación 2026-11-21: la redacción anterior mezclaba la dirección proveedor → consumidor con la del manifiesto.*
 4. `chat` puede depender de todos; ningún módulo depende de `chat`.
 5. Los routers conservan las rutas públicas; cada router declara `tags=[MODULE_ID]`.
 6. Un PR toca un solo módulo. `shared/` exige la etiqueta `cross-modulo` y revisión del owner de plataforma.

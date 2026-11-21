@@ -20,7 +20,7 @@ Aceptada
 Mathias (líder del equipo) decidió el 2026-10-16 que **el navegador llama a la API en el propio origen del frontend, bajo `/api/*`, y Next.js reenvía las peticiones al backend de Railway.**
 
 - **Reenvío:** `rewrites` en `next.config.ts` hacia la URL del backend de cada entorno, configurada con una variable de entorno de servidor (por ejemplo, `API_PROXY_TARGET`). Backend de *staging*: `https://g3-chatbot-backend-staging.up.railway.app`.
-- **Efecto:** mismo origen para el navegador. No hay CORS, las cookies son de primera parte y se conserva `SameSite=Lax`. Las vistas previas por pull request funcionan sin lista de orígenes permitidos.
+- **Efecto:** mismo origen para el navegador. No hay CORS, las cookies son de primera parte: `chat_sid` (visitante anónimo) usa `SameSite=Lax` y las cookies de sesión `chat_rt` y `chat_chg` usan `SameSite=Strict`, que el mismo origen permite sin romper el inicio de sesión (ver la tabla de cookies del contrato, §1). Las vistas previas por pull request funcionan sin lista de orígenes permitidos.
 - **Backend:** debe confiar en las cabeceras `X-Forwarded-*` (uvicorn ya corre con `--proxy-headers`).
 - **Verificación temprana obligatoria (primer paso de H3-18):** comprobar que el streaming SSE ([ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md)) no se almacena en búfer al pasar por el `rewrite` de Vercel.
   - Si se almacena en búfer: reemplazar el `rewrite` de la ruta de streaming por un *route handler* de Next.js que reenvíe el flujo.
@@ -37,7 +37,7 @@ Mathias (líder del equipo) decidió el 2026-10-16 que **el navegador llama a la
 
 **Positivas**
 - Sin CORS.
-- Cookies de primera parte con `SameSite=Lax`.
+- Cookies de primera parte: `SameSite=Lax` para `chat_sid` y `SameSite=Strict` para `chat_rt` y `chat_chg`.
 - Las vistas previas por pull request funcionan sin configuración de orígenes.
 
 **Negativas y riesgos aceptados**
@@ -53,3 +53,5 @@ Mathias (líder del equipo) decidió el 2026-10-16 que **el navegador llama a la
 - [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md) (streaming SSE)
 - `odd/tasks/hito-3.md` (tarea H3-18)
 - [`c4.md`](../c4.md#vista-de-despliegue) (vista de despliegue)
+
+> **Alineación 2026-11-21.** Este ADR decía `SameSite=Lax` para todas las cookies. El backend fija `Strict` en la cookie de refresh y en la de desafío MFA (`BE/src/modules/mod_auth/adapters/http/session_router.py:224` y `:272`) y `Lax` solo en `chat_sid` (`BE/src/modules/mod_chat/adapters/http/chatbot_router.py:88`); la documentación se alinea con el código implementado, que coincide con ADR-0008 y SPEC-03.

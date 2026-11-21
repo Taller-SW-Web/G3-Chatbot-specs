@@ -108,7 +108,7 @@ a cada repositorio; `...` continúa la ruta del mismo módulo ya citada en la fi
 |---|---|---|
 | SPEC-04 | `POST /contacto/celular/solicitar-otp`, `POST /contacto/celular/verificar-otp`, `SmsSender`/`SimulatedSmsSender`, `CheckoutGuard` y bloqueo de checkout | `BE/src/shared/infrastructure/persistence/local_phone_verification_postgres_adapter.py:3-6`; no hay router; `FE/src/modules/mod-auth/adapters/authApi.ts:80` llama al endpoint ausente |
 | SPEC-10 | `validate_cart` invocado desde `POST /checkout`, con detalle por línea | `BE/src/modules/mod_cart/application/manage_cart_use_case.py:249` existe; `BE/src/modules/mod_checkout/application/manage_checkout_use_case.py:227-321` no lo llama |
-| SPEC-12 | `GuardarDireccionOpcional` en la creación del pedido | `BE/src/modules/mod_shipping/adapters/http/shipping_router.py:105` solo lista direcciones; no hay `POST /direcciones` en el BFF |
+| SPEC-12 | Prellenado con la dirección guardada y `GuardarDireccionOpcional` en la creación del pedido | `BE/src/modules/mod_shipping/adapters/http/shipping_router.py:105` solo lista direcciones; el frontend no llama `/direcciones`; no hay `POST /direcciones` en el BFF |
 | SPEC-19 | Detección de reclamo abierto por pedido + motivo antes de crear | `BE/src/modules/mod_postventa/application/postventa_service.py:142-197` no consulta `list_customer_claims` |
 | SPEC-21 | Detección de devolución abierta por pedido antes de crear | `BE/src/modules/mod_postventa/application/postventa_service.py:69-140` no consulta `list_customer_returns` |
 | SPEC-23 | Endpoints de adjuntos, `AttachmentStorage`, miniaturas, URLs firmadas, limpieza y multimodal | `BE/src/modules/mod_chat/adapters/http/chatbot_router.py:182-185` (501); no hay endpoints en `docs/openapi.json` |

@@ -1,6 +1,6 @@
 # Diseño: Dirección de entrega, documento del comprador y cotización de envío
 
-> Origen: SPEC-12 · Especificación de comportamiento: [`spec.md`](spec.md)
+> Origen: SPEC-12 · Especificación de comportamiento: [`spec.md`](spec.md) · Decisión: [D6](../../../docs/auditoria-specs-2026-11.md)
 
 ## Integraciones
 
@@ -28,10 +28,18 @@
 | `POST /api/v1/envio/cotizar {destinatario, direccion, distrito, referencia?}` | Reúne `destino` y `lineas` desde el carrito, consulta a Despacho y guarda el snapshot en el checkout. |
 | `EnvioService` | Construye el payload real de Despacho a partir del carrito: `destino` + `lineas` con `sku` y `cantidad`; no calcula ni envía peso ni volumen. |
 | `DespachoClient.cotizar()` | Timeout de 4 s; arma `POST /api/v1/cotizaciones` con los campos reales y normaliza los errores propios de Despacho. |
-| `GuardarDireccionOpcional` | Se ejecuta junto a la creación del pedido (SPEC-15) solo si el checkbox estaba marcado; no bloquea el checkout si falla. |
+| `GuardarDireccionOpcional` | Se ejecuta junto a la creación del pedido (SPEC-15) solo si `guardarDireccion` es `true`; llama a Seguridad y, si falla, no bloquea el checkout: devuelve `avisoDireccion` con "No pudimos guardar tu dirección para la próxima vez". |
 | `DocumentoValidator` | Aplica las expresiones regulares confirmadas por Ventas por `tipoDocumento` (incluida la validación del prefijo del RUC); responde `code: DATO_INVALIDO` si no cumple, igual que Ventas. No persiste el documento fuera del snapshot del pedido. |
 
 🧩 El contrato real de Despacho ya no acepta `pesoKg` ni `volumenM3`; el canal solo manda `destino` y, si hay productos, `lineas` con `sku` + `cantidad`. El cálculo físico queda en Despacho / Productos, no en la capa del chatbot.
+
+### Contrato del guardado opcional
+
+- `POST /api/v1/checkout` recibe `guardarDireccion` (booleano, por defecto `false`) junto con `direccion` y `contacto`.
+- Con `true`, `mod-checkout` invoca `GuardarDireccionOpcional`, que usa la superficie pública de `mod-shipping` y el token del cliente para llamar a `POST /usuarios/{id}/direcciones` de Seguridad con `{etiqueta?, departamento, provincia, distrito, direccion, referencia?, predeterminada?}`.
+- El guardado ocurre antes o junto con la creación del pedido; no hay endpoint `/direcciones` de escritura expuesto por el chatbot en esta decisión.
+- Si Seguridad responde error o timeout, el checkout continúa, el pedido se crea y la respuesta incluye `avisoDireccion`; no se revierte nada.
+- Si `guardarDireccion` es `false`, no se llama a Seguridad y `avisoDireccion` es `null`.
 
 ### Mapeo de errores propios de Despacho
 
@@ -51,7 +59,7 @@
 - [ ] `[BE]` `DocumentoValidator` y el campo `BuyerDocumentSection` en el snapshot
 - [ ] `[BE]` `EnvioService` y `DespachoClient` con el nuevo payload `destino + lineas` y el mapeo de errores
 - [ ] `[BE]` Endpoint `envio/cotizar` con los nombres de campo alineados a Ventas
-- [ ] `[BE]` `GuardarDireccionOpcional` integrado en la creación del pedido
+- [ ] `[BE]` `GuardarDireccionOpcional` integrado en la creación del pedido, con `guardarDireccion` y `avisoDireccion` no bloqueante
 - [ ] `[FE]` `BuyerDocumentSection` con prellenado del último documento usado
 - [ ] `[FE]` `AddressSection` (campos libres + selector de distrito + checkbox de guardado)
 - [ ] `[FE]` `ShippingQuote` embebido en `CheckoutPage`

@@ -1,6 +1,8 @@
 # Diseño: Retroalimentación del cliente
 
-> Origen: SPEC-24 · Especificación de comportamiento: [`spec.md`](spec.md)
+> Origen: SPEC-24 · Especificación de comportamiento: [`spec.md`](spec.md) · Decisión: [ADR-0029](../../../docs/arquitectura/adr/ADR-0029-modelo-de-datos-de-retroalimentacion.md)
+>
+> **Alcance confirmado (2026-11-21, D5):** reacciones, sugerencias/bugs con adjunto, CSAT y notificación interna. Las tablas y la columna `order_ref.csat_sent` ya están definidas en `modelo-datos.md`; el código aún no está mergeado.
 
 ## Integraciones
 
@@ -52,9 +54,24 @@ Pendiente hasta el Hito 5-6: el límite de frecuencia de las calificaciones (car
 
 La calificación del pedido (CSAT) **no se guarda** como calificación propia: vive en Ventas (`POST /api/v2/csat`). La valoración de la compra sí es propia del chatbot (`purchase_rating`). ✅ Acuerdo A15 (Ventas, 12/10/2026): el endpoint se llama con el token del cliente (rol `CLIENTE`, sin scope); Ventas valida el `sub` del JWT contra el dueño del `pedidoId` y responde `403` si no coincide. El scope `postventa:csat:escribir` no existe.
 
+### Contrato de los endpoints
+
+| Método | Ruta | Éxito | Errores |
+|---|---|---|---|
+| POST | `/mensajes/{mensajeId}/reaccion` | `200 { mensajeId, reaccion }` (upsert por autor y mensaje) | `404 RECURSO_NO_ENCONTRADO` (mensaje de otra conversación), `429 DEMASIADAS_SOLICITUDES` (la UI lo ignora) |
+| POST | `/pedidos/{pedidoId}/valoracion-compra` | `201 { valoracionId, estrellas }` | `400 VALIDACION`, `404 RECURSO_NO_ENCONTRADO`, `409 VALORACION_YA_REGISTRADA` |
+| POST | `/pedidos/{pedidoId}/csat` | `201` (respuesta de Ventas) | `403`, `409 CSAT_ALREADY_SUBMITTED`, `422 ORDER_NOT_DELIVERED`, `503` |
+| POST | `/sugerencias` | `201 { sugerenciaId, codigoSeguimiento }` | `400 VALIDACION`, `400 ADJUNTO_INVALIDO`, `429 DEMASIADAS_SOLICITUDES` |
+
+- **Reacción:** cuerpo `{ "reaccion": "POSITIVE" | "NEGATIVE" }`. El upsert usa `(message_id, customer_id, anonymous_sid)`; cambiar de 👍 a 👎 actualiza la fila, no crea otra. "Copiar" no llama al backend.
+- **Sugerencia:** `multipart/form-data` con `tipo`, `titulo`, `descripcion`, `correoContacto`, `captura?` y `Idempotency-Key`. Supuesto explícito: una sola llamada multipart; si el frontend hace carga previa, se cambia a `capturaId`. La captura se sube al bucket privado con `AttachmentStorage` y se guarda solo `feedback_suggestion.screenshot_key`; no usa la tabla `attachment`.
+- **Valoración de compra:** `{ "estrellas": 1..5, "comentario?": "..." }`; una fila por `order_id` (`UNIQUE`). Un segundo envío responde `409 VALORACION_YA_REGISTRADA`.
+- **CSAT:** se reenvía a Ventas; el chatbot no guarda una calificación propia. `order_ref.csat_sent` se marca con `201` o `409 CSAT_ALREADY_SUBMITTED` cuando existe la fila; si el pedido viene de otro canal, no hay fila y se responde igual.
+- **Notificación interna:** no tiene endpoint propio; el worker de outbox procesa `SEND_EMAIL` y actualiza `feedback_suggestion.notification_status` (`PENDING` → `SENT`/`FAILED`). Un fallo no se muestra al cliente.
+
 ### Encaje en los casos de uso del núcleo
 
-No se agrega un caso de uso nuevo: la reacción y la sugerencia se agrupan como un nuevo `GestionarRetroalimentacionUseCase` (ligero, sin dependencias externas salvo Ventas para el CSAT), separado de `GestionarConversacionUseCase` para no sobrecargarlo con una responsabilidad que no es de mensajería.
+Se agrega un caso de uso ligero, `GestionarRetroalimentacionUseCase` (sin dependencias externas salvo Ventas para el CSAT), separado de `GestionarConversacionUseCase` para no sobrecargarlo con una responsabilidad que no es de mensajería.
 
 ## Desglose para issues
 

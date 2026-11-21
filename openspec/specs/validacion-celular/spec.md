@@ -26,7 +26,8 @@ Incluye:
 - Verificación local (propia del chatbot) del celular vigente en el perfil del cliente (`GET /auth/me` → `celular`), antes del primer checkout.
 - Envío de un código OTP simulado y su verificación, con las mismas reglas de vigencia, intentos y límite de reenvíos que ya usa el resto del sistema (SPEC-03, SPEC-14).
 - Persistencia local de "celular verificado" ligada al cliente **y** al número exacto verificado — si el celular cambia en el perfil, la verificación local queda invalidada automáticamente.
-- Bloqueo del checkout mientras el celular vigente no esté verificado localmente.
+- Almacén de desafíos OTP separado del registro de verificaciones: código de 6 dígitos **hasheado**, vigencia de 5 minutos, intentos y reenvíos limitados.
+- Bloqueo del checkout mientras el celular vigente no esté verificado localmente, activable por la bandera `REQUIRE_PHONE_VERIFICATION`.
 - Verificación iniciada por el cliente ("quiero verificar mi celular").
 
 ### Fuera de alcance
@@ -60,14 +61,14 @@ El sistema DEBE (SHALL) impedir iniciar el checkout (SPEC-14) si el celular vige
 - **ENTONCES** la verificación local no aplica al número nuevo (se comparan por valor exacto), se exige verificar de nuevo con `+51911222333`, y esto se detecta automáticamente sin que el cliente tenga que avisar
 
 ### Requirement: Envío y verificación del código
-El sistema DEBE (SHALL) generar y enviar un OTP de 6 dígitos por un adaptador SMS **propio y simulado**, y verificarlo con las mismas reglas que ya usa el resto del chatbot: 5 minutos de vigencia, 3 intentos, 3 envíos cada 15 minutos.
+El sistema DEBE (SHALL) generar y enviar un OTP de 6 dígitos por un adaptador SMS **propio y simulado**, y verificarlo con las mismas reglas que ya usa el resto del chatbot: 5 minutos de vigencia, 3 intentos, 3 envíos cada 15 minutos. El código DEBE (SHALL) guardarse solo como hash, nunca en claro, junto con su expiración, el contador de intentos y la ventana de reenvíos; un código consumido no se puede reutilizar y un nuevo envío invalida el desafío anterior.
 
 *Trazabilidad: SPEC-04 · Requisito 2.*
 
 #### Scenario: Verificación exitosa
 - **DADO** un código enviado por el simulador
 - **CUANDO** el cliente ingresa el código correcto
-- **ENTONCES** se guarda localmente `{customer_id, phone, verified_at}`, el chat muestra "¡Listo! Tu celular quedó verificado" y se ejecuta la `accionPendiente`
+- **ENTONCES** se guarda localmente `{customer_id, phone, verified_at}`, el desafío queda consumido, el chat muestra "¡Listo! Tu celular quedó verificado" y se ejecuta la `accionPendiente`
 
 #### Scenario: Código incorrecto
 - **DADO** un código erróneo
@@ -83,6 +84,21 @@ El sistema DEBE (SHALL) generar y enviar un OTP de 6 dígitos por un adaptador S
 - **DADO** 3 envíos en 15 minutos
 - **CUANDO** se pide otro
 - **ENTONCES** se muestra "Espera unos minutos antes de pedir otro código" con un temporizador
+
+#### Scenario: Reenvío dentro del límite
+- **DADO** un cliente con 2 envíos en los últimos 15 minutos y un desafío vigente
+- **CUANDO** pide un código nuevo
+- **ENTONCES** se envía un código nuevo, el anterior deja de valer y queda 1 envío disponible en la ventana
+
+#### Scenario: Código ya consumido
+- **DADO** un código que ya se usó para verificar el celular
+- **CUANDO** se intenta verificar de nuevo
+- **ENTONCES** se rechaza con `410 OTP_EXPIRADO` o `401 CODIGO_INVALIDO` y no se crea una segunda verificación
+
+#### Scenario: Bandera de exigencia desactivada
+- **DADO** un entorno con `REQUIRE_PHONE_VERIFICATION=false`
+- **CUANDO** el cliente inicia el checkout sin verificación local
+- **ENTONCES** el checkout no se bloquea por celular; los endpoints de OTP siguen disponibles para una verificación voluntaria
 
 ### Requirement: El celular es incorrecto
 El sistema DEBE (SHALL) orientar al cliente si el celular registrado no es el suyo, sin permitir cambiarlo desde el chat (ese cambio es de Seguridad, fuera de este módulo).
@@ -101,8 +117,11 @@ El sistema DEBE (SHALL) orientar al cliente si el celular registrado no es el su
 
 ## Requisitos no funcionales
 
-- **Seguridad:** el código OTP nunca pasa por el LLM ni se guarda en la tabla `message`; el formulario lo envía directo al endpoint. El celular se muestra enmascarado (`+51 9****4321`).
+- **Seguridad:** el código OTP nunca pasa por el LLM ni se guarda en la tabla `message`; el formulario lo envía directo al endpoint. El backend guarda solo el **hash** del código, con sal por desafío y algoritmo definido en el PR de código; el código en claro no se persiste ni se registra en logs. El celular se muestra enmascarado (`+51 9****4321`).
+- **Almacenamiento:** los desafíos viven en una tabla propia (`phone_otp_challenge`, nombre propuesto) y el registro de verificaciones exitosas sigue en `local_phone_verification` (solo inserción). Un desafío nuevo invalida el anterior para el mismo cliente y número; solo puede haber uno activo por cliente.
+- **Configuración:** `REQUIRE_PHONE_VERIFICATION` activa o desactiva el bloqueo del checkout. Supuesto explícito: su valor por defecto es `true` en producción y puede fijarse en `false` por entorno para pruebas o demos; si el equipo adopta otro valor por defecto, se actualiza esta sección y el ADR-0026.
 - **Pruebas:** el `SimulatedSmsSender` propio expone el código generado únicamente por un mecanismo de prueba (variable de entorno `MODO_QA=true` que devuelve el código en la respuesta, o un log accesible solo en el entorno de pruebas), nunca en producción ni en una respuesta normal al cliente.
+- **Purga:** los desafíos vencidos o consumidos no se conservan indefinidamente; el plazo de purga queda pendiente de decisión y se registra en [ADR-0026](../../../docs/arquitectura/adr/ADR-0026-almacen-de-otp-y-guard-de-celular.md). Mientras no se decida, no se reutilizan para verificar.
 - **Autocontención:** esta capacidad no depende de ningún endpoint de Seguridad más allá de leer el celular vigente (`GET /auth/me`, ya usado por SPEC-03). Si Seguridad no responde, el checkout queda bloqueado con "No pudimos confirmar tu celular ahora" (no se omite la verificación), pero el envío y la verificación del OTP en sí no dependen de Seguridad en absoluto.
 - **Reemplazo futuro:** el adaptador `SmsSender` se implementa detrás de una interfaz, para poder sustituirlo por el mecanismo de Seguridad sin tocar el resto del flujo, si en el Hito 4 deciden construirlo (ver acuerdo A2 actualizado).
 
@@ -113,3 +132,7 @@ La capacidad se considera correctamente implementada cuando:
 - Todos los escenarios definidos se cumplen.
 - Los requisitos no funcionales aplicables se cumplen.
 - No se han incorporado funcionalidades fuera del alcance.
+
+## Decisiones
+
+- **D1 — OTP de celular completo (auditoría §4).** Se implementa la verificación completa: OTP de 6 dígitos, TTL de 5 minutos, 3 intentos, 3 reenvíos cada 15 minutos, código hasheado, `SmsSender`/`SimulatedSmsSender`, `CheckoutGuard` contra el celular vigente y bandera `REQUIRE_PHONE_VERIFICATION`. **Aprobada:** 2026-11-21. **Estado:** en implementación; no se marca implementada hasta que el código mergee. **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md). **ADR:** [ADR-0026](../../../docs/arquitectura/adr/ADR-0026-almacen-de-otp-y-guard-de-celular.md).

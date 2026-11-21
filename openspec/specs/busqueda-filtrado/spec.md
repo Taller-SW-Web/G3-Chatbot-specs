@@ -21,7 +21,7 @@ Las categorías y marcas del LLM ("Nike", "nike", "Naik") deben normalizarse con
 ## Alcance
 
 Incluye:
-- Extracción de filtros por el LLM: `q` (texto libre), `categoria`, `marca`, `precioMin`, `precioMax`, `soloOfertas` y `orden` por nombre (`NOMBRE_ASC`, `NOMBRE_DESC`). Talla y color viajan en `q` solo como ayuda y se confirman en el detalle. `soloOfertas` lo resuelve el BFF con el `precio_oferta` vigente, porque Productos no ofrece ese filtro, ni filtros por variante ni orden por precio (A16).
+- Extracción de filtros por el LLM: `q` (texto libre), `categoria`, `marca`, `precioMin`, `precioMax`, `soloOfertas` y `orden`, con el conjunto cerrado `relevancia | precio_asc | precio_desc | nombre_asc | nombre_desc` (`relevancia` por defecto). Talla y color viajan en `q` solo como ayuda y se confirman en el detalle. `soloOfertas` lo resuelve el BFF con el `precio_oferta` vigente, porque Productos no ofrece ese filtro, ni filtros por variante (A16).
 - Normalización de la categoría y la marca contra los catálogos de Productos (cacheados).
 - Consulta paginada (10 por página) y presentación en carrusel (SPEC-09).
 - Refinamiento conversacional ("más baratas", "solo Adidas", "en rojo").
@@ -37,7 +37,7 @@ Incluye:
 ## Requirements
 
 ### Requirement: Búsqueda con filtros combinados
-El sistema DEBE (SHALL) convertir la petición en los filtros que admite `GET /api/v1/productos` (`q`, `categoriaId`, `marcaId`, `precioMin`, `precioMax`, `orden` por nombre, `canal=CHATBOT`, `pagina`, `tamanio`) y devolverlos con su precio vigente obtenido de `GET /api/v1/precios`. Productos no filtra por talla, color ni otros atributos, y `q` no garantiza coincidencias en atributos o variantes (respuesta de Productos, 15/10). Esos criterios viajan en `q` solo como ayuda, sin prometer que filtren, y se confirman en el detalle del producto. Productos comprometió filtros estructurados de variantes para una etapa posterior; cuando estén publicados en su OpenAPI se reemplaza este comportamiento.
+El sistema DEBE (SHALL) convertir la petición en los filtros que admite `GET /api/v1/productos` (`q`, `categoriaId`, `marcaId`, `precioMin`, `precioMax`, `orden`, `canal=CHATBOT`, `pagina`, `tamanio`) y devolverlos con su precio vigente obtenido de `GET /api/v1/precios`. `orden` es un conjunto cerrado: `relevancia` (por defecto), `precio_asc`, `precio_desc`, `nombre_asc` y `nombre_desc`; cualquier otro valor responde `400 VALIDACION`. Productos no filtra por talla, color ni otros atributos, y `q` no garantiza coincidencias en atributos o variantes (respuesta de Productos, 15/10). Esos criterios viajan en `q` solo como ayuda, sin prometer que filtren, y se confirman en el detalle del producto. Productos comprometió filtros estructurados de variantes para una etapa posterior; cuando estén publicados en su OpenAPI se reemplaza este comportamiento.
 
 *Trazabilidad: SPEC-06 · Requisito 1.*
 
@@ -65,6 +65,26 @@ El sistema DEBE (SHALL) convertir la petición en los filtros que admite `GET /a
 - **DADO** una página de resultados
 - **CUANDO** se arma el carrusel
 - **ENTONCES** los SKU se obtienen de `sku_base` o, si el producto `tiene_variantes`, del detalle `GET /api/v1/productos/{productoId}` (no hay endpoint masivo de detalles), y se consultan el precio (`GET /api/v1/precios?skus=&canal=CHATBOT`) y la disponibilidad (`GET /api/v1/inventario/disponibilidad/comercial`) en llamadas por lotes de hasta 100 SKU, porque la búsqueda no devuelve precio ni stock
+
+#### Scenario: Orden por precio ascendente
+- **DADO** una búsqueda con resultados de S/ 199, 289 y 459
+- **CUANDO** el cliente pide "de menor a mayor precio" (`orden=precio_asc`)
+- **ENTONCES** el carrusel muestra primero S/ 199, luego S/ 289 y luego S/ 459; si Productos aún no expone orden por precio (A16), el BFF ordena la página enriquecida con Pricing y el resultado se presenta como orden de la página, sin prometer un orden global entre páginas
+
+#### Scenario: Orden por nombre
+- **DADO** una búsqueda con varios productos
+- **CUANDO** el cliente pide "orden alfabético" (`orden=nombre_asc`)
+- **ENTONCES** el BFF envía `orden=NOMBRE_ASC` a Productos y el carrusel respeta ese orden; `nombre_desc` hace lo propio
+
+#### Scenario: Orden por defecto
+- **DADO** una búsqueda sin `orden`
+- **CUANDO** se consulta
+- **ENTONCES** se usa `relevancia` y se conserva el orden de Productos
+
+#### Scenario: Orden inválido
+- **DADO** `orden=barato`
+- **CUANDO** se consulta
+- **ENTONCES** se responde `400 VALIDACION` y no se llama a Productos con un valor fuera del conjunto
 
 #### Scenario: Sin caché contractual
 - **DADO** que Productos aún no publica una pauta de caché ni de concurrencia
@@ -99,7 +119,7 @@ El sistema DEBE (SHALL) mantener los filtros vigentes en `conversation.context.f
 #### Scenario: Refinar por precio
 - **DADO** una búsqueda previa de "zapatillas Nike running"
 - **CUANDO** el cliente escribe "más baratas"
-- **ENTONCES** se conservan los filtros y se reduce `precioMax` al percentil 50 de los precios de los resultados previos (Productos no ordena por precio todavía; comprometió `PRECIO_ASC` y `PRECIO_DESC` para una etapa posterior)
+- **ENTONCES** se conservan los filtros, se aplica `precioMax` al percentil 50 de los precios de los resultados previos y se ordena con `orden=precio_asc`; si Productos no expone orden por precio (A16), el BFF ordena la página enriquecida y lo indica sin prometer un orden global
 
 #### Scenario: Nueva búsqueda sin relación
 - **DADO** filtros vigentes de zapatillas
@@ -144,6 +164,7 @@ El sistema DEBE (SHALL) informar cuando el catálogo no está disponible, sin mo
 ## Requisitos no funcionales
 
 - **Rendimiento:** búsqueda (excluido el LLM) en p95 ≤ 800 ms. Caché de categorías y marcas de 10 min. Los resultados de búsqueda no se cachean más de 60 s y los precios nunca más de 60 s.
+- **Orden:** `relevancia` es el valor por defecto; `nombre_asc`/`nombre_desc` se delegan a Productos (`NOMBRE_ASC`/`NOMBRE_DESC`). Mientras Productos no exponga orden por precio (A16), `precio_asc`/`precio_desc` se aplican en el BFF sobre la página ya enriquecida con Pricing; el orden es de la página, no global, y la UI no debe prometer lo contrario. Supuesto explícito: cuando Productos publique `PRECIO_ASC`/`PRECIO_DESC`, el BFF delega y desaparece la limitación.
 - **Consistencia:** el precio mostrado es el de Pricing para el canal `CHATBOT`; si Productos no devuelve precio para un SKU, el producto se muestra como "Precio no disponible" y no se puede agregar.
 - **Escalabilidad:** el diccionario de sinónimos vive versionado en `ProductNormalizer.DEFAULT_SYNONYMS` (código del módulo `mod-catalog`); las categorías y marcas se cargan de los catálogos de Productos y se cachean.
 
@@ -154,3 +175,7 @@ La capacidad se considera correctamente implementada cuando:
 - Todos los escenarios definidos se cumplen.
 - Los requisitos no funcionales aplicables se cumplen.
 - No se han incorporado funcionalidades fuera del alcance.
+
+## Decisiones
+
+- **D7 — Orden de búsqueda (auditoría §4).** `orden` deja de ser un parámetro ignorado y pasa a un conjunto cerrado: `relevancia | precio_asc | precio_desc | nombre_asc | nombre_desc`, con `relevancia` por defecto y `400 VALIDACION` para valores fuera del conjunto. **Aprobada:** 2026-11-21. **Estado:** en implementación; no se marca implementada hasta que el código mergee. **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md).

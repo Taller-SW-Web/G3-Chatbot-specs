@@ -1,12 +1,15 @@
 # Diseño: Búsqueda y filtrado de productos
 
-> Origen: SPEC-06 · Especificación de comportamiento: [`spec.md`](spec.md)
+> Origen: SPEC-06 · Especificación de comportamiento: [`spec.md`](spec.md) · Decisión: [D7](../../../docs/auditoria-specs-2026-11.md)
 
 ## Integraciones
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
 | Productos | `GET /productos?q=&categoriaId=&marcaId=&canal=CHATBOT&pagina=&tamanio=&precioMin=&precioMax=&orden=` (`orden`: `NOMBRE_ASC`, `NOMBRE_DESC`). El chatbot no envía `estado`: es un filtro de backoffice y una identidad de canal no puede usarlo (A17) | 🟡 A5 · scopes `catalogo:leer` pendientes |
+| Propio | `GET /api/v1/catalogo/productos?orden=relevancia\|precio_asc\|precio_desc\|nombre_asc\|nombre_desc` | 🟡 En implementación (D7, 2026-11-21) |
+
+🧩 **Mapeo de `orden` (D7).** El contrato del chatbot usa minúsculas con guion bajo; hacia Productos se traduce así: `relevancia` → sin `orden` (orden natural de Productos), `nombre_asc` → `NOMBRE_ASC`, `nombre_desc` → `NOMBRE_DESC`. `precio_asc` y `precio_desc` no tienen equivalente en Productos (A16): el BFF enriquece la página con `GET /precios` y la ordena en memoria. Supuesto explícito: ese orden es de la página, no global; cuando Productos publique `PRECIO_ASC`/`PRECIO_DESC`, se delega y se elimina la nota. Un valor fuera del conjunto responde `400 VALIDACION` antes de llamar a Productos.
 | Productos | `GET /categorias` · `GET /marcas` | 🟡 A5 · scopes pendientes |
 | Productos | `GET /precios?skus=&canal=CHATBOT` (la búsqueda no trae precio) | 🟡 A5 · scopes pendientes |
 | Productos | `GET /inventario/disponibilidad/comercial?skus=&canal=CHATBOT` (la búsqueda no trae disponibilidad) | 🟡 A5 · scopes pendientes |
@@ -26,8 +29,9 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| Herramienta `buscar_productos` | Esquema real `{q?, categoria?, marca?, talla?, color?, soloOfertas?, orden?, precioMin?, precioMax?, pagina?, tamanio?, canal?, estado?}`; `categoria` y `marca` son nombres que el normalizador convierte a `categoriaId`/`marcaId` antes de llamar a Productos. |
-| `CatalogoService.buscar()` | Normaliza, consulta, mapea a `ProductoResumen` y guarda `ultimoCarrusel` y `filtrosVigentes`. |
+| Herramienta `buscar_productos` | Esquema real `{q?, categoria?, marca?, talla?, color?, soloOfertas?, orden?: "relevancia" \| "precio_asc" \| "precio_desc" \| "nombre_asc" \| "nombre_desc", precioMin?, precioMax?, pagina?, tamanio?, canal?, estado?}`; `categoria` y `marca` son nombres que el normalizador convierte a `categoriaId`/`marcaId` antes de llamar a Productos. |
+| `CatalogoService.buscar()` | Normaliza, consulta, mapea a `ProductoResumen`, aplica el orden solicitado y guarda `ultimoCarrusel` y `filtrosVigentes`. |
+| `OrdenadorResultados` | Traduce `orden` al parámetro de Productos o, para precio, ordena la página enriquecida; valida el conjunto cerrado y responde `400 VALIDACION` si no pertenece. |
 | `Normalizador` | Sinónimos, similitud con `SequenceMatcher` (corte 0.8) y caché de categorías y marcas. |
 | `ProductosClient` | httpx con timeout de 4 s y token de servicio si Productos lo requiere. |
 | `GET /api/v1/catalogo/productos` | Misma búsqueda para las acciones directas. |

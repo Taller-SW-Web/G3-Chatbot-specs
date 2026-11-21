@@ -77,14 +77,25 @@ El sistema DEBE (SHALL) consultar la disponibilidad comercial del SKU (`GET /api
 - **ENTONCES** se envía `fulfillment: {mode: ENVIO_DOMICILIO}` sin `fulfillment_ref`, se lee `items[].result` y el mensaje al cliente no promete que el stock quedará disponible
 
 ### Requirement: Revalidar todo el carrito antes del checkout
-El sistema DEBE (SHALL) revalidar la disponibilidad comercial de todas las líneas en una sola consulta masiva al iniciar el checkout y bloquearlo si alguna línea está `AGOTADO` o la verificación por cantidad de todas las líneas (una sola llamada) responde `INSUFICIENTE`. Una línea en `STOCK_BAJO` o `INDETERMINADO` no bloquea el checkout y muestra un aviso.
+El sistema DEBE (SHALL) revalidar la disponibilidad comercial de todas las líneas en una sola consulta masiva al iniciar el checkout —invocando la validación de carrito de `mod-cart` (`validate_cart`), no una consulta suelta de cada línea— y bloquearlo si alguna línea está `AGOTADO` o la verificación por cantidad de todas las líneas (una sola llamada) responde `INSUFICIENTE`. Una línea en `STOCK_BAJO` o `INDETERMINADO` no bloquea el checkout y muestra un aviso. Si la revalidación no puede obtener una respuesta válida, el checkout NO DEBE (SHALL NOT) continuar asumiendo disponibilidad.
 
 *Trazabilidad: SPEC-10 · Requisito 2.*
 
 #### Scenario: El stock cambió desde que se agregó
 - **DADO** un carrito con SKU-A cuyo estado pasó a `AGOTADO`
 - **CUANDO** se inicia el checkout
-- **ENTONCES** se responde `409 CARRITO_DESACTUALIZADO` con el detalle por línea, y el chat muestra "X se agotó mientras elegías" con el botón "Quitar del carrito"
+- **ENTONCES** se responde `409 CARRITO_DESACTUALIZADO` con `lineas: [{sku, cantidad, motivo: "AGOTADO"}]`, no se crea checkout ni pedido, y el chat muestra "X se agotó mientras elegías" con el botón "Quitar del carrito"
+
+#### Scenario: Varias líneas afectadas
+- **DADO** un carrito con SKU-A `AGOTADO` y SKU-B `INSUFICIENTE` para la cantidad pedida
+- **CUANDO** se inicia el checkout
+- **ENTONCES** el `409 CARRITO_DESACTUALIZADO` incluye una entrada por cada línea afectada en `lineas`, con su `motivo` (`AGOTADO`, `STOCK_INSUFICIENTE` o `NO_CONFIRMADO`) y sin cantidades de stock disponibles
+- **Y** el `summary` actualizado por el servidor acompaña al error para que el cliente revise su carrito
+
+#### Scenario: No se puede revalidar
+- **DADO** que la validación de carrito no obtiene una respuesta válida de Productos (timeout, error o payload incompatible)
+- **CUANDO** se inicia el checkout
+- **ENTONCES** se responde `503 MODULO_NO_DISPONIBLE` con `{modulo: "products"}`, no se crea checkout ni pedido y el chat pide reintentar; no se interpreta como `AGOTADO` ni como disponible
 
 #### Scenario: Línea con disponibilidad indeterminada
 - **DADO** un carrito en el que una línea responde `INDETERMINADO`
@@ -149,6 +160,7 @@ El sistema DEBE (SHALL) responder preguntas de stock sobre un producto o una var
 ## Requisitos no funcionales
 
 - **Consistencia:** las decisiones de agregar o hacer checkout usan una consulta en vivo, sin caché. Los badges de las tarjetas solo se reutilizan dentro del mismo turno, porque Productos no publicó un TTL de caché (SPEC-06 · Requisito 1).
+- **Contrato del 409:** el `409 CARRITO_DESACTUALIZADO` del checkout incluye `lineas` con `sku`, `nombre`, `cantidad`, `motivo` (`AGOTADO`, `STOCK_INSUFICIENTE` o `NO_CONFIRMADO`) y `mensaje`, además del `summary` actualizado. Es el nombre que usa el caso de uso del checkout; si el código lo cambia, se actualizan contrato y frontend en el mismo cambio. Nunca se exponen cantidades de stock.
 - **Rendimiento:** la consulta masiva para el checkout (hasta 20 SKUs) se hace en una sola llamada con p95 ≤ 500 ms.
 - **Transparencia:** los mensajes aclaran que el stock no queda reservado hasta completar el pago ("Te recomendamos completar tu compra pronto").
 - **Privacidad comercial:** no se exponen cantidades de stock; Productos no las entrega al chatbot.
@@ -161,3 +173,7 @@ La capacidad se considera correctamente implementada cuando:
 - Todos los escenarios definidos se cumplen.
 - Los requisitos no funcionales aplicables se cumplen.
 - No se han incorporado funcionalidades fuera del alcance.
+
+## Decisiones
+
+- **D3 — El checkout revalida el stock en el chatbot (auditoría §4).** `POST /checkout` invoca la validación masiva de `mod-cart` (`validate_cart`) antes de crear el checkout o el pedido; si una línea está agotada o insuficiente, responde `409 CARRITO_DESACTUALIZADO` con `lineas` y no delega la primera detección en Ventas. **Aprobada:** 2026-11-21. **Estado:** en implementación; no se marca implementada hasta que el código mergee. **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md).

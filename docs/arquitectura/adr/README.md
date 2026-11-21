@@ -38,5 +38,6 @@ Reglas:
 | [ADR-0022](ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md) | Módulos simulados en proceso para los entornos desplegados | Aceptada | 2026-10-16 |
 | [ADR-0023](ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md) | Proxy del frontend hacia la API (mismo origen) | Aceptada | 2026-10-16 |
 | [ADR-0024](ADR-0024-calidad-y-seguridad-en-el-pipeline.md) | Pipeline de CI/CD con gate de calidad, seguridad y pruebas | Propuesta | 2026-11-07 |
+| [ADR-0025](ADR-0025-monolito-modular-por-capacidad.md) | Monolito modular por capacidad en backend y frontend (homologa el ADR-0024 del backend) | Aceptada | 2026-11-21 |
 
 Las vistas que estas decisiones explican están en el [modelo C4](../c4.md).

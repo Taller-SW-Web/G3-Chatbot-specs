@@ -61,7 +61,7 @@ Incluye:
 ## Requirements
 
 ### Requirement: Conversaciones múltiples
-El sistema DEBE (SHALL) permitir crear una nueva conversación en cualquier momento, listar las conversaciones del cliente (o de la sesión anónima) ordenadas por actividad reciente, y buscar entre ellas por texto.
+El sistema DEBE (SHALL) permitir crear una nueva conversación en cualquier momento, listar las conversaciones del cliente (o de la sesión anónima) ordenadas por actividad reciente, y buscar entre ellas desde una pantalla propia.
 
 *Trazabilidad: SPEC-05 · Requisito 1.*
 
@@ -76,9 +76,20 @@ El sistema DEBE (SHALL) permitir crear una nueva conversación en cualquier mome
 - **ENTONCES** `GET /api/v1/chat/conversaciones?pagina=1` devuelve las conversaciones ordenadas por `last_message_at` descendente, con un título derivado del primer mensaje del cliente (máx. 40 caracteres) y una vista previa del último mensaje
 
 #### Scenario: Buscar chats
-- **DADO** el campo "Buscar chats"
+- **DADO** la barra lateral abierta
+- **CUANDO** el cliente pulsa "Buscar chats"
+- **ENTONCES** se navega a `SearchChatsPage` (ruta `/buscar`), con el campo "Buscar conversaciones" enfocado y la lista "Recientes" con título, vista previa y fecha de cada conversación
+
+#### Scenario: Buscar por texto
+- **DADO** `SearchChatsPage`
 - **CUANDO** el cliente escribe "zapatillas"
 - **ENTONCES** `GET /api/v1/chat/conversaciones/buscar?q=zapatillas` devuelve las conversaciones cuyo título o mensajes contienen el término, resaltando la coincidencia
+- **Y** al tocar un resultado se navega a `ChatPage` con esa conversación
+
+#### Scenario: Búsqueda sin resultados
+- **DADO** un término sin coincidencias
+- **CUANDO** se busca
+- **ENTONCES** se muestra `Sin resultados para "{término}"`
 
 #### Scenario: Retomar una conversación
 - **DADO** el listado de recientes
@@ -90,20 +101,25 @@ El sistema DEBE (SHALL) permitir crear una nueva conversación en cualquier mome
 - **CUANDO** inicia sesión
 - **ENTONCES** esas conversaciones quedan ligadas a su `customer_id` y aparecen en su listado junto con las que ya tenía
 
+#### Scenario: Historial de pedidos desde la barra lateral
+- **DADO** la barra lateral abierta
+- **CUANDO** el cliente pulsa "Historial de pedidos"
+- **ENTONCES** con sesión se navega a `OrderHistoryPage` en la pestaña "En proceso" (SPEC-17); sin sesión se abre `AuthModal` y, tras un login exitoso, se navega a `OrderHistoryPage`
+
 ### Requirement: Pantalla de inicio
-El sistema DEBE (SHALL) mostrar, al abrir la app o al no tener ninguna conversación activa, una pantalla que combine un banner de ofertas, un grid de productos en oferta y el campo de conversación.
+El sistema DEBE (SHALL) mostrar, al abrir la app o al no tener ninguna conversación activa, una pantalla que combine un banner de ofertas, un grid de productos en oferta, el campo de conversación y las acciones rápidas fijas "Ver ofertas", "Rastrear pedido" y "Ayuda con devolución".
 
 *Trazabilidad: SPEC-05 · Requisito 2.*
 
 #### Scenario: Primera apertura
 - **DADO** un visitante que abre la app por primera vez
 - **CUANDO** carga `HomePage`
-- **ENTONCES** se muestran el banner de ofertas (carrusel con indicadores) alimentado por `GET /catalogo/promociones` (SPEC-08), un grid de hasta 4 productos en oferta obtenido con la búsqueda `soloOfertas=true` (SPEC-06) y el campo de chat en la parte inferior, sin necesidad de sesión
+- **ENTONCES** se muestran el banner de ofertas (carrusel con indicadores) alimentado por `GET /catalogo/promociones` (SPEC-08), un grid de hasta 4 productos en oferta obtenido con la búsqueda `soloOfertas=true` (SPEC-06), el campo de chat en la parte inferior y las tres acciones rápidas fijas, sin necesidad de sesión
 
 #### Scenario: Promociones no disponibles
 - **DADO** que `GET /catalogo/promociones` (SPEC-08) todavía no está disponible (Hito 3), falla o no devuelve promociones vigentes
 - **CUANDO** carga `HomePage`
-- **ENTONCES** el banner de ofertas no se muestra, el grid de productos en oferta (SPEC-06) y el campo de chat se muestran igual, y no se muestra ningún error al cliente
+- **ENTONCES** el banner de ofertas no se muestra, el grid de productos en oferta (SPEC-06), el campo de chat y las acciones rápidas fijas se muestran igual, y no se muestra ningún error al cliente
 
 #### Scenario: Escribir desde la pantalla de inicio
 - **DADO** el campo de chat de `HomePage`
@@ -356,6 +372,73 @@ El sistema DEBE (SHALL) presentarse siempre como un asistente virtual, con el no
 - **CUANDO** el cliente escribe "quiero hablar con una persona" o una petición equivalente
 - **ENTONCES** el asistente responde, sin invocar herramientas, "En este canal no hay asesores humanos, pero puedo ayudarte con tu compra o tus pedidos. Si tienes un problema con un pedido, puedes crear un reclamo." con las acciones rápidas "Crear un reclamo" (SPEC-19) y "Mis pedidos" (SPEC-17), más el canal de contacto de la tienda solo si está configurado
 - **Y** no promete una derivación, una llamada ni un tiempo de respuesta de una persona
+
+### Requirement: Consultar en el chat desde una tarjeta
+El sistema DEBE (SHALL) ofrecer en las tarjetas de pedido, seguimiento, solicitud de devolución o cambio y reclamo el botón "Preguntar en el chat", que abre una conversación nueva con un primer mensaje del cliente referido a ese elemento, y DEBE responderlo como cualquier otro turno con datos obtenidos de las herramientas.
+
+*Trazabilidad: SPEC-05 · Requisito 13.*
+
+#### Scenario: Desde una tarjeta de pedido
+- **DADO** la tarjeta del pedido PED-2026-00891 en `OrderHistoryPage`
+- **CUANDO** el cliente pulsa "Preguntar en el chat"
+- **ENTONCES** se crea una conversación nueva, se navega a `ChatPage` y se envía como primer mensaje del cliente "Tengo una consulta sobre mi pedido PED-2026-00891"
+- **Y** el asistente responde invocando `consultar_pedido` y muestra el bloque `ESTADO_PEDIDO` (SPEC-17)
+
+#### Scenario: Desde el seguimiento de un pedido
+- **DADO** el seguimiento de un pedido despachado
+- **CUANDO** el cliente pulsa "Preguntar en el chat"
+- **ENTONCES** el primer mensaje es "Tengo una consulta sobre el seguimiento de mi pedido {pedidoId}" y el asistente responde con `consultar_seguimiento` (SPEC-18)
+
+#### Scenario: Desde una solicitud de devolución o cambio
+- **DADO** la tarjeta de la solicitud DEV-2026-0042 en la pestaña "Reembolsos"
+- **CUANDO** el cliente pulsa "Preguntar en el chat"
+- **ENTONCES** el primer mensaje es "Tengo una consulta sobre mi solicitud DEV-2026-0042" y el asistente responde con `consultar_devolucion` (SPEC-22)
+
+#### Scenario: Desde un reclamo
+- **DADO** la tarjeta de un reclamo del cliente
+- **CUANDO** el cliente pulsa "Preguntar en el chat"
+- **ENTONCES** el primer mensaje es "Tengo una consulta sobre mi reclamo {codigoSeguimiento}" y el asistente responde con `consultar_reclamo` (SPEC-20)
+
+#### Scenario: La respuesta no está prearmada
+- **DADO** una conversación abierta desde "Preguntar en el chat"
+- **CUANDO** el asistente responde
+- **ENTONCES** el estado, las fechas y los importes provienen del resultado de la herramienta (Requisito 7) y, si el módulo dueño no responde, se muestra el aviso de indisponibilidad de la spec correspondiente
+
+### Requirement: Acciones rápidas fijas
+El sistema DEBE (SHALL) mostrar en `HomePage` y `ChatPage` tres acciones rápidas fijas —"Ver ofertas", "Rastrear pedido" y "Ayuda con devolución"— que inician el flujo correspondiente sin que el cliente escriba.
+
+*Trazabilidad: SPEC-05 · Requisito 14.*
+
+#### Scenario: "Ver ofertas" desde la pantalla de inicio
+- **DADO** un visitante sin sesión en `HomePage`
+- **CUANDO** pulsa "Ver ofertas"
+- **ENTONCES** se crea la conversación, se navega a `ChatPage`, la acción directa queda registrada en el historial y se responde con el bloque `LISTA_PROMOCIONES` (SPEC-08 · Requisito 1)
+
+#### Scenario: "Rastrear pedido" con sesión
+- **DADO** un cliente autenticado
+- **CUANDO** pulsa "Rastrear pedido"
+- **ENTONCES** se aplica la identificación del pedido de SPEC-17 · Requisito 1: con un solo pedido en curso se muestra `ESTADO_PEDIDO`; con varios, `LISTA_PEDIDOS`
+
+#### Scenario: "Ayuda con devolución" con sesión
+- **DADO** un cliente autenticado
+- **CUANDO** pulsa "Ayuda con devolución"
+- **ENTONCES** se inicia el flujo de SPEC-21: elegir el pedido entregado y, si es elegible, mostrar el formulario de devolución o cambio
+
+#### Scenario: Acción que requiere sesión, sin sesión
+- **DADO** un visitante sin sesión
+- **CUANDO** pulsa "Rastrear pedido" o "Ayuda con devolución"
+- **ENTONCES** el asistente explica que debe iniciar sesión, ofrece "Iniciar sesión" y "Crear cuenta" y guarda la `accionPendiente`
+- **Y** tras un login exitoso el flujo continúa sin que el cliente repita la acción (SPEC-03 · Requisito 3)
+
+#### Scenario: Convivencia con las acciones de una respuesta
+- **DADO** una respuesta del asistente que trae sus propias acciones rápidas
+- **CUANDO** se muestra
+- **ENTONCES** las acciones de la respuesta aparecen junto al mensaje y las tres fijas siguen visibles en su lugar
+
+#### Scenario: Mientras el asistente responde
+- **DADO** un turno en curso
+- **CUANDO** el cliente intenta pulsar una acción rápida fija
+- **ENTONCES** las tres están deshabilitadas hasta que termina el turno
 
 ## Requisitos no funcionales
 

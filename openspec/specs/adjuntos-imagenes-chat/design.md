@@ -18,7 +18,8 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `AttachmentButton` (en `Composer`) | Botón "Adjuntar" que abre el selector de archivos (`accept="image/jpeg,image/png,image/webp"`); deshabilitado con 3 imágenes ya adjuntas. |
+| `AttachmentButton` (en `Composer`) | Botón "Agregar imagen" que abre `AttachmentSourceSheet`; deshabilitado con 3 imágenes ya adjuntas. |
+| `AttachmentSourceSheet` | Hoja con las opciones "Galería" y "Tomar foto" (selector nativo, `accept="image/jpeg,image/png,image/webp"`, `capture="environment"` para la cámara), sin permiso propio de cámara; ambos orígenes comparten validaciones de tipo y tamaño. |
 | `ImagePrivacyNotice` | Aviso de la primera carga con enlace a la política de privacidad y botón "Entendido, adjuntar"; recuerda la confirmación en el dispositivo (LocalStorage, con degradación si no está disponible). |
 | `AttachmentPreviewList` | Miniaturas locales de las imágenes pendientes con barra de progreso, estado de error con "Reintentar" y botón "Quitar". |
 | `validateImageFile` (dominio) | Valida tipo, tamaño (máx. 5 MB) y cantidad (máx. 3) antes de subir; no reemplaza la validación del backend. |

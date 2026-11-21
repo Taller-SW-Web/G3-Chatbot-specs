@@ -43,7 +43,9 @@ Aceptada; implementación retomada (2026-11-21, ver [Actualización](#actualizac
 - La verificación no se comparte con otros canales (Marketplace, Retail) ni con el perfil de Seguridad: limitación conocida mientras A2 siga fuera de alcance.
 - El canal pasa a guardar el celular completo, sin plazo de retención definido (`privacidad.md` §2).
 
-## Actualización 2026-11-07: implementación pospuesta
+## Actualización 2026-11-07: implementación pospuesta (histórico, reemplazada)
+
+> **Reemplazada el 2026-11-21 por [ADR-0026](ADR-0026-almacen-de-otp-y-guard-de-celular.md) y la sección "implementación retomada" de más abajo.** La posposición ya NO está vigente: los endpoints existen, el checkout exige el celular verificado cuando `REQUIRE_PHONE_VERIFICATION=true` y SPEC-04 está activa. Esta sección se conserva solo como historial de la decisión del 2026-11-07; no la use para razonar sobre el estado actual.
 
 El equipo decide posponer la verificación del celular. La decisión de arriba sigue siendo el diseño objetivo, pero hoy no está activa:
 

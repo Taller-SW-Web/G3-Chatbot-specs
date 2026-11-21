@@ -19,7 +19,8 @@
 | `MfaStep` + `OtpInput` | 6 casillas numéricas con pegado automático, cuenta regresiva, reenvío con temporizador y cambio de canal. |
 | `chatStore` (Zustand, slice de sesión) | Guarda `accessToken`, `expiraEn` y `usuario` persistidos en LocalStorage, y expone `login`, `logout` y `refresh`. El logout borra la entrada de LocalStorage. |
 | `apiClient` (interceptor) | Agrega el Bearer, hace refresh previo al vencimiento, mantiene una única promesa de refresh concurrente y reintenta una vez ante `401`. |
-| `SesionIndicator` | Avatar o nombre en la cabecera de `AppShell`, con el menú "Mis pedidos", "Mis reclamos" y "Cerrar sesión". |
+| `SesionIndicator` | Pie de la barra lateral con inicial y nombre. Con sesión abre `AccountPage`; sin sesión abre `AuthModal` en la pestaña de login. |
+| `AccountPage` (`/cuenta`) | Pantalla de solo lectura con nombre, correo, celular enmascarado y su verificación local, documento enmascarado del último checkout (`ultimoDocumento`) y los accesos "Mis pedidos", "Mis reclamos" y "Cerrar sesión". |
 | Restauración al cargar | Lee el token de LocalStorage al montar la aplicación; si expiró o no existe, llama a `POST /sesion/refresh`. |
 
 ## Backend

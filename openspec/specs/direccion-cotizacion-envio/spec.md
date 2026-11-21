@@ -56,7 +56,7 @@ El sistema DEBE (SHALL) pedir el tipo y número de documento del comprador dentr
 | `CE` (Carné de Extranjería) | De 8 a 12 caracteres alfanuméricos | `^[a-zA-Z0-9]{8,12}$` |
 | `PASAPORTE` | De 6 a 12 caracteres alfanuméricos | `^[a-zA-Z0-9]{6,12}$` |
 
-Si el formato no corresponde al tipo elegido, Ventas rechaza con `400 Bad Request {codigo: DATO_INVALIDO}`. Esto reemplaza el rango genérico de "6 a 12 caracteres" para `CE` que se había asumido antes, y agrega `PASAPORTE` como cuarto tipo (no contemplado en el diseño anterior).
+Si el formato no corresponde al tipo elegido, Ventas rechaza con `400 Bad Request {codigo: DATO_INVALIDO}`. Esto reemplaza el rango genérico de "6 a 12 caracteres" para `CE` que se había asumido antes, y agrega `PASAPORTE` como cuarto tipo (no contemplado en el diseño anterior). La sección muestra bajo los campos la nota fija "El documento del comprobante puede ser distinto al de tu cuenta." El documento capturado se usa solo para ese pedido y no modifica el perfil del cliente.
 
 *Trazabilidad: SPEC-12 · Requisito 1.*
 
@@ -89,6 +89,12 @@ Si el formato no corresponde al tipo elegido, Ventas rechaza con `400 Bad Reques
 - **DADO** un cliente que ya completó su documento en una compra anterior en este canal
 - **CUANDO** vuelve a comprar
 - **ENTONCES** el campo se prellena con el último documento usado (guardado en `checkout.summary` de su pedido anterior, nunca en el perfil de Seguridad, que no lo modela) y queda editable
+
+#### Scenario: Nota sobre el documento del comprobante
+- **DADO** la sección de documento de `CheckoutPage`
+- **CUANDO** se muestra
+- **ENTONCES** bajo los campos aparece la nota "El documento del comprobante puede ser distinto al de tu cuenta."
+- **Y** el documento ingresado se usa solo para ese pedido (`checkout.summary.contacto`) y no modifica ningún dato del perfil del cliente
 
 ### Requirement: Capturar la dirección en el checkout
 El sistema DEBE (SHALL) mostrar los campos de dirección dentro de `CheckoutPage`, prellenados con la dirección predeterminada del cliente si existe y editable, usando los nombres de campo que espera Ventas.

@@ -15,7 +15,9 @@
 | Componente | Responsabilidad |
 |---|---|
 | `AppShell` (inbound, orquesta) | Layout raíz del App Router de Next.js (componente de cliente): monta `Sidebar`, contiene las rutas `/` (`HomePage`), `/chat/[id]` (`ChatPage`), `/carrito` (`CartPage`), `/checkout` (`CheckoutPage`) y `/pedidos` (`OrderHistoryPage`), y mantiene el estado del stream SSE activo. |
-| `Sidebar` | "Nuevo chat", campo "Buscar chats", lista de conversaciones recientes (título + vista previa), acceso al perfil y a `SesionIndicator` (SPEC-03). |
+| `Sidebar` | En orden: "Nuevo chat", "Buscar chats" (navega a `SearchChatsPage`, ruta `/buscar`), "Historial de pedidos", lista "Recientes" (título + vista previa) y un pie con `SesionIndicator` (SPEC-03), que abre `AccountPage` con sesión o `AuthModal` sin ella. |
+| `SearchChatsPage` | Pantalla `/buscar`: campo "Buscar conversaciones" enfocado, recientes y resultados con vista previa y fecha, y estado "Sin resultados". |
+| `FixedQuickActions` | Acciones rápidas fijas "Ver ofertas", "Rastrear pedido" y "Ayuda con devolución", bajo el grid de `HomePage` y al final de la lista de mensajes; son acciones directas REST (`VER_OFERTAS`, `RASTREAR_PEDIDO`, `AYUDA_DEVOLUCION`). |
 | `HomePage` | Banner de ofertas, grid de productos en oferta y el compositor de chat. |
 | `ChatPage` + `useChat` | Orquesta la vista de una conversación: envía mensajes por REST, lee el stream SSE de la respuesta, renderiza `MessageList`. |
 | `MessageList` / `MessageRenderer` | Mapea `Bloque.tipo` al componente correspondiente; muestra el efecto de streaming token por token. |

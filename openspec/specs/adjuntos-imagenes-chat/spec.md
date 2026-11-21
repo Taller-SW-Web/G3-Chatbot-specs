@@ -52,7 +52,7 @@ Incluye:
 ## Requirements
 
 ### Requirement: Adjuntar imágenes desde el compositor
-El sistema DEBE (SHALL) permitir adjuntar hasta 3 imágenes por mensaje (`image/jpeg`, `image/png` o `image/webp`, máx. 5 MB cada una), validarlas en el cliente antes de subirlas y mostrar una previsualización con la opción de quitar cada una.
+El sistema DEBE (SHALL) permitir adjuntar hasta 3 imágenes por mensaje (`image/jpeg`, `image/png` o `image/webp`, máx. 5 MB cada una), elegir su origen entre Galería y Tomar foto, validarlas en el cliente antes de subirlas y mostrar una previsualización con la opción de quitar cada una.
 
 *Trazabilidad: SPEC-23 · Requisito 1.*
 
@@ -68,7 +68,7 @@ El sistema DEBE (SHALL) permitir adjuntar hasta 3 imágenes por mensaje (`image/
 
 #### Scenario: Tipo o tamaño no permitido detectado en el cliente
 - **DADO** un archivo `.gif`, un PDF o una imagen de 7 MB
-- **CUANDO** el cliente lo selecciona
+- **CUANDO** el cliente lo selecciona desde Galería o Tomar foto
 - **ENTONCES** el frontend lo rechaza antes de subirlo y muestra "Solo puedes adjuntar imágenes JPG, PNG o WebP de hasta 5 MB"
 
 #### Scenario: Quitar una imagen antes de enviar
@@ -80,6 +80,26 @@ El sistema DEBE (SHALL) permitir adjuntar hasta 3 imágenes por mensaje (`image/
 - **DADO** una imagen adjunta y el campo de texto vacío
 - **CUANDO** el cliente envía el mensaje
 - **ENTONCES** el envío se permite (el texto es opcional cuando hay al menos un adjunto)
+
+#### Scenario: Elegir el origen de la imagen
+- **DADO** un cliente que ya confirmó el aviso de privacidad (Requisito 2)
+- **CUANDO** pulsa el botón "Agregar imagen"
+- **ENTONCES** se muestra una hoja con las opciones "Galería" y "Tomar foto" y el recordatorio de formatos y tamaño permitidos
+
+#### Scenario: Tomar una foto con la cámara
+- **DADO** la hoja de origen en un dispositivo con cámara
+- **CUANDO** el cliente elige "Tomar foto" y captura una imagen
+- **ENTONCES** la foto pasa las mismas validaciones de tipo y tamaño que una imagen de la galería, aparece como miniatura con "Quitar" y cuenta para el límite de 3 imágenes por mensaje
+
+#### Scenario: Dispositivo sin cámara o permiso denegado
+- **DADO** un dispositivo sin cámara, o un cliente que niega el permiso
+- **CUANDO** elige "Tomar foto"
+- **ENTONCES** no se adjunta nada, no se muestra un error bloqueante y la opción "Galería" y el envío de texto siguen funcionando
+
+#### Scenario: Foto de cámara mayor de 5 MB
+- **DADO** una foto de cámara que supera 5 MB
+- **CUANDO** el cliente la captura o selecciona
+- **ENTONCES** se rechaza con "Solo puedes adjuntar imágenes JPG, PNG o WebP de hasta 5 MB" sin comprimirla en el cliente
 
 ### Requirement: Aviso de privacidad antes de la primera carga
 El sistema DEBE (SHALL) mostrar un aviso breve antes de la primera carga de una imagen en el dispositivo, que explique que la imagen se envía a un asistente con IA y se guarda de forma privada, sin casillas premarcadas y sin bloquear el resto de la aplicación.
@@ -319,6 +339,7 @@ El sistema DEBE (SHALL) conservar las referencias y los archivos de los adjuntos
 ## Requisitos no funcionales
 
 - **Privacidad:** las imágenes se guardan en un bucket privado (sin lectura pública) y solo se acceden mediante URLs firmadas emitidas por el backend con sesión o `chat_sid` válidos. Al LLM solo se envían los bytes en base64 de las imágenes del contexto vigente, nunca URLs. El backend no envía al proveedor los metadatos EXIF ni la ubicación. El proveedor LLM conserva las entradas de la API 30 días para monitoreo de abuso; este flujo transfronterizo debe informarse en `docs/conversacion/privacidad.md`. `SensitiveDataFilter` solo actúa sobre texto: las imágenes no se redactan (riesgo residual aceptado, ver Preguntas abiertas).
+- **Privacidad (cámara):** la cámara se abre solo mediante el selector nativo del dispositivo; la aplicación no pide ni conserva un permiso de cámara propio. La limpieza de EXIF y ubicación del Requisito 3 aplica también a las fotos tomadas con la cámara.
 - **Seguridad:**
   - El tipo de archivo se determina por su firma binaria (*type sniffing*), no por la extensión ni por el `Content-Type` del cliente. Solo se aceptan `image/jpeg`, `image/png` e `image/webp`.
   - Se eliminan EXIF y metadatos de ubicación y se re-codifica la imagen antes de guardarla.

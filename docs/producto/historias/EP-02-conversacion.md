@@ -512,7 +512,7 @@
 
 **Prioridad:** Could: retroalimentación sobre el canal mismo, sin impacto en la compra.
 
-**Notas:** depende de la pantalla "Mi cuenta" (SPEC-03 · Req. 7, cambio `alinear-specs-con-prototipo`). Reutiliza solo el puerto `AttachmentStorage` de SPEC-23; la clave de la captura se guarda en `feedback_suggestion.screenshot_key`, sin tocar la tabla `attachment` (ver [`modelo-datos.md`](../../modelo-datos.md)). Los comunicados posteriores con el cliente van por correo y están fuera de alcance.
+**Notas:** depende de la pantalla "Mi cuenta" (SPEC-03 · Req. 7, archivado en `alinear-specs-con-prototipo`, 2026-11-21). Reutiliza solo el puerto `AttachmentStorage` de SPEC-23; la clave de la captura se guarda en `feedback_suggestion.screenshot_key`, sin tocar la tabla `attachment` (ver [`modelo-datos.md`](../../modelo-datos.md)). Los comunicados posteriores con el cliente van por correo y están fuera de alcance.
 
 ---
 

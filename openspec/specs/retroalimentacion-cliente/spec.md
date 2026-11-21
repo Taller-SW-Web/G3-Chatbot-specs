@@ -22,7 +22,7 @@ Darle al cliente tres formas distintas de opinar sobre su experiencia — una re
 
 ✅ Los mockups usan dos nombres porque son dos cosas distintas, no una inconsistencia: **INKA** es la tienda (la marca que ve el cliente en el encabezado), y **Botleta** es el propio asistente conversacional, ya nombrado y aprobado en [`persona-tono.md`](../../../docs/conversacion/persona-tono.md) ("Botleta: bot + atleta"). Por eso el modal de calificación habla en la voz de Botleta ("Tu opinión ayuda a Botleta a mejorar") mientras el encabezado de la app sigue mostrando INKA.
 
-La pantalla "Mi cuenta" desde la que se accede a "Enviar sugerencia / Reportar bug" todavía no es parte de la spec base de `inicio-sesion`: vive en el cambio `openspec/changes/alinear-specs-con-prototipo`, sin aplicar. Si ese cambio se archiva con otro nombre de componente o de ruta, los Requisitos 4 y 5 de esta spec deben ajustarse.
+La pantalla "Mi cuenta" desde la que se accede a "Enviar sugerencia / Reportar bug" es parte de la spec base de `inicio-sesion` (Requisito 7, `AccountPage`, ruta `/cuenta`) desde el archivo del cambio `alinear-specs-con-prototipo` el 2026-11-21. Si cambia el nombre del componente o de la ruta, los Requisitos 4 y 5 de esta spec deben ajustarse.
 
 ## Alcance
 
@@ -73,7 +73,7 @@ El sistema DEBE (SHALL) mostrar, debajo de cada bloque de respuesta del asistent
 ### Requirement: Acceso a retroalimentación desde "Mi cuenta"
 El sistema DEBE (SHALL) mostrar en la pantalla "Mi cuenta" una sección "Ayúdanos a mejorar" con el botón "Enviar sugerencia / Reportar bug".
 
-*Trazabilidad: SPEC-24 · Requisito 3. Depende de la pantalla "Mi cuenta" definida en el cambio `alinear-specs-con-prototipo` (aún sin aplicar a `inicio-sesion`).*
+*Trazabilidad: SPEC-24 · Requisito 3. Depende de la pantalla "Mi cuenta" definida en `inicio-sesion` (SPEC-03 · Requisito 7, aplicada al archivar `alinear-specs-con-prototipo` el 2026-11-21).*
 
 #### Scenario: Entrada visible para cualquier cliente autenticado
 - **DADO** un cliente autenticado en "Mi cuenta"

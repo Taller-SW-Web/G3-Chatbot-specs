@@ -4,7 +4,7 @@
 
 Cada caso sale de un escenario (`#### Scenario`) de las specs del alcance del hito, sin reinterpretarlo: **Dado** es la precondición, **Cuando** la acción y **Entonces** el resultado esperado. Si una spec cambia, el caso cambia con ella.
 
-Los casos se escribieron contra las specs de `main` al 2026-11-06. Hay cambios de OpenSpec sin archivar que modifican specs de este alcance: `alinear-specs-con-productos` (SPEC-07, 08 y 13, PR #22 y #23) y `alinear-specs-con-prototipo` (SPEC-04 y 12). Cuando se archiven, hay que regenerar las tablas afectadas.
+Los casos se escribieron contra las specs de `main` al 2026-11-06. Los cambios de OpenSpec `alinear-specs-con-productos` (SPEC-07, 08 y 13, PR #22 y #23) y `alinear-specs-con-prototipo` (SPEC-04 y 12) se archivaron después (2026-10-23 y 2026-11-21); hay que regenerar las tablas afectadas.
 
 ## Resumen
 

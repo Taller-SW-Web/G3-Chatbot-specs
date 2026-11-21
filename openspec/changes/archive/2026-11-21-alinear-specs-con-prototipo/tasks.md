@@ -30,5 +30,9 @@
 ## 5. Verificación
 
 - [x] 5.1 Ejecutar `npx @fission-ai/openspec validate --specs --strict` y validar el change id.
-- [ ] 5.2 Al archivar, aplicar los reemplazos a los diseños base que aún describen la búsqueda como campo de Sidebar, `SesionIndicator` en la cabecera y el botón como "Adjuntar".
+- [x] 5.2 Al archivar, aplicar los reemplazos a los diseños base que aún describen la búsqueda como campo de Sidebar, `SesionIndicator` en la cabecera y el botón como "Adjuntar".
 - [x] 5.3 Revisar español neutro, trazabilidad de los nuevos requisitos y conteos publicados.
+
+## Nota de archivo (2026-11-21)
+
+Se fusionaron las deltas en `openspec/specs/` (SPEC-03 requisito 7, SPEC-05 requisitos 1, 2, 13 y 14, SPEC-04, SPEC-12 y SPEC-23) y se actualizaron los diseños base de SPEC-03, SPEC-05 y SPEC-23 (tarea 5.2). Los requisitos ya existentes se reemplazaron por el texto de la delta tras comprobar que la línea base no contenía ediciones posteriores que se perdieran.

@@ -120,5 +120,9 @@ pnpm build
 Specs (este repo):
 
 ```bash
-npx @fission-ai/openspec validate --specs --strict
+npx @fission-ai/openspec validate --specs
 ```
+
+> `--strict` no se usa: el formato híbrido escribe los escenarios con Gherkin en español
+> (`DADO`/`CUANDO`/`ENTONCES`) y el validador estricto exige `WHEN`/`THEN` en inglés. El comando sin
+> `--strict` valida las 24 specs y deja los avisos de Gherkin como advertencia, no como error.

@@ -258,7 +258,7 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 
 - **Specs principales:** `openspec/specs/<capacidad>/spec.md` es la línea base vigente de cada capacidad; `design.md` guarda el detalle de implementación. No se editan a mano para introducir cambios de comportamiento.
 - **Cambios:** todo cambio nuevo se trabaja en `openspec/changes/<cambio>/` mediante el flujo SDD de gentle-ai (exploración, propuesta, specs delta, diseño, tareas, aplicación, verificación y archivo). Al archivar, las specs delta se fusionan en `openspec/specs/` y el cambio se mueve a `openspec/changes/archive/`.
-- **Validación:** `npx @fission-ai/openspec validate --specs --strict` comprueba el formato de todas las specs.
+- **Validación:** `npx @fission-ai/openspec validate --specs` comprueba el formato de todas las specs. No se usa `--strict`: el Gherkin está en español (`DADO`/`CUANDO`/`ENTONCES`) y el modo estricto espera `WHEN`/`THEN` en inglés; sin `--strict` las 24 specs pasan y los avisos quedan como advertencia.
 - **Formato híbrido:** el contenido está en español neutro y profesional, pero las palabras clave estructurales de OpenSpec se mantienen en inglés para que el parser y las fusiones de archivo funcionen:
   - Encabezados `## Purpose`, `## Requirements`, `### Requirement: <nombre en español>` y `#### Scenario: <nombre en español>`.
   - La primera oración de cada requisito incluye la palabra clave RFC 2119 en español con su equivalente en inglés entre paréntesis: `DEBE (SHALL)`, `NO DEBE (SHALL NOT)`, `DEBERÍA (SHOULD)`, `PUEDE (MAY)`.

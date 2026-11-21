@@ -11,7 +11,7 @@
 | Ventas, `POST /api/v2/csat` | Registrar la calificación de la compra | ✅ Publicado, `canal: "CHATBOT"` contemplado. Token del cliente, rol `CLIENTE`, sin scope (acuerdo A15) |
 | `AttachmentStorage` (SPEC-23, reutilizado) | Guardar la captura de pantalla de un bug/sugerencia | ✅ Solo el puerto, ya existente; esta spec no crea un segundo mecanismo de carga ni usa la tabla `attachment` de SPEC-23 (la clave del objeto se guarda en `feedback_suggestion.screenshot_key`) |
 | `EmailSender` / outbox (SPEC-16, reutilizado) | Notificación interna de sugerencias y bugs | ✅ Adaptador ya existente |
-| "Mi cuenta" (`openspec/changes/alinear-specs-con-prototipo`) | Punto de entrada al formulario de sugerencia/bug | 🟡 Cambio todavía sin aplicar a `inicio-sesion` |
+| "Mi cuenta" (`openspec/changes/alinear-specs-con-prototipo`) | Punto de entrada al formulario de sugerencia/bug | ✅ Implementado en frontend (botón "Enviar sugerencia / Reportar bug"); la absorción de la pantalla en `inicio-sesion` sigue como cambio de spec separado |
 
 ## Frontend
 

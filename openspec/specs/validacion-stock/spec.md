@@ -176,4 +176,4 @@ La capacidad se considera correctamente implementada cuando:
 
 ## Decisiones
 
-- **D3 — El checkout revalida el stock en el chatbot (auditoría §4).** `POST /checkout` invoca la validación masiva de `mod-cart` (`validate_cart`) antes de crear el checkout o el pedido; si una línea está agotada o insuficiente, responde `409 CARRITO_DESACTUALIZADO` con `lineas` y no delega la primera detección en Ventas. **Aprobada:** 2026-11-21. **Estado:** en implementación; no se marca implementada hasta que el código mergee. **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md).
+- **D3 — El checkout revalida el stock en el chatbot (auditoría §4).** `POST /checkout` invoca la validación masiva de `mod-cart` (`validate_cart`) antes de crear el checkout o el pedido; si una línea está agotada o insuficiente, responde `409 CARRITO_DESACTUALIZADO` con `lineas` y no delega la primera detección en Ventas. **Aprobada:** 2026-11-21. **Estado:** Implementado (2026-11-21); código mergeado en backend #141 (`b75fbea6`) y frontend #109 (`7432d463`). **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md).

@@ -252,29 +252,27 @@ módulo, sin lógica de negocio.
 
 ## 9. Deuda y huecos conocidos
 
-- **Verificación cruzada de OpenAPI.** El manifiesto del frontend declara endpoints, pero el gate de
-  contrato por módulo (H-04) todavía no cubre todos los endpoints del backend. El test
-  `api-rutas-contrato.test.ts` fija rutas a mano e incluye `POST /contacto/celular/verificar-otp`, que
-  ya existe en la rama pero aún no está mergeado. Se cierra cuando el backend lo publique y el
-  manifiesto quede alineado; es el hallazgo principal de la [auditoría 2026-11](../auditoria-specs-2026-11.md).
-- **SPEC-04 (validación de celular).** 🟡 En implementación desde 2026-11-21 (D1). Existen
-  `phone_otp_challenge`, los endpoints de OTP, `SimulatedSmsSender` y la bandera
-  `REQUIRE_PHONE_VERIFICATION` en la rama; el `CheckoutGuard` real y el bloqueo efectivo del checkout
-  siguen pendientes. Hasta el merge, el checkout no exige el celular verificado.
-- **SPEC-23 (adjuntos).** 🟡 En implementación desde 2026-11-21 (D2). El modelo `attachment` y los
-  endpoints de carga, borrado y URL firmada están en la rama; el `POST` de mensajes ya acepta
-  `adjuntoIds` y no responde `501`. Faltan merge, job de limpieza verificado y pruebas de seguridad.
-- **SPEC-24 (retroalimentación).** 🟡 En implementación desde 2026-11-21 (D5). Solo el CSAT está
-  conectado (`POST /pedidos/{id}/csat`); reacciones, sugerencias/bugs y valoración de compra tienen UI
-  y tablas definidas, pero aún no endpoints.
-- **Cupones, stock y direcciones.** 🟡 En implementación (D3 y D6). La evaluación de cupones existe;
-  el checkout ya invoca `validate_cart` en la rama y `_save_address` está escrito, pero el router aún
-  no propaga `guardarDireccion`. Faltan pruebas y merge.
-- **Orden de búsqueda (SPEC-06).** 🟡 En implementación (D7). El router acepta `orden` y lo ignora;
-  pasa a un conjunto cerrado con `relevancia` por defecto y `400 VALIDACION` para valores fuera del
-  conjunto.
+- **Verificación cruzada de OpenAPI.** El manifiesto del frontend declara endpoints y existe un gate de
+  contrato por módulo (H-04), pero la cobertura todavía no es total. El test
+  `api-rutas-contrato.test.ts` fija rutas a mano e incluye `POST /contacto/celular/verificar-otp`, ya
+  mergeado. Queda como mejora de plataforma convertir el gate en bloqueante para todos los endpoints;
+  no bloquea el cierre 24/24.
+- **SPEC-04 (validación de celular).** ✅ Implementado el 2026-11-21 (D1): `phone_otp_challenge`,
+  endpoints de OTP, `SimulatedSmsSender`, `CheckoutGuard` real y `REQUIRE_PHONE_VERIFICATION` están en
+  `development` (backend #141 · `b75fbea6`, frontend #109 · `7432d463`).
+- **SPEC-23 (adjuntos).** ✅ Implementado el 2026-11-21 (D2): `attachment`, endpoints de carga, borrado
+  y URL firmada, `AttachmentStorage`, EXIF/miniaturas, limpieza y `adjuntoIds` están mergeados.
+- **SPEC-24 (retroalimentación).** ✅ Implementado el 2026-11-21 (D5): reacciones, sugerencias/bugs,
+  CSAT, valoración de compra y outbox interno están mergeados; la UI dejó de ser estado local.
+- **Cupones, stock y direcciones.** ✅ Implementado (D3 y D6): el checkout invoca `validate_cart` y
+  propaga `guardarDireccion`; un fallo de Seguridad no bloquea.
+- **Orden de búsqueda (SPEC-06).** ✅ Implementado (D7): el router valida el enum `relevancia |
+  precio_asc | precio_desc | nombre_asc | nombre_desc` y aplica el orden.
 
-El detalle, la evidencia y el plan están en [`docs/auditoria-specs-2026-11.md`](../auditoria-specs-2026-11.md).
+Quedan como mejoras posteriores, fuera de las 24 capabilities: el gate de contrato bloqueante (S2), la
+deuda de nombres históricos (S4), la ampliación de tools conversacionales (M5) y el endurecimiento de
+OpenAPI (L4). El detalle y la evidencia de cierre están en
+[`docs/auditoria-specs-2026-11.md`](../auditoria-specs-2026-11.md).
 
 ## 10. Mapa de las 24 specs a módulos
 

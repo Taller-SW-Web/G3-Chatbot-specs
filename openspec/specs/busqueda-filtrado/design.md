@@ -7,7 +7,7 @@
 | Módulo | Endpoint | Estado |
 |---|---|---|
 | Productos | `GET /productos?q=&categoriaId=&marcaId=&canal=CHATBOT&pagina=&tamanio=&precioMin=&precioMax=&orden=` (`orden`: `NOMBRE_ASC`, `NOMBRE_DESC`). El chatbot no envía `estado`: es un filtro de backoffice y una identidad de canal no puede usarlo (A17) | 🟡 A5 · scopes `catalogo:leer` pendientes |
-| Propio | `GET /api/v1/catalogo/productos?orden=relevancia\|precio_asc\|precio_desc\|nombre_asc\|nombre_desc` | 🟡 En implementación (D7, 2026-11-21) |
+| Propio | `GET /api/v1/catalogo/productos?orden=relevancia\|precio_asc\|precio_desc\|nombre_asc\|nombre_desc` | ✅ Implementado (D7, 2026-11-21; backend #141 · `b75fbea6`) |
 
 🧩 **Mapeo de `orden` (D7).** El contrato del chatbot usa minúsculas con guion bajo; hacia Productos se traduce así: `relevancia` → sin `orden` (orden natural de Productos), `nombre_asc` → `NOMBRE_ASC`, `nombre_desc` → `NOMBRE_DESC`. `precio_asc` y `precio_desc` no tienen equivalente en Productos (A16): el BFF enriquece la página con `GET /precios` y la ordena en memoria. Supuesto explícito: ese orden es de la página, no global; cuando Productos publique `PRECIO_ASC`/`PRECIO_DESC`, se delega y se elimina la nota. Un valor fuera del conjunto responde `400 VALIDACION` antes de llamar a Productos.
 | Productos | `GET /categorias` · `GET /marcas` | 🟡 A5 · scopes pendientes |

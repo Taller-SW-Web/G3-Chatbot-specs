@@ -9,7 +9,7 @@
 | Componente | Uso | Estado |
 |---|---|---|
 | Proveedor LLM (`gpt-6-luna`, OpenAI) vía `LLMProvider` | Interpretación de las imágenes como partes de contenido en base64 junto con el texto | ⚠️ Soporte de visión y costo por imagen sin verificar (pregunta abierta 1 de la spec) |
-| Supabase Storage (bucket privado) vía `AttachmentStorage` | Guardar y leer la imagen normalizada y su miniatura; emitir URLs firmadas | 🟡 Propio del chatbot, sin contrato de otro módulo; el plan gratuito impone límites (pregunta abierta 5) |
+| Supabase Storage (bucket privado) vía `AttachmentStorage` | Guardar y leer la imagen normalizada y su miniatura; emitir URLs firmadas | ✅ Implementado (D2, 2026-11-21); el plan gratuito impone límites (pregunta abierta 5) |
 | PostgreSQL (Supabase) | Tabla `attachment` con las referencias | ⚠️ PostgreSQL 18 sin confirmar en Supabase (pregunta abierta 3) |
 | Búsqueda de Productos (SPEC-06) | Se invoca con los criterios de texto que el LLM deduce de la imagen | ✅ Sin cambios de contrato |
 | Ventas | **No se integra**: las imágenes del chat no se reenvían como evidencia (SPEC-21) | ✅ |

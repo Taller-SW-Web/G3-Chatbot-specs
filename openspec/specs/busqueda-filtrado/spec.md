@@ -178,4 +178,4 @@ La capacidad se considera correctamente implementada cuando:
 
 ## Decisiones
 
-- **D7 — Orden de búsqueda (auditoría §4).** `orden` deja de ser un parámetro ignorado y pasa a un conjunto cerrado: `relevancia | precio_asc | precio_desc | nombre_asc | nombre_desc`, con `relevancia` por defecto y `400 VALIDACION` para valores fuera del conjunto. **Aprobada:** 2026-11-21. **Estado:** en implementación; no se marca implementada hasta que el código mergee. **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md).
+- **D7 — Orden de búsqueda (auditoría §4).** `orden` deja de ser un parámetro ignorado y pasa a un conjunto cerrado: `relevancia | precio_asc | precio_desc | nombre_asc | nombre_desc`, con `relevancia` por defecto y `400 VALIDACION` para valores fuera del conjunto. **Aprobada:** 2026-11-21. **Estado:** Implementado (2026-11-21); código mergeado en backend #141 (`b75fbea6`) y frontend #109 (`7432d463`). **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md).

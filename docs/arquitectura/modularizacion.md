@@ -75,6 +75,7 @@ graph TD
     chat["mod-chat<br/>orquestador"]
 
     catalog --> cart
+    shipping --> cart
     cart --> checkout
     shipping --> checkout
     checkout --> orders
@@ -101,25 +102,37 @@ Reglas:
    cualquier módulo autentique al titular sin importar `mod_auth`. Por eso el diagrama dibuja `auth`
    como dependencia transversal (línea punteada) y no como una flecha directa de `chat → auth`; el
    manifiesto conserva `mod-auth` en `dependsOn` de `chat` como permiso, aunque hoy no se importe.
-3. `mod-shipping` no puede importar `mod-cart` (su `dependsOn` está vacío). Consigue las líneas por la
-   **capacidad** `cart_repositories`, que `mod-cart` registra en `configure()`.
+3. `mod-shipping` **depende de `mod-cart`**: lo declara en `dependsOn` y consume
+   `provide_cart_repositories` desde `mod_cart.public`. Ya no existe la capacidad
+   `cart_repositories` resuelta en runtime.
 4. `mod-checkout` necesita la confirmación de correo de `mod-orders`, pero el DAG prohíbe el import
    inverso: la resuelve por la capacidad `order_confirmation`.
 5. `mod-orders` necesita el puerto de Despacho: lo resuelve por `dispatch_port`, registrado por
    `mod-shipping`.
-6. Cuando el DAG prohíbe un import directo, la respuesta no es importar el interior: es una
+6. `mod-cart` y `mod-catalog` necesitan la memoria de conversación que posee `mod-chat`; como el DAG
+   no permite que comercio importe al orquestador, la consumen por la capacidad
+   `conversation_context`.
+7. Cuando el DAG prohíbe un import directo, la respuesta no es importar el interior: es una
    **capacidad** registrada en `src/shared/infrastructure/di/capabilities.py`.
 
 Capacidades vigentes:
 
 | Capacidad | La registra | La consume | Motivo |
 |---|---|---|---|
-| `cart_repositories` | `mod-cart` | `mod-shipping` | leer líneas y estados del carrito sin depender del paquete |
+| `conversation_context` | `mod-chat` | `mod-cart`, `mod-catalog` | memoria de conversación sin que comercio importe al orquestador |
 | `checkout_document` | `mod-checkout` | `mod-auth` | `ultimoDocumento` del perfil sin acoplar auth a checkout |
 | `dispatch_port` | `mod-shipping` | `mod-orders` | seguimiento sin depender de shipping |
 | `order_confirmation` | `mod-orders` | `mod-checkout` | encolar el correo de confirmación |
 | `outbox_processor` | `mod-checkout` | worker de `shared/` | el lifespan no importa módulos |
 | `action_scope` | `mod-chat` | composition root | acciones directas con su propia sesión de BD |
+
+**Validación al arranque.** `discovery.configure_modules` llama a `configure()` de cada módulo y
+después valida las capacidades declaradas en `REQUIRED_CAPABILITIES`: si falta una requerida, aborta el
+arranque indicando el módulo dueño. Las de `OPTIONAL_CAPABILITIES` que faltan se registran con
+`logger.error` y quedan en el registry; `/health` responde `200 {"status": "degraded",
+"missingCapabilities": [...]}` en lugar de `{"status": "ok"}`. Hoy `conversation_context` es requerida
+por `mod-cart` y `mod-catalog`; `order_confirmation` por `mod-checkout`; `dispatch_port` por
+`mod-orders`; `checkout_document` es opcional para `mod-auth`.
 
 ## 4. `shared/` es el kernel, no un cajón
 

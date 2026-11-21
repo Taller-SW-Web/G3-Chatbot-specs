@@ -43,7 +43,7 @@ Prefijo: `/api/v1`. Todas las respuestas de error usan `application/problem+json
 | GET | `/chat/conversaciones` | Opcional* | Lista las conversaciones (propias o de la sesión anónima), ordenadas por `last_message_at` descendente, con `titulo` y vista previa del último mensaje. Paginado. |
 | GET | `/chat/conversaciones/buscar?q=` | Opcional* | Busca por texto en el título y los mensajes del cliente y del asistente. Devuelve la misma forma y paginación que el listado y agrega en cada fila `resaltado: {titulo, fragmento}`: `titulo` es el título completo y `fragmento` un extracto del mensaje coincidente más reciente (`null` si solo coincidió el título). Ambos son listas de tramos `{texto, coincide}`, donde `coincide: true` marca las palabras encontradas. Los tramos son texto plano: el cliente los muestra como texto y nunca los interpreta como HTML. `q` vacío o de más de 100 caracteres responde `400 VALIDACION`. |
 | GET | `/chat/conversaciones/{id}/mensajes` | Opcional* | Devuelve el historial paginado de una conversación. Cada mensaje con imágenes incluye `adjuntos[{adjuntoId, mimeType, ancho, alto, urlMiniatura, expiraEn}]` con URLs firmadas de corta vida (SPEC-23). |
-| POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Envía `{ "texto": "...", "adjuntoIds": ["..."] }` (`adjuntoIds` opcional, máx. 3; el texto es opcional si hay al menos un adjunto, ver 2.1.1) o `{ "accion": { "tipo": "...", "payload": {...} } }`. Los errores de validación (`400`) y de pertenencia (`404`: la conversación no existe o no es del solicitante) se responden antes del stream como `application/problem+json`. En un envío de texto responde `200` con `Content-Type: text/event-stream` y la respuesta del asistente se transmite en esa misma respuesta (ver abajo); las acciones directas siguen devolviendo el bloque en la respuesta REST. Las acciones directas ya están implementadas; `adjuntoIds` está en implementación (D2, 2026-11-21) y deja de responder `501` cuando el PR de SPEC-23 mergee. |
+| POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Envía `{ "texto": "...", "adjuntoIds": ["..."] }` (`adjuntoIds` opcional, máx. 3; el texto es opcional si hay al menos un adjunto, ver 2.1.1) o `{ "accion": { "tipo": "...", "payload": {...} } }`. Los errores de validación (`400`) y de pertenencia (`404`: la conversación no existe o no es del solicitante) se responden antes del stream como `application/problem+json`. En un envío de texto responde `200` con `Content-Type: text/event-stream` y la respuesta del asistente se transmite en esa misma respuesta (ver abajo); las acciones directas siguen devolviendo el bloque en la respuesta REST. Las acciones directas y `adjuntoIds` ya están implementados en la rama; falta el merge y las pruebas de integración (D2, 2026-11-21). |
 
 \* Una conversación ligada a un cliente solo la puede listar o leer ese cliente. Las anónimas se listan o leen con la cookie `chat_sid`.
 
@@ -88,8 +88,8 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | POST | `/sesion/logout` | `POST /auth/logout` |
 | GET | `/sesion/perfil` | `GET /auth/me`; agrega `celularVerificado` desde la verificación local y `ultimoDocumento` opcional `{ tipo, numeroEnmascarado }`, tomado de `tipoDocumento` y `documentoEnmascarado` de `/auth/me` o, si Seguridad no los envía, del checkout más reciente del canal (null si no hay documento) |
 | GET | `/sesion/politica-contrasena` | `GET /password/politica` |
-| POST | `/contacto/celular/solicitar-otp` | 🟡 En implementación (D1): propio del chatbot (SPEC-04), no depende de Seguridad — ver acuerdo A2. Sin cuerpo; lee el celular vigente de `/auth/me` y responde `202 {expiraEn, intentosRestantes, reenviosRestantes, celularEnmascarado}`. |
-| POST | `/contacto/celular/verificar-otp` | 🟡 En implementación (D1): cuerpo `{codigo}`; responde `200 {verificado: true}`. Errores `400 VALIDACION`, `401 CODIGO_INVALIDO` (con `intentosRestantes`), `410 OTP_EXPIRADO`, `429 OTP_INTENTOS_AGOTADOS`, `429 DEMASIADAS_SOLICITUDES`, `503 SERVICIO_NO_DISPONIBLE`. |
+| POST | `/contacto/celular/solicitar-otp` | 🟡 En implementación (D1): propio del chatbot (SPEC-04), no depende de Seguridad — ver acuerdo A2. Sin cuerpo; lee el celular vigente de `/auth/me` y responde `202 {enviado: true, celularEnmascarado, expiraEn}` (con `codigo` solo si `MODO_QA=true`). |
+| POST | `/contacto/celular/verificar-otp` | 🟡 En implementación (D1): cuerpo `{codigo}`; responde `200 {celularVerificado: true, celularEnmascarado}`. Errores `400 VALIDACION`, `401 CODIGO_INVALIDO` (con `intentosRestantes`), `401 OTP_INTENTOS_AGOTADOS`, `410 CODIGO_VENCIDO`, `429 LIMITE_REENVIOS` (con `reintentarEn` y `Retry-After`), `409 CELULAR_NO_DISPONIBLE`, `503 SERVICIO_NO_DISPONIBLE`. |
 
 ### 2.3 Catálogo (SPEC-06 a SPEC-10)
 | Método | Ruta | Descripción |
@@ -351,7 +351,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 ### 2.6 Reclamos (SPEC-19, SPEC-20) ✅
 | Método | Ruta | Descripción |
 |---|---|---|
-| POST | `/reclamos` | Registra el reclamo en Ventas. Requiere `Idempotency-Key`. Acepta `forzar: boolean` (por defecto `false`): si existe un reclamo abierto del mismo pedido y motivo y no se fuerza, responde `409 RECLAMO_DUPLICADO` con `{reclamoId, codigoSeguimiento, estado, pedidoId, motivo}`. |
+| POST | `/reclamos` | Registra el reclamo en Ventas. Requiere `Idempotency-Key`. Acepta `forzar: boolean` (por defecto `false`): si existe un reclamo abierto del mismo pedido y motivo y no se fuerza, responde `409 RECLAMO_DUPLICADO` con `{reclamoId, codigoSeguimiento, estado}`. |
 | GET | `/reclamos` | Proxy de `GET /api/v2/reclamos/me` con el token del cliente — reclamos del cliente. |
 | GET | `/reclamos/{codigoSeguimiento}` | Proxy de `GET /api/v2/reclamos/{codigoSeguimiento}` — estado y respuesta del reclamo. |
 
@@ -359,7 +359,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | Método | Ruta | Descripción |
 |---|---|---|
 | POST | `/evidencias` | Proxy directo de `POST /api/v2/devoluciones/evidencias/upload` de Ventas; devuelve la misma URL que Ventas genera, para incluirla en el `POST /devoluciones`. |
-| POST | `/devoluciones` | Registra la solicitud de devolución o cambio en Ventas. Requiere `Idempotency-Key`. Acepta `forzar: boolean` (por defecto `false`): si existe una solicitud abierta (`SOLICITADA`, `EN_EVALUACION` o `APROBADA`) para el mismo pedido y no se fuerza, responde `409 DEVOLUCION_DUPLICADA` con `{devolucionId, estado, pedidoId}`. |
+| POST | `/devoluciones` | Registra la solicitud de devolución o cambio en Ventas. Requiere `Idempotency-Key`. Acepta `forzar: boolean` (por defecto `false`): si existe una solicitud abierta (`SOLICITADA`, `EN_EVALUACION` o `APROBADA`) para el mismo pedido, motivo y líneas y no se fuerza, responde `409 DEVOLUCION_DUPLICADA` con `{devolucionId, estado, motivo}`. |
 | GET | `/devoluciones` | Proxy de `GET /api/v2/devoluciones/me` con el token del cliente — trae **todas** las solicitudes del cliente, incluidas las de otros canales, no solo las que registró el chatbot. |
 | GET | `/devoluciones/{devolucionId}` | Estado del expediente y, si aplica, el bloque `resolucion.reembolso` con el estado del extorno. |
 
@@ -380,8 +380,9 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `RECLAMO_DUPLICADO` | 409 | Existe un reclamo abierto para el mismo pedido y motivo y no se envió `forzar: true`; incluye el `codigoSeguimiento` y el estado existentes. |
 | `DEVOLUCION_DUPLICADA` | 409 | Existe una solicitud abierta para el mismo pedido y no se envió `forzar: true`; incluye el `devolucionId` y el estado existentes. |
 | `VALORACION_YA_REGISTRADA` | 409 | El pedido ya tiene una valoración de compra; no se admite una segunda. |
-| `OTP_EXPIRADO` | 410 | El desafío OTP superó los 5 minutos o ya fue consumido (SPEC-04). |
-| `OTP_INTENTOS_AGOTADOS` | 429 | Se agotaron los 3 intentos del OTP; hay que solicitar uno nuevo (SPEC-04). |
+| `CODIGO_VENCIDO` | 410 | El desafío OTP superó los 5 minutos o ya fue consumido (SPEC-04). |
+| `OTP_INTENTOS_AGOTADOS` | 401 | Se agotaron los 3 intentos del OTP; hay que solicitar uno nuevo (SPEC-04). |
+| `LIMITE_REENVIOS` | 429 | Se superaron los 3 envíos de OTP en 15 minutos; incluye `reintentarEn` (SPEC-04). |
 | `CUPON_INVALIDO` | 422 | Incluye `motivo` (`INEXISTENTE`, `EXPIRADO`, `NO_VIGENTE`, `AGOTADO`, `LIMITE_CLIENTE`, `MONTO_MINIMO`, `NO_APLICA_PRODUCTOS`, `NO_APLICA_CANAL`, `NO_COMBINABLE`). |
 | `REQUIERE_CONFIRMACION_REEMPLAZO` | 409 | El carrito ya tiene un cupón aplicado y se debe confirmar su reemplazo (`cuponActual`, `cuponNuevo`). |
 | `CARRITO_VACIO` | 409 | El carrito no contiene líneas disponibles para iniciar el checkout (SPEC-14 Req. 1). |

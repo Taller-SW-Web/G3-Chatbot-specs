@@ -159,17 +159,17 @@ El cuerpo de `POST /api/v1/devoluciones` es ese payload más `forzar` (booleano,
 #### Scenario: Duplicado detectado al registrar
 - **DADO** una solicitud abierta para el mismo pedido y un envío sin `forzar`
 - **CUANDO** llega el `POST /api/v1/devoluciones`
-- **ENTONCES** se responde `409 DEVOLUCION_DUPLICADA` con `{ devolucionId, estado, pedidoId }`, no se llama a Ventas y el frontend muestra el aviso con la opción de forzar
+- **ENTONCES** se responde `409 DEVOLUCION_DUPLICADA` con `{ devolucionId, estado, motivo }`, no se llama a Ventas y el frontend muestra el aviso con la opción de forzar
 
 ### Requirement: Solicitud duplicada sobre el mismo pedido
-El sistema DEBE (SHALL) detectar, antes de registrar, si ya existe una solicitud abierta para el mismo pedido, consultando `GET /api/v1/devoluciones` (proxy a `GET /api/v2/devoluciones/me?estado=` con el token del cliente) y filtrando por `pedidoId` en el backend del chatbot (el contrato publicado de Ventas no ofrece ese filtro; si Ventas lo agrega, se usa directamente). La detección DEBE (SHALL) repetirse en el `POST /api/v1/devoluciones` como comprobación autoritativa. Si existe una solicitud abierta y el cliente no envía `forzar: true`, el backend responde `409 DEVOLUCION_DUPLICADA` con el `devolucionId` y el estado existentes; con `forzar: true` registra una nueva. La `Idempotency-Key` sigue aplicando en ambos casos.
+El sistema DEBE (SHALL) detectar, antes de registrar, si ya existe una solicitud abierta para el mismo pedido, motivo y líneas, consultando `GET /api/v1/devoluciones` (proxy a `GET /api/v2/devoluciones/me?estado=` con el token del cliente) y filtrando por `pedidoId` en el backend del chatbot (el contrato publicado de Ventas no ofrece ese filtro; si Ventas lo agrega, se usa directamente). La detección DEBE (SHALL) repetirse en el `POST /api/v1/devoluciones` como comprobación autoritativa, comparando el `pedidoId`, el `motivo` y la firma de las líneas (`productoId` + `cantidad`). Si existe una solicitud abierta y el cliente no envía `forzar: true`, el backend responde `409 DEVOLUCION_DUPLICADA` con el `devolucionId`, el `estado` y el `motivo` existentes; con `forzar: true` registra una nueva. La `Idempotency-Key` sigue aplicando en ambos casos.
 
 Estados abiertos: `SOLICITADA`, `EN_EVALUACION` y `APROBADA` (aún no completada). Estados cerrados: `RECHAZADA` y `COMPLETADA`.
 
 *Trazabilidad: SPEC-21 · Requisito 5.*
 
 #### Scenario: Solicitud abierta existente
-- **DADO** una solicitud `EN_EVALUACION` para un pedido
+- **DADO** una solicitud `EN_EVALUACION` para un pedido, con el mismo motivo y las mismas líneas
 - **CUANDO** el cliente intenta solicitar de nuevo sobre el mismo pedido sin `forzar`
 - **ENTONCES** se informa el código existente (`DEV-2026-0042`) y su estado, con "Ver estado" (SPEC-22), y no se crea una nueva; si confirma, el formulario reenvía con `forzar: true`
 

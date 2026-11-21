@@ -157,7 +157,7 @@ El sistema DEBE (SHALL) informar con claridad si el reclamo no pudo registrarse,
 #### Scenario: Duplicado detectado al registrar
 - **DADO** un reclamo abierto para el mismo pedido y motivo, y un envío sin `forzar`
 - **CUANDO** llega el `POST /api/v1/reclamos`
-- **ENTONCES** se responde `409 RECLAMO_DUPLICADO` con `{ reclamoId, codigoSeguimiento, estado, pedidoId, motivo }`, no se llama a Ventas y el frontend muestra el aviso de duplicado con la opción de forzar
+- **ENTONCES** se responde `409 RECLAMO_DUPLICADO` con `{ reclamoId, codigoSeguimiento, estado }`, no se llama a Ventas y el frontend muestra el aviso de duplicado con la opción de forzar
 
 ## Requisitos no funcionales
 

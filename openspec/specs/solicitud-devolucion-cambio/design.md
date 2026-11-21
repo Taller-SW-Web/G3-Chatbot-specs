@@ -38,7 +38,7 @@
 
 - **Sesión:** `CLIENTE`. **Cabecera:** `Idempotency-Key` obligatoria.
 - **Cuerpo:** el payload de Ventas de `spec.md` más `forzar` (booleano, por defecto `false`). `forzar` no se reenvía a Ventas.
-- **Detección de duplicados (autoritativa):** antes de llamar a Ventas, consulta `GET /api/v1/devoluciones` (proxy a `/me`) y busca una solicitud del mismo `pedidoId` en estado abierto (`SOLICITADA`, `EN_EVALUACION` o `APROBADA`). `RECHAZADA` y `COMPLETADA` no cuentan.
+- **Detección de duplicados (autoritativa):** antes de llamar a Ventas, consulta `GET /api/v1/devoluciones` (proxy a `/me`) y busca una solicitud del mismo `pedidoId`, `motivo` y firma de líneas (`productoId` + `cantidad`) en estado abierto (`SOLICITADA`, `EN_EVALUACION` o `APROBADA`). `RECHAZADA` y `COMPLETADA` no cuentan.
 - **Si hay duplicado y `forzar=false`:** responde `409` con `application/problem+json`:
 
 ```json
@@ -46,10 +46,10 @@
   "status": 409,
   "code": "DEVOLUCION_DUPLICADA",
   "title": "Duplicate return",
-  "detail": "Ya existe una solicitud abierta para este pedido.",
+  "detail": "Ya existe una solicitud abierta para este pedido, motivo y líneas.",
   "devolucionId": "DEV-2026-0042",
   "estado": "EN_EVALUACION",
-  "pedidoId": "PED-2026-00891"
+  "motivo": "TALLA_INCORRECTA"
 }
 ```
 

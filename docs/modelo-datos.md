@@ -124,27 +124,25 @@ Verificación propia del chatbot (SPEC-04), independiente del perfil de Segurida
 | `UNIQUE (customer_id, phone)` | "¿Este cliente ya verificó este número?" antes del checkout |
 
 ### `phone_otp_challenge`
-🧩 Nueva tabla (SPEC-04, D1, [ADR-0026](arquitectura/adr/ADR-0026-almacen-de-otp-y-guard-de-celular.md)). Desafío OTP vigente del chatbot, separado de la verificación exitosa. Guarda solo el **hash** del código, nunca el código en claro; el registro de verificaciones exitosas sigue en `local_phone_verification`. Los nombres de las columnas son un supuesto explícito del diseño (el contrato vinculante es el comportamiento de `validacion-celular/design.md`).
+🧩 Nueva tabla (SPEC-04, D1, [ADR-0026](arquitectura/adr/ADR-0026-almacen-de-otp-y-guard-de-celular.md)). Desafío OTP vigente del chatbot, separado de la verificación exitosa. Guarda solo el **HMAC-SHA256** del código, nunca el código en claro; el registro de verificaciones exitosas sigue en `local_phone_verification`.
 
 | Campo | Tipo | Nulo | Restricciones / notas |
 |---|---|---|---|
 | id | uuid | no | PK, `DEFAULT uuidv7()` |
 | customer_id | uuid | no | Cliente autenticado que solicita el OTP |
 | phone | text | no | `CHECK (phone ~ '^\+51[0-9]{9}$')`. Celular vigente en `GET /auth/me` al solicitar |
-| code_hash | text | no | Hash del código de 6 dígitos con sal por desafío. Nunca se guarda ni se loguea el código en claro |
+| code_hash | text | no | `HMAC-SHA256(PHONE_OTP_SECRET, customer_id + phone + code)`. Nunca se guarda ni se loguea el código en claro |
 | expires_at | timestamptz | no | `created_at + 5 min` |
-| attempts | smallint | no | `DEFAULT 0`, `CHECK (attempts BETWEEN 0 AND 3)` |
-| resend_count | smallint | no | `DEFAULT 0`, `CHECK (resend_count BETWEEN 0 AND 3)` |
-| window_started_at | timestamptz | no | Inicio de la ventana de 15 min para el límite de reenvíos |
+| attempts | integer | no | `DEFAULT 0`, `CHECK (attempts BETWEEN 0 AND 3)` |
 | consumed_at | timestamptz | sí | Null mientras el desafío está vigente; se marca al verificar o al invalidarlo un envío nuevo |
-| created_at / updated_at | timestamptz | no | `created_at` fecha de creación; `updated_at` se actualiza con el trigger `set_updated_at()` |
+| created_at | timestamptz | no | Fecha de creación; el límite de 3 envíos/15 min se calcula contando filas desde esta columna |
 
 | Índice | Consulta que lo usa |
 |---|---|
-| `UNIQUE (customer_id) WHERE consumed_at IS NULL` | Un solo desafío activo por cliente; el nuevo invalida el anterior |
-| `(expires_at) WHERE consumed_at IS NULL` | Purga de desafíos vencidos (plazo pendiente de decisión, ver ADR-0026) |
+| `(customer_id, created_at DESC)` | Último desafío vigente y conteo de envíos en la ventana de 15 min |
+| `(customer_id, phone)` | Búsqueda del desafío del número vigente y verificación |
 
-Reglas: un desafío nuevo marca `consumed_at` del anterior y crea otro; el contador de intentos se agota a los 3 fallos y obliga a solicitar uno nuevo; la ventana de reenvíos se cuenta desde `window_started_at` y no se reinicia al reenviar. Un código consumido no se puede reutilizar. El OTP nunca se envía al LLM ni se guarda en `message`.
+Reglas: al solicitar un código nuevo se marca `consumed_at` del desafío anterior del mismo cliente y número; solo hay uno vigente por cliente. El contador de intentos se agota a los 3 fallos y obliga a solicitar uno nuevo. El límite de reenvíos se calcula contando desafíos creados en los últimos 15 minutos, no con una columna aparte. Un código consumido no se puede reutilizar. El OTP nunca se envía al LLM ni se guarda en `message`. Los desafíos vencidos/consumidos se purgan con un job cuyo plazo está pendiente (ver ADR-0026).
 
 ### `cart`
 | Campo | Tipo | Nulo | Restricciones / notas |

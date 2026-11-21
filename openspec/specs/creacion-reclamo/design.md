@@ -44,9 +44,7 @@
   "detail": "Ya existe un reclamo abierto para este pedido y motivo.",
   "reclamoId": "REC-2026-0042",
   "codigoSeguimiento": "REC-2026-0042",
-  "estado": "EN_PROCESO",
-  "pedidoId": "PED-2026-00891",
-  "motivo": "PRODUCTO_DEFECTUOSO"
+  "estado": "EN_PROCESO"
 }
 ```
 

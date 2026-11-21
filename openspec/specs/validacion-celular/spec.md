@@ -93,7 +93,7 @@ El sistema DEBE (SHALL) generar y enviar un OTP de 6 dígitos por un adaptador S
 #### Scenario: Código ya consumido
 - **DADO** un código que ya se usó para verificar el celular
 - **CUANDO** se intenta verificar de nuevo
-- **ENTONCES** se rechaza con `410 OTP_EXPIRADO` o `401 CODIGO_INVALIDO` y no se crea una segunda verificación
+- **ENTONCES** se rechaza con `410 CODIGO_VENCIDO` o `401 CODIGO_INVALIDO` y no se crea una segunda verificación
 
 #### Scenario: Bandera de exigencia desactivada
 - **DADO** un entorno con `REQUIRE_PHONE_VERIFICATION=false`
@@ -117,8 +117,8 @@ El sistema DEBE (SHALL) orientar al cliente si el celular registrado no es el su
 
 ## Requisitos no funcionales
 
-- **Seguridad:** el código OTP nunca pasa por el LLM ni se guarda en la tabla `message`; el formulario lo envía directo al endpoint. El backend guarda solo el **hash** del código, con sal por desafío y algoritmo definido en el PR de código; el código en claro no se persiste ni se registra en logs. El celular se muestra enmascarado (`+51 9****4321`).
-- **Almacenamiento:** los desafíos viven en una tabla propia (`phone_otp_challenge`, nombre propuesto) y el registro de verificaciones exitosas sigue en `local_phone_verification` (solo inserción). Un desafío nuevo invalida el anterior para el mismo cliente y número; solo puede haber uno activo por cliente.
+- **Seguridad:** el código OTP nunca pasa por el LLM ni se guarda en la tabla `message`; el formulario lo envía directo al endpoint. El backend guarda solo un **HMAC-SHA256** del código con `PHONE_OTP_SECRET`; el código en claro no se persiste ni se registra en logs. El celular se muestra enmascarado (`+51 9****4321`).
+- **Almacenamiento:** los desafíos viven en una tabla propia (`phone_otp_challenge`) y el registro de verificaciones exitosas sigue en `local_phone_verification` (solo inserción). Un desafío nuevo invalida el anterior para el mismo cliente y número; solo puede haber uno activo por cliente.
 - **Configuración:** `REQUIRE_PHONE_VERIFICATION` activa o desactiva el bloqueo del checkout. Supuesto explícito: su valor por defecto es `true` en producción y puede fijarse en `false` por entorno para pruebas o demos; si el equipo adopta otro valor por defecto, se actualiza esta sección y el ADR-0026.
 - **Pruebas:** el `SimulatedSmsSender` propio expone el código generado únicamente por un mecanismo de prueba (variable de entorno `MODO_QA=true` que devuelve el código en la respuesta, o un log accesible solo en el entorno de pruebas), nunca en producción ni en una respuesta normal al cliente.
 - **Purga:** los desafíos vencidos o consumidos no se conservan indefinidamente; el plazo de purga queda pendiente de decisión y se registra en [ADR-0026](../../../docs/arquitectura/adr/ADR-0026-almacen-de-otp-y-guard-de-celular.md). Mientras no se decida, no se reutilizan para verificar.

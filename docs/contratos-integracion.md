@@ -209,12 +209,13 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     - `401 REQUIERE_SESION` / `401 TOKEN_INVALIDO`: sin sesión o token inválido.
     - `403 CELULAR_NO_VERIFICADO`: el cliente aún no tiene el celular verificado (SPEC-04 / SPEC-14 Req. 1). Solo aplica con `REQUIRE_PHONE_VERIFICATION=true` (por defecto en producción; ver D1).
     - `409 CARRITO_VACIO`: el carrito no tiene líneas disponibles para comprar.
-    - `409 STOCK_INSUFICIENTE` / `409 PRODUCTO_NO_DISPONIBLE`: validación de stock fallida en Productos o Ventas (segunda barrera).
+    - `409 STOCK_INSUFICIENTE` / `409 PRODUCTO_NO_DISPONIBLE`: validación de stock fallida en Productos o rechazo `409` de Ventas al crear el pedido (segunda barrera). Se responde `409` con su `code`, nunca `500` (`BE/src/modules/mod_checkout/adapters/http/checkout_router.py:66-67`).
     - `409 CARRITO_DESACTUALIZADO`: cambió el precio, el stock, el cupón o la cotización respecto al resumen confirmado; incluye `lineas` con las líneas bloqueantes (`motivo`: `AGOTADO`, `STOCK_INSUFICIENTE` o `NO_CONFIRMADO`, con `nombre` y `mensaje`) y `summary` actualizado por el servidor. No se crea checkout ni pedido hasta que el cliente confirme el nuevo resumen.
       ```json
       { "status": 409, "code": "CARRITO_DESACTUALIZADO", "title": "Cart changed", "lineas": [{ "sku": "ZAP-RUN-42-NEG", "nombre": "Zapatilla Run 42/Negro", "cantidad": 2, "motivo": "AGOTADO", "mensaje": "Se agotó mientras elegías." }], "summary": { "lineas": [{ "sku": "ZAP-RUN-42-NEG", "cantidad": 1, "precioUnitario": 299.90 }], "subtotal": 299.90, "descuento": 30.00, "costoEnvio": 12.50, "total": 282.40 } }
       ```
     - `422 SIN_COBERTURA`: el distrito no tiene cobertura de Despacho.
+    - `503 ERROR_VENTAS`: Ventas respondió con un error no clasificable al crear el pedido (distinto de `409` por stock y de `400` por datos); el checkout no se crea y se puede reintentar con la misma `Idempotency-Key` (`checkout_router.py:68`, `manage_checkout_use_case.py:373-374`).
     - `503 MODULO_NO_DISPONIBLE` / `503 SERVICIO_NO_DISPONIBLE`: Ventas, Productos o Despacho no disponible; también cuando la revalidación de stock no puede obtener una respuesta válida (no se asume disponibilidad).
 
 - **`GET /api/v1/checkout/{checkoutId}`** (requiere sesión `CLIENTE`):
@@ -245,13 +246,15 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
       "idTransaccion": "SIM-7f8a9b0c"
     }
     ```
+  - **Reintento con la misma `Idempotency-Key`:** devuelve el resultado **original** del intento, sin procesar otro pago ni consumir otro intento. Si el intento original fue aprobado, responde `200` con la misma aprobación y el mismo `idTransaccion`; si fue rechazado o falló, responde de nuevo el mismo error (`402 PAGO_RECHAZADO` o `503 ERROR_PROCESAMIENTO`, con `intentosRestantes` recalculado desde el checkout). Un intento rechazado NUNCA se informa como `APROBADO`. Si la clave se usó en otro checkout, responde `409 CONFLICTO`. *Alineación 2026-11-21 con `BE/src/modules/mod_checkout/application/manage_checkout_use_case.py:602-608` (rama `fix/audit-wave-0-1`); antes, la repetición de un intento rechazado se respondía como aprobada (hallazgo BE-AUD-01).*
   - **Errores (`application/problem+json`):**
     - `400 VALIDACION`: falta `Idempotency-Key`, falla algoritmo de Luhn, marca no soportada, tarjeta vencida o CVV inválido (no descuenta intento, SPEC-14 Req. 3).
     - `401 REQUIERE_SESION` / `401 TOKEN_INVALIDO`: el JWT no es válido o la introspección contra Seguridad (`POST /auth/introspeccion`, A3) devolvió `activo: false` (SPEC-14 Req. 4).
     - `402 PAGO_RECHAZADO`: tarjeta rechazada por el simulador; incluye `motivo` (`FONDOS_INSUFICIENTES`, `RECHAZADO_POR_EMISOR`, `INTENTOS_AGOTADOS`) e `intentosRestantes` (`0..2`). En el 3.er rechazo (`intentosRestantes: 0`) el checkout pasa a `FAILED` y se encola la anulación del pedido `CREADO` en el outbox.
     - `404 RECURSO_NO_ENCONTRADO`: el checkout no existe o pertenece a otro cliente.
     - `410 CHECKOUT_EXPIRADO`: transcurrieron más de 15 minutos desde la creación del checkout; el checkout pasa a `EXPIRED` y se encola la anulación del pedido `CREADO`.
-    - `503 SERVICIO_NO_DISPONIBLE`: error transitorio del simulador (`4000 0000 0000 0119` -> `PROCESSING_ERROR`, se puede reintentar) o falla de `POST /auth/introspeccion` en Seguridad (nunca se asume `activo: true` por defecto).
+    - `503 ERROR_PROCESAMIENTO`: error transitorio del simulador (`4000 0000 0000 0119` -> `PROCESSING_ERROR`, se puede reintentar; incluye `motivo` e `intentosRestantes`).
+    - `503 SERVICIO_NO_DISPONIBLE`: falla de `POST /auth/introspeccion` en Seguridad (nunca se asume `activo: true` por defecto).
 
 #### 2.5.2 Contratos detallados de Pedidos y Seguimiento (SPEC-16, SPEC-17, SPEC-18)
 - **`GET /api/v1/pedidos?estado=&page=1&pageSize=10`** (requiere sesión `CLIENTE`):
@@ -369,7 +372,9 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `REQUIERE_SESION` | 401 | La acción necesita sesión de cliente. |
 | `DATO_INVALIDO` | 400 | Un dato de `contacto` del checkout falta o no cumple las reglas de nombre y documento de Ventas (A14). |
 | `CELULAR_NO_VERIFICADO` | 403 | El checkout requiere el celular verificado. |
-| `STOCK_INSUFICIENTE` | 409 | Cantidad no disponible para uno o más SKU; no incluye cantidades, porque Productos no las expone (A16). |
+| `STOCK_INSUFICIENTE` | 409 | Cantidad no disponible para uno o más SKU; no incluye cantidades, porque Productos no las expone (A16). También lo devuelve `POST /checkout` cuando Ventas rechaza el pedido por stock (segunda barrera, SPEC-10). |
+| `ERROR_VENTAS` | 503 | Ventas falló al crear el pedido en `POST /checkout` con un error no clasificable; no se crea checkout y se puede reintentar con la misma `Idempotency-Key`. |
+| `ERROR_PROCESAMIENTO` | 503 | Error transitorio del simulador de pago en `POST /checkout/{id}/pago` (`PROCESSING_ERROR`); incluye `motivo` e `intentosRestantes`. |
 | `PRODUCTO_NO_DISPONIBLE` | 409 | Producto o SKU inactivo. |
 | `LIMITE_CANTIDAD` | 422 | Más de 10 unidades por línea o más de 20 líneas. |
 | `SIN_COBERTURA` | 422 | El destino no tiene cobertura de Despacho. |

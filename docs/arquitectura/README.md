@@ -8,7 +8,7 @@ Esta carpeta documenta la arquitectura del Canal Chatbot con tres herramientas c
 |---|---|---|
 | [`modularizacion.md`](modularizacion.md) | Monolito modular por capacidad: los 8 módulos, el DAG, `shared/`, el contrato backend↔frontend, auto-discovery y gates. Es la vista de entrada para trabajar en el código | Todo el equipo, backend, frontend |
 | [`c4.md`](c4.md) | Diagramas C4 en Mermaid: contexto (nivel 1), contenedores (nivel 2 con los 8 módulos), entorno de desarrollo, despliegue y componentes (nivel 3: módulos y fronteras). Cada diagrama trae una tabla de elementos con su spec de origen | Todo el equipo, docentes, otros módulos |
-| [`adr/`](adr/README.md) | Registro de decisiones de arquitectura (formato de Michael Nygard): 22 aceptadas, 1 reemplazada y 2 propuestas, con índice y [plantilla](adr/plantilla.md) | Tech lead, backend, frontend |
+| [`adr/`](adr/README.md) | Registro de decisiones de arquitectura (formato de Michael Nygard): 26 aceptadas, 1 reemplazada y 2 propuestas, con índice y [plantilla](adr/plantilla.md) | Tech lead, backend, frontend |
 
 ## Relación con el resto del repositorio
 
@@ -28,6 +28,6 @@ Esta carpeta documenta la arquitectura del Canal Chatbot con tres herramientas c
 
 ## Preguntas abiertas
 
-1. **Verificación cruzada de OpenAPI.** El manifiesto del frontend declara endpoints, pero ningún gate compara esa lista contra `docs/openapi.json`. Hoy la única red es un test manual (`api-rutas-contrato.test.ts`), que ya arrastra un endpoint inexistente (`/contacto/celular/verificar-otp`). ¿Se implementa un script de contrato en CI o se mantiene la lista manual?
-2. **SPEC-04 y SPEC-23.** La tabla y el modelo existen, pero faltan los endpoints de OTP y de adjuntos. ¿Entran en el alcance del próximo hito o se retiran del contrato del frontend mientras no existan?
+1. **Verificación cruzada de OpenAPI.** El manifiesto del frontend declara endpoints y existe un gate de contrato por módulo, pero la cobertura es parcial. El test manual (`api-rutas-contrato.test.ts`) incluye `/contacto/celular/verificar-otp`, que está en implementación (D1). ¿Se convierte el gate en bloqueante para todos los endpoints antes del cierre?
+2. ✅ **SPEC-04 y SPEC-23.** Resueltas el 2026-11-21: entran en el alcance completo (D1 y D2) y están en implementación. Se añaden el almacén OTP, `CheckoutGuard`, los endpoints de adjuntos y `AttachmentStorage`; el seguimiento está en [`auditoria-specs-2026-11.md`](../auditoria-specs-2026-11.md) §6.
 3. **`shared/` y el worker.** El worker de outbox vive en `shared/`; si crece con jobs de un módulo concreto, hay que decidir si se mueve al módulo dueño o se queda como kernel.

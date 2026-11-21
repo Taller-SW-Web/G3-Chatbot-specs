@@ -31,14 +31,14 @@ entre capacidades también es una regla verificable.
 
 | id | Capacidad | Backend (`src/modules/…`) | Rutas públicas | Frontend | Owner |
 |---|---|---|---|---|---|
-| `mod-auth` | Sesión, registro, MFA, OTP, perfil, verificación de correo | `mod_auth` — `/sesion` | `/sesion/login`, `/mfa/*`, `/refresh`, `/logout`, `/perfil`, `/registro`, `/politica-contrasena`, `/verificar-correo*` | `/cuenta`, `/verificar-correo` | @Ankarmin |
+| `mod-auth` | Sesión, registro, MFA, OTP, perfil, verificación de correo | `mod_auth` — `/sesion` | `/sesion/login`, `/mfa/*`, `/refresh`, `/logout`, `/perfil`, `/registro`, `/politica-contrasena`, `/verificar-correo*`, `/contacto/celular/solicitar-otp`, `/contacto/celular/verificar-otp` | `/cuenta`, `/verificar-correo` | @Ankarmin |
 | `mod-catalog` | Catálogo, búsqueda, detalle, disponibilidad, promociones, recomendación | `mod_catalog` — `/catalogo` | `/catalogo/productos`, `/productos/{id}`, `/promociones`, `/disponibilidad` | `/` (home, tarjetas, detalle) | @SOoOnny |
 | `mod-cart` | Carrito, líneas, cupón y totales | `mod_cart` — `/carrito` | `GET/POST/PATCH/DELETE /carrito*`, `/carrito/cupon` | `/carrito` | @SOoOnny |
 | `mod-shipping` | Cotización de envío y direcciones guardadas | `mod_shipping` — `/direcciones`, `/envio` | `GET /direcciones`, `POST /envio/cotizar` | bloque de envío en `/checkout` | @SOoOnny |
 | `mod-checkout` | Checkout, pago simulado, snapshot del pedido y outbox | `mod_checkout` — `/checkout` | `POST /checkout`, `GET /checkout/{id}`, `POST /checkout/{id}/pago` | `/checkout`, `/exito` | @MathiasTL |
 | `mod-orders` | Pedidos, detalle, seguimiento y reenvío de confirmación | `mod_orders` — `/pedidos` | `GET /pedidos`, `/{id}`, `/{id}/seguimiento`, `POST /{id}/reenviar-confirmacion` | `/pedidos`, `/pedidos/[tab]`, `/seguimiento` | @MathiasTL |
 | `mod-postventa` | Devoluciones, reclamos, evidencias y CSAT | `mod_postventa` — `/devoluciones`, `/reclamos`, `/evidencias`, `/pedidos/{id}/csat` | `POST/GET /devoluciones*`, `POST/GET /reclamos*`, `POST /evidencias`, `POST /pedidos/{id}/csat` | `/devolucion`, `/reclamo` | @MathiasTL |
-| `mod-chat` | Conversaciones, historial, SSE, tools y acciones directas | `mod_chat` — `/chat/conversaciones` | `POST/GET /chat/conversaciones`, `/buscar`, `/{id}/mensajes` (SSE en el `POST`) | `/chat/[id]`, `/sugerencias` | @Ankarmin |
+| `mod-chat` | Conversaciones, historial, SSE, tools, acciones directas, reacciones, sugerencias y adjuntos | `mod_chat` — `/chat/conversaciones`, `/mensajes/{id}/reaccion`, `/sugerencias` | `POST/GET /chat/conversaciones`, `/buscar`, `/{id}/mensajes` (SSE en el `POST`), `POST /mensajes/{id}/reaccion`, `POST /sugerencias`, `/chat/adjuntos/{id}` | `/chat/[id]`, `/sugerencias` | @Ankarmin |
 
 Cada módulo backend contiene:
 
@@ -73,11 +73,12 @@ graph TD
     orders["mod-orders<br/>pedidos y seguimiento"]
     postventa["mod-postventa<br/>devoluciones y reclamos"]
     chat["mod-chat<br/>orquestador"]
+    shared["shared/<br/>AttachmentStorage · OTP"]
 
     catalog --> cart
     shipping --> cart
-    cart --> checkout
-    shipping --> checkout
+    cart -->|"validate_cart"| checkout
+    shipping -->|"cotiza + guardarDireccion"| checkout
     checkout --> orders
     orders --> postventa
 
@@ -88,6 +89,9 @@ graph TD
     chat --> orders
     chat --> postventa
 
+    auth -. "OTP" .-> shared
+    chat -. "adjuntos" .-> shared
+    checkout -. "lee verificación" .-> shared
     auth -. "shared/infrastructure/auth" .-> chat
     auth -. "shared/infrastructure/auth" .-> checkout
     auth -. "shared/infrastructure/auth" .-> orders
@@ -125,6 +129,23 @@ Capacidades vigentes:
 | `order_confirmation` | `mod-orders` | `mod-checkout` | encolar el correo de confirmación |
 | `outbox_processor` | `mod-checkout` | worker de `shared/` | el lifespan no importa módulos |
 | `action_scope` | `mod-chat` | composition root | acciones directas con su propia sesión de BD |
+
+### Nuevos usos entre módulos (decisiones 2026-11-21)
+
+Las decisiones D1–D7 no añaden módulos ni cambian el DAG; amplían superficies públicas ya permitidas y el kernel compartido. No se crean capacidades nuevas en `capabilities.py` para estos usos.
+
+| Consumidor | Proveedor | Superficie | Decisión |
+|---|---|---|---|
+| `mod-checkout` | `mod-cart` | `ManageCartUseCase.validate_cart` vía `mod_cart.public` (validación masiva con detalle por línea) | D3 · stock |
+| `mod-checkout` | `mod-shipping` | `GuardarDireccionOpcional` vía `mod_shipping.public` (el guardado en Seguridad no bloquea el checkout) | D6 · dirección |
+| `mod-chat` | `shared/` | Puerto `AttachmentStorage` y adaptador de Supabase Storage (imágenes del chat) | D2 · adjuntos |
+| `mod-chat` | `shared/` | Tablas `message_reaction` y `feedback_suggestion`; `AttachmentStorage` para la captura de un bug | D5 · feedback |
+| `mod-checkout` | `shared/` | Tabla `purchase_rating` para la valoración de la experiencia de compra | D5 · feedback |
+| `mod-postventa` | `shared/` | `order_ref.csat_sent` y outbox para la notificación interna de sugerencias | D5 · feedback |
+| `mod-auth` | `shared/` | Escritura de `phone_otp_challenge` y `local_phone_verification` | D1 · OTP |
+| `mod-checkout` | `shared/` | Lectura de `local_phone_verification` para el `CheckoutGuard`; no importa `mod-auth` | D1 · OTP |
+
+Regla: si el código prefiere resolver alguno de estos usos por una capacidad en vez de por `public.py`, se registra en `src/shared/infrastructure/di/capabilities.py` y se actualiza esta tabla; el DAG no cambia.
 
 **Validación al arranque.** `discovery.configure_modules` llama a `configure()` de cada módulo y
 después valida las capacidades declaradas en `REQUIRED_CAPABILITIES`: si falta una requerida, aborta el
@@ -231,20 +252,27 @@ módulo, sin lógica de negocio.
 
 ## 9. Deuda y huecos conocidos
 
-- **Verificación cruzada de OpenAPI.** El manifiesto del frontend declara endpoints, pero ningún gate
-  compara esa lista contra `docs/openapi.json`. El test `api-rutas-contrato.test.ts` fija rutas a mano
-  y hoy incluye `POST /contacto/celular/verificar-otp`, que el backend **no** expone. Es el hallazgo
-  principal de la [auditoría 2026-11](../auditoria-specs-2026-11.md).
-- **SPEC-04 (validación de celular).** Existe la tabla `local_phone_verification` y su adaptador, pero
-  no los endpoints de OTP ni el `CheckoutGuard`. El adaptador lo dice explícitamente: «No incluye
-  OTP/SMS/CheckoutGuard (queda para SPEC-04 completo)».
-- **SPEC-23 (adjuntos).** El modelo `attachment` existe, pero el `POST` de mensajes devuelve `501` si
-  llega `adjuntoIds`. No hay endpoints de carga, borrado ni URL firmada.
-- **SPEC-24 (retroalimentación).** Solo el CSAT está conectado (`POST /pedidos/{id}/csat`). Reacciones,
-  sugerencias/bugs y valoración de compra tienen UI o diseño, pero no endpoints.
-- **Cupones, stock y direcciones.** La evaluación de cupones y la revalidación de stock existen en
-  `mod-cart`; el checkout no invoca `validate_cart` y la creación del pedido delega el 409 a Ventas.
-  El guardado opcional de direcciones (`GuardarDireccionOpcional`) no está implementado.
+- **Verificación cruzada de OpenAPI.** El manifiesto del frontend declara endpoints, pero el gate de
+  contrato por módulo (H-04) todavía no cubre todos los endpoints del backend. El test
+  `api-rutas-contrato.test.ts` fija rutas a mano e incluye `POST /contacto/celular/verificar-otp`, que
+  sigue en implementación. Se cierra cuando el backend publique el endpoint y el manifiesto quede
+  alineado; es el hallazgo principal de la [auditoría 2026-11](../auditoria-specs-2026-11.md).
+- **SPEC-04 (validación de celular).** 🟡 En implementación desde 2026-11-21 (D1). Existen
+  `local_phone_verification` y su adaptador; se añaden `phone_otp_challenge`, los endpoints de OTP,
+  `SimulatedSmsSender`, el `CheckoutGuard` real y `REQUIRE_PHONE_VERIFICATION`. Hasta el merge, el
+  checkout no exige el celular verificado.
+- **SPEC-23 (adjuntos).** 🟡 En implementación desde 2026-11-21 (D2). El modelo `attachment` existe;
+  faltan los endpoints de carga, borrado y URL firmada, el `AttachmentStorage` y el job de limpieza. El
+  `POST` de mensajes deja de responder `501` cuando llega `adjuntoIds` al mergear.
+- **SPEC-24 (retroalimentación).** 🟡 En implementación desde 2026-11-21 (D5). Solo el CSAT está
+  conectado (`POST /pedidos/{id}/csat`); reacciones, sugerencias/bugs y valoración de compra tienen UI
+  y tablas definidas, pero aún no endpoints.
+- **Cupones, stock y direcciones.** 🟡 En implementación (D3 y D6). La evaluación de cupones existe; el
+  checkout pasa a invocar `validate_cart` y a guardar la dirección opcional en Seguridad sin bloquear
+  si falla.
+- **Orden de búsqueda (SPEC-06).** 🟡 En implementación (D7). El router acepta `orden` y lo ignora;
+  pasa a un conjunto cerrado con `relevancia` por defecto y `400 VALIDACION` para valores fuera del
+  conjunto.
 
 El detalle, la evidencia y el plan están en [`docs/auditoria-specs-2026-11.md`](../auditoria-specs-2026-11.md).
 

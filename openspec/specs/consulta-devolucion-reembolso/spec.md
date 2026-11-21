@@ -44,7 +44,7 @@ Incluye:
 ## Requirements
 
 ### Requirement: Listar e identificar solicitudes
-El sistema DEBE (SHALL) listar todas las solicitudes de devolución/cambio del cliente, consultando `GET /api/v2/devoluciones?clienteId=` directamente, sin importar el canal donde se originaron.
+El sistema DEBE (SHALL) listar todas las solicitudes de devolución/cambio del cliente, consultando `GET /api/v1/devoluciones` (proxy a `GET /api/v2/devoluciones/me` con el token del cliente; el chatbot nunca envía `clienteId`), sin importar el canal donde se originaron.
 
 *Trazabilidad: SPEC-22 · Requisito 1.*
 
@@ -56,7 +56,7 @@ El sistema DEBE (SHALL) listar todas las solicitudes de devolución/cambio del c
 #### Scenario: Consulta por código
 - **DADO** el mensaje "¿qué pasó con mi solicitud DEV-2026-0042?"
 - **CUANDO** se consulta
-- **ENTONCES** se obtiene `GET /api/v2/devoluciones/DEV-2026-0042` y se muestra su estado si pertenece al cliente
+- **ENTONCES** se obtiene `GET /api/v1/devoluciones/DEV-2026-0042` (proxy a Ventas) y se muestra su estado si pertenece al cliente
 
 #### Scenario: Código ajeno o inexistente
 - **DADO** un código que no existe o que pertenece a otro cliente

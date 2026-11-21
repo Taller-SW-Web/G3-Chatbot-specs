@@ -78,7 +78,6 @@ graph TD
     checkout --> orders
     orders --> postventa
 
-    chat --> auth
     chat --> catalog
     chat --> cart
     chat --> shipping
@@ -86,6 +85,7 @@ graph TD
     chat --> orders
     chat --> postventa
 
+    auth -. "shared/infrastructure/auth" .-> chat
     auth -. "shared/infrastructure/auth" .-> checkout
     auth -. "shared/infrastructure/auth" .-> orders
     auth -. "shared/infrastructure/auth" .-> postventa
@@ -96,7 +96,9 @@ Reglas:
 1. `mod-chat` es la cima: puede depender de todos; **ningún módulo depende de `mod-chat`**.
 2. `mod-auth` no es una dependencia directa de los módulos de comercio: el contrato de Seguridad
    (JWKS, `ServiceTokenProvider`, `SecurityClient`) vive en `shared/infrastructure/auth` para que
-   cualquier módulo autentique al titular sin importar `mod_auth`.
+   cualquier módulo autentique al titular sin importar `mod_auth`. Por eso el diagrama dibuja `auth`
+   como dependencia transversal (línea punteada) y no como una flecha directa de `chat → auth`; el
+   manifiesto conserva `mod-auth` en `dependsOn` de `chat` como permiso, aunque hoy no se importe.
 3. `mod-shipping` no puede importar `mod-cart` (su `dependsOn` está vacío). Consigue las líneas por la
    **capacidad** `cart_repositories`, que `mod-cart` registra en `configure()`.
 4. `mod-checkout` necesita la confirmación de correo de `mod-orders`, pero el DAG prohíbe el import

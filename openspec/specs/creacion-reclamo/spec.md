@@ -66,7 +66,7 @@ Motivos: alineados a los que usa Ventas en su ejemplo (`INCUMPLIMIENTO_PLAZO_ENT
 - **ENTONCES** el formulario pide "Cuéntanos un poco más (mínimo 20 caracteres)"; el máximo es de 1000
 
 ### Requirement: Confirmación explícita y registro
-El sistema DEBE (SHALL) registrar el reclamo en Ventas solo cuando el cliente pulsa "Enviar reclamo", con una `Idempotency-Key` (cabecera `X-Idempotency-Key`), y mostrar la constancia.
+El sistema DEBE (SHALL) registrar el reclamo en Ventas solo cuando el cliente pulsa "Enviar reclamo", con una `Idempotency-Key` (cabecera `Idempotency-Key`, igual que el resto de operaciones que crean algo), y mostrar la constancia.
 
 Payload real `POST {VEN}/api/v2/reclamos`:
 ```json
@@ -108,7 +108,7 @@ Payload real `POST {VEN}/api/v2/reclamos`:
 - **ENTONCES** no se registra nada y el borrador se descarta
 
 ### Requirement: Reclamos duplicados
-El sistema DEBE (SHALL) avisar si ya existe un reclamo abierto (no `ATENDIDO` ni `DERIVADO`) para el mismo pedido y motivo, consultando `GET /api/v2/reclamos?clienteId=&estado=` antes de mostrar el formulario de uno nuevo.
+El sistema DEBE (SHALL) avisar si ya existe un reclamo abierto (no `ATENDIDO` ni `DERIVADO`) para el mismo pedido y motivo, consultando `GET /api/v1/reclamos` (proxy a `GET /api/v2/reclamos/me?estado=` con el token del cliente) antes de mostrar el formulario de uno nuevo.
 
 *Trazabilidad: SPEC-19 · Requisito 3.*
 

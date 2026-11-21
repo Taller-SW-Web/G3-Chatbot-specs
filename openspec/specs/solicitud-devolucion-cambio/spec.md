@@ -155,7 +155,7 @@ Payload real `POST {VEN}/api/v2/devoluciones`:
 - **ENTONCES** se informa que no se pudo registrar y se conserva el borrador (incluidas las referencias a la evidencia ya subida) por 24 horas, con "Reintentar"
 
 ### Requirement: Solicitud duplicada sobre el mismo pedido
-El sistema DEBE (SHALL) avisar si ya existe una solicitud abierta para el mismo pedido, consultando `GET /api/v2/devoluciones?clienteId=&estado=` antes de mostrar el formulario de una nueva y filtrando por `pedidoId` en el backend del chatbot (el contrato publicado de Ventas no ofrece ese filtro; si Ventas lo agrega, se usa directamente).
+El sistema DEBE (SHALL) avisar si ya existe una solicitud abierta para el mismo pedido, consultando `GET /api/v1/devoluciones` (proxy a `GET /api/v2/devoluciones/me?estado=` con el token del cliente) antes de mostrar el formulario de una nueva y filtrando por `pedidoId` en el backend del chatbot (el contrato publicado de Ventas no ofrece ese filtro; si Ventas lo agrega, se usa directamente).
 
 *Trazabilidad: SPEC-21 · Requisito 5.*
 

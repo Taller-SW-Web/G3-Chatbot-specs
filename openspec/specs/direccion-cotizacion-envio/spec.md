@@ -24,7 +24,7 @@ Tres módulos intervienen en este paso, y su contrato real (revisado en `contrat
 
 🧩 **Acuerdo A14, resuelto (23/09/2026):** Ventas exige `tipoDocumento` y `numeroDocumento` del comprador, siempre obligatorios, y confirmó por escrito las reglas de formato de cada tipo (Requisito 1). Ni el registro (Seguridad no lo pide) ni ningún otro punto del flujo lo capturan hoy; esta spec agrega ese campo al checkout — es la única oportunidad razonable de pedirlo.
 
-El peso y el volumen del paquete son insumos de la cotización; quién los calcula sigue en discusión con Productos y Despacho (acuerdo A6, ver `contratos-integracion.md`).
+El peso y el volumen del paquete son insumos de la cotización, pero **los resuelve Despacho** a partir de los SKU y cantidades; el chatbot no los calcula ni los envía (contrato real de `POST /api/v1/cotizaciones`: `destino` + `lineas[{sku, cantidad}]`).
 
 ## Alcance
 
@@ -126,7 +126,7 @@ El sistema DEBE (SHALL) ofrecer guardar la dirección ingresada en Seguridad, si
 - **ENTONCES** la dirección se usa solo para ese pedido y no se llama a Seguridad para guardarla
 
 ### Requirement: Cotizar el envío
-El sistema DEBE (SHALL) cotizar con Despacho enviando el distrito resuelto de la dirección, el `pesoKg` total y el `volumenM3` total del carrito, y mostrar el resultado dentro de `CheckoutPage` antes de habilitar el pago. `modalidad` se envía siempre como `DELIVERY` (no hay retiro en tienda en este canal).
+El sistema DEBE (SHALL) cotizar con Despacho enviando el `destino` (distrito y dirección resueltos) y las `lineas` del carrito (`sku` y `cantidad`), y mostrar el resultado dentro de `CheckoutPage` antes de habilitar el pago. El chatbot **no calcula ni envía peso ni volumen**: Despacho resuelve los datos físicos. `modalidad` se envía siempre como `DELIVERY` (no hay retiro en tienda en este canal).
 
 *Trazabilidad: SPEC-12 · Requisito 4.*
 
@@ -140,10 +140,10 @@ El sistema DEBE (SHALL) cotizar con Despacho enviando el distrito resuelto de la
 - **CUANDO** Despacho responde `coberturaDisponible: false`
 - **ENTONCES** se informa "Aún no llegamos a {distrito}" bajo el campo de dirección, se bloquea el botón de pago (`422 SIN_COBERTURA`) y se pide corregir el distrito
 
-#### Scenario: Peso de producto no disponible
-- **DADO** que Productos no informa el peso de un SKU
-- **CUANDO** se calcula el peso total
-- **ENTONCES** se usa el peso por defecto de su categoría (`config/pesos_por_categoria.yaml`) como parche mientras se resuelve el acuerdo A6, y se registra el uso del valor por defecto
+#### Scenario: Datos físicos resueltos por Despacho
+- **DADO** un carrito con líneas y una dirección con distrito
+- **CUANDO** se cotiza el envío
+- **ENTONCES** el chatbot envía `destino` y `lineas[{sku, cantidad}]`; no calcula ni envía peso ni volumen, y Despacho devuelve costo y plazo con los datos físicos que él mismo resuelve a partir de los SKU
 
 #### Scenario: Despacho no disponible
 - **DADO** que el cotizador no responde en 4 s

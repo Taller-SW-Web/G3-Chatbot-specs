@@ -35,7 +35,7 @@ Incluye:
 ## Requirements
 
 ### Requirement: Listar e identificar reclamos
-El sistema DEBE (SHALL) listar los reclamos del cliente autenticado (`GET /api/v2/reclamos?clienteId=&pagina=&tamano=`) y permitir abrir uno por código o por selección.
+El sistema DEBE (SHALL) listar los reclamos del cliente autenticado (`GET /api/v1/reclamos`, proxy a `GET /api/v2/reclamos/me?pagina=&tamano=` con el token del cliente; el chatbot nunca envía `clienteId`) y permitir abrir uno por código o por selección.
 
 *Trazabilidad: SPEC-20 · Requisito 1.*
 

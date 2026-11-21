@@ -81,7 +81,7 @@ El sistema DEBE (SHALL) reenviar el registro a `POST /auth/registro` de Segurida
 
 #### Scenario: Cuenta creada
 - **DADO** un registro válido
-- **CUANDO** Seguridad responde `201 {id, estado: PENDIENTE_VERIFICACION}`
+- **CUANDO** Seguridad responde `201 {estado: PENDIENTE_VERIFICACION}` y el BFF devuelve `{estado, correoEnmascarado}`
 - **ENTONCES** el modal se cierra y el chat muestra "Te enviamos un enlace a m****a@correo.com para activar tu cuenta. Vence en 24 horas." junto con las acciones "Reenviar correo" e "Ya verifiqué, iniciar sesión"
 - **Y** el carrito anónimo y la conversación se conservan
 

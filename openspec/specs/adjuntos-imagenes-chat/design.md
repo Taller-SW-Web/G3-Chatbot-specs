@@ -52,7 +52,7 @@ Siguen las convenciones de `docs/contratos-integracion.md` §2: prefijo `/api/v1
 | POST | `/chat/conversaciones/{id}/adjuntos` | Opcional | Sube una imagen (`multipart/form-data`, campo `archivo`). Responde `201 {adjuntoId, mimeType, tamanioBytes, ancho, alto}`. Errores: `400 ADJUNTO_INVALIDO`, `404 RECURSO_NO_ENCONTRADO`, `422 LIMITE_ADJUNTOS`, `429 DEMASIADAS_SOLICITUDES`, `503 SERVICIO_NO_DISPONIBLE`. |
 | DELETE | `/chat/conversaciones/{id}/adjuntos/{adjuntoId}` | Opcional | Quita un adjunto `PENDING` y elimina sus archivos. Un adjunto `SENT` no se puede quitar (`409`). |
 | GET | `/chat/adjuntos/{adjuntoId}` | Opcional | Emite una URL firmada nueva `{urlMiniatura, urlImagen, expiraEn}` para un adjunto de una conversación del solicitante. |
-| POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Se amplía el cuerpo con `adjuntoIds` (máx. 3). El texto pasa a ser opcional si hay al menos un adjunto. Sigue respondiendo `202 {mensajeId}`. |
+| POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Se amplía el cuerpo con `adjuntoIds` (máx. 3). El texto pasa a ser opcional si hay al menos un adjunto. Sigue respondiendo `200 text/event-stream` con los eventos `aceptado`, `token`, `bloque`, `degradado`, `fin` y `error` (ADR-0021). |
 | GET | `/chat/conversaciones/{id}/mensajes` | Opcional* | Cada mensaje incluye `adjuntos[{adjuntoId, mimeType, ancho, alto, urlMiniatura, expiraEn}]` con URLs firmadas de corta vida. |
 
 Códigos de error nuevos (para `contratos-integracion.md` §2.8):

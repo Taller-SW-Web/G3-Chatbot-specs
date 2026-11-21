@@ -6,6 +6,8 @@
 
 Este repositorio es la **fuente de verdad de las especificaciones** del Canal Chatbot, gestionadas con [OpenSpec](https://github.com/Fission-AI/OpenSpec) y el flujo SDD de gentle-ai. No contiene código de aplicación: el backend y el frontend viven en repositorios hermanos (`G3-Chatbot-backend` y `G3-Chatbot-frontend`).
 
+> **Cómo se trabaja:** la spec se lee antes de tocar código; si el código avanza sin estar en la spec, la spec se actualiza en el mismo PR. Un PR toca un solo módulo y `shared/` exige la etiqueta `cross-modulo`. El flujo completo, la Definition of Done y la checklist de PR están en [`AGENTS.md`](AGENTS.md) y [`docs/flujo-de-trabajo.md`](docs/flujo-de-trabajo.md).
+
 Hay una especificación por capacidad, en `openspec/specs/<capacidad>/`. Cada capacidad tiene dos archivos:
 
 - **`spec.md` (comportamiento):** Propósito, Contexto, Alcance y Fuera de alcance, Requisitos con escenarios, requisitos no funcionales y Criterio de completitud.
@@ -34,7 +36,9 @@ Documentos transversales:
 
 ## 1. Arquitectura
 
-El sistema se organiza en **arquitectura hexagonal (puertos y adaptadores) tanto en el frontend como en el backend**, cada uno con su propio núcleo de dominio y casos de uso independientes del framework.
+El sistema se organiza en un **monolito modular por capacidad** ([ADR-0025](docs/arquitectura/adr/ADR-0025-monolito-modular-por-capacidad.md), que homologa el ADR-0024 del backend): 8 módulos con el mismo id en backend y frontend (`mod-auth`, `mod-catalog`, `mod-cart`, `mod-shipping`, `mod-checkout`, `mod-orders`, `mod-postventa`, `mod-chat`) y `shared/` como kernel. **Dentro de cada módulo** se conserva la **arquitectura hexagonal (puertos y adaptadores)** de ADR-0002, con su propio núcleo de dominio y casos de uso independientes del framework.
+
+El mapa operativo (DAG, superficie pública, contrato, auto-discovery y gates) está en [`docs/arquitectura/modularizacion.md`](docs/arquitectura/modularizacion.md). El diagrama y la tabla de 8 casos de uso que siguen son la vista histórica de la fase 0: se mantienen como referencia, pero el corte vigente es por módulo.
 
 > Las vistas C4 (contexto, contenedores y componentes) y las decisiones de arquitectura (ADR) están en [`docs/arquitectura/`](docs/arquitectura/README.md).
 
@@ -71,6 +75,8 @@ graph LR
 ```
 
 ### 1.2 Backend — FastAPI hexagonal
+
+> **Vigente:** el backend es un monolito modular por capacidad (8 módulos, `shared/` como kernel) y el hexagonal se aplica **dentro de cada módulo**. El diagrama siguiente es la vista de capas de la fase 0; el mapa real está en [`docs/arquitectura/modularizacion.md`](docs/arquitectura/modularizacion.md).
 
 ```mermaid
 graph LR
@@ -111,7 +117,7 @@ Los **8 casos de uso** del núcleo backend agrupan las 24 specs de este reposito
 | `GestionarSeguimientoUseCase` | SPEC-18 |
 | `GestionarPostventaUseCase` | SPEC-19, 20, 21, 22 |
 
-> 🧩 Esta agrupación en 8 casos de uso es una propuesta para alinear las specs con el diagrama de arquitectura; el equipo debe confirmarla contra el código o ajustar los nombres.
+> 🧩 Esta agrupación en 8 casos de uso es la **vista histórica de la fase 0**. El corte vigente es por capacidad: 8 módulos con el mismo id en backend y frontend ([ADR-0025](docs/arquitectura/adr/ADR-0025-monolito-modular-por-capacidad.md)). El caso de uso sigue existiendo dentro de cada módulo; el mapa real está en [`docs/arquitectura/modularizacion.md`](docs/arquitectura/modularizacion.md).
 >
 > 🧩 SPEC-24 (retroalimentación del cliente) no cae en ninguna fila: su [`design.md`](openspec/specs/retroalimentacion-cliente/design.md) propone un caso de uso propio, `GestionarRetroalimentacionUseCase`, separado de `GestionarConversacionUseCase`. Sumarlo como noveno caso de uso requiere actualizar [ADR-0018](docs/arquitectura/adr/ADR-0018-agrupacion-del-nucleo-en-ocho-casos-de-uso.md), igual que la pregunta pendiente sobre los servicios de identidad.
 
@@ -252,10 +258,30 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 
 - **Specs principales:** `openspec/specs/<capacidad>/spec.md` es la línea base vigente de cada capacidad; `design.md` guarda el detalle de implementación. No se editan a mano para introducir cambios de comportamiento.
 - **Cambios:** todo cambio nuevo se trabaja en `openspec/changes/<cambio>/` mediante el flujo SDD de gentle-ai (exploración, propuesta, specs delta, diseño, tareas, aplicación, verificación y archivo). Al archivar, las specs delta se fusionan en `openspec/specs/` y el cambio se mueve a `openspec/changes/archive/`.
-- **Validación:** `npx @fission-ai/openspec validate --specs --strict` comprueba el formato de todas las specs.
+- **Validación:** `npx @fission-ai/openspec validate --specs` comprueba el formato de todas las specs. No se usa `--strict`: el Gherkin está en español (`DADO`/`CUANDO`/`ENTONCES`) y el modo estricto espera `WHEN`/`THEN` en inglés; sin `--strict` las 24 specs pasan y los avisos quedan como advertencia.
 - **Formato híbrido:** el contenido está en español neutro y profesional, pero las palabras clave estructurales de OpenSpec se mantienen en inglés para que el parser y las fusiones de archivo funcionen:
   - Encabezados `## Purpose`, `## Requirements`, `### Requirement: <nombre en español>` y `#### Scenario: <nombre en español>`.
   - La primera oración de cada requisito incluye la palabra clave RFC 2119 en español con su equivalente en inglés entre paréntesis: `DEBE (SHALL)`, `NO DEBE (SHALL NOT)`, `DEBERÍA (SHOULD)`, `PUEDE (MAY)`.
   - Los escenarios se escriben como viñetas con Gherkin en español y en negrita: `- **DADO** …`, `- **CUANDO** …`, `- **ENTONCES** …`, `- **Y** …`.
   - Cada requisito tiene al menos un escenario y una línea *Trazabilidad* con su SPEC y número de requisito de origen.
 - **Configuración:** las reglas del proyecto para SDD están en `openspec/config.yaml`.
+
+---
+
+## 7. Flujo de trabajo
+
+La spec es el contrato del equipo. El ciclo es:
+
+```text
+spec → implementación → tests → contrato → PR por módulo → revisión de coherencia → merge
+```
+
+Reglas que no se negocian:
+
+1. **Se lee la spec del módulo antes de tocar código.** `spec.md` para el comportamiento y `design.md` para el contrato.
+2. **Si el código avanza sin estar en la spec, la spec se actualiza en el mismo PR.** Es un *spec delta* obligatorio, no un pendiente.
+3. **Revisión de coherencia.** Lo nuevo no contradice specs previas, estados ya cerrados ni ADR; si hay conflicto, se marca la decisión y se actualiza la spec o el ADR.
+4. **Un PR/MR por módulo.** `shared/` solo entra con la etiqueta `cross-modulo` y revisión del owner de plataforma.
+5. **Contrato antes que UI.** Endpoint nuevo → `design.md` + OpenAPI → adapter del frontend + `module.manifest.ts` en el mismo cambio.
+
+La Definition of Done, la checklist de PR y el detalle por paso están en [`AGENTS.md`](AGENTS.md) y [`docs/flujo-de-trabajo.md`](docs/flujo-de-trabajo.md). El mapa de módulos y el DAG, en [`docs/arquitectura/modularizacion.md`](docs/arquitectura/modularizacion.md). La auditoría vigente de specs contra código, en [`docs/auditoria-specs-2026-11.md`](docs/auditoria-specs-2026-11.md).

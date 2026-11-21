@@ -36,7 +36,7 @@ Incluye:
 ## Requirements
 
 ### Requirement: Tarjetas en carrusel
-El sistema DEBE (SHALL) representar cada lista de productos como un bloque `CARRUSEL_PRODUCTOS` con tarjetas que contienen los datos de `ProductoResumen`: `productoId`, `nombre`, `marca`, `imagenUrl`, `precio` (`PriceTag`), `descripcionBreve` (máx. 90 caracteres, a partir de `description`, omitida si es nula), `tieneVariantes`, `disponibilidad` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO`, tal como las entrega Productos, o vacía si no se obtuvo) y `skuUnico` (si no tiene variantes). La disponibilidad de un producto sin variantes es la de su `sku_base`; nunca se supone `DISPONIBLE` por defecto. Si no hay precio vigente para ningún SKU del producto, `precio` queda vacío: la tarjeta NO DEBE (SHALL NOT) mostrar un importe de `S/ 0.00`.
+El sistema DEBE (SHALL) representar cada lista de productos como un bloque `CARRUSEL_PRODUCTOS` con tarjetas que contienen los datos de `ProductoResumen` con los nombres reales del contrato: `product_id`, `name`, `brand`, `image`, `price` (`PriceTag`), `short_description` (máx. 90 caracteres, a partir de `description`, omitida si es nula), `has_variants`, `availability` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO`, tal como las entrega Productos, o vacía si no se obtuvo), `single_sku` (si no tiene variantes) y `variants[]` (`sku`, `talla`, `color`). La disponibilidad de un producto sin variantes es la de su `single_sku`; nunca se supone `DISPONIBLE` por defecto. Si no hay precio vigente para ningún SKU del producto, `price` queda vacío: la tarjeta NO DEBE (SHALL NOT) mostrar un importe de `S/ 0.00`.
 
 *Trazabilidad: SPEC-09 · Requisito 1.*
 
@@ -81,7 +81,7 @@ El sistema DEBE (SHALL) agregar directamente los productos sin variantes y DEBE 
 *Trazabilidad: SPEC-09 · Requisito 2.*
 
 #### Scenario: Producto sin variantes
-- **DADO** una pelota con `skuUnico`
+- **DADO** una pelota con `single_sku`
 - **CUANDO** se pulsa "Agregar"
 - **ENTONCES** se envía la acción `AGREGAR_AL_CARRITO {sku, cantidad: 1}` (SPEC-10 y SPEC-11) y aparece la confirmación
 
@@ -98,7 +98,7 @@ El sistema DEBE (SHALL) mostrar el detalle completo (`GET /api/v1/productos/{pro
 #### Scenario: Detalle desde la tarjeta
 - **DADO** un producto con variantes
 - **CUANDO** se pulsa "Ver detalle"
-- **ENTONCES** se muestra `DETALLE_PRODUCTO` (hoja expandible dentro de `ChatPage` o `HomePage`) con galería, descripción (si existe), características, selector de talla y color a partir de `variants[].identifying_attributes`, precio de la variante elegida (o "Precio no disponible", con "Agregar al carrito" deshabilitado, si esa variante no tiene precio vigente), cantidad (1–10) y "Agregar al carrito"
+- **ENTONCES** se muestra `DETALLE_PRODUCTO` (hoja expandible dentro de `ChatPage` o `HomePage`) con galería, descripción (si existe), características, selector de talla y color a partir de `variants[]` (`talla` y `color`), precio de la variante elegida (o "Precio no disponible", con "Agregar al carrito" deshabilitado, si esa variante no tiene precio vigente), cantidad (1–10) y "Agregar al carrito"
 
 #### Scenario: Detalle pedido por texto
 - **DADO** un carrusel previo

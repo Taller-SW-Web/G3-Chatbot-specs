@@ -215,13 +215,26 @@ El sistema DEBE (SHALL) mostrar, después del pago y una vez confirmado el pedid
 - **CUANDO** el cliente pulsa "Enviar calificación"
 - **ENTONCES** se muestra "No pudimos guardar tu opinión" y la confirmación del pedido sigue visible y sin cambios
 
+## Contrato de endpoints
+
+Los endpoints son propios del chatbot y viven en los módulos que indica `design.md`; el CSAT se reenvía a Ventas.
+
+| Método | Ruta | Sesión | Cuerpo / respuesta | Errores propios |
+|---|---|---|---|---|
+| POST | `/mensajes/{mensajeId}/reaccion` | Opcional (`CLIENTE` o `chat_sid`) | `{ "reaccion": "POSITIVE" \| "NEGATIVE" }` → `200 { "mensajeId", "reaccion" }` (upsert) | `404 RECURSO_NO_ENCONTRADO`, `429 DEMASIADAS_SOLICITUDES` (la UI lo ignora en silencio) |
+| POST | `/pedidos/{pedidoId}/valoracion-compra` | `CLIENTE` | `{ "estrellas": 1..5, "comentario?": "..." }` → `201 { "valoracionId", "estrellas" }` | `400 VALIDACION`, `404 RECURSO_NO_ENCONTRADO`, `409 VALORACION_YA_REGISTRADA` |
+| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | `{ "puntuacion": 5 \| 3 \| 1, "comentario?": "..." }` → `201` (proxy a Ventas) | `403`, `409 CSAT_ALREADY_SUBMITTED`, `422 ORDER_NOT_DELIVERED`, `503` |
+| POST | `/sugerencias` | `CLIENTE` | `multipart/form-data`: `tipo` (`SUGERENCIA`/`BUG`), `titulo`, `descripcion`, `correoContacto`, `captura?` (JPG/PNG ≤ 5 MB); `Idempotency-Key` obligatoria → `201 { "sugerenciaId", "codigoSeguimiento" }` | `400 VALIDACION`, `400 ADJUNTO_INVALIDO`, `429 DEMASIADAS_SOLICITUDES` |
+
+**Supuesto explícito:** la captura de una sugerencia viaja en la misma llamada `multipart/form-data` para no añadir un endpoint de carga adicional. Si el frontend implementa una carga previa, el contrato pasa a `capturaId` y se actualiza en el mismo PR. La captura usa el puerto `AttachmentStorage` de SPEC-23, pero no la tabla `attachment`; se guarda en `feedback_suggestion.screenshot_key`.
+
 ## Requisitos no funcionales
 
 - **Privacidad:** la captura de pantalla de un bug nunca se envía al LLM; vive en el mismo bucket privado que las imágenes del chat (SPEC-23), con el mismo tratamiento de URLs firmadas, nunca públicas. Se guarda como una clave de objeto propia de SPEC-24 (`feedback_suggestion.screenshot_key`), con la misma validación de tipo y tamaño del puerto; no usa la tabla `attachment`.
 - **No bloqueante:** ninguno de los tres mecanismos puede impedir ni demorar el flujo principal (conversar, pagar, ver el pedido). Todos los fallos de registro se degradan en silencio o con un mensaje breve, nunca con un bloqueo.
 - **Rendimiento:** registrar una reacción, p95 ≤ 400 ms; enviar la calificación a Ventas, p95 ≤ 1 s; registrar una sugerencia (sin captura), p95 ≤ 1 s.
 - **Idempotencia:** el envío de la calificación del pedido usa `pedidoId` como clave natural (Ventas ya responde `409` ante duplicados); la valoración de la compra es única por pedido; el envío de una sugerencia usa una `Idempotency-Key` igual que el resto de operaciones que crean algo (ver convención general del repo).
-- **Retención:** la captura de un bug sigue la misma política de retención que las imágenes del chat (SPEC-23 · pregunta abierta 10, todavía sin plazo fijado).
+- **Retención:** la captura de un bug sigue la misma política de retención que las imágenes del chat (SPEC-23 · pregunta abierta 2, todavía sin plazo fijado).
 
 ## Preguntas abiertas
 
@@ -241,3 +254,7 @@ El sistema DEBE (SHALL) mostrar, después del pago y una vez confirmado el pedid
 - `SPEC-16` fue actualizada para reflejar que el CSAT ya no está fuera de alcance.
 - La pregunta abierta 9 de `docs/conversacion/README.md` queda marcada como resuelta, enlazando a esta spec.
 - No se han incorporado funcionalidades fuera del alcance.
+
+## Decisiones
+
+- **D5 — Retroalimentación completa (auditoría §4).** Se implementan los cuatro mecanismos: reacciones 👍/👎 por mensaje, sugerencias y bugs con captura opcional y notificación interna, CSAT de la entrega reenviado a Ventas, y valoración de la experiencia de compra en `purchase_rating`. Las tablas `message_reaction`, `feedback_suggestion` y `purchase_rating` y la columna `order_ref.csat_sent` son las definidas en `modelo-datos.md`. **Aprobada:** 2026-11-21. **Estado:** en implementación; no se marca implementada hasta que el código mergee. **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md). **ADR:** [ADR-0029](../../../docs/arquitectura/adr/ADR-0029-modelo-de-datos-de-retroalimentacion.md).

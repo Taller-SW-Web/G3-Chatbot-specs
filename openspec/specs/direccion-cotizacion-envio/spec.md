@@ -111,19 +111,19 @@ El sistema DEBE (SHALL) mostrar los campos de dirección dentro de `CheckoutPage
 - **ENTONCES** se muestran los errores por campo y no se cotiza ni se habilita el pago
 
 ### Requirement: Guardar la dirección para la próxima compra
-El sistema DEBE (SHALL) ofrecer guardar la dirección ingresada en Seguridad, sin que sea obligatorio.
+El sistema DEBE (SHALL) ofrecer guardar la dirección ingresada en Seguridad, sin que sea obligatorio. El formulario envía `guardarDireccion: true|false` en el cuerpo de `POST /api/v1/checkout`; no hay un endpoint separado para esta opción.
 
 *Trazabilidad: SPEC-12 · Requisito 3.*
 
 #### Scenario: Cliente marca "Guardar esta dirección"
-- **DADO** el checkbox marcado y los campos válidos
+- **DADO** el checkbox marcado (`guardarDireccion: true`) y los campos válidos
 - **CUANDO** el cliente confirma el pedido (SPEC-14)
-- **ENTONCES** el backend llama a `POST /usuarios/{id}/direcciones` con el token del cliente antes o junto con la creación del pedido; si Seguridad falla al guardarla, el checkout **continúa igual** y se informa "No pudimos guardar tu dirección para la próxima vez"
+- **ENTONCES** el backend llama a `POST /usuarios/{id}/direcciones` con el token del cliente antes o junto con la creación del pedido; si Seguridad falla al guardarla, el checkout **continúa igual**, responde `201` con `avisoDireccion: "No pudimos guardar tu dirección para la próxima vez"` y el pedido se crea con la dirección de esa compra
 
 #### Scenario: Cliente no marca la casilla
-- **DADO** el checkbox sin marcar
+- **DADO** el checkbox sin marcar (`guardarDireccion: false`)
 - **CUANDO** se confirma el pedido
-- **ENTONCES** la dirección se usa solo para ese pedido y no se llama a Seguridad para guardarla
+- **ENTONCES** la dirección se usa solo para ese pedido, no se llama a Seguridad para guardarla y `avisoDireccion` es `null`
 
 ### Requirement: Cotizar el envío
 El sistema DEBE (SHALL) cotizar con Despacho enviando el `destino` (distrito y dirección resueltos) y las `lineas` del carrito (`sku` y `cantidad`), y mostrar el resultado dentro de `CheckoutPage` antes de habilitar el pago. El chatbot **no calcula ni envía peso ni volumen**: Despacho resuelve los datos físicos. `modalidad` se envía siempre como `DELIVERY` (no hay retiro en tienda en este canal).
@@ -179,3 +179,7 @@ La capacidad se considera correctamente implementada cuando:
 - Todos los escenarios definidos se cumplen.
 - Los requisitos no funcionales aplicables se cumplen.
 - No se han incorporado funcionalidades fuera del alcance.
+
+## Decisiones
+
+- **D6 — Guardado opcional de la dirección desde el checkout (auditoría §4).** `POST /api/v1/checkout` acepta `guardarDireccion` (booleano, por defecto `false`) y, si es `true`, guarda la dirección en Seguridad con el token del cliente. Si Seguridad falla, el checkout **no se bloquea**: responde `201` con `avisoDireccion` y el pedido se crea igual. **Aprobada:** 2026-11-21. **Estado:** en implementación; no se marca implementada hasta que el código mergee. **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md).

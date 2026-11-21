@@ -43,7 +43,7 @@ Prefijo: `/api/v1`. Todas las respuestas de error usan `application/problem+json
 | GET | `/chat/conversaciones` | Opcional* | Lista las conversaciones (propias o de la sesión anónima), ordenadas por `last_message_at` descendente, con `titulo` y vista previa del último mensaje. Paginado. |
 | GET | `/chat/conversaciones/buscar?q=` | Opcional* | Busca por texto en el título y los mensajes del cliente y del asistente. Devuelve la misma forma y paginación que el listado y agrega en cada fila `resaltado: {titulo, fragmento}`: `titulo` es el título completo y `fragmento` un extracto del mensaje coincidente más reciente (`null` si solo coincidió el título). Ambos son listas de tramos `{texto, coincide}`, donde `coincide: true` marca las palabras encontradas. Los tramos son texto plano: el cliente los muestra como texto y nunca los interpreta como HTML. `q` vacío o de más de 100 caracteres responde `400 VALIDACION`. |
 | GET | `/chat/conversaciones/{id}/mensajes` | Opcional* | Devuelve el historial paginado de una conversación. Cada mensaje con imágenes incluye `adjuntos[{adjuntoId, mimeType, ancho, alto, urlMiniatura, expiraEn}]` con URLs firmadas de corta vida (SPEC-23). |
-| POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Envía `{ "texto": "...", "adjuntoIds": ["..."] }` (`adjuntoIds` opcional, máx. 3; el texto es opcional si hay al menos un adjunto, ver 2.1.1) o `{ "accion": { "tipo": "...", "payload": {...} } }`. Los errores de validación (`400`) y de pertenencia (`404`: la conversación no existe o no es del solicitante) se responden antes del stream como `application/problem+json`. En un envío de texto responde `200` con `Content-Type: text/event-stream` y la respuesta del asistente se transmite en esa misma respuesta (ver abajo); las acciones directas siguen devolviendo el bloque en la respuesta REST. Las acciones y `adjuntoIds` conservan su definición y aún no están implementados en el backend. |
+| POST | `/chat/conversaciones/{id}/mensajes` | Opcional | Envía `{ "texto": "...", "adjuntoIds": ["..."] }` (`adjuntoIds` opcional, máx. 3; el texto es opcional si hay al menos un adjunto, ver 2.1.1) o `{ "accion": { "tipo": "...", "payload": {...} } }`. Los errores de validación (`400`) y de pertenencia (`404`: la conversación no existe o no es del solicitante) se responden antes del stream como `application/problem+json`. En un envío de texto responde `200` con `Content-Type: text/event-stream` y la respuesta del asistente se transmite en esa misma respuesta (ver abajo); las acciones directas siguen devolviendo el bloque en la respuesta REST. Las acciones directas y `adjuntoIds` ya están implementados en la rama; falta el merge y las pruebas de integración (D2, 2026-11-21). |
 
 \* Una conversación ligada a un cliente solo la puede listar o leer ese cliente. Las anónimas se listan o leen con la cookie `chat_sid`.
 
@@ -88,13 +88,13 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | POST | `/sesion/logout` | `POST /auth/logout` |
 | GET | `/sesion/perfil` | `GET /auth/me`; agrega `celularVerificado` desde la verificación local y `ultimoDocumento` opcional `{ tipo, numeroEnmascarado }`, tomado de `tipoDocumento` y `documentoEnmascarado` de `/auth/me` o, si Seguridad no los envía, del checkout más reciente del canal (null si no hay documento) |
 | GET | `/sesion/politica-contrasena` | `GET /password/politica` |
-| POST | `/contacto/celular/solicitar-otp` | ✅ propio del chatbot (SPEC-04), no depende de Seguridad — ver acuerdo A2 |
-| POST | `/contacto/celular/verificar-otp` | ✅ ídem |
+| POST | `/contacto/celular/solicitar-otp` | 🟡 En implementación (D1): propio del chatbot (SPEC-04), no depende de Seguridad — ver acuerdo A2. Sin cuerpo; lee el celular vigente de `/auth/me` y responde `202 {enviado: true, celularEnmascarado, expiraEn}` (con `codigo` solo si `MODO_QA=true`). |
+| POST | `/contacto/celular/verificar-otp` | 🟡 En implementación (D1): cuerpo `{codigo}`; responde `200 {celularVerificado: true, celularEnmascarado}`. Errores `400 VALIDACION`, `401 CODIGO_INVALIDO` (con `intentosRestantes`), `401 OTP_INTENTOS_AGOTADOS`, `410 CODIGO_VENCIDO`, `429 LIMITE_REENVIOS` (con `reintentarEn` y `Retry-After`), `409 CELULAR_NO_DISPONIBLE`, `503 SERVICIO_NO_DISPONIBLE`. |
 
 ### 2.3 Catálogo (SPEC-06 a SPEC-10)
 | Método | Ruta | Descripción |
 |---|---|---|
-| GET | `/catalogo/productos` | Búsqueda con los filtros `q`, `categoria`, `marca`, `precioMin`, `precioMax`, `talla`, `color`, `soloOfertas`, `orden`, `pagina` y `tamanio` (máx. 10). |
+| GET | `/catalogo/productos` | Búsqueda con los filtros `q`, `categoria`, `marca`, `precioMin`, `precioMax`, `talla`, `color`, `soloOfertas`, `orden`, `pagina` y `tamanio` (máx. 10). `orden` ∈ `relevancia \| precio_asc \| precio_desc \| nombre_asc \| nombre_desc`; `relevancia` por defecto y `400 VALIDACION` para cualquier otro valor. |
 | GET | `/catalogo/productos/{productoId}` | Detalle con variantes, precio para el canal y disponibilidad por SKU. |
 | GET | `/catalogo/promociones` | Promociones vigentes para el canal `CHATBOT`. |
 | GET | `/catalogo/disponibilidad?sku=` | Disponibilidad puntual de un SKU. |
@@ -207,15 +207,15 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     - `400 VALIDACION`: falta cabecera `Idempotency-Key`, dirección incompleta o el cuerpo contiene campos no admitidos, incluidos líneas e importes.
     - `400 DATO_INVALIDO`: falta o es inválido un dato de `contacto`, incluidos `nombreCompleto`, `tipoDocumento` y `numeroDocumento` (A14).
     - `401 REQUIERE_SESION` / `401 TOKEN_INVALIDO`: sin sesión o token inválido.
-    - `403 CELULAR_NO_VERIFICADO`: el cliente aún no tiene el celular verificado (SPEC-04 / SPEC-14 Req. 1).
+    - `403 CELULAR_NO_VERIFICADO`: el cliente aún no tiene el celular verificado (SPEC-04 / SPEC-14 Req. 1). Solo aplica con `REQUIRE_PHONE_VERIFICATION=true` (por defecto en producción; ver D1).
     - `409 CARRITO_VACIO`: el carrito no tiene líneas disponibles para comprar.
-    - `409 STOCK_INSUFICIENTE` / `409 PRODUCTO_NO_DISPONIBLE`: validación de stock fallida en Productos o Ventas.
-    - `409 CARRITO_DESACTUALIZADO`: cambió el precio, el stock, el cupón o la cotización respecto al resumen confirmado; incluye `summary` actualizado por el servidor. No se crea el pedido hasta que el cliente confirme el nuevo resumen.
+    - `409 STOCK_INSUFICIENTE` / `409 PRODUCTO_NO_DISPONIBLE`: validación de stock fallida en Productos o Ventas (segunda barrera).
+    - `409 CARRITO_DESACTUALIZADO`: cambió el precio, el stock, el cupón o la cotización respecto al resumen confirmado; incluye `lineas` con las líneas bloqueantes (`motivo`: `AGOTADO`, `STOCK_INSUFICIENTE` o `NO_CONFIRMADO`, con `nombre` y `mensaje`) y `summary` actualizado por el servidor. No se crea checkout ni pedido hasta que el cliente confirme el nuevo resumen.
       ```json
-      { "status": 409, "code": "CARRITO_DESACTUALIZADO", "title": "Cart changed", "summary": { "lineas": [{ "sku": "ZAP-RUN-42-NEG", "cantidad": 1, "precioUnitario": 299.90 }], "subtotal": 299.90, "descuento": 30.00, "costoEnvio": 12.50, "total": 282.40 } }
+      { "status": 409, "code": "CARRITO_DESACTUALIZADO", "title": "Cart changed", "lineas": [{ "sku": "ZAP-RUN-42-NEG", "nombre": "Zapatilla Run 42/Negro", "cantidad": 2, "motivo": "AGOTADO", "mensaje": "Se agotó mientras elegías." }], "summary": { "lineas": [{ "sku": "ZAP-RUN-42-NEG", "cantidad": 1, "precioUnitario": 299.90 }], "subtotal": 299.90, "descuento": 30.00, "costoEnvio": 12.50, "total": 282.40 } }
       ```
     - `422 SIN_COBERTURA`: el distrito no tiene cobertura de Despacho.
-    - `503 MODULO_NO_DISPONIBLE` / `503 SERVICIO_NO_DISPONIBLE`: Ventas, Productos o Despacho no disponible.
+    - `503 MODULO_NO_DISPONIBLE` / `503 SERVICIO_NO_DISPONIBLE`: Ventas, Productos o Despacho no disponible; también cuando la revalidación de stock no puede obtener una respuesta válida (no se asume disponibilidad).
 
 - **`GET /api/v1/checkout/{checkoutId}`** (requiere sesión `CLIENTE`):
   - **Respuesta `200 OK`:** misma estructura que `POST /checkout` (`status` ∈ `PENDING_PAYMENT | PAYMENT_APPROVED | CONFIRMED | FAILED | EXPIRED`).
@@ -351,7 +351,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 ### 2.6 Reclamos (SPEC-19, SPEC-20) ✅
 | Método | Ruta | Descripción |
 |---|---|---|
-| POST | `/reclamos` | Registra el reclamo en Ventas. Requiere `Idempotency-Key`. |
+| POST | `/reclamos` | Registra el reclamo en Ventas. Requiere `Idempotency-Key`. Acepta `forzar: boolean` (por defecto `false`): si existe un reclamo abierto del mismo pedido y motivo y no se fuerza, responde `409 RECLAMO_DUPLICADO` con `{reclamoId, codigoSeguimiento, estado}`. |
 | GET | `/reclamos` | Proxy de `GET /api/v2/reclamos/me` con el token del cliente — reclamos del cliente. |
 | GET | `/reclamos/{codigoSeguimiento}` | Proxy de `GET /api/v2/reclamos/{codigoSeguimiento}` — estado y respuesta del reclamo. |
 
@@ -359,7 +359,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | Método | Ruta | Descripción |
 |---|---|---|
 | POST | `/evidencias` | Proxy directo de `POST /api/v2/devoluciones/evidencias/upload` de Ventas; devuelve la misma URL que Ventas genera, para incluirla en el `POST /devoluciones`. |
-| POST | `/devoluciones` | Registra la solicitud de devolución o cambio en Ventas. Requiere `Idempotency-Key`. |
+| POST | `/devoluciones` | Registra la solicitud de devolución o cambio en Ventas. Requiere `Idempotency-Key`. Acepta `forzar: boolean` (por defecto `false`): si existe una solicitud abierta (`SOLICITADA`, `EN_EVALUACION` o `APROBADA`) para el mismo pedido, motivo y líneas y no se fuerza, responde `409 DEVOLUCION_DUPLICADA` con `{devolucionId, estado, motivo}`. |
 | GET | `/devoluciones` | Proxy de `GET /api/v2/devoluciones/me` con el token del cliente — trae **todas** las solicitudes del cliente, incluidas las de otros canales, no solo las que registró el chatbot. |
 | GET | `/devoluciones/{devolucionId}` | Estado del expediente y, si aplica, el bloque `resolucion.reembolso` con el estado del extorno. |
 
@@ -377,10 +377,16 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `ADJUNTO_INVALIDO` | 400 | Imagen adjunta al chat (SPEC-23) mayor a 5 MB, de tipo no permitido, con contenido que no es una imagen válida o con dimensiones fuera de rango. |
 | `LIMITE_ADJUNTOS` | 422 | Más de 3 adjuntos por mensaje o más de 10 adjuntos pendientes por conversación (SPEC-23). |
 | `DEVOLUCION_NO_ELEGIBLE` | 422 | El pedido no está `ENTREGADO`, está fuera de plazo, o falta evidencia obligatoria. |
+| `RECLAMO_DUPLICADO` | 409 | Existe un reclamo abierto para el mismo pedido y motivo y no se envió `forzar: true`; incluye el `codigoSeguimiento` y el estado existentes. |
+| `DEVOLUCION_DUPLICADA` | 409 | Existe una solicitud abierta para el mismo pedido y no se envió `forzar: true`; incluye el `devolucionId` y el estado existentes. |
+| `VALORACION_YA_REGISTRADA` | 409 | El pedido ya tiene una valoración de compra; no se admite una segunda. |
+| `CODIGO_VENCIDO` | 410 | El desafío OTP superó los 5 minutos o ya fue consumido (SPEC-04). |
+| `OTP_INTENTOS_AGOTADOS` | 401 | Se agotaron los 3 intentos del OTP; hay que solicitar uno nuevo (SPEC-04). |
+| `LIMITE_REENVIOS` | 429 | Se superaron los 3 envíos de OTP en 15 minutos; incluye `reintentarEn` (SPEC-04). |
 | `CUPON_INVALIDO` | 422 | Incluye `motivo` (`INEXISTENTE`, `EXPIRADO`, `NO_VIGENTE`, `AGOTADO`, `LIMITE_CLIENTE`, `MONTO_MINIMO`, `NO_APLICA_PRODUCTOS`, `NO_APLICA_CANAL`, `NO_COMBINABLE`). |
 | `REQUIERE_CONFIRMACION_REEMPLAZO` | 409 | El carrito ya tiene un cupón aplicado y se debe confirmar su reemplazo (`cuponActual`, `cuponNuevo`). |
 | `CARRITO_VACIO` | 409 | El carrito no contiene líneas disponibles para iniciar el checkout (SPEC-14 Req. 1). |
-| `CARRITO_DESACTUALIZADO` | 409 | Cambió el precio, el stock, el cupón o la cotización desde el resumen confirmado; el cuerpo incluye `summary` actualizado por el servidor para nueva confirmación. |
+| `CARRITO_DESACTUALIZADO` | 409 | Cambió el precio, el stock, el cupón o la cotización desde el resumen confirmado; el cuerpo incluye `lineas` bloqueantes y `summary` actualizado por el servidor para nueva confirmación. |
 | `PAGO_RECHAZADO` | 402 | Incluye `motivo` e `intentosRestantes`. |
 | `CHECKOUT_EXPIRADO` | 410 | Pasaron más de 15 minutos. |
 | `LIMITE_REENVIOS_EXCEDIDO` | 429 | Ya se enviaron los 2 reenvíos de confirmación por correo permitidos para el pedido (SPEC-16 Req. 3). |
@@ -389,6 +395,18 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `DEMASIADAS_SOLICITUDES` | 429 | Se superó el rate limit. |
 | `VALIDACION` | 400 | Incluye `errores[{campo, mensaje}]`. |
 | `DATO_INVALIDO` | 400 | Específico del documento de identidad (`tipoDocumento`/`numeroDocumento`); el frontend lo evita validando antes con las reglas de `SPEC-12` · Requisito 1, pero Ventas también lo aplica del lado suyo. |
+
+### 2.9 Retroalimentación (SPEC-24)
+🧩 Nuevo (D5, 2026-11-21). Cuatro mecanismos: reacciones, sugerencias/bugs, CSAT de la entrega y valoración de la compra.
+
+| Método | Ruta | Sesión | Descripción |
+|---|---|---|---|
+| POST | `/mensajes/{mensajeId}/reaccion` | Opcional (`CLIENTE` o `chat_sid`) | `{reaccion: "POSITIVE"\|"NEGATIVE"}`; upsert por mensaje y autor. Responde `200 {mensajeId, reaccion}`. `404 RECURSO_NO_ENCONTRADO` si el mensaje no es de la conversación; `429 DEMASIADAS_SOLICITUDES` (la UI lo ignora en silencio). |
+| POST | `/pedidos/{pedidoId}/valoracion-compra` | `CLIENTE` | `{estrellas: 1..5, comentario?}`; una por pedido. Responde `201 {valoracionId, estrellas}`. `409 VALORACION_YA_REGISTRADA`. |
+| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | Proxy a `POST /api/v2/csat` de Ventas; el chatbot no guarda una calificación propia y marca `order_ref.csat_sent` con `201`/`409`. |
+| POST | `/sugerencias` | `CLIENTE` | `multipart/form-data` con `tipo` (`SUGERENCIA`/`BUG`), `titulo`, `descripcion`, `correoContacto`, `captura?` (JPG/PNG ≤ 5 MB) e `Idempotency-Key`. Responde `201 {sugerenciaId, codigoSeguimiento}`. Errores `400 VALIDACION`, `400 ADJUNTO_INVALIDO`, `429 DEMASIADAS_SOLICITUDES`. |
+
+La captura usa el puerto `AttachmentStorage` de SPEC-23 y se guarda en `feedback_suggestion.screenshot_key`; no usa la tabla `attachment`. La notificación interna se encola por outbox (`SEND_EMAIL`) y su estado vive en `feedback_suggestion.notification_status`; un fallo no se muestra al cliente.
 
 ---
 

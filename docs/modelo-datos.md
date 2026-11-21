@@ -123,6 +123,27 @@ Verificación propia del chatbot (SPEC-04), independiente del perfil de Segurida
 |---|---|
 | `UNIQUE (customer_id, phone)` | "¿Este cliente ya verificó este número?" antes del checkout |
 
+### `phone_otp_challenge`
+🧩 Nueva tabla (SPEC-04, D1, [ADR-0026](arquitectura/adr/ADR-0026-almacen-de-otp-y-guard-de-celular.md)). Desafío OTP vigente del chatbot, separado de la verificación exitosa. Guarda solo el **HMAC-SHA256** del código, nunca el código en claro; el registro de verificaciones exitosas sigue en `local_phone_verification`.
+
+| Campo | Tipo | Nulo | Restricciones / notas |
+|---|---|---|---|
+| id | uuid | no | PK, `DEFAULT uuidv7()` |
+| customer_id | uuid | no | Cliente autenticado que solicita el OTP |
+| phone | text | no | `CHECK (phone ~ '^\+51[0-9]{9}$')`. Celular vigente en `GET /auth/me` al solicitar |
+| code_hash | text | no | `HMAC-SHA256(PHONE_OTP_SECRET, customer_id + phone + code)`. Nunca se guarda ni se loguea el código en claro |
+| expires_at | timestamptz | no | `created_at + 5 min` |
+| attempts | integer | no | `DEFAULT 0`, `CHECK (attempts BETWEEN 0 AND 3)` |
+| consumed_at | timestamptz | sí | Null mientras el desafío está vigente; se marca al verificar o al invalidarlo un envío nuevo |
+| created_at | timestamptz | no | Fecha de creación; el límite de 3 envíos/15 min se calcula contando filas desde esta columna |
+
+| Índice | Consulta que lo usa |
+|---|---|
+| `(customer_id, created_at DESC)` | Último desafío vigente y conteo de envíos en la ventana de 15 min |
+| `(customer_id, phone)` | Búsqueda del desafío del número vigente y verificación |
+
+Reglas: al solicitar un código nuevo se marca `consumed_at` del desafío anterior del mismo cliente y número; solo hay uno vigente por cliente. El contador de intentos se agota a los 3 fallos y obliga a solicitar uno nuevo. El límite de reenvíos se calcula contando desafíos creados en los últimos 15 minutos, no con una columna aparte. Un código consumido no se puede reutilizar. El OTP nunca se envía al LLM ni se guarda en `message`. Los desafíos vencidos/consumidos se purgan con un job cuyo plazo está pendiente (ver ADR-0026).
+
 ### `cart`
 | Campo | Tipo | Nulo | Restricciones / notas |
 |---|---|---|---|
@@ -402,7 +423,7 @@ Tareas asíncronas con reintento (ADR-0011), procesadas por el worker de APSched
 
 ## Pendientes
 
-- ⚠️ **Retención**: no hay plazo definido para `checkout.summary` (incluye el documento), `local_phone_verification`, `payment_attempt`, `notification.recipient` ni `outbox.payload`, ni para borrar conversaciones autenticadas (ver `conversacion/privacidad.md`). Cuando se definan, cada plazo necesitará un job de purga y posiblemente un índice por `created_at`.
+- ⚠️ **Retención**: no hay plazo definido para `checkout.summary` (incluye el documento), `local_phone_verification`, `phone_otp_challenge`, `payment_attempt`, `notification.recipient` ni `outbox.payload`, ni para borrar conversaciones autenticadas (ver `conversacion/privacidad.md`). Cuando se definan, cada plazo necesitará un job de purga y posiblemente un índice por `created_at`.
 - ⚠️ **Retención de adjuntos del chat** (SPEC-23): no hay plazo definido para `attachment` ni para los archivos del bucket (solo se limpian los pendientes a las 24 h). Falta decidir si se alinea con el archivado de 90 días y qué ocurre con las imágenes de conversaciones anónimas al expirar; el borrado de archivos requiere un job que reconcilie el bucket con la tabla.
 - ⚠️ **Retención de SPEC-24**: no hay plazo para `message_reaction`, `feedback_suggestion` (incluye `contact_email`) ni `purchase_rating`. La captura de un bug (`screenshot_key`) vive en el mismo bucket privado y sigue sin plazo ni job de purga propios.
 - ⚠️ **PostgreSQL 18 en Supabase**: las claves usan `uuidv7()` nativo de PostgreSQL 18 y no está confirmado que el plan gratuito de Supabase lo ofrezca. Si no, habrá que generar el UUID v7 en la aplicación o con una función propia; no se cambia el modelo por ahora.

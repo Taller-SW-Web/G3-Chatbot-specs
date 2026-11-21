@@ -85,6 +85,8 @@ Payload real `POST {VEN}/api/v2/reclamos`:
 }
 ```
 
+El cuerpo de `POST /api/v1/reclamos` es ese payload más `forzar` (booleano, por defecto `false`); `forzar` es una decisión del chatbot y no se reenvía a Ventas.
+
 *Trazabilidad: SPEC-19 · Requisito 2.*
 
 #### Scenario: Reclamo registrado
@@ -108,19 +110,34 @@ Payload real `POST {VEN}/api/v2/reclamos`:
 - **ENTONCES** no se registra nada y el borrador se descarta
 
 ### Requirement: Reclamos duplicados
-El sistema DEBE (SHALL) avisar si ya existe un reclamo abierto (no `ATENDIDO` ni `DERIVADO`) para el mismo pedido y motivo, consultando `GET /api/v1/reclamos` (proxy a `GET /api/v2/reclamos/me?estado=` con el token del cliente) antes de mostrar el formulario de uno nuevo.
+El sistema DEBE (SHALL) detectar, antes de registrar, si ya existe un reclamo abierto (no `ATENDIDO` ni `DERIVADO`) para el mismo pedido y motivo, consultando `GET /api/v1/reclamos` (proxy a `GET /api/v2/reclamos/me?estado=` con el token del cliente). La detección DEBE (SHALL) repetirse en el `POST /api/v1/reclamos` como comprobación autoritativa, no solo en la pantalla previa. Si existe un duplicado y el cliente no envía `forzar: true`, el backend responde `409 RECLAMO_DUPLICADO` con el `codigoSeguimiento` y el estado del reclamo existente; con `forzar: true` registra uno nuevo. La `Idempotency-Key` sigue aplicando en ambos casos.
 
 *Trazabilidad: SPEC-19 · Requisito 3.*
 
 #### Scenario: Reclamo abierto existente
 - **DADO** un reclamo `REGISTRADO` o `EN_PROCESO` para PED-…891 con motivo `PRODUCTO_DEFECTUOSO`
-- **CUANDO** el cliente intenta registrar otro igual
-- **ENTONCES** se informa el `codigoSeguimiento` existente y su estado, con "Ver estado" (SPEC-20), y no se crea uno nuevo sin que el cliente lo confirme explícitamente ("Registrar uno nuevo de todas formas")
+- **CUANDO** el cliente intenta registrar otro igual sin `forzar`
+- **ENTONCES** se informa el `codigoSeguimiento` existente y su estado, con "Ver estado" (SPEC-20), y no se crea uno nuevo; si confirma "Registrar uno nuevo de todas formas", el formulario reenvía con `forzar: true`
 
 #### Scenario: Reclamo previo ya atendido
 - **DADO** que el único reclamo previo sobre ese pedido y motivo está `ATENDIDO` o `DERIVADO`
 - **CUANDO** el cliente registra uno nuevo
 - **ENTONCES** se permite sin aviso (no es un duplicado, es un caso ya cerrado)
+
+#### Scenario: Registro forzado
+- **DADO** un reclamo abierto para el mismo pedido y motivo y una confirmación explícita del cliente
+- **CUANDO** se envía `POST /api/v1/reclamos` con `forzar: true`
+- **ENTONCES** se registra el nuevo reclamo, se guarda su `claim_ref` y se muestra una constancia nueva con su propio `codigoSeguimiento`
+
+#### Scenario: Doble envío con `forzar`
+- **DADO** dos envíos con la misma `Idempotency-Key` y `forzar: true`
+- **CUANDO** se procesan
+- **ENTONCES** se registra un solo reclamo y ambos reciben la misma constancia
+
+#### Scenario: No se puede consultar el listado de duplicados
+- **DADO** que `GET /api/v1/reclamos` falla o excede el tiempo de espera al comprobar duplicados
+- **CUANDO** el cliente envía un reclamo distinto
+- **ENTONCES** el registro continúa (decisión de falibilidad: el reclamo es la operación principal), se registra un aviso en los logs y el cliente no ve un error de duplicados; si el equipo prefiere bloquear, se cambia a `503 SERVICIO_NO_DISPONIBLE` en una decisión posterior
 
 ### Requirement: Tolerancia a fallos
 El sistema DEBE (SHALL) informar con claridad si el reclamo no pudo registrarse, sin simular un registro.
@@ -137,6 +154,11 @@ El sistema DEBE (SHALL) informar con claridad si el reclamo no pudo registrarse,
 - **CUANDO** se envía
 - **ENTONCES** se muestra el mensaje de forma comprensible, mapeando `codigo` de Ventas a un `code` interno
 
+#### Scenario: Duplicado detectado al registrar
+- **DADO** un reclamo abierto para el mismo pedido y motivo, y un envío sin `forzar`
+- **CUANDO** llega el `POST /api/v1/reclamos`
+- **ENTONCES** se responde `409 RECLAMO_DUPLICADO` con `{ reclamoId, codigoSeguimiento, estado }`, no se llama a Ventas y el frontend muestra el aviso de duplicado con la opción de forzar
+
 ## Requisitos no funcionales
 
 - **Confirmación:** ningún reclamo se registra solo por la decisión del LLM (SPEC-05 Req. 6).
@@ -151,3 +173,7 @@ La capacidad se considera correctamente implementada cuando:
 - Todos los escenarios definidos se cumplen.
 - Los requisitos no funcionales aplicables se cumplen.
 - No se han incorporado funcionalidades fuera del alcance.
+
+## Decisiones
+
+- **D4 — Duplicados de postventa (auditoría §4).** El chatbot detecta reclamos abiertos del mismo pedido y motivo contra el listado real de Ventas; si existe uno y el cliente no confirma, responde `409 RECLAMO_DUPLICADO` con el código y estado existentes. La confirmación explícita se expresa con `forzar: true` en `POST /api/v1/reclamos`. **Aprobada:** 2026-11-21. **Estado:** en implementación; no se marca implementada hasta que el código mergee. **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md). **ADR:** [ADR-0027](../../../docs/arquitectura/adr/ADR-0027-duplicados-de-postventa-y-forzar.md).

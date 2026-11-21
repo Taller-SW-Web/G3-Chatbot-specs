@@ -1,6 +1,8 @@
 # Diseño: Adjuntos de imágenes en el chat
 
-> Origen: SPEC-23 · Especificación de comportamiento: [`spec.md`](spec.md)
+> Origen: SPEC-23 · Especificación de comportamiento: [`spec.md`](spec.md) · Decisión: [ADR-0028](../../../docs/arquitectura/adr/ADR-0028-adjuntos-almacenamiento-externo-privado.md)
+>
+> **Alcance confirmado (2026-11-21, D2):** se implementa completo —storage, límites, EXIF, miniaturas, URL firmada, limpieza y `adjuntoIds`—. El `POST` de mensajes deja de responder `501` cuando llegan adjuntos.
 
 ## Integraciones
 

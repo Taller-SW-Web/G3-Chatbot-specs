@@ -129,10 +129,10 @@ Capacidades vigentes:
 **Validación al arranque.** `discovery.configure_modules` llama a `configure()` de cada módulo y
 después valida las capacidades declaradas en `REQUIRED_CAPABILITIES`: si falta una requerida, aborta el
 arranque indicando el módulo dueño. Las de `OPTIONAL_CAPABILITIES` que faltan se registran con
-`logger.error` y quedan en el registry; `/health` responde `200 {"status": "degraded",
-"missingCapabilities": [...]}` en lugar de `{"status": "ok"}`. Hoy `conversation_context` es requerida
-por `mod-cart` y `mod-catalog`; `order_confirmation` por `mod-checkout`; `dispatch_port` por
-`mod-orders`; `checkout_document` es opcional para `mod-auth`.
+`logger.error` y quedan en el registry; `/health` responde `200` con
+`{"status": "degraded", "missingCapabilities": [...]}` en lugar de `{"status": "ok"}`. Hoy
+`conversation_context` es requerida por `mod-cart` y `mod-catalog`; `order_confirmation` por
+`mod-checkout`; `dispatch_port` por `mod-orders`; `checkout_document` es opcional para `mod-auth`.
 
 ## 4. `shared/` es el kernel, no un cajón
 

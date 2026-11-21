@@ -23,7 +23,7 @@ Las 6 pendientes no se han “arreglado” inventando: van al plan de §3 y a la
 ## 2. Tabla de las 24 specs
 
 Leyenda de evidencia: `BE` = `G3-Chatbot-backend`, `FE` = `G3-Chatbot-frontend`. Las rutas son relativas
-a cada repositorio; `...` continúa la ruta del mismo módulo ya citada en la fila.
+a cada repositorio y todas las rutas backend llevan el prefijo `/api/v1`.
 
 | # | Capability | Módulo(s) | Estado | Evidencia (`archivo:línea`) | Acción |
 |---|---|---|---|---|---|

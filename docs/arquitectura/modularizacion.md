@@ -4,6 +4,8 @@
 > [ADR-0024 del backend](../../../G3-Chatbot-backend/docs/adr/ADR-0024-modularizacion.md).
 > **Fuente operativa:** [`modules.manifest.json` del backend](../../../G3-Chatbot-backend/modules.manifest.json)
 > y [`modules.manifest.json` del frontend](../../../G3-Chatbot-frontend/modules.manifest.json).
+> También en GitHub: [ADR-0024 del backend](https://github.com/Taller-SW-Web/G3-Chatbot-backend/blob/development/docs/adr/ADR-0024-modularizacion.md)
+> y [manifiesto del backend](https://github.com/Taller-SW-Web/G3-Chatbot-backend/blob/development/modules.manifest.json).
 > Si este documento contradice una spec, manda la spec; si contradice el manifiesto, manda el manifiesto.
 
 ## 1. Qué cambió y qué no

@@ -125,6 +125,9 @@ a cada repositorio; `...` continúa la ruta del mismo módulo ya citada en la fi
   correcciones mecánicas de §2 están marcadas como tales.
 - **Los tests no se ejecutaron** en esta auditoría: el estado “1214 backend / 663 frontend” es el
   reportado por el equipo en `development`. La evidencia es estática (código, OpenAPI, manifiestos).
+- **Validación OpenSpec:** `npx @fission-ai/openspec validate --specs` pasa las 24 specs con avisos de
+  Gherkin en español. `--strict` falla en las 24 porque exige `WHEN`/`THEN` en inglés; no es un fallo
+  introducido por esta auditoría.
 - **Cobertura de la evidencia:** las rutas `archivo:línea` apuntan al punto que prueba la afirmación;
   cuando el hueco es una ausencia (p. ej. un endpoint que no existe), se cita el archivo que debería
   contenerlo o el adapter que lo llama.

@@ -9,7 +9,7 @@
 | Componente | Uso | Estado |
 |---|---|---|
 | Proveedor LLM (`gpt-6-luna`, OpenAI) vía `LLMProvider` | Interpretación de las imágenes como partes de contenido en base64 junto con el texto | ⚠️ Soporte de visión y costo por imagen sin verificar (pregunta abierta 1 de la spec) |
-| Supabase Storage (bucket privado) vía `AttachmentStorage` | Guardar y leer la imagen normalizada y su miniatura; emitir URLs firmadas | ✅ Implementado (D2, 2026-11-21); el plan gratuito impone límites (pregunta abierta 5) |
+| Supabase Storage (bucket privado) vía `AttachmentStorage` | Guardar y leer la imagen normalizada y su miniatura; emitir URLs firmadas | 🟡 Pendiente en producción (2026-11-21): hoy solo existe el adaptador local; el adaptador Supabase se implementa en la rama `fix/audit-wave-0-1` del backend (ADR-0028). El plan gratuito impone límites (pregunta abierta 5) |
 | PostgreSQL (Supabase) | Tabla `attachment` con las referencias | ⚠️ PostgreSQL 18 sin confirmar en Supabase (pregunta abierta 3) |
 | Búsqueda de Productos (SPEC-06) | Se invoca con los criterios de texto que el LLM deduce de la imagen | ✅ Sin cambios de contrato |
 | Ventas | **No se integra**: las imágenes del chat no se reenvían como evidencia (SPEC-21) | ✅ |
@@ -36,7 +36,12 @@
 | `AdjuntoService` | Valida el archivo, invoca a `ImageProcessor`, guarda mediante `AttachmentStorage`, crea la fila `attachment`, liga los adjuntos al mensaje y elimina los pendientes o huérfanos. |
 | `ImageProcessor` | Determina el tipo por la firma binaria, rechaza contenido que no es una imagen válida, elimina EXIF y ubicación, re-codifica, acota las dimensiones y genera la miniatura. |
 | Puerto `AttachmentStorage` (outbound) | `guardar(clave, bytes, mime)`, `leer(clave) -> bytes`, `eliminar(clave)` y `url_firmada(clave, ttl)`. Sin lectura pública. |
-| `SupabaseAttachmentStorage` (adaptador outbound) | Implementa el puerto con un bucket privado de Supabase Storage; credenciales y nombre del bucket por variables de entorno. En pruebas se reemplaza por un adaptador en memoria. |
+| `SupabaseAttachmentStorage` (adaptador outbound) | 🟡 En implementación. Implementa el puerto con un bucket privado de Supabase Storage; credenciales y nombre del bucket por variables de entorno. En pruebas se reemplaza por un adaptador en memoria. |
+| `LocalAttachmentStorage` (adaptador outbound) | Implementa el mismo puerto sobre un directorio local (`ATTACHMENT_STORAGE_PATH`, por defecto `var/attachments`). Solo para desarrollo y pruebas: el disco de un contenedor de Railway es efímero (ADR-0028). |
+
+**Selección del adaptador.** La variable `ATTACHMENT_STORAGE=local|supabase` elige el adaptador al arrancar. En producción el backend NO DEBE (SHALL NOT) arrancar con `local`.
+
+**Lectura firmada con el adaptador local (`GET /chat/adjuntos/archivo`).** El adaptador local emite URLs hacia este endpoint, que no requiere sesión: la firma es la única autorización. Parámetros de consulta: `clave` (1 a 300 caracteres), `exp` (instante de expiración en segundos Unix) y `sig` (64 caracteres hexadecimales). La firma es HMAC-SHA256 con `ATTACHMENT_SIGNING_SECRET` sobre `clave:exp`. El backend responde `403 FIRMA_INVALIDA` si la firma no coincide (comparación en tiempo constante) o `exp` ya pasó, y `404 RECURSO_NO_ENCONTRADO` si el archivo no existe. Las claves solo admiten `[A-Za-z0-9/_-.]` y se rechazan las que contienen `..`. La respuesta lleva `Cache-Control: private, max-age=60`. Evidencia: `BE/src/modules/mod_chat/adapters/http/attachment_router.py:96-110` y `BE/src/shared/infrastructure/storage/local_attachment_storage.py:26,36-38,64-77`. Con el adaptador de Supabase se prevé que las URLs firmadas las emita el propio bucket y que este endpoint deje de usarse (por confirmar al fusionar la rama).
 | `LLMProvider` (ampliado) | Acepta mensajes con **partes de contenido** (`TextoParte`, `ImagenParte {mime, base64}`) además del texto simple; declara si el modelo admite visión. `OpenAIProvider` las traduce al formato del proveedor. |
 | `InterpretarYResponderUseCase` (ampliado) | Al armar el turno, lee desde `AttachmentStorage` las imágenes de los últimos 12 mensajes (máx. 6 más recientes), las codifica en base64 y las incluye como `ImagenParte`. Nunca pasa URLs. Registra tokens y costo por turno. |
 | `SensitiveDataFilter` | Sin cambios: sigue actuando solo sobre el texto. Las imágenes quedan fuera de su alcance (riesgo residual documentado). |

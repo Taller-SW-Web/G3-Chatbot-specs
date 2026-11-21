@@ -150,7 +150,7 @@ El frontend guarda el `accessToken` en **`chatStore` respaldado por LocalStorage
 | Backend | Python 3.12, **FastAPI** (`chatbot_router.py` REST con streaming SSE en la respuesta del `POST` de mensajes), arquitectura hexagonal (`domain/`, `application/`, `adapters/inbound/`, `adapters/outbound/`), Pydantic v2, SQLAlchemy 2 + Alembic, httpx async, PyJWT (JWKS), APScheduler para el worker de outbox |
 | LLM | Adaptador `LLMProvider` (puerto outbound) con implementaciones Claude y OpenAI (tool calling); el streaming de la respuesta se emite al frontend por SSE desde `chatbot_router.py` |
 | Base de datos | PostgreSQL (`conversacion_postgres_adapter`), alojado en Supabase (plan gratuito; PostgreSQL 18 sin confirmar) |
-| Imágenes del chat (SPEC-23) | Puerto `AttachmentStorage` con `SupabaseAttachmentStorage` (bucket privado de Supabase Storage); el LLM (`gpt-6-luna`, visión sin verificar) recibe las imágenes en base64 |
+| Imágenes del chat (SPEC-23) | Puerto `AttachmentStorage` con `SupabaseAttachmentStorage` (bucket privado de Supabase Storage; en implementación, 2026-11-21) y `LocalAttachmentStorage` solo para desarrollo, según `ATTACHMENT_STORAGE=local\|supabase`; el LLM (`gpt-6-luna`, visión sin verificar) recibe las imágenes en base64 |
 | Correo | SMTP (Mailtrap en desarrollo) |
 | Pruebas | pytest, respx (mocks HTTP), Prism para el mock de Seguridad, Vitest + Testing Library, Playwright (E2E) |
 | Diseño | [Figma](https://www.figma.com/design/RjFXUJR82LQ2vSd6UP2xEj/Chatbot?node-id=1116-2&p=f&t=o8r5m6UtTPqXuxOn-0) · [sistema de diseño](docs/design-system.md) · [propuestas de UX](docs/propuestas-ux.md) |

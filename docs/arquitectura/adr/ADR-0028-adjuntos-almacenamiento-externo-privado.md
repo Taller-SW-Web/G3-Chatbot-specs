@@ -17,7 +17,7 @@ Aceptada
 
 ## Decisión
 
-1. **Almacenamiento externo gestionado.** Se usa Supabase Storage (bucket privado) a través del puerto `AttachmentStorage` (`guardar`, `leer`, `eliminar`, `url_firmada`). **No se usa disco local del backend**: un contenedor efímero perdería los archivos al reiniciar y no los compartiría entre réplicas.
+1. **Almacenamiento externo gestionado.** El destino de producción es Supabase Storage (bucket privado) a través del puerto `AttachmentStorage` (`guardar`, `leer`, `eliminar`, `url_firmada`). **El disco local del backend no es aceptable en producción**: un contenedor efímero perdería los archivos al reiniciar y no los compartiría entre réplicas. El adaptador se elige con `ATTACHMENT_STORAGE=local|supabase`: `local` (`LocalAttachmentStorage`) solo sirve para desarrollo y pruebas; `supabase` es el adaptador de producción. En producción el backend NO DEBE (SHALL NOT) arrancar con `local`.
 2. **La base guarda solo referencias.** La tabla `attachment` conserva `storage_key`, `thumbnail_key`, tipo, tamaño, dimensiones y estado; nunca los bytes. El nombre original del archivo no se guarda.
 3. **Ciclo de vida `PENDING` → `SENT`.** La carga crea el adjunto en `PENDING` sin mensaje; el `POST` de mensajes lo liga a un único mensaje y lo pasa a `SENT`. Un adjunto `SENT` no se puede quitar; uno `PENDING` sí, y el borrado elimina sus dos objetos.
 4. **Validación y minimización.** El backend determina el tipo por firma binaria, rechaza contenido que no sea JPG/PNG/WebP, elimina EXIF y ubicación, re-codifica, acota dimensiones y genera una miniatura. Los límites son 3 imágenes por mensaje y 5 MB por imagen.
@@ -27,6 +27,14 @@ Aceptada
 8. **Límites de uso.** 10 cargas por minuto por cliente o IP, 10 adjuntos pendientes por conversación y el límite general de mensajes de SPEC-05.
 
 **Límites:** no se usa el almacenamiento de Ventas (la evidencia de devolución sigue siendo de SPEC-21), no se aceptan PDF en el chat, no hay búsqueda por similitud visual y el plazo de retención de los adjuntos sigue sin decidirse.
+
+## Estado de implementación (2026-11-21)
+
+> **El adaptador de Supabase aún no está en producción.** En `development` y en `main` del backend solo existe `LocalAttachmentStorage` (`BE/src/shared/infrastructure/storage/local_attachment_storage.py:1-6`), cableado en `mod_chat/module.py`. El `SupabaseAttachmentStorage` y el selector `ATTACHMENT_STORAGE=local|supabase` se están implementando en la rama `fix/audit-wave-0-1` del backend y no se consideran vigentes hasta que esa rama se fusione y se despliegue.
+>
+> **Riesgo mientras tanto:** en Railway el sistema de archivos del contenedor es efímero. Cada reinicio o despliegue pierde las imágenes del chat y las capturas de bugs (SPEC-24), mientras las filas `attachment` y `feedback_suggestion.screenshot_key` siguen apuntando a claves inexistentes. Este ADR describe la decisión, no el estado desplegado; las versiones anteriores de este y otros documentos que daban el almacenamiento externo por implementado se corrigen con esta nota.
+>
+> **Criterio de cierre:** `ATTACHMENT_STORAGE=supabase` configurado en el entorno desplegado y verificado con una carga y una lectura reales tras un reinicio.
 
 ## Alternativas consideradas
 
@@ -61,4 +69,4 @@ Aceptada
 - [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md) — decisión original de imágenes y `AttachmentStorage`
 - [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md) — `200 text/event-stream`
 - [`auditoria-specs-2026-11.md`](../../auditoria-specs-2026-11.md) §4, D2
-- [`contratos-integracion.md`](../../contratos-integracion.md) §2.1.1
+- [`contratos-integracion.md`](../../contratos-integracion.md) §2.1.1 (incluye `GET /chat/adjuntos/archivo`)

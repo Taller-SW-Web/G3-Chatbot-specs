@@ -13,10 +13,12 @@
 
 | Estado | Significado | Cantidad |
 |---|---|---|
-| ✅ Al día | La spec describe el comportamiento y los contratos que el código implementa hoy | **24** |
+| ✅ Al día | La spec describe el comportamiento y los contratos que el código implementa hoy | **23** |
 | ⚠️ Drift mecánico corregido | Nombres, rutas, campos o estados desalineados; corregidos sin cambiar comportamiento | **0** |
-| 🟡 En implementación | Decisión de producto cerrada y contrato escrito; el código aún no está mergeado | **0** |
+| 🟡 En implementación | Decisión de producto cerrada y contrato escrito; el código aún no está mergeado | **1** (SPEC-23, almacenamiento de producción) |
 | **Total** | | **24** |
+
+> **Corrección 2026-11-21 (auditoría posterior).** El cierre 24/24 "Al día" sobrestimaba SPEC-23: el backend solo tiene el adaptador de disco local y el de Supabase está en la rama `fix/audit-wave-0-1` (ADR-0028). La fila 23 y L2 pasan a 🟡. Además, los cambios `alinear-specs-con-prototipo` y `alinear-specs-con-ventas` se archivaron el mismo día: las specs base pasan a **119 requisitos y 416 escenarios** (antes 116 y 389), y ya no quedan cambios pendientes en `openspec/changes/`. Los hallazgos de la auditoría posterior (SPEC-AUD-01 a 34) se tratan fuera de esta tabla.
 
 **Evidencia de merge:**
 
@@ -66,7 +68,7 @@ a cada repositorio y todas las rutas backend llevan el prefijo `/api/v1`.
 | 20 | `consulta-reclamo` (SPEC-20) | `mod-postventa` | ✅ Al día | `BE/src/modules/mod_postventa/adapters/http/claims_router.py:74` (lista), `:94` (detalle); `BE/src/modules/mod_postventa/application/postventa_service.py:210-226`; estados G5 `REGISTRADO`/`EN_PROCESO`/`ATENDIDO`/`DERIVADO` | Rutas y estados alineados; #141 |
 | 21 | `solicitud-devolucion-cambio` (SPEC-21) | `mod-postventa` | ✅ Al día | `BE/src/modules/mod_postventa/adapters/http/returns_router.py:64` (evidencia 201), `:100` (devolución 201); `BE/src/modules/mod_postventa/application/postventa_service.py:94-104` (`DEVOLUCION_DUPLICADA`) y `:305-338` (pedido + motivo + líneas) | Implementado D4: detección autoritativa y `forzar`; #141 |
 | 22 | `consulta-devolucion-reembolso` (SPEC-22) | `mod-postventa` | ✅ Al día | `BE/src/modules/mod_postventa/adapters/http/returns_router.py:126` (lista), `:148` (detalle); `BE/src/modules/mod_postventa/application/postventa_service.py:121-140`; `postventa_dto.py` (`resolucion`, `estadoReembolso`) | Rutas y estados alineados; #141 |
-| 23 | `adjuntos-imagenes-chat` (SPEC-23) | `mod-chat` (+ `shared/`) | ✅ Al día | `BE/src/modules/mod_chat/adapters/http/attachment_router.py:51` (carga 201), `:80` (borrado 204), `:113` (URL firmada); `BE/src/modules/mod_chat/application/attachment_service.py`; `BE/src/modules/mod_chat/adapters/http/chatbot_router.py:183-213` (`adjuntoIds`); `BE/src/shared/application/ports/attachment_storage_port.py` | Implementado D2: storage, límites, EXIF, miniaturas, URL firmada, limpieza y `adjuntoIds`; BE #141 / FE #109 |
+| 23 | `adjuntos-imagenes-chat` (SPEC-23) | `mod-chat` (+ `shared/`) | 🟡 En implementación | `BE/src/modules/mod_chat/adapters/http/attachment_router.py:51` (carga 201), `:80` (borrado 204), `:113` (URL firmada); `BE/src/modules/mod_chat/application/attachment_service.py`; `BE/src/modules/mod_chat/adapters/http/chatbot_router.py:183-213` (`adjuntoIds`); `BE/src/shared/application/ports/attachment_storage_port.py` | Implementado D2 con adaptador **local**: límites, EXIF, miniaturas, URL firmada (HMAC), limpieza y `adjuntoIds`; BE #141 / FE #109. **Pendiente:** el adaptador `SupabaseAttachmentStorage` y `ATTACHMENT_STORAGE=local\|supabase` (rama `fix/audit-wave-0-1`); el disco local es efímero en Railway y no es aceptable en producción (ADR-0028) |
 | 24 | `retroalimentacion-cliente` (SPEC-24) | `mod-postventa` + `mod-chat` + `mod-checkout` | ✅ Al día | `BE/src/modules/mod_chat/adapters/http/feedback_router.py:53` (reacción), `:78` (`/sugerencias`); `BE/src/modules/mod_chat/application/feedback_service.py`; `BE/src/modules/mod_postventa/adapters/http/csat_router.py:29`; `order_ref.csat_sent`; `FE/src/modules/mod-chat/ui/BotFeedback.tsx`, `SugerenciaForm.tsx` y `FE/src/modules/mod-checkout/ui/RatingPopup.tsx` conectados | Implementado D5: reacciones, sugerencias/bugs, CSAT, valoración de compra y outbox interno; #141/#109 |
 
 **Nota operativa (fuera de las 24 capabilities).** El contrato de `/health` cambió con la validación de
@@ -106,7 +108,7 @@ capabilities de las 24 quedan como mejoras posteriores; no bloquean el cierre 24
 | ID | Acción | Módulo / repo | Dueño sugerido | Estado | Criterio de cierre |
 |---|---|---|---|---|---|
 | L1 | SPEC-04 completo (H-17): OTP, guard, flag y UI | `mod-auth` + `mod-checkout` | @Ankarmin | ✅ Cerrado (D1) | Los 3 requisitos y sus escenarios pasan; `CELULAR_NO_VERIFICADO` real |
-| L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @MathiasTL + @Ankarmin | ✅ Cerrado (D2) | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501 |
+| L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @MathiasTL + @Ankarmin | 🟡 Parcial (D2): falta el storage de producción | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501 |
 | L3 | SPEC-24 completo: reacciones, sugerencias/bugs, valoración, CSAT y outbox | `mod-chat` + `mod-postventa` + `mod-checkout` | @Ankarmin + @MathiasTL | ✅ Cerrado (D5) | Los mecanismos tienen endpoints, tablas y pruebas; la UI dejó de ser estado local |
 | L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Ankarmin | ⬜ Posterior al cierre | S2 convertido en gate bloqueante y documentado en `modularizacion.md` |
 

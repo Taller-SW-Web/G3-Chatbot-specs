@@ -137,7 +137,7 @@ Las decisiones D1–D7 no añaden módulos ni cambian el DAG; amplían superfici
 | Consumidor | Proveedor | Superficie | Decisión |
 |---|---|---|---|
 | `mod-checkout` | `mod-cart` | `ManageCartUseCase.validate_cart` vía `mod_cart.public` (validación masiva con detalle por línea) | D3 · stock |
-| `mod-checkout` | `mod-shipping` | `GuardarDireccionOpcional` vía `mod_shipping.public` (el guardado en Seguridad no bloquea el checkout) | D6 · dirección |
+| `mod-checkout` | `mod-shipping` | `GuardarDireccionOpcional` en `mod_shipping.public` (nueva función; el guardado en Seguridad no bloquea el checkout) | D6 · dirección |
 | `mod-chat` | `shared/` | Puerto `AttachmentStorage` y adaptador de Supabase Storage (imágenes del chat) | D2 · adjuntos |
 | `mod-chat` | `shared/` | Tablas `message_reaction` y `feedback_suggestion`; `AttachmentStorage` para la captura de un bug | D5 · feedback |
 | `mod-checkout` | `shared/` | Tabla `purchase_rating` para la valoración de la experiencia de compra | D5 · feedback |

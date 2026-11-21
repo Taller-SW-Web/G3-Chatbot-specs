@@ -101,6 +101,11 @@ Un *spec delta* es el cambio mínimo en la spec que refleja el avance del códig
 El delta va en el **mismo PR** que el código. Un PR de código sin delta se rechaza en la revisión de
 coherencia, salvo que el cambio sea puramente interno y no altere comportamiento, contrato ni estados.
 
+Un **cambio de comportamiento nuevo** se tramita primero en `openspec/changes/<cambio>/` (propuesta,
+specs delta, diseño, tareas, verificación y archivo). Una **corrección de drift** o un avance que ya
+existe en el código se aplica directamente a `openspec/specs/` en el mismo PR, porque no cambia el
+comportamiento: solo pone la spec al día.
+
 ## 4. Un PR por módulo y `shared/`
 
 | Situación | Regla |

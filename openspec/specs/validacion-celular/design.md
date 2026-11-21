@@ -57,7 +57,7 @@
 - Un desafío nuevo invalida el anterior del mismo `customer_id`; solo hay uno activo por cliente.
 - La comparación con `local_phone_verification` es por valor exacto del celular (`+51` + 9 dígitos). Si el perfil cambia de número, la verificación anterior no aplica.
 - El código se guarda hasheado; el hash no se devuelve, no se loguea y no se envía al LLM.
-- Los contadores de intentos y reenvíos se reinician al crear un desafío nuevo, no al reenviar dentro de la misma ventana: la ventana de 15 minutos se cuenta desde el primer envío.
+- Los intentos se reinician con cada desafío nuevo; el contador de reenvíos y su ventana de 15 minutos se conservan entre desafíos del mismo cliente y número. La ventana se cuenta desde el primer envío.
 - La bandera `REQUIRE_PHONE_VERIFICATION` se lee al arranque. Supuesto explícito: por defecto `true` en producción; `false` solo para pruebas/demos.
 
 ## Desglose para issues

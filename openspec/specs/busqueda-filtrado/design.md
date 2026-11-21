@@ -26,9 +26,9 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| Herramienta `buscar_productos` | Esquema `{q?, categoriaId?, marcaId?, canal?, precioMin?, precioMax?, pagina?, tamanio?, estado?}` con los nombres reales del API. |
+| Herramienta `buscar_productos` | Esquema real `{q?, categoria?, marca?, talla?, color?, soloOfertas?, orden?, precioMin?, precioMax?, pagina?, tamanio?, canal?, estado?}`; `categoria` y `marca` son nombres que el normalizador convierte a `categoriaId`/`marcaId` antes de llamar a Productos. |
 | `CatalogoService.buscar()` | Normaliza, consulta, mapea a `ProductoResumen` y guarda `ultimoCarrusel` y `filtrosVigentes`. |
-| `Normalizador` | Sinónimos, similitud (rapidfuzz) y caché de categorías y marcas. |
+| `Normalizador` | Sinónimos, similitud con `SequenceMatcher` (corte 0.8) y caché de categorías y marcas. |
 | `ProductosClient` | httpx con timeout de 4 s y token de servicio si Productos lo requiere. |
 | `GET /api/v1/catalogo/productos` | Misma búsqueda para las acciones directas. |
 

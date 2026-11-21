@@ -145,7 +145,7 @@ El sistema DEBE (SHALL) informar cuando el catálogo no está disponible, sin mo
 
 - **Rendimiento:** búsqueda (excluido el LLM) en p95 ≤ 800 ms. Caché de categorías y marcas de 10 min. Los resultados de búsqueda no se cachean más de 60 s y los precios nunca más de 60 s.
 - **Consistencia:** el precio mostrado es el de Pricing para el canal `CHATBOT`; si Productos no devuelve precio para un SKU, el producto se muestra como "Precio no disponible" y no se puede agregar.
-- **Escalabilidad:** el diccionario de sinónimos vive en un archivo de configuración versionado (`config/sinonimos.yaml`).
+- **Escalabilidad:** el diccionario de sinónimos vive versionado en `ProductNormalizer.DEFAULT_SYNONYMS` (código del módulo `mod-catalog`); las categorías y marcas se cargan de los catálogos de Productos y se cachean.
 
 ## Criterio de completitud
 

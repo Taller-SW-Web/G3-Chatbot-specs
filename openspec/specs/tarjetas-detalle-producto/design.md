@@ -10,7 +10,7 @@
 | Productos | `GET /inventario/disponibilidad/comercial?skus=&canal=CHATBOT` → `sku`, `status` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO`, `INDETERMINADO`) | 🟡 A5 · scope pendiente |
 | Productos | `GET /precios` | 🟡 A5 · scope `precios:leer` pendiente |
 
-🧩 El contrato real usa `product_id`, `name`, `description`, `images`, `tiene_variantes`, `sku_base` y `variants`; ya no se asume `productoId`, `imagenUrl`, `descripcionBreve` ni un único `img`. Si `description` llega nulo, el frontend debe manejarlo con fallback. Si ningún SKU tiene precio vigente, el BFF envía el precio vacío y el frontend muestra "Precio no disponible" con "Agregar" deshabilitado, nunca `S/ 0.00` (A17). Un producto sin variantes toma la disponibilidad de su `sku_base`; si no se obtuvo, la tarjeta va sin badge.
+🧩 Productos entrega `product_id`, `name`, `description`, `images`, `tiene_variantes`, `sku_base` y `variants`; el BFF normaliza a `product_id`, `name`, `short_description`, `image`, `has_variants`, `single_sku` y `variants[]` (`sku`, `talla`, `color`). Ya no se asume `productoId`, `imagenUrl`, `descripcionBreve` ni un único `img`. Si `description` llega nula, el frontend debe manejarlo con fallback. Si ningún SKU tiene precio vigente, el BFF envía el precio vacío y el frontend muestra "Precio no disponible" con "Agregar" deshabilitado, nunca `S/ 0.00` (A17). Un producto sin variantes toma la disponibilidad de su `single_sku`; si no se obtuvo, la tarjeta va sin badge.
 
 ## Frontend
 

@@ -46,7 +46,9 @@ Incluye:
 ### Requirement: Identificar el pedido
 El sistema DEBE (SHALL) determinar a qué pedido se refiere el cliente: si tiene un solo pedido no finalizado lo muestra directamente; si tiene varios, los lista para elegir; si da un número, lo busca.
 
-*Trazabilidad: SPEC-17 · Requisito 1.*
+El listado PUEDE (MAY) filtrarse con los parámetros opcionales `estado`, `desde` y `hasta`. `desde` y `hasta` son fechas ISO (`YYYY-MM-DD`) que filtran por `fechaCreacion` y se reenvían sin transformación a `GET /api/v1/pedidos/me` de Ventas; `page` y `pageSize` conservan la paginación existente. Una fecha con formato inválido DEBE (SHALL) responder `400 VALIDACION` sin llamar a Ventas.
+
+*Trazabilidad: SPEC-17 · Requisito 1. Ampliado 2026-11 con los filtros `desde`/`hasta` publicados por G5.*
 
 #### Scenario: Un solo pedido en curso
 - **DADO** un cliente con un pedido `EN_PREPARACION` y otros ya `ENTREGADO`
@@ -72,6 +74,16 @@ El sistema DEBE (SHALL) determinar a qué pedido se refiere el cliente: si tiene
 - **DADO** un cliente sin pedidos
 - **CUANDO** pregunta por su pedido
 - **ENTONCES** se responde "Aún no tienes pedidos" con "Ver ofertas"
+
+#### Scenario: Filtro por fechas de creación
+- **DADO** un cliente con pedidos creados en fechas distintas
+- **CUANDO** el BFF recibe `GET /api/v1/pedidos?desde=2026-01-01&hasta=2026-12-31`
+- **ENTONCES** reenvía `desde` y `hasta` sin transformación a `GET /api/v1/pedidos/me` de Ventas, la respuesta solo incluye los pedidos cuya `fechaCreacion` cae en el rango indicado y se conservan `page` y `pageSize` de la paginación existente
+
+#### Scenario: Fecha inválida en los filtros
+- **DADO** una petición con `desde=2026-13-40` o un `hasta` con formato inválido
+- **CUANDO** llega a `GET /api/v1/pedidos`
+- **ENTONCES** responde `400 VALIDACION` con `errores[{campo: "desde"|"hasta", mensaje}]`, no se llama a Ventas y no se devuelve ningún listado
 
 ### Requirement: Mostrar el estado y la línea de tiempo
 El sistema DEBE (SHALL) mostrar la etiqueta del estado actual, un resumen del pedido y la línea de tiempo con los hitos del historial (fecha y hora de Lima), y enriquecerla con Despacho cuando el estado sea `DESPACHADO` o `ENTREGADO`.

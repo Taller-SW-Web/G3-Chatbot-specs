@@ -349,7 +349,7 @@ Las acciones fijas son controles de UI y no intenciones que el LLM deba inferir.
 | ID | Descripción | Herramienta(s) | Slots | Confirmación UI | Sesión | Spec |
 |---|---|---|---|---|---|---|
 | INT-RCL-01 | Registrar un reclamo sobre un pedido | `preparar_reclamo` | `pedidoRef`* (si falta, se lista para elegir), `tipo` = `RECLAMO`, `motivo`*, `descripcion` (20–1000)* | **Sí** ("Enviar reclamo") | Sí | SPEC-19 · Req. 1–2; SPEC-05 · Req. 6 |
-| INT-RCL-02 | Registrar una queja por la atención | `preparar_reclamo` | `pedidoRef`*, `tipo` = `QUEJA`, `motivo` = `ATENCION`, `descripcion`* | **Sí** | Sí | SPEC-19 · Req. 1 |
+| INT-RCL-02 | Registrar una queja por la atención | `preparar_reclamo` | `pedidoRef`*, `tipo` = `QUEJA`, `motivo` = `ATENCION_INADECUADA`, `descripcion`* | **Sí** | Sí | SPEC-19 · Req. 1 |
 | INT-RCL-03 | Ver mis reclamos | `listar_reclamos` | — | No | Sí | SPEC-20 · Req. 1 |
 | INT-RCL-04 | Consultar un reclamo o su respuesta | `consultar_reclamo` | `codigoSeguimiento` (si no, `listar_reclamos`) | No | Sí | SPEC-20 · Req. 1–2 |
 | INT-RCL-05 | Desistir del reclamo en borrador | Sin herramienta (se descarta el borrador) | — | No | Sí | SPEC-19 · Req. 2 |
@@ -533,8 +533,8 @@ Los datos sensibles (**contraseña, OTP, tarjeta, dirección y documento**) **no
 | `codigo` (cupón) | texto | Se normaliza (trim y mayúsculas); 5 inválidos en 10 min → `429` | " run10 " → `RUN10` | Productos, validación sin consumo (SPEC-13) |
 | `pedidoId` / `pedidoRef` | texto | Debe pertenecer al cliente (`sub`); ajeno o inexistente → "No encontré ese pedido en tu cuenta". Formato visto en los contratos: `PED-AAAA-NNNNN` | "PED-2026-00891", "mi pedido 00891", "el de ayer" | Ventas (SPEC-17 · Req. 1) |
 | `tipo` (reclamo) | enumeración | `RECLAMO`, `QUEJA` | "reclamo", "queja", "libro de reclamaciones" | Ventas F6 (SPEC-19 · Req. 1) |
-| `motivo` (reclamo) | enumeración | `PRODUCTO_DEFECTUOSO`, `PRODUCTO_EQUIVOCADO`, `PEDIDO_INCOMPLETO`, `INCUMPLIMIENTO_PLAZO_ENTREGA`, `NO_RECIBIDO`, `COBRO_INCORRECTO`, `ATENCION`, `OTRO` | "suela despegada" → `PRODUCTO_DEFECTUOSO`; "nunca llegó" → `NO_RECIBIDO` | SPEC-19 · Req. 1 |
-| `descripcion` (reclamo) | texto | 20–1000 caracteres | — | SPEC-19 · Req. 1 |
+| `motivo` (reclamo) | enumeración | `INCUMPLIMIENTO_PLAZO_ENTREGA`, `PRODUCTO_DEFECTUOSO_O_INCORRECTO`, `COBRO_INDEBIDO_O_NO_RECONOCIDO`, `ATENCION_INADECUADA`, `INCUMPLIMIENTO_GARANTIA`; no existe `OTRO` | "suela despegada" → `PRODUCTO_DEFECTUOSO_O_INCORRECTO`; "no llegó en la fecha" → `INCUMPLIMIENTO_PLAZO_ENTREGA` | G5 F6 (SPEC-19 · Req. 1) |
+| `descripcion` / `detalle` (reclamo) | texto | 20–1000 caracteres; explica el caso concreto del motivo más cercano | — | SPEC-19 · Req. 1 |
 | `codigoSeguimiento` | texto | Formato definido por Ventas (no se valida localmente); ajeno o inexistente → misma respuesta | — | Ventas F6 (SPEC-20 · Req. 1) |
 | `tipo` (devolución) | enumeración | `CAMBIO`, `DEVOLUCION_DINERO` | "cambiar" → `CAMBIO`; "mi plata de vuelta" → `DEVOLUCION_DINERO` | SPEC-21 · Req. 2 |
 | `motivo` (devolución) | enumeración | `TALLA_INCORRECTA`, `NO_ERA_LO_QUE_ESPERABA`, `PRODUCTO_DEFECTUOSO`, `PRODUCTO_EQUIVOCADO_ENVIADO`, `YA_NO_LO_QUIERO`, `OTRO` | "me quedó chica" → `TALLA_INCORRECTA` | SPEC-21 · Req. 2 |

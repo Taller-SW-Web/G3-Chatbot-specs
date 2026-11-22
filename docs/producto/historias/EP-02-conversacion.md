@@ -453,19 +453,20 @@
 
 | Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
 |---|---|---|---|---|---|---|
-| EP-02 | Should | 5 | Hito 5–6 | `SPEC-24 · Req. 2` | RN-CNV-36, RN-CNV-37, RN-CNV-38, RN-CNV-39 | Ventas (`POST /api/v2/csat`, acuerdo A15 ✅) |
+| EP-02 | Should | 5 | Hito 5–6 | `SPEC-24 · Req. 2` | RN-CNV-36, RN-CNV-37, RN-CNV-38, RN-CNV-39, RN-CNV-46 | Ventas (`POST /api/v2/csat`, acuerdo A15 ✅) |
 
 **Como** cliente autenticado con un pedido entregado, **quiero** calificar la entrega con una carita y un comentario opcional desde el detalle del pedido, **para** contarle a la tienda cómo me fue sin que me interrumpan con encuestas.
 
 **Criterios de aceptación**
-- `SPEC-24 · Req. 2 · Scenario: Calificación enviada` — al elegir una carita y pulsar "Enviar calificación" se llama a `POST /api/v2/csat` con `canal: "CHATBOT"` y, con `201`, el bloque se reemplaza por "¡Gracias por tu calificación!".
+- `SPEC-24 · Req. 2 · Scenario: Calificación enviada` — al elegir una carita y pulsar "Enviar calificación" el frontend llama a `POST /api/v1/pedidos/{pedidoId}/csat` sin `clienteId`; el backend lo arma con el `sub` y reenvía a `POST /api/v2/csat` con `canal: "CHATBOT"`; con `201`, el bloque se reemplaza por "¡Gracias por tu calificación!".
 - `SPEC-24 · Req. 2 · Scenario: Sin carita seleccionada` — sin una carita elegida, "Enviar calificación" sigue deshabilitado.
 - `SPEC-24 · Req. 2 · Scenario: El cliente lo descarta` — si sale sin responder, no se envía nada y el bloque vuelve a aparecer al reabrir el pedido.
 - `SPEC-24 · Req. 2 · Scenario: Encuesta ya registrada para ese pedido` — un `409 CSAT_ALREADY_SUBMITTED` muestra "Ya calificaste este pedido", sin error, y marca `order_ref.csat_sent`.
 - `SPEC-24 · Req. 2 · Scenario: Ventas no disponible al calificar` — se informa que no se pudo enviar, el bloque se conserva para reintentar y el detalle sigue usable.
 - `SPEC-24 · Req. 2 · Scenario: El pedido no es del cliente` — un `403` de Ventas muestra el error genérico "No pudimos enviar tu calificación, intenta de nuevo" y conserva el bloque.
-- `SPEC-24 · Req. 2 · Scenario: Pedido no entregado según Ventas` — un `422 ORDER_NOT_DELIVERED` oculta el bloque y refresca el detalle del pedido.
+- `SPEC-24 · Req. 2 · Scenario: Pedido no entregado según Ventas` — un `422 ORDER_NOT_DELIVERED` muestra "Solo puedes calificar pedidos entregados", sin tratarlo como error de red, y refresca el detalle.
 - `SPEC-24 · Req. 2 · Scenario: Pedido aún no entregado` — en pedidos `CREADO`, `PAGADO`, `EN_PREPARACION` o `DESPACHADO` el bloque no aparece.
+- `SPEC-24 · Req. 2 · Scenario: La lista de pedidos no muestra el bloque` — las caritas solo están al pie del detalle, no en el historial de pedidos.
 
 **Prioridad:** Should: conecta el canal con la encuesta CSAT de Ventas (F5), pero no bloquea la compra ni el seguimiento.
 

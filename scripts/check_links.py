@@ -23,7 +23,13 @@ def main() -> int:
             target = match.group(1).split("#", 1)[0].strip()
             if not target:
                 continue
-            if not (md.parent / target).resolve().exists():
+            resolved = (md.parent / target).resolve()
+            try:
+                resolved.relative_to(ROOT)
+            except ValueError:
+                # Enlace a otro repo o a una ruta externa: no se valida aquí.
+                continue
+            if not resolved.exists():
                 broken.append(f"{md.relative_to(ROOT)} -> {match.group(1)}")
     if broken:
         print(f"Enlaces relativos roto(s): {len(broken)}")

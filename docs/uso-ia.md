@@ -1,5 +1,7 @@
 # Uso de IA y código generado
 
+> Registro histórico de autoría; no representa ownership vigente.
+
 > Explica las dos formas en que el proyecto usa inteligencia artificial: como parte del producto (el asistente conversacional) y como apoyo para especificar, programar y revisar. Todo lo que se afirma aquí tiene respaldo en los repositorios.
 
 ## 1. IA dentro del producto: el asistente Botleta

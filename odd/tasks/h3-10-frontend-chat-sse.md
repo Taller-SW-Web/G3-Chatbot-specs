@@ -1,5 +1,7 @@
 # H3-10 (frontend): chat en streaming por SSE
 
+> Registro histórico de autoría; no representa ownership vigente.
+
 Documento de la parte frontend de H3-10. El plan general del hito está en [`hito-3.md`](hito-3.md); aquí solo se siguen las tareas de esta funcionalidad.
 
 ## Objetivo

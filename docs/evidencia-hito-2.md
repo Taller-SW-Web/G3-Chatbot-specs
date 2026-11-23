@@ -1,5 +1,7 @@
 # Evidencia del Hito 2
 
+> Registro histórico de autoría; no representa ownership vigente.
+
 > Tarea H2-09 de [`odd/tasks/hito-2.md`](../odd/tasks/hito-2.md): checklist de evidencia del hito, casos de prueba iniciales y verificación de commits por integrante.
 
 Verificado el 2026-10-16 contra los remotos, después de `git fetch` de los tres repositorios:

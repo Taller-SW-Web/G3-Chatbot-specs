@@ -113,57 +113,57 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 
 | ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
 |---|---|---|---|---|
-| CI-01 | `permissions`, `concurrency`, `timeout-minutes`, Dependabot, CODEOWNERS, plantilla de PR | David | 1–2 h | Un push cancela el run anterior; ningún job pasa de 15 min; Dependabot abre PRs |
-| CI-02 | Medir cobertura sin bloquear (`pytest-cov`, `@vitest/coverage-v8`) y subir artifact | David | 1 h | El reporte se descarga del run |
+| CI-01 | `permissions`, `concurrency`, `timeout-minutes`, Dependabot, CODEOWNERS, plantilla de PR | @Taller-SW-Web/chatbot | 1–2 h | Un push cancela el run anterior; ningún job pasa de 15 min; Dependabot abre PRs |
+| CI-02 | Medir cobertura sin bloquear (`pytest-cov`, `@vitest/coverage-v8`) y subir artifact | @Taller-SW-Web/chatbot | 1 h | El reporte se descarga del run |
 
 ### Fase 1 — Calidad estática
 
 | ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
 |---|---|---|---|---|
-| CI-03 | `mypy` gradual + `eslint-plugin-sonarjs` | David | 2–3 h | `types` en verde y sin `ignore` nuevos |
-| CI-04 | SonarCloud: org/proyecto, `SONAR_TOKEN`, `sonar-project.properties`, job y quality gate | David (código) + Mathias (secreto/admin) | 2–3 h | Un PR con code smell nuevo o cobertura nueva < 80 % queda en rojo con comentario de Sonar |
+| CI-03 | `mypy` gradual + `eslint-plugin-sonarjs` | @Taller-SW-Web/chatbot | 2–3 h | `types` en verde y sin `ignore` nuevos |
+| CI-04 | SonarCloud: org/proyecto, `SONAR_TOKEN`, `sonar-project.properties`, job y quality gate | @Taller-SW-Web/chatbot | 2–3 h | Un PR con code smell nuevo o cobertura nueva < 80 % queda en rojo con comentario de Sonar |
 
 ### Fase 2 — Seguridad
 
 | ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
 |---|---|---|---|---|
-| CI-05 | CodeQL (workflow, Python + TypeScript) | David | 1 h | Hallazgos en la pestaña Security |
-| CI-06 | Dependency Review + `pip-audit` + `pnpm audit` | David | 1–2 h | PR con dependencia vulnerable conocida bloqueado |
-| CI-07 | Secret scanning + push protection (Settings) | Mathias | 15 min | Un secreto en un push se bloquea |
-| CI-08 | Trivy + hadolint en el Dockerfile del backend | David | 1–2 h | Sin `CRITICAL` en la imagen |
-| CI-09 | Validar `openapi.json` antes de subirlo | David | 30 min | Esquema inválido rompe el job |
+| CI-05 | CodeQL (workflow, Python + TypeScript) | @Taller-SW-Web/chatbot | 1 h | Hallazgos en la pestaña Security |
+| CI-06 | Dependency Review + `pip-audit` + `pnpm audit` | @Taller-SW-Web/chatbot | 1–2 h | PR con dependencia vulnerable conocida bloqueado |
+| CI-07 | Secret scanning + push protection (Settings) | @Taller-SW-Web/chatbot | 15 min | Un secreto en un push se bloquea |
+| CI-08 | Trivy + hadolint en el Dockerfile del backend | @Taller-SW-Web/chatbot | 1–2 h | Sin `CRITICAL` en la imagen |
+| CI-09 | Validar `openapi.json` antes de subirlo | @Taller-SW-Web/chatbot | 30 min | Esquema inválido rompe el job |
 
 ### Fase 3 — Pruebas
 
 | ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
 |---|---|---|---|---|
-| CI-10 | E2E de Playwright en CI: 15 tests bloqueantes contra el stack real; 3 flujos con LLM real en workflow nocturno | David | 1 día | Un flujo roto rompe el PR; job E2E 1m21s (tests 23,5 s) |
-| CI-11 | Gate de cobertura con trinquete (baseline y subida por hito) | David | 2 h | La cobertura no puede bajar del baseline |
+| CI-10 | E2E de Playwright en CI: 15 tests bloqueantes contra el stack real; 3 flujos con LLM real en workflow nocturno | @Taller-SW-Web/chatbot | 1 día | Un flujo roto rompe el PR; job E2E 1m21s (tests 23,5 s) |
+| CI-11 | Gate de cobertura con trinquete (baseline y subida por hito) | @Taller-SW-Web/chatbot | 2 h | La cobertura no puede bajar del baseline |
 
 ### Fase 4 — Despliegue y gobierno
 
 | ID | Tarea | Responsable | Esfuerzo | Criterio de aceptación |
 |---|---|---|---|---|
-| CI-12 | Environment `production` con aprobación + smoke post-deploy + rollback documentado | Mathias + David | 1 día | Deploy requiere aprobación; smoke falla → alerta y reversión < 5 min. La aprobación de un environment solo detiene jobs de GitHub Actions: para que bloquee el deploy, el despliegue debe ejecutarse desde un job de Actions con `environment: production` y desactivarse el autodeploy de Railway y Vercel |
-| CI-13 | Protección de rama con Code Owners y conversaciones resueltas; escaneo semanal; métricas | Mathias | 1 h | Ramas protegidas con las nuevas reglas; reporte semanal |
+| CI-12 | Environment `production` con aprobación + smoke post-deploy + rollback documentado | @Taller-SW-Web/chatbot | 1 día | Deploy requiere aprobación; smoke falla → alerta y reversión < 5 min. La aprobación de un environment solo detiene jobs de GitHub Actions: para que bloquee el deploy, el despliegue debe ejecutarse desde un job de Actions con `environment: production` y desactivarse el autodeploy de Railway y Vercel |
+| CI-13 | Protección de rama con Code Owners y conversaciones resueltas; escaneo semanal; métricas | @Taller-SW-Web/chatbot | 1 h | Ramas protegidas con las nuevas reglas; reporte semanal |
 
 ## Requisitos de secretos y permisos
 
 | Requisito | Quién | Estado |
 |---|---|---|
-| `SONAR_TOKEN` (secreto de organización, con scope a los dos repos) | Mathias | ✅ Hecho |
-| Org/proyecto en SonarCloud | Mathias | ✅ Hecho: org `taller-sw-web`, proyectos `G3-Chatbot-backend` y `G3-Chatbot-frontend` |
-| **Dependency Graph** (habilita Dependency Review) | Mathias | ✅ Activado (backend 20 paquetes, frontend 709); default branch movido a `development` |
-| Secret scanning + push protection | David (admin) | ✅ Activados por API en ambos repos |
-| Dependabot alerts | Mathias | ✅ Activas |
-| Dependabot security updates | David (admin) | ✅ Activadas por API |
-| Code scanning | David | ✅ CodeQL advanced (el default setup queda sin configurar a propósito) |
-| Environment `production` con aprobación | Mathias | ❌ **Pendiente**: `protection_rules: []`; el frontend no tiene environments |
-| Conversaciones resueltas / enforce admins | David (admin) | ✅ Activados por API en `development` y `main` de ambos repos |
+| `SONAR_TOKEN` (secreto de organización, con scope a los dos repos) | @Taller-SW-Web/chatbot | ✅ Hecho |
+| Org/proyecto en SonarCloud | @Taller-SW-Web/chatbot | ✅ Hecho: org `taller-sw-web`, proyectos `G3-Chatbot-backend` y `G3-Chatbot-frontend` |
+| **Dependency Graph** (habilita Dependency Review) | @Taller-SW-Web/chatbot | ✅ Activado (backend 20 paquetes, frontend 709); default branch movido a `development` |
+| Secret scanning + push protection | @Taller-SW-Web/chatbot (admin) | ✅ Activados por API en ambos repos |
+| Dependabot alerts | @Taller-SW-Web/chatbot | ✅ Activas |
+| Dependabot security updates | @Taller-SW-Web/chatbot (admin) | ✅ Activadas por API |
+| Code scanning | @Taller-SW-Web/chatbot | ✅ CodeQL advanced (el default setup queda sin configurar a propósito) |
+| Environment `production` con aprobación | @Taller-SW-Web/chatbot | ❌ **Pendiente**: `protection_rules: []`; el frontend no tiene environments |
+| Conversaciones resueltas / enforce admins | @Taller-SW-Web/chatbot (admin) | ✅ Activados por API en `development` y `main` de ambos repos |
 | Code Owner reviews | Decisión del equipo | ❌ `require_code_owner_reviews=false`: con 1 aprobación alcanza y el owner es el team, así que se puede activar sin bloquear a nadie |
 | `strict` (rama al día) | Decisión del equipo | ❌ `strict=false`: obliga a rebasar antes de cada merge; se deja fuera a propósito para no frenar el ritmo |
 
-> David pasó a **admin** en los dos repos (2026-11-07), así que activa los ajustes de seguridad por API. Con `enforce_admins=true` **nadie** (tampoco un admin) puede mergear sin el gate verde ni sin la aprobación: el bypass desapareció.
+> La cuenta administradora del equipo pasó a **admin** en los dos repos (2026-11-07), así que activa los ajustes de seguridad por API. Con `enforce_admins=true` **nadie** (tampoco un admin) puede mergear sin el gate verde ni sin la aprobación: el bypass desapareció.
 
 ## Riesgos y mitigaciones
 
@@ -187,6 +187,8 @@ El baseline se fija el día que se active la medición y sube por hito, no de go
 - Tiempo de recuperación tras un deploy fallido < 5 min.
 
 ## Progreso
+
+> Entradas fechadas: registro histórico de autoría; no representan ownership vigente.
 
 - 2026-11-07: plan creado a partir de la auditoría del pipeline de los dos repositorios. Sin implementación todavía.
 - 2026-11-07: **Fase 0 y Fase 2 implementadas** en los PR [#98](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/98) (backend) y [#64](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/pull/64) (frontend), con CI en verde: permisos mínimos, `concurrency`, timeouts, cobertura como artifact, Dependabot, CODEOWNERS, plantilla de PR, CodeQL, `pip-audit`/`pnpm audit` (advisory), hadolint y validación del OpenAPI. **CI-11 aplicado**: piso de cobertura del **85 %** en backend (baseline 86.9 %) y **55/78/70/55** en frontend (baseline 57.7/82.2/75.4), como trinquete. **Dependency Review** quedó diferido: exige el **Dependency Graph**, que es un ajuste de admin (`Settings → Code security`).
@@ -218,5 +220,5 @@ El repo de referencia del curso (`Taller-SW-Web/devsecops-templates`) implementa
 
 1. Revisar y aceptar el [ADR-0024](../../docs/arquitectura/adr/ADR-0024-calidad-y-seguridad-en-el-pipeline.md).
 2. Mergear #98 y #64 para que el gate endurecido quede activo en `development` (y desde ahí promover a `main`).
-3. Decidir con Mathias: **Environment `production`** con aprobación (CI-12), `require_code_owner_reviews` y `strict`.
+3. Decidir en equipo: **Environment `production`** con aprobación (CI-12), `require_code_owner_reviews` y `strict`.
 4. Subir el trinquete restante: `mypy --check-untyped-defs` en los módulos sin anotar y `ruff C90` (hoy delegado a Sonar).

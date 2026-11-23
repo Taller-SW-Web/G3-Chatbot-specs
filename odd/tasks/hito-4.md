@@ -1,5 +1,7 @@
 # Hito 4: Integración
 
+> Registro histórico de autoría; no representa ownership vigente.
+
 ## Objetivo
 
 Presentar el Hito 4 el 2026-11-07 con los cuatro entregables del curso:

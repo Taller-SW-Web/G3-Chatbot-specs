@@ -1,5 +1,7 @@
 # Chat: correcciones de la prueba E2E por texto
 
+> Registro histórico de autoría; no representa ownership vigente.
+
 ## Objetivo
 
 Corregir los fallos del chat detectados el 2026-11-07 al probar en producción cada capacidad escribiendo el pedido en texto (sin botones).

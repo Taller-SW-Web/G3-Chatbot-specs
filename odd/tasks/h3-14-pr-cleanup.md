@@ -1,5 +1,7 @@
 # H3-14 PR cleanup (backend #43, frontend #21)
 
+> Registro histórico de autoría; no representa ownership vigente.
+
 ## Objective
 Close the remaining review findings on Diego's H3-14 session PRs so both can be merged into `development`.
 

@@ -1,5 +1,7 @@
 # Importes del checkout calculados por el servidor
 
+> Registro histórico de autoría; no representa ownership vigente.
+
 ## Objetivo
 
 Que `POST /checkout` calcule el costo de envío y el descuento solo en el servidor, según el contrato de `docs/contratos-integracion.md` §2.8, antes de la demo del Hito 4 (2026-11-07).

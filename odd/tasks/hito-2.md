@@ -1,5 +1,7 @@
 # Hito 2: división de entregables
 
+> Registro histórico de autoría; no representa ownership vigente.
+
 ## Objetivo
 
 Cubrir los cuatro entregables del Hito 2 (25 %) con evidencia de commits de todos los integrantes.

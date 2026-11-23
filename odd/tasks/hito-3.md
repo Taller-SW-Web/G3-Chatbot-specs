@@ -1,5 +1,7 @@
 # Hito 3: Demo 1
 
+> Registro histórico de autoría; no representa ownership vigente.
+
 ## Objetivo
 
 Entregar la primera demo funcional y desplegada: un cliente se registra, inicia sesión, conversa con el asistente, busca productos y arma un carrito, con el frontend conectado al backend real.

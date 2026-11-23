@@ -1,5 +1,7 @@
 # H2-07: modelos y adapters de `conversation` y `attachment`, más CI
 
+> Registro histórico de autoría; no representa ownership vigente.
+
 Feature de Mathias dentro del Hito 2 (ver `hito-2.md`). Repo: `G3-Chatbot-backend`, rama `development` (sin ramas intermedias, por decisión del equipo).
 
 ## Objetivo

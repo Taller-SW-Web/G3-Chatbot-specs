@@ -120,9 +120,7 @@ Owners actuales (tomados de los manifiestos):
 
 | Módulo | Owner |
 |---|---|
-| `mod-auth`, `mod-chat` | @Ankarmin |
-| `mod-catalog`, `mod-cart`, `mod-shipping` | @SOoOnny |
-| `mod-checkout`, `mod-orders`, `mod-postventa` | @MathiasTL |
+| Todos los módulos | @Taller-SW-Web/chatbot |
 
 El owner revisa el fondo del módulo; cualquier miembro del equipo puede dar la aprobación que falte
 (CODEOWNERS usa el equipo, no una persona, para no bloquear el PR propio).

@@ -173,6 +173,7 @@ A partir de los wireframes mobile del equipo, la app tiene esta navegación (tod
 | **Carrito** (`CartPage`, ruta `/carrito`, pantalla completa vía ícono con badge) | Líneas, cantidades, subtotal, botón de pago | SPEC-10, 11, 13 |
 | **Checkout** (`CheckoutPage`, ruta `/checkout`) | Total a pagar, documento con nota informativa, dirección de envío (campos libres), método de pago (**solo tarjeta**) | SPEC-12, 14 |
 | **Historial de pedidos** (`OrderHistoryPage`, ruta `/pedidos`, pestañas) | "En proceso", "Entregados", "Reembolsos"; las tarjetas permiten "Preguntar en el chat"; el detalle de un pedido entregado muestra al pie la calificación de la entrega (caritas) | SPEC-17, 18, 21, 22, 24 |
+| **Detalle de pedido** (`OrderDetailPage`, ruta `/pedido?pedidoId=`) | Líneas, envío e historial del pedido; si está `ENTREGADO`, el CSAT (tres caritas + comentario opcional) va al pie. No se monta en la lista | SPEC-17, 18, 24 |
 
 🧩 Totales vigentes tras este cambio: **24 specs, 119 requisitos, 422 escenarios, 116 historias, 457 puntos y 182 reglas de negocio**. Se recalculan desde las specs, historias y catálogo de reglas, sobre las specs base vigentes (archivados `alinear-specs-con-prototipo` y `alinear-specs-con-ventas` el 2026-11-21, `alinear-postventa-g5` el 2026-11-22 y `alinear-filtros-pedidos-g5` el 2026-11-22; el total de escenarios pasó de 399 a 416 al contarlos directamente en las specs, a 420 con los escenarios de postventa y a 422 con los dos filtros de pedidos).
 

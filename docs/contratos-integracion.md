@@ -377,7 +377,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 ### 2.7 Devoluciones y reembolsos (SPEC-21, SPEC-22) ✅
 | Método | Ruta | Descripción |
 |---|---|---|
-| POST | `/evidencias` | Proxy de `POST /api/v2/devoluciones/evidencias/upload` de Ventas; devuelve la misma URL que Ventas genera, para incluirla en el `POST /devoluciones`. Acepta `conversacionId` opcional: si falta o no pertenece al cliente, responde `404 RECURSO_NO_ENCONTRADO` y **no llama a Ventas**. |
+| POST | `/evidencias` | Proxy de `POST /api/v2/devoluciones/evidencias/upload` de Ventas; devuelve la misma URL que Ventas genera, para incluirla en el `POST /devoluciones`. Acepta `conversacionId` opcional: si se envía y no pertenece al cliente (o no existe), responde `404 RECURSO_NO_ENCONTRADO` y **no llama a Ventas**. |
 | POST | `/devoluciones` | Registra la solicitud de devolución o cambio en Ventas. Requiere `Idempotency-Key`. Acepta `forzar: boolean` (por defecto `false`): si existe una solicitud abierta (`SOLICITADA`, `EN_EVALUACION` o `APROBADA`) para el mismo pedido, motivo y líneas y no se fuerza, responde `409 DEVOLUCION_DUPLICADA` con `{devolucionId, estado, motivo}`. |
 | GET | `/devoluciones` | Proxy de `GET /api/v2/devoluciones/me` con el token del cliente — trae **todas** las solicitudes del cliente, incluidas las de otros canales, no solo las que registró el chatbot. |
 | GET | `/devoluciones/{devolucionId}` | Estado del expediente y, si aplica, el bloque `resolucion.reembolso` con el estado del extorno. |

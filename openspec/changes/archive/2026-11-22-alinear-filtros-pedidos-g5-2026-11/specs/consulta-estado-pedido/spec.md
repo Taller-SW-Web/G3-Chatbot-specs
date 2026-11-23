@@ -3,7 +3,7 @@
 ### Requirement: Identificar el pedido
 El sistema DEBE (SHALL) determinar a qué pedido se refiere el cliente: si tiene un solo pedido no finalizado lo muestra directamente; si tiene varios, los lista para elegir; si da un número, lo busca.
 
-El listado PUEDE (MAY) filtrarse con los parámetros opcionales `estado`, `desde` y `hasta`. `desde` y `hasta` son fechas ISO (`YYYY-MM-DD`) que filtran por `fechaCreacion` y se reenvían sin transformación a `GET /api/v1/pedidos/me` de Ventas; `page` y `pageSize` conservan la paginación existente. Una fecha con formato inválido DEBE (SHALL) responder `400 VALIDACION` sin llamar a Ventas.
+El listado PUEDE (MAY) filtrarse con los parámetros opcionales `estado`, `desde` y `hasta`. `desde` y `hasta` son fechas ISO (`YYYY-MM-DD`) que filtran por `fechaCreacion` y se reenvían sin transformación a `GET /api/v1/pedidos/me` de Ventas; `page` y `pageSize` conservan la paginación existente. Una fecha con formato inválido o un rango invertido (`desde > hasta`) DEBEN (SHALL) responder `400 VALIDACION` sin llamar a Ventas.
 
 *Trazabilidad: SPEC-17 · Requisito 1. Ampliado 2026-11 con los filtros `desde`/`hasta` publicados por G5.*
 
@@ -39,5 +39,10 @@ El listado PUEDE (MAY) filtrarse con los parámetros opcionales `estado`, `desde
 
 #### Scenario: Fecha inválida en los filtros
 - **DADO** una petición con `desde=2026-13-40` o un `hasta` con formato inválido
+- **CUANDO** llega a `GET /api/v1/pedidos`
+- **ENTONCES** responde `400 VALIDACION` con `errores[{campo: "desde"|"hasta", mensaje}]`, no se llama a Ventas y no se devuelve ningún listado
+
+#### Scenario: Rango de fechas invertido
+- **DADO** una petición con `desde=2026-12-31` y `hasta=2026-01-01` (fechas válidas, pero el rango está invertido)
 - **CUANDO** llega a `GET /api/v1/pedidos`
 - **ENTONCES** responde `400 VALIDACION` con `errores[{campo: "desde"|"hasta", mensaje}]`, no se llama a Ventas y no se devuelve ningún listado

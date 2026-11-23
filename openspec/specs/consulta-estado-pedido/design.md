@@ -16,9 +16,10 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `OrderHistoryPage` (pantalla completa) | Contenedor con las pestañas "En proceso", "Entregados" y "Reembolsos" (esta última implementada en SPEC-22); accesible desde el menú de usuario y desde `SesionIndicator`. |
+| `OrderHistoryPage` (pantalla completa, ruta `/pedidos`) | Contenedor con las pestañas "En proceso", "Entregados" y "Reembolsos" (esta última implementada en SPEC-22); accesible desde el menú de usuario y desde `SesionIndicator`. |
 | `OrderHistoryTabs` | Pestaña "En proceso" (`CREADO`, `PAGADO`, `EN_PREPARACION`, `DESPACHADO`) y "Entregados" (`ENTREGADO`, `ANULADO`), cada una con su propio `GET /pedidos?estado=&pagina=&tamano=`. |
-| `OrderCard` | Tarjeta de pedido con número, badge de estado, fecha, dirección resumida y miniaturas de los productos (hasta 3, con "+N productos"). |
+| `OrderCard` | Tarjeta de pedido con número, badge de estado, fecha, dirección resumida y miniaturas de los productos (hasta 3, con "+N productos"). El botón "VER DETALLE" navega a `/pedido?pedidoId={pedidoId}`. |
+| `OrderDetailPage` (ruta `/pedido?pedidoId=`) | Detalle de solo lectura: cabecera con pedido, estado, total y fecha; secciones de productos (`items`), envío e historial. Si el estado es `ENTREGADO`, monta `DeliveryRating` al pie; no muestra el bloque de CSAT para otros estados. La ruta es singular para no chocar con `/pedidos/[tab]`, que es la pantalla con pestañas. |
 | `OrderList` (bloque `LISTA_PEDIDOS`, dentro del chat) | Versión conversacional cuando el cliente pregunta por sus pedidos en lugar de abrir `OrderHistoryPage`; mismas tarjetas que `OrderCard`. |
 | `OrderStatusCard` (bloque `ESTADO_PEDIDO`) | Resumen, etiqueta de estado, `OrderTimeline` y las acciones "Ver seguimiento", "Reportar un problema" y "Reenviar correo". |
 | `OrderTimeline` | Pasos verticales con estados completado, actual y pendiente. |
@@ -28,7 +29,7 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `GET /api/v1/pedidos` · `GET /api/v1/pedidos/{id}` | Proxy hacia `/pedidos/me` y `/pedidos/{id}`; reenvía el token del cliente y Ventas filtra por `sub`. Reenvía `estado`, `desde`, `hasta`, `page` y `pageSize` sin transformación; `desde`/`hasta` son fechas ISO `YYYY-MM-DD` y una fecha inválida responde `400 VALIDACION` sin llamar a Ventas. |
+| `GET /api/v1/pedidos` · `GET /api/v1/pedidos/{id}` | Proxy hacia `/pedidos/me` y `/pedidos/{id}`; reenvía el token del cliente y Ventas filtra por `sub`. Reenvía `estado`, `desde`, `hasta`, `page` y `pageSize` sin transformación; `desde`/`hasta` son fechas ISO `YYYY-MM-DD` y una fecha inválida o un rango invertido (`desde > hasta`) responde `400 VALIDACION` sin llamar a Ventas. |
 | `EstadoPedidoService` | Selecciona el pedido, mapea las etiquetas, arma la línea de tiempo y enriquece con Despacho (SPEC-18). |
 | `EstadoMapper` | Tabla de `contratos-integracion.md §4`. |
 | Herramientas `listar_pedidos` (`{soloEnCurso?}`) y `consultar_pedido` (`{pedidoId? | pedidoRef?}`) | Uso desde el chat. |
@@ -42,5 +43,6 @@
 - [ ] `[BE]` Herramientas `listar_pedidos` y `consultar_pedido`
 - [ ] `[FE]` `OrderHistoryPage` con `OrderHistoryTabs` ("En proceso" y "Entregados"; la pestaña "Reembolsos" se agrega en SPEC-22)
 - [ ] `[FE]` `OrderCard`, `OrderList`, `OrderStatusCard` y `OrderTimeline`
+- [ ] `[FE]` `OrderDetailPage` en `/pedido?pedidoId=`, con cabecera, items, envío, historial y `DeliveryRating` solo si `ENTREGADO`
 - [ ] `[FE]` Entrada "Mis pedidos" en el menú de usuario, hacia `OrderHistoryPage`
 - [ ] `[QA]` Pruebas de todos los escenarios, incluida la no divulgación de pedidos ajenos

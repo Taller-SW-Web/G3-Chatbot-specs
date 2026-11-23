@@ -51,6 +51,7 @@
 - **Si hay duplicado y `forzar=true`:** registra el nuevo reclamo en Ventas con una nueva `Idempotency-Key` (la del envío) y responde `201` con la constancia nueva. No se reutiliza el código existente.
 - **Si el listado de duplicados falla:** se registra el reclamo (fail-open) y se deja un `warning` con el `X-Correlation-Id`; el cliente no ve un error de duplicados. Supuesto explícito: si el equipo prefiere fail-closed, se responde `503 SERVICIO_NO_DISPONIBLE`.
 - **Idempotencia:** dos envíos con la misma `Idempotency-Key` y el mismo `forzar` devuelven la misma constancia y crean un solo reclamo.
+- **Transacción y `SAVEPOINT`:** `claim_ref` se guarda dentro de un `SAVEPOINT`; un duplicado de `idempotency_key` no revierte el resto de la transacción y el reintento recupera la referencia existente en lugar de crear otra.
 
 ### Errores
 
@@ -66,7 +67,7 @@ G5 también rechaza un motivo fuera de su enum con `400 FORMATO_INVALIDO` (evide
 ## Desglose para issues
 
 - [ ] `[BE]` Herramienta `preparar_reclamo` con reutilización del documento y motivo validado contra los cinco de G5
-- [ ] `[BE]` `ReclamoService`: detección de duplicados (previa y autoritativa), validación de `motivo` (`400 VALIDACION`) y registro con idempotencia
+- [ ] `[BE]` `ReclamoService`: detección de duplicados (previa y autoritativa), validación de `motivo` (`400 VALIDACION`) y registro con idempotencia; `claim_ref` con `SAVEPOINT`
 - [ ] `[BE]` `forzar` en `POST /reclamos` y `409 RECLAMO_DUPLICADO` con el código/estado existente
 - [ ] `[BE]` `VentasClient.reclamos` (registrar, consultar, listar) con su mock, incluida la normalización de errores
 - [ ] `[FE]` `ClaimForm`, `ClaimReceipt` y `DuplicateClaimNotice` con la acción "Registrar uno nuevo de todas formas"

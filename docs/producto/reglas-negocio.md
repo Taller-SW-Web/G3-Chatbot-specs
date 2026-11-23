@@ -91,7 +91,7 @@
 | RN-CNV-34 | 👍, 👎 y "Copiar" se muestran bajo cada bloque de respuesta del asistente; hay una sola reacción vigente por mensaje y por quien reacciona (cambiarla la reemplaza) y "Copiar" no se registra en el backend. | SPEC-24 · Req. 1 | Chatbot |
 | RN-CNV-35 | La reacción se marca de inmediato en la UI; si falla el registro, se reintenta en segundo plano sin mostrar error ni bloquear el chat. | SPEC-24 · Req. 1 | Chatbot |
 | RN-CNV-36 | La calificación de la entrega se ofrece solo al pie del detalle de un pedido `ENTREGADO` que el cliente no ha calificado; no es una ventana emergente ni se pide de forma proactiva al entregarse el pedido. | SPEC-24 · Req. 2 y Fuera de alcance | Ventas (solo califica pedidos `ENTREGADO`, `422 ORDER_NOT_DELIVERED`); Chatbot (ubicación) |
-| RN-CNV-37 | Las caritas se envían a Ventas como `puntuacion` 5 (feliz), 3 (neutral) y 1 (triste), con comentario opcional; la calificación de la entrega no se guarda como calificación propia del chatbot. | SPEC-24 · Req. 2 | Ventas (escala acordada con Marketplace) |
+| RN-CNV-37 | Las caritas se envían a Ventas como `puntuacion` 5 (feliz), 3 (neutral) y 1 (triste), con comentario opcional; la calificación de la entrega no se guarda como calificación propia del chatbot. Cualquier otro valor responde `400 VALIDACION` antes de llamar a Ventas. | SPEC-24 · Req. 2 | Ventas (escala acordada con Marketplace); Chatbot (validación) |
 | RN-CNV-38 | Un `409 CSAT_ALREADY_SUBMITTED` se muestra como "Ya calificaste este pedido", sin error, y marca el pedido como calificado; si el cliente sale sin responder o Ventas no responde, el bloque se vuelve a ofrecer. | SPEC-24 · Req. 2 | Chatbot (Ventas admite una sola encuesta por pedido) |
 | RN-CNV-39 | `POST /api/v2/csat` se llama con el token del cliente (rol `CLIENTE`, sin scope); Ventas responde `403` si el `sub` no es el dueño del pedido. | SPEC-24 · Preguntas abiertas (acuerdo A15) | Ventas (acuerdo A15) |
 | RN-CNV-40 | La valoración de la experiencia de compra (estrellas de 1 a 5 y comentario opcional) se ofrece en un popup tras el pago, se guarda en el chatbot y no se envía a Ventas; hay una sola por pedido y "Ahora no" no vuelve a mostrarla para ese pedido en ese navegador (el descarte se recuerda por dispositivo y no se guarda en el backend). | SPEC-24 · Req. 7 | Chatbot |
@@ -214,7 +214,7 @@
 | RN-SGT-12 | Si Ventas indica `ENTREGADO` y Despacho aún no, prevalece Ventas. | SPEC-18 · RNF (Coherencia) | Ventas |
 | RN-SGT-13 | La consulta a Despacho usa un token de servicio vigente; ante `401` se renueva una vez y se reintenta; ante `403 SCOPE_INSUFICIENTE` no se reintenta. | SPEC-18 · Req. 4 y RNF | Seguridad / Despacho (acuerdo A4) |
 | RN-SGT-14 | Si Despacho no responde en 4 s, se muestra el estado según Ventas con el aviso de detalle no disponible. | SPEC-18 · Req. 4 | Chatbot |
-| RN-SGT-15 | El listado acepta `desde` y `hasta` opcionales como fechas ISO `YYYY-MM-DD`; filtran por `fechaCreacion` y se reenvían sin transformación a `GET /api/v1/pedidos/me`. Una fecha inválida responde `400 VALIDACION` sin llamar a Ventas. | SPEC-17 · Req. 1 | Ventas (filtros); Chatbot (validación) |
+| RN-SGT-15 | El listado acepta `desde` y `hasta` opcionales como fechas ISO `YYYY-MM-DD`; filtran por `fechaCreacion` y se reenvían sin transformación a `GET /api/v1/pedidos/me`. Una fecha inválida o un rango invertido (`desde > hasta`) responde `400 VALIDACION` sin llamar a Ventas. | SPEC-17 · Req. 1 | Ventas (filtros); Chatbot (validación) |
 
 ## RN-RCL — Reclamos
 

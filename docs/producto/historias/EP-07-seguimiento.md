@@ -22,6 +22,7 @@
 - `SPEC-17 · Req. 1 · Scenario: Cliente sin pedidos` — se responde "Aún no tienes pedidos" con "Ver ofertas".
 - `SPEC-17 · Req. 1 · Scenario: Filtro por fechas de creación` — `desde`/`hasta` (ISO `YYYY-MM-DD`) filtran por `fechaCreacion` y se reenvían a Ventas.
 - `SPEC-17 · Req. 1 · Scenario: Fecha inválida en los filtros` — una fecha inválida responde `400 VALIDACION` sin llamar a Ventas.
+- `SPEC-17 · Req. 1 · Scenario: Rango de fechas invertido` — `desde > hasta` responde `400 VALIDACION` sin llamar a Ventas.
 
 **Prioridad:** Must: el curso exige la consulta del estado de un pedido.
 

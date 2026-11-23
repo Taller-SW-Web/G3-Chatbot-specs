@@ -157,6 +157,11 @@ El frontend NO DEBE (SHALL NOT) enviar `clienteId`: el backend lo arma con el `s
 - **CUANDO** el cliente no ha tocado ninguna de las tres caritas
 - **ENTONCES** el botón "Enviar calificación" permanece deshabilitado hasta que elija una carita
 
+#### Scenario: Puntuación fuera de la escala acordada
+- **DADO** el bloque de calificación visible en el detalle de un pedido
+- **CUANDO** llega una petición con `puntuacion` distinta de 1, 3 o 5 (por ejemplo, 4)
+- **ENTONCES** responde `400 VALIDACION` con `errores[{campo: "puntuacion", mensaje}]`, no se llama a Ventas y no se marca `order_ref.csat_sent`
+
 #### Scenario: El cliente lo descarta
 - **DADO** el bloque de calificación visible
 - **CUANDO** el cliente no responde y sale de la pantalla
@@ -235,7 +240,7 @@ Los endpoints son propios del chatbot y viven en los módulos que indica `design
 |---|---|---|---|---|
 | POST | `/mensajes/{mensajeId}/reaccion` | Opcional (`CLIENTE` o `chat_sid`) | `{ "reaccion": "POSITIVE" \| "NEGATIVE" }` → `200 { "mensajeId", "reaccion" }` (upsert) | `404 RECURSO_NO_ENCONTRADO`, `429 DEMASIADAS_SOLICITUDES` (la UI lo ignora en silencio) |
 | POST | `/pedidos/{pedidoId}/valoracion-compra` | `CLIENTE` | `{ "estrellas": 1..5, "comentario?": "..." }` → `201 { "valoracionId", "estrellas" }` | `400 VALIDACION`, `404 RECURSO_NO_ENCONTRADO`, `409 VALORACION_YA_REGISTRADA` |
-| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | `{ "puntuacion": 5 \| 3 \| 1, "comentario?": "..." }` (sin `clienteId`; lo arma el backend con el `sub`) → `201` (proxy a Ventas) | `403`, `409 CSAT_ALREADY_SUBMITTED`, `422 ORDER_NOT_DELIVERED`, `503` |
+| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | `{ "puntuacion": 5 \| 3 \| 1, "comentario?": "..." }` (sin `clienteId`; lo arma el backend con el `sub`) → `201` (proxy a Ventas) | `400 VALIDACION`, `403`, `409 CSAT_ALREADY_SUBMITTED`, `422 ORDER_NOT_DELIVERED`, `503` |
 | POST | `/sugerencias` | `CLIENTE` | `multipart/form-data`: `tipo` (`SUGERENCIA`/`BUG`), `titulo`, `descripcion`, `correoContacto`, `captura?` (JPG/PNG ≤ 5 MB); `Idempotency-Key` obligatoria → `201 { "sugerenciaId", "codigoSeguimiento" }` | `400 VALIDACION`, `400 ADJUNTO_INVALIDO`, `429 DEMASIADAS_SOLICITUDES` |
 
 **Supuesto explícito:** la captura de una sugerencia viaja en la misma llamada `multipart/form-data` para no añadir un endpoint de carga adicional. Si el frontend implementa una carga previa, el contrato pasa a `capturaId` y se actualiza en el mismo PR. La captura usa el puerto `AttachmentStorage` de SPEC-23, pero no la tabla `attachment`; se guarda en `feedback_suggestion.screenshot_key`.

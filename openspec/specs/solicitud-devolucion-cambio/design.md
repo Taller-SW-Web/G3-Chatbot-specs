@@ -34,6 +34,11 @@
 | Job de limpieza local | Borra las referencias de evidencia de borradores no enviados tras 24 h (no toca el archivo en Ventas). |
 | Tablas `return_ref` y `evidence` | Ver `modelo-datos.md`. |
 
+### Evidencia y transacción
+
+- **Pertenencia de la conversación:** `POST /api/v1/evidencias` acepta `conversacionId` opcional; antes de subir el archivo a Ventas verifica que esa conversación pertenezca al cliente autenticado. Si no existe o es ajena, responde `404 RECURSO_NO_ENCONTRADO` y **no llama a Ventas**.
+- **Referencia local con `SAVEPOINT`:** `return_ref` se guarda dentro de un `SAVEPOINT`; un duplicado de `idempotency_key` no revierte el resto de la transacción (por ejemplo, las filas de `evidence`) y el reintento recupera la referencia existente en lugar de crear otra.
+
 ### Contrato de `POST /api/v1/devoluciones`
 
 - **Sesión:** `CLIENTE`. **Cabecera:** `Idempotency-Key` obligatoria.
@@ -65,13 +70,14 @@
 | `DEVOLUCION_NO_ELEGIBLE` | 422 | Pedido no `ENTREGADO`, fuera de los 7 días o evidencia obligatoria faltante. |
 | `DEVOLUCION_DUPLICADA` | 409 | Existe una solicitud abierta para el mismo pedido, motivo y líneas y `forzar` es `false`. |
 | `EVIDENCIA_INVALIDA` | 400 | Archivo mayor a 5 MB o tipo no permitido. |
+| `RECURSO_NO_ENCONTRADO` | 404 | La conversación de la evidencia no existe o no pertenece al cliente; no se sube a Ventas. |
 | `SERVICIO_NO_DISPONIBLE` | 503 | Ventas no responde; se conserva el borrador 24 h. |
 
 ## Desglose para issues
 
 - [ ] `[BE]` Herramienta `preparar_devolucion` y gestión de borradores
-- [ ] `[BE]` `POST /evidencias` como proxy hacia Ventas
-- [ ] `[BE]` `DevolucionService`: elegibilidad, duplicados (previa y autoritativa) y registro con idempotencia
+- [ ] `[BE]` `POST /evidencias` como proxy hacia Ventas, con validación de pertenencia de `conversacionId` (`404` sin llamar a Ventas)
+- [ ] `[BE]` `DevolucionService`: elegibilidad, duplicados (previa y autoritativa) y registro con idempotencia; `return_ref` con `SAVEPOINT`
 - [ ] `[BE]` `forzar` en `POST /devoluciones` y `409 DEVOLUCION_DUPLICADA` con el código/estado existente
 - [ ] `[BE]` `VentasClient.devoluciones` (subir evidencia, registrar, consultar, listar) con su mock
 - [ ] `[BE]` Job de limpieza de referencias locales de evidencia no enviada

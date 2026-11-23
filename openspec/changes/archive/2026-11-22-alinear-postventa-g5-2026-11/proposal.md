@@ -35,8 +35,9 @@ contratos) y un contrato de CSAT que no dependa de interpretaciones de la UI.
 - **Escenario nuevo:** un motivo fuera de la lista responde `400 VALIDACION`, no se llama a Ventas y
   el formulario solo ofrece los cinco motivos del contrato.
 - **`retroalimentacion-cliente` (SPEC-24), Requisito 2:** explicita la ubicación al pie del detalle,
-  el texto de `409` y `422`, y que el `clienteId` se deriva del `sub` en el backend. Agrega
-  escenarios para la lista de pedidos (sin bloque) y para el cuerpo enviado por el frontend.
+  el texto de `409` y `422`, que el `clienteId` se deriva del `sub` en el backend y que una
+  `puntuacion` fuera de 1/3/5 responde `400 VALIDACION`. Agrega escenarios para la lista de pedidos
+  (sin bloque) y para el cuerpo enviado por el frontend.
 - **Contratos:** `docs/contratos-integracion.md` §2.6, §2.8, §2.9 y §3.3 reflejan los cinco motivos
   y el contrato de CSAT; §2.10 documenta la evidencia real de G5 (siete casos, hora UTC / endpoint /
   HTTP / id) y las rutas BFF equivalentes.

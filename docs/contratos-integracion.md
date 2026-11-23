@@ -272,7 +272,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 #### 2.5.2 Contratos detallados de Pedidos y Seguimiento (SPEC-16, SPEC-17, SPEC-18)
 - **`GET /api/v1/pedidos?estado=&desde=&hasta=&page=1&pageSize=10`** (requiere sesión `CLIENTE`):
   - Reenvía el token del cliente a `GET /api/v1/pedidos/me` de Ventas (A15).
-  - `desde` y `hasta` son opcionales, fechas ISO `YYYY-MM-DD`; filtran por `fechaCreacion` y se reenvían **sin transformación** a `GET /api/v1/pedidos/me` de Ventas. `estado`, `page` y `pageSize` mantienen su contrato actual.
+  - `desde` y `hasta` son opcionales, fechas ISO `YYYY-MM-DD`; filtran por `fechaCreacion` y se reenvían **sin transformación** a `GET /api/v1/pedidos/me` de Ventas. `estado`, `page` y `pageSize` mantienen su contrato actual. Un rango invertido (`desde > hasta`) responde `400 VALIDACION` sin llamar a Ventas.
   - **Respuesta `200 OK`:**
     ```json
     {
@@ -292,7 +292,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
       "pageSize": 10
     }
     ```
-  - **Errores:** `400 VALIDACION` (incluye `desde` o `hasta` con formato inválido), `401 REQUIERE_SESION`, `503 MODULO_NO_DISPONIBLE` (`modulo: "sales"`).
+  - **Errores:** `400 VALIDACION` (incluye `desde` o `hasta` con formato inválido o `desde > hasta`), `401 REQUIERE_SESION`, `503 MODULO_NO_DISPONIBLE` (`modulo: "sales"`).
 
 - **`GET /api/v1/pedidos/{pedidoId}`** (requiere sesión `CLIENTE`):
   - Reenvía el token del cliente a `GET /api/v1/pedidos/{pedidoId}` de Ventas (A15). Si Ventas responde `403` o `404`, el BFF responde `404 RECURSO_NO_ENCONTRADO` para no revelar la existencia de pedidos ajenos (SPEC-17 Req. 1).
@@ -377,7 +377,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 ### 2.7 Devoluciones y reembolsos (SPEC-21, SPEC-22) ✅
 | Método | Ruta | Descripción |
 |---|---|---|
-| POST | `/evidencias` | Proxy directo de `POST /api/v2/devoluciones/evidencias/upload` de Ventas; devuelve la misma URL que Ventas genera, para incluirla en el `POST /devoluciones`. |
+| POST | `/evidencias` | Proxy de `POST /api/v2/devoluciones/evidencias/upload` de Ventas; devuelve la misma URL que Ventas genera, para incluirla en el `POST /devoluciones`. Acepta `conversacionId` opcional: si falta o no pertenece al cliente, responde `404 RECURSO_NO_ENCONTRADO` y **no llama a Ventas**. |
 | POST | `/devoluciones` | Registra la solicitud de devolución o cambio en Ventas. Requiere `Idempotency-Key`. Acepta `forzar: boolean` (por defecto `false`): si existe una solicitud abierta (`SOLICITADA`, `EN_EVALUACION` o `APROBADA`) para el mismo pedido, motivo y líneas y no se fuerza, responde `409 DEVOLUCION_DUPLICADA` con `{devolucionId, estado, motivo}`. |
 | GET | `/devoluciones` | Proxy de `GET /api/v2/devoluciones/me` con el token del cliente — trae **todas** las solicitudes del cliente, incluidas las de otros canales, no solo las que registró el chatbot. |
 | GET | `/devoluciones/{devolucionId}` | Estado del expediente y, si aplica, el bloque `resolucion.reembolso` con el estado del extorno. |
@@ -416,7 +416,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `RECURSO_NO_ENCONTRADO` | 404 | También se usa cuando el recurso existe pero no pertenece al cliente. |
 | `MODULO_NO_DISPONIBLE` / `SERVICIO_NO_DISPONIBLE` | 503 | Falló un módulo externo; incluye `modulo`. |
 | `DEMASIADAS_SOLICITUDES` | 429 | Se superó el rate limit. |
-| `VALIDACION` | 400 | Incluye `errores[{campo, mensaje}]`. En reclamos también se usa cuando `motivo` no es uno de los cinco valores de G5 (SPEC-19 · Requisito 1). |
+| `VALIDACION` | 400 | Incluye `errores[{campo, mensaje}]`. En reclamos también se usa cuando `motivo` no es uno de los cinco valores de G5 (SPEC-19 · Requisito 1); en CSAT, cuando `puntuacion` no es 1, 3 o 5 (SPEC-24 · Requisito 2). |
 | `DATO_INVALIDO` | 400 | Específico del documento de identidad (`tipoDocumento`/`numeroDocumento`); el frontend lo evita validando antes con las reglas de `SPEC-12` · Requisito 1, pero Ventas también lo aplica del lado suyo. |
 
 ### 2.9 Retroalimentación (SPEC-24)
@@ -426,7 +426,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 |---|---|---|---|
 | POST | `/mensajes/{mensajeId}/reaccion` | Opcional (`CLIENTE` o `chat_sid`) | `{reaccion: "POSITIVE"\|"NEGATIVE"}`; upsert por mensaje y autor. Responde `200 {mensajeId, reaccion}`. `404 RECURSO_NO_ENCONTRADO` si el mensaje no es de la conversación; `429 DEMASIADAS_SOLICITUDES` (la UI lo ignora en silencio). |
 | POST | `/pedidos/{pedidoId}/valoracion-compra` | `CLIENTE` | `{estrellas: 1..5, comentario?}`; una por pedido. Responde `201 {valoracionId, estrellas}`. `409 VALORACION_YA_REGISTRADA`. |
-| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | Proxy a `POST /api/v2/csat` de Ventas; el chatbot no guarda una calificación propia. El cuerpo del frontend es `{puntuacion, comentario?}` y **no lleva `clienteId`**: el backend lo arma con el `sub` del token y reenvía el token del cliente a Ventas. Solo se ofrece al pie del detalle de un pedido `ENTREGADO`, no en la lista. Marca `order_ref.csat_sent` con `201` o `409`. `409 CSAT_ALREADY_SUBMITTED` se muestra como "Ya calificaste este pedido"; `422 ORDER_NOT_DELIVERED`, como "Solo puedes calificar pedidos entregados". |
+| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | Proxy a `POST /api/v2/csat` de Ventas; el chatbot no guarda una calificación propia. El cuerpo del frontend es `{puntuacion, comentario?}` y **no lleva `clienteId`**: el backend lo arma con el `sub` del token y reenvía el token del cliente a Ventas. Solo se ofrece al pie del detalle de un pedido `ENTREGADO`, no en la lista. `puntuacion` solo acepta 1, 3 o 5; otro valor responde `400 VALIDACION` antes de llamar a Ventas. Marca `order_ref.csat_sent` con `201` o `409`. `409 CSAT_ALREADY_SUBMITTED` se muestra como "Ya calificaste este pedido"; `422 ORDER_NOT_DELIVERED`, como "Solo puedes calificar pedidos entregados". |
 | POST | `/sugerencias` | `CLIENTE` | `multipart/form-data` con `tipo` (`SUGERENCIA`/`BUG`), `titulo`, `descripcion`, `correoContacto`, `captura?` (JPG/PNG ≤ 5 MB) e `Idempotency-Key`. Responde `201 {sugerenciaId, codigoSeguimiento}`. Errores `400 VALIDACION`, `400 ADJUNTO_INVALIDO`, `429 DEMASIADAS_SOLICITUDES`. |
 
 La captura usa el puerto `AttachmentStorage` de SPEC-23 y se guarda en `feedback_suggestion.screenshot_key`; no usa la tabla `attachment`. La notificación interna se encola por outbox (`SEND_EMAIL`) y su estado vive en `feedback_suggestion.notification_status`; un fallo no se muestra al cliente.
@@ -456,14 +456,16 @@ Cuentas usadas: cuenta principal (`sub be1f271e-...`, dueña de 90101/90102) y c
 | Control | Endpoint ejecutado (G5) | Resultado | Hora UTC | id / nota |
 |---|---|---|---|---|
 | Reclamo con `motivo: "OTRO"` | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/reclamos` | 400 `FORMATO_INVALIDO` | 2026-11-22T18:23:14Z | Sin id. G5 rechaza el motivo fuera de su enum; el BFF valida antes y expone `400 VALIDACION` (SPEC-19) |
-| Listado de pedidos `/pedidos/me` | `GET https://g5-servicio-ventas.onrender.com/api/v1/pedidos/me` | 200, 11 pedidos | No registrada | Filtros `estado`, `desde`, `hasta`, `page` y `pageSize` verificados; BFF `GET /api/v1/pedidos` |
-| Detalle de pedido propio | `GET https://g5-servicio-ventas.onrender.com/api/v1/pedidos/{id}` | 200 | No registrada | Pedido de la cuenta dueña; BFF `GET /api/v1/pedidos/{id}` |
-| Detalle de pedido ajeno | `GET https://g5-servicio-ventas.onrender.com/api/v1/pedidos/{id}` | 403 `ACCESO_DENEGADO` | No registrada | El BFF lo traduce a `404 RECURSO_NO_ENCONTRADO`, igual que un pedido inexistente, por SPEC-17 |
-| Devolución en 90201 | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/devoluciones` | 201, `DEV-2026-0028` | No registrada | `motivo: "OTRO"` + evidencia; BFF `POST /api/v1/devoluciones` |
-| Devolución en 90101/90102 | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/devoluciones` | 400 `PLAZO_VENCIDO` | No registrada | Entregados el 15/11 y el 08/11; es dato de prueba de G5, no un fallo del canal |
-| Devolución con `TALLA_INCORRECTA` directo a G5 | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/devoluciones` | 400 `FORMATO_INVALIDO` | No registrada | G5 no acepta ese literal en F3; el mapeo del adapter a `OTRO` es obligatorio (SPEC-21) |
+| Listado de pedidos `/pedidos/me` | `GET https://g5-servicio-ventas.onrender.com/api/v1/pedidos/me` | 200, 11 pedidos | 2026-11-22T18:19:54Z | Filtros `estado`, `desde`, `hasta`, `page` y `pageSize` verificados; BFF `GET /api/v1/pedidos` |
+| Detalle de pedido propio | `GET https://g5-servicio-ventas.onrender.com/api/v1/pedidos/{id}` | 200 | 2026-11-22T18:19:55Z | Pedido de la cuenta dueña; BFF `GET /api/v1/pedidos/{id}` |
+| Detalle de pedido ajeno | `GET https://g5-servicio-ventas.onrender.com/api/v1/pedidos/{id}` | 403 `ACCESO_DENEGADO` | 2026-11-22T18:19:58Z | El BFF lo traduce a `404 RECURSO_NO_ENCONTRADO`, igual que un pedido inexistente, por SPEC-17 |
+| Devolución en 90201 | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/devoluciones` | 201, `DEV-2026-0028` | 2026-11-22T18:22:42Z | `motivo: "OTRO"` + evidencia; BFF `POST /api/v1/devoluciones` |
+| Devolución en 90101/90102 | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/devoluciones` | 400 `PLAZO_VENCIDO` | 2026-11-22T18:20:10Z (90101) / 2026-11-22T18:22:04Z (90102) | Entregados el 15/11 y el 08/11; es dato de prueba de G5, no un fallo del canal |
+| Devolución con `TALLA_INCORRECTA` directo a G5 | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/devoluciones` | 400 `FORMATO_INVALIDO` | 2026-11-22T18:21:39Z | G5 no acepta ese literal en F3; el mapeo del adapter a `OTRO` es obligatorio (SPEC-21) |
 
 **Lectura de la evidencia.** EV-01..EV-05 confirman que G5 acepta los cinco motivos y que el canal no debe enviar `OTRO`. EV-06 confirma el `201` inicial y el `409` de reintento; EV-07 confirma el `422` cuando el pedido no está `ENTREGADO`. Los `409` de 90101/90102 (ya calificados) y los `400 PLAZO_VENCIDO` de esas mismas cuentas (entregadas el 15/11 y 08/11) son **datos de prueba de G5, no fallos de G3**; 90201 se usó para el CSAT nuevo y para la devolución `DEV-2026-0028`. El `400 FORMATO_INVALIDO` de `motivo: "OTRO"` es la respuesta directa de G5 al saltarse el BFF; el contrato del chatbot sigue siendo `400 VALIDACION` porque valida antes de reenviar.
+
+**Script reproducible.** `backend/scripts/verify_g5_integration.py` documenta y repite la corrida: `--dry-run` es el modo por defecto (imprime el plan sin llamadas de escritura), `--execute` requiere `G5_BEARER_TOKEN` (token de cliente), apunta a los servicios directos M1/M2 y escribe `docs/evidencia-g5-<UTC>.md`; no imprime ni guarda el token.
 
 ---
 

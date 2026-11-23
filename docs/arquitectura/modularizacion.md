@@ -31,14 +31,14 @@ entre capacidades también es una regla verificable.
 
 | id | Capacidad | Backend (`src/modules/…`) | Rutas públicas | Frontend | Owner |
 |---|---|---|---|---|---|
-| `mod-auth` | Sesión, registro, MFA, OTP, perfil, verificación de correo | `mod_auth` — `/sesion` | `/sesion/login`, `/mfa/*`, `/refresh`, `/logout`, `/perfil`, `/registro`, `/politica-contrasena`, `/verificar-correo*`, `/contacto/celular/solicitar-otp`, `/contacto/celular/verificar-otp` | `/cuenta`, `/verificar-correo` | @Ankarmin |
-| `mod-catalog` | Catálogo, búsqueda, detalle, disponibilidad, promociones, recomendación | `mod_catalog` — `/catalogo` | `/catalogo/productos`, `/productos/{id}`, `/promociones`, `/disponibilidad` | `/` (home, tarjetas, detalle) | @SOoOnny |
-| `mod-cart` | Carrito, líneas, cupón y totales | `mod_cart` — `/carrito` | `GET/POST/PATCH/DELETE /carrito*`, `/carrito/cupon` | `/carrito` | @SOoOnny |
-| `mod-shipping` | Cotización de envío y direcciones guardadas | `mod_shipping` — `/direcciones`, `/envio` | `GET /direcciones`, `POST /envio/cotizar` | bloque de envío en `/checkout` | @SOoOnny |
-| `mod-checkout` | Checkout, pago simulado, snapshot del pedido y outbox | `mod_checkout` — `/checkout` | `POST /checkout`, `GET /checkout/{id}`, `POST /checkout/{id}/pago` | `/checkout`, `/exito` | @MathiasTL |
-| `mod-orders` | Pedidos, detalle, seguimiento y reenvío de confirmación | `mod_orders` — `/pedidos` | `GET /pedidos`, `/{id}`, `/{id}/seguimiento`, `POST /{id}/reenviar-confirmacion` | `/pedidos`, `/pedidos/[tab]`, `/seguimiento` | @MathiasTL |
-| `mod-postventa` | Devoluciones, reclamos, evidencias y CSAT | `mod_postventa` — `/devoluciones`, `/reclamos`, `/evidencias`, `/pedidos/{id}/csat` | `POST/GET /devoluciones*`, `POST/GET /reclamos*`, `POST /evidencias`, `POST /pedidos/{id}/csat` | `/devolucion`, `/reclamo` | @MathiasTL |
-| `mod-chat` | Conversaciones, historial, SSE, tools, acciones directas, reacciones, sugerencias y adjuntos | `mod_chat` — `/chat/conversaciones`, `/mensajes/{id}/reaccion`, `/sugerencias` | `POST/GET /chat/conversaciones`, `/buscar`, `/{id}/mensajes` (SSE en el `POST`), `POST /mensajes/{id}/reaccion`, `POST /sugerencias`, `/chat/adjuntos/{id}` | `/chat/[id]`, `/sugerencias` | @Ankarmin |
+| `mod-auth` | Sesión, registro, MFA, OTP, perfil, verificación de correo | `mod_auth` — `/sesion` | `/sesion/login`, `/mfa/*`, `/refresh`, `/logout`, `/perfil`, `/registro`, `/politica-contrasena`, `/verificar-correo*`, `/contacto/celular/solicitar-otp`, `/contacto/celular/verificar-otp` | `/cuenta`, `/verificar-correo` | @Taller-SW-Web/chatbot |
+| `mod-catalog` | Catálogo, búsqueda, detalle, disponibilidad, promociones, recomendación | `mod_catalog` — `/catalogo` | `/catalogo/productos`, `/productos/{id}`, `/promociones`, `/disponibilidad` | `/` (home, tarjetas, detalle) | @Taller-SW-Web/chatbot |
+| `mod-cart` | Carrito, líneas, cupón y totales | `mod_cart` — `/carrito` | `GET/POST/PATCH/DELETE /carrito*`, `/carrito/cupon` | `/carrito` | @Taller-SW-Web/chatbot |
+| `mod-shipping` | Cotización de envío y direcciones guardadas | `mod_shipping` — `/direcciones`, `/envio` | `GET /direcciones`, `POST /envio/cotizar` | bloque de envío en `/checkout` | @Taller-SW-Web/chatbot |
+| `mod-checkout` | Checkout, pago simulado, snapshot del pedido y outbox | `mod_checkout` — `/checkout` | `POST /checkout`, `GET /checkout/{id}`, `POST /checkout/{id}/pago` | `/checkout`, `/exito` | @Taller-SW-Web/chatbot |
+| `mod-orders` | Pedidos, detalle, seguimiento y reenvío de confirmación | `mod_orders` — `/pedidos` | `GET /pedidos`, `/{id}`, `/{id}/seguimiento`, `POST /{id}/reenviar-confirmacion` | `/pedidos`, `/pedidos/[tab]`, `/seguimiento` | @Taller-SW-Web/chatbot |
+| `mod-postventa` | Devoluciones, reclamos, evidencias y CSAT | `mod_postventa` — `/devoluciones`, `/reclamos`, `/evidencias`, `/pedidos/{id}/csat` | `POST/GET /devoluciones*`, `POST/GET /reclamos*`, `POST /evidencias`, `POST /pedidos/{id}/csat` | `/devolucion`, `/reclamo` | @Taller-SW-Web/chatbot |
+| `mod-chat` | Conversaciones, historial, SSE, tools, acciones directas, reacciones, sugerencias y adjuntos | `mod_chat` — `/chat/conversaciones`, `/mensajes/{id}/reaccion`, `/sugerencias` | `POST/GET /chat/conversaciones`, `/buscar`, `/{id}/mensajes` (SSE en el `POST`), `POST /mensajes/{id}/reaccion`, `POST /sugerencias`, `/chat/adjuntos/{id}` | `/chat/[id]`, `/sugerencias` | @Taller-SW-Web/chatbot |
 
 Cada módulo backend contiene:
 

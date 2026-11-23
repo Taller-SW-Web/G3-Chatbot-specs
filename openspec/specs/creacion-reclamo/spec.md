@@ -46,14 +46,14 @@ Incluye:
 ### Requirement: Recolección guiada
 El sistema DEBE (SHALL) reunir los datos del reclamo conversando, sin enviarlo hasta la confirmación, y presentar un formulario de revisión prellenado.
 
-Motivos: alineados a los que usa Ventas en su ejemplo (`INCUMPLIMIENTO_PLAZO_ENTREGA`) y ampliados para cubrir los casos del canal: `PRODUCTO_DEFECTUOSO`, `PRODUCTO_EQUIVOCADO`, `PEDIDO_INCOMPLETO`, `INCUMPLIMIENTO_PLAZO_ENTREGA`, `NO_RECIBIDO`, `COBRO_INCORRECTO`, `ATENCION`, `OTRO`.
+Motivos: el formulario, la herramienta `preparar_reclamo` y el backend DEBEN (SHALL) aceptar únicamente los cinco motivos del contrato de G5: `INCUMPLIMIENTO_PLAZO_ENTREGA`, `PRODUCTO_DEFECTUOSO_O_INCORRECTO`, `COBRO_INDEBIDO_O_NO_RECONOCIDO`, `ATENCION_INADECUADA` e `INCUMPLIMIENTO_GARANTIA`. G5 no expone `OTRO` ni alias: el cliente DEBE (SHALL) elegir el motivo más cercano y explicar el caso concreto en `detalle` (mínimo 20 y máximo 1000 caracteres).
 
-*Trazabilidad: SPEC-19 · Requisito 1.*
+*Trazabilidad: SPEC-19 · Requisito 1. Alineado con el contrato real de G5 (2026-11).*
 
 #### Scenario: Reclamo expresado en lenguaje natural
 - **DADO** un cliente con el pedido PED-…891 `ENTREGADO`
 - **CUANDO** escribe "las zapatillas que me llegaron tienen la suela despegada"
-- **ENTONCES** el LLM invoca `preparar_reclamo {pedidoRef: "PED-…891", tipo: RECLAMO, motivo: PRODUCTO_DEFECTUOSO, descripcion: "..."}`, y el chat muestra el formulario prellenado con los campos editables, "¿Qué solución esperas?" y "Enviar reclamo"
+- **ENTONCES** el LLM invoca `preparar_reclamo {pedidoRef: "PED-…891", tipo: RECLAMO, motivo: PRODUCTO_DEFECTUOSO_O_INCORRECTO, descripcion: "..."}`, y el chat muestra el formulario prellenado con los campos editables, "¿Qué solución esperas?" y "Enviar reclamo"
 
 #### Scenario: Falta el pedido
 - **DADO** un cliente con varios pedidos
@@ -65,6 +65,16 @@ Motivos: alineados a los que usa Ventas en su ejemplo (`INCUMPLIMIENTO_PLAZO_ENT
 - **CUANDO** se intenta enviar
 - **ENTONCES** el formulario pide "Cuéntanos un poco más (mínimo 20 caracteres)"; el máximo es de 1000
 
+#### Scenario: Caso que no encaja exactamente en un motivo
+- **DADO** un caso que no corresponde exactamente a ninguno de los cinco motivos, por ejemplo "el producto dejó de funcionar y la tienda no aplica la garantía"
+- **CUANDO** el cliente lo describe en el chat
+- **ENTONCES** el formulario propone el motivo más cercano de la lista (en el ejemplo, `INCUMPLIMIENTO_GARANTIA`), lo deja editable y exige que el detalle explique el caso concreto; no se ofrece ni se envía `OTRO`
+
+#### Scenario: Motivo fuera de la lista del contrato
+- **DADO** un envío con un `motivo` que no está entre los cinco de G5, por ejemplo `OTRO` o un valor de una versión anterior como `PRODUCTO_DEFECTUOSO`
+- **CUANDO** llega a `POST /api/v1/reclamos`
+- **ENTONCES** responde `400 VALIDACION` con `errores[{campo: "motivo", mensaje}]`, no se llama a Ventas, no se crea el reclamo y el formulario solo ofrece los cinco motivos del contrato
+
 ### Requirement: Confirmación explícita y registro
 El sistema DEBE (SHALL) registrar el reclamo en Ventas solo cuando el cliente pulsa "Enviar reclamo", con una `Idempotency-Key` (cabecera `Idempotency-Key`, igual que el resto de operaciones que crean algo), y mostrar la constancia.
 
@@ -74,7 +84,7 @@ Payload real `POST {VEN}/api/v2/reclamos`:
   "pedidoId": "PED-2026-00891",
   "tipo": "RECLAMO",
   "canal": "CHATBOT",
-  "motivo": "PRODUCTO_DEFECTUOSO",
+  "motivo": "PRODUCTO_DEFECTUOSO_O_INCORRECTO",
   "detalle": "La suela de la zapatilla derecha se despegó al primer uso.",
   "consumidor": {
     "nombreCompleto": "Juan Pérez",
@@ -85,7 +95,7 @@ Payload real `POST {VEN}/api/v2/reclamos`:
 }
 ```
 
-El cuerpo de `POST /api/v1/reclamos` es ese payload más `forzar` (booleano, por defecto `false`); `forzar` es una decisión del chatbot y no se reenvía a Ventas.
+El cuerpo de `POST /api/v1/reclamos` es ese payload más `forzar` (booleano, por defecto `false`); `forzar` es una decisión del chatbot y no se reenvía a Ventas. El `motivo` enviado por el frontend DEBE (SHALL) ser uno de los cinco de G5; el backend NO DEBE (SHALL NOT) traducir alias ni aceptar valores de versiones anteriores.
 
 *Trazabilidad: SPEC-19 · Requisito 2.*
 
@@ -115,7 +125,7 @@ El sistema DEBE (SHALL) detectar, antes de registrar, si ya existe un reclamo ab
 *Trazabilidad: SPEC-19 · Requisito 3.*
 
 #### Scenario: Reclamo abierto existente
-- **DADO** un reclamo `REGISTRADO` o `EN_PROCESO` para PED-…891 con motivo `PRODUCTO_DEFECTUOSO`
+- **DADO** un reclamo `REGISTRADO` o `EN_PROCESO` para PED-…891 con motivo `PRODUCTO_DEFECTUOSO_O_INCORRECTO`
 - **CUANDO** el cliente intenta registrar otro igual sin `forzar`
 - **ENTONCES** se informa el `codigoSeguimiento` existente y su estado, con "Ver estado" (SPEC-20), y no se crea uno nuevo; si confirma "Registrar uno nuevo de todas formas", el formulario reenvía con `forzar: true`
 

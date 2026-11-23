@@ -10,7 +10,7 @@
 
 | Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
 |---|---|---|---|---|---|---|
-| EP-07 | Must | 5 | Hito 5–6 | `SPEC-17 · Req. 1` | RN-SGT-02, RN-SGT-03, RN-SGT-04, RN-SGT-05 | Ventas ✅ (A8) |
+| EP-07 | Must | 5 | Hito 5–6 | `SPEC-17 · Req. 1` | RN-SGT-02, RN-SGT-03, RN-SGT-04, RN-SGT-05, RN-SGT-15 | Ventas ✅ (A8) |
 
 **Como** cliente autenticado, **quiero** preguntar "¿dónde está mi pedido?" o abrir "Mis pedidos" y llegar al pedido correcto, **para** consultar su estado sin buscar números.
 
@@ -20,6 +20,8 @@
 - `SPEC-17 · Req. 1 · Scenario: Consulta por número` — se consulta el pedido indicado y se muestra si pertenece al cliente.
 - `SPEC-17 · Req. 1 · Scenario: Pedido de otro cliente o inexistente` — ambos casos reciben "No encontré ese pedido en tu cuenta".
 - `SPEC-17 · Req. 1 · Scenario: Cliente sin pedidos` — se responde "Aún no tienes pedidos" con "Ver ofertas".
+- `SPEC-17 · Req. 1 · Scenario: Filtro por fechas de creación` — `desde`/`hasta` (ISO `YYYY-MM-DD`) filtran por `fechaCreacion` y se reenvían a Ventas.
+- `SPEC-17 · Req. 1 · Scenario: Fecha inválida en los filtros` — una fecha inválida responde `400 VALIDACION` sin llamar a Ventas.
 
 **Prioridad:** Must: el curso exige la consulta del estado de un pedido.
 

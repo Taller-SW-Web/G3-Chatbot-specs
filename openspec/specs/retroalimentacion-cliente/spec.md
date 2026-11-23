@@ -141,14 +141,16 @@ El sistema DEBE (SHALL) limitar el envío de reacciones, calificaciones y sugere
 - **ENTONCES** se muestra "Ya enviaste varias sugerencias, intenta en un rato" y no se registra
 
 ### Requirement: Calificación de la entrega con caritas (CSAT, vía Ventas)
-El sistema DEBE (SHALL) ofrecer la calificación del pedido (CSAT de Ventas) en un bloque fijo al pie del detalle de un pedido `ENTREGADO`, no en una ventana emergente, con tres caritas (feliz, neutral, triste) y un comentario opcional, y DEBE (SHALL) enviarla a Ventas (`POST /api/v2/csat`) en vez de almacenarla como calificación propia.
+El sistema DEBE (SHALL) ofrecer la calificación del pedido (CSAT de Ventas) en un bloque fijo al pie del detalle de un pedido `ENTREGADO` (`OrderDetail`), nunca en la lista de pedidos ni en una ventana emergente, con tres caritas (feliz, neutral, triste) y un comentario opcional, y DEBE (SHALL) enviarla a Ventas (`POST /api/v2/csat`) en vez de almacenarla como calificación propia.
 
-*Trazabilidad: SPEC-24 · Requisito 2. Ventas F5 — CSAT (`docs/contratos-integracion.md`); solo acepta pedidos `ENTREGADO`.*
+El frontend NO DEBE (SHALL NOT) enviar `clienteId`: el backend lo arma con el `sub` del token del cliente. La interfaz DEBE (SHALL) mostrar `409 CSAT_ALREADY_SUBMITTED` como "Ya calificaste este pedido" (estado informativo, no error) y `422 ORDER_NOT_DELIVERED` como "Solo puedes calificar pedidos entregados".
+
+*Trazabilidad: SPEC-24 · Requisito 2. Ventas F5 — CSAT (`docs/contratos-integracion.md`); solo acepta pedidos `ENTREGADO`. Alineado con el contrato real de G5 (2026-11).*
 
 #### Scenario: Calificación enviada
 - **DADO** el detalle de un pedido `ENTREGADO` que el cliente no ha calificado
 - **CUANDO** el cliente toca una carita y pulsa "Enviar calificación"
-- **ENTONCES** se llama a `POST /api/v2/csat {pedidoId, clienteId, canal: "CHATBOT", puntuacion, comentario}`, con el `clienteId` igual al `sub` del token del cliente y `puntuacion` 5 (feliz), 3 (neutral) o 1 (triste), la escala acordada por Ventas con Marketplace; Ventas responde `201`, y el bloque se reemplaza por el agradecimiento "¡Gracias por tu calificación!"
+- **ENTONCES** el frontend llama a `POST /api/v1/pedidos/{pedidoId}/csat {puntuacion, comentario?}` sin `clienteId`, el backend arma `{pedidoId, clienteId, canal: "CHATBOT", puntuacion, comentario}` con el `clienteId` igual al `sub` del token del cliente y lo reenvía a Ventas con ese mismo token, `puntuacion` es 5 (feliz), 3 (neutral) o 1 (triste), Ventas responde `201`, y el bloque se reemplaza por el agradecimiento "¡Gracias por tu calificación!"
 
 #### Scenario: Sin carita seleccionada
 - **DADO** el bloque de calificación visible al pie del detalle del pedido
@@ -178,12 +180,22 @@ El sistema DEBE (SHALL) ofrecer la calificación del pedido (CSAT de Ventas) en 
 #### Scenario: Pedido no entregado según Ventas
 - **DADO** que Ventas responde `422 ORDER_NOT_DELIVERED` al enviar la calificación
 - **CUANDO** el cliente envía su calificación
-- **ENTONCES** el bloque se oculta y se refresca el detalle del pedido para mostrar su estado vigente
+- **ENTONCES** se muestra "Solo puedes calificar pedidos entregados" en el bloque, sin presentarlo como error de red, y se refresca el detalle para mostrar el estado vigente; si el estado ya no es `ENTREGADO`, el bloque deja de mostrarse
 
 #### Scenario: Pedido aún no entregado
 - **DADO** el detalle de un pedido en `CREADO`, `PAGADO`, `EN_PREPARACION` o `DESPACHADO`
 - **CUANDO** se muestra la pantalla
 - **ENTONCES** el bloque de calificación no aparece
+
+#### Scenario: La lista de pedidos no muestra el bloque
+- **DADO** la pantalla de historial de pedidos con uno o más pedidos `ENTREGADO`
+- **CUANDO** se muestra la lista
+- **ENTONCES** no aparece ninguna carita ni el botón "Enviar calificación"; el bloque solo se muestra al pie del detalle de cada pedido
+
+#### Scenario: El `clienteId` no viaja desde el navegador
+- **DADO** el bloque de calificación visible en el detalle de un pedido
+- **CUANDO** el cliente envía su calificación
+- **ENTONCES** el cuerpo enviado por el frontend contiene solo `puntuacion` y, si existe, `comentario`; el backend obtiene el `clienteId` del `sub` del token y no acepta un `clienteId` enviado por el cliente
 
 ### Requirement: Valoración de la experiencia de compra (propia del chatbot)
 El sistema DEBE (SHALL) mostrar, después del pago y una vez confirmado el pedido, un popup "Califica tu compra" con estrellas (1 a 5) y comentario opcional, y DEBE (SHALL) guardar la valoración en el propio chatbot, sin enviarla a Ventas. No bloquea la confirmación del pedido.
@@ -223,7 +235,7 @@ Los endpoints son propios del chatbot y viven en los módulos que indica `design
 |---|---|---|---|---|
 | POST | `/mensajes/{mensajeId}/reaccion` | Opcional (`CLIENTE` o `chat_sid`) | `{ "reaccion": "POSITIVE" \| "NEGATIVE" }` → `200 { "mensajeId", "reaccion" }` (upsert) | `404 RECURSO_NO_ENCONTRADO`, `429 DEMASIADAS_SOLICITUDES` (la UI lo ignora en silencio) |
 | POST | `/pedidos/{pedidoId}/valoracion-compra` | `CLIENTE` | `{ "estrellas": 1..5, "comentario?": "..." }` → `201 { "valoracionId", "estrellas" }` | `400 VALIDACION`, `404 RECURSO_NO_ENCONTRADO`, `409 VALORACION_YA_REGISTRADA` |
-| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | `{ "puntuacion": 5 \| 3 \| 1, "comentario?": "..." }` → `201` (proxy a Ventas) | `403`, `409 CSAT_ALREADY_SUBMITTED`, `422 ORDER_NOT_DELIVERED`, `503` |
+| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | `{ "puntuacion": 5 \| 3 \| 1, "comentario?": "..." }` (sin `clienteId`; lo arma el backend con el `sub`) → `201` (proxy a Ventas) | `403`, `409 CSAT_ALREADY_SUBMITTED`, `422 ORDER_NOT_DELIVERED`, `503` |
 | POST | `/sugerencias` | `CLIENTE` | `multipart/form-data`: `tipo` (`SUGERENCIA`/`BUG`), `titulo`, `descripcion`, `correoContacto`, `captura?` (JPG/PNG ≤ 5 MB); `Idempotency-Key` obligatoria → `201 { "sugerenciaId", "codigoSeguimiento" }` | `400 VALIDACION`, `400 ADJUNTO_INVALIDO`, `429 DEMASIADAS_SOLICITUDES` |
 
 **Supuesto explícito:** la captura de una sugerencia viaja en la misma llamada `multipart/form-data` para no añadir un endpoint de carga adicional. Si el frontend implementa una carga previa, el contrato pasa a `capturaId` y se actualiza en el mismo PR. La captura usa el puerto `AttachmentStorage` de SPEC-23, pero no la tabla `attachment`; se guarda en `feedback_suggestion.screenshot_key`.

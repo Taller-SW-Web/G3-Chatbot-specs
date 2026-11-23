@@ -293,7 +293,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 **Usuario:** *(pulsa `[Crear un reclamo]`)*
 **Botleta:** Te ayudo a registrarlo. Revisa los datos y cuéntanos qué solución esperas.
-`⟶ tool: preparar_reclamo({pedidoRef: "PED-2026-00891", tipo: "RECLAMO", motivo: "OTRO", descripcion: "Las zapatillas me quedaron chicas y el plazo de cambio venció."})`
+`⟶ tool: preparar_reclamo({pedidoRef: "PED-2026-00891", tipo: "RECLAMO", motivo: "ATENCION_INADECUADA", descripcion: "No me dieron solución cuando pedí el cambio y el plazo venció."})`
 `[FORMULARIO/RECLAMO]` prellenado y editable · "¿Qué solución esperas?" · `[Enviar reclamo]` `[Cancelar]`
 *(María edita la descripción y pulsa `[Enviar reclamo]` → `POST /reclamos` con `Idempotency-Key` → Ventas `201 REGISTRADO`.)*
 `[CONSTANCIA_RECLAMO]` código de seguimiento · fecha · PED-2026-00891 · motivo · "Recibirás respuesta antes del {fechaLimiteSLA}" · "Guarda este código para consultar tu reclamo"
@@ -390,7 +390,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 `[Crear un reclamo]` `[Mis pedidos]`
 
 **Usuario:** *(pulsa `[Crear un reclamo]`)*
-`⟶ tool: preparar_reclamo({motivo: "PEDIDO_INCOMPLETO", tipo: "RECLAMO"})` *(sin pedido: se lista para elegir)*
+`⟶ tool: preparar_reclamo({motivo: "PRODUCTO_DEFECTUOSO_O_INCORRECTO", tipo: "RECLAMO"})` *(sin pedido: se lista para elegir)*
 `[LISTA_PEDIDOS]` para elegir el pedido → continúa como en D-09
 
 ---

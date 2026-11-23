@@ -12,15 +12,15 @@
 | Área | Épica | Reglas |
 |---|---|---|
 | `IDE` | Identidad y sesión | 22 |
-| `CNV` | Motor de conversación | 45 |
+| `CNV` | Motor de conversación | 46 |
 | `CAT` | Descubrimiento de productos | 17 |
 | `CAR` | Carrito y stock | 16 |
 | `CHK` | Checkout y pago | 27 |
 | `PED` | Grabación y confirmación del pedido | 14 |
-| `SGT` | Seguimiento de pedidos | 14 |
+| `SGT` | Seguimiento de pedidos | 15 |
 | `RCL` | Reclamos | 11 |
 | `DEV` | Devoluciones y reembolsos | 14 |
-| **Total** | | **180** |
+| **Total** | | **182** |
 
 ---
 
@@ -100,6 +100,7 @@
 | RN-CNV-43 | La captura de un bug es opcional, JPG o PNG de hasta 5 MB; se guarda en el bucket privado de SPEC-23 con URLs firmadas y nunca se envía al LLM. | SPEC-24 · Req. 4 y RNF (Privacidad) | Chatbot |
 | RN-CNV-44 | Cada sugerencia o bug avisa al equipo con un correo interno por el outbox de SPEC-16; si ese correo falla, la sugerencia no se pierde ni se muestra como fallida al cliente. | SPEC-24 · Req. 5 | Chatbot |
 | RN-CNV-45 | Más de 30 reacciones por minuto de un cliente o `chat_sid` se ignoran en silencio; con 5 sugerencias o bugs en una hora, la siguiente se rechaza con "Ya enviaste varias sugerencias, intenta en un rato". | SPEC-24 · Req. 6 | Chatbot |
+| RN-CNV-46 | Un `422 ORDER_NOT_DELIVERED` de Ventas al calificar se muestra como "Solo puedes calificar pedidos entregados", sin tratarlo como error de red; el detalle se refresca y, si el pedido ya no está `ENTREGADO`, el bloque deja de mostrarse. El frontend no envía `clienteId`: el backend lo arma con el `sub` del token. | SPEC-24 · Req. 2 | Ventas (`422`); Chatbot (texto y `clienteId`) |
 
 ## RN-CAT — Descubrimiento de productos
 
@@ -202,7 +203,7 @@
 | RN-SGT-01 | El estado del pedido lo decide Ventas: `CREADO → PAGADO → EN_PREPARACION → DESPACHADO → ENTREGADO`, con la rama `ANULADO`. | SPEC-17 · Contexto y Req. 2 | Ventas |
 | RN-SGT-02 | Si el cliente tiene un solo pedido no finalizado, se muestra directamente; si tiene varios, se listan para elegir; si indica un número, se busca ese pedido. | SPEC-17 · Req. 1 | Chatbot |
 | RN-SGT-03 | Un pedido inexistente y uno de otro cliente reciben la misma respuesta ("No encontré ese pedido en tu cuenta"). | SPEC-17 · Req. 1 | Chatbot |
-| RN-SGT-04 | El listado de pedidos siempre filtra por `clienteId = sub` del token, y el detalle verifica la pertenencia antes de mostrarse. | SPEC-17 · Req. 1 y RNF (Seguridad) | Chatbot (Ventas también lo valida) |
+| RN-SGT-04 | La identidad del listado se deriva del `sub` del token; el chatbot no envía `clienteId`. El detalle verifica la pertenencia antes de mostrarse. | SPEC-17 · Req. 1 y RNF (Seguridad) | Chatbot (Ventas también lo valida) |
 | RN-SGT-05 | El listado conversacional muestra los 5 pedidos más recientes, con "Ver más". | SPEC-17 · Alcance | Chatbot |
 | RN-SGT-06 | Las fechas y horas de la línea de tiempo se muestran en hora de Lima. | SPEC-17 · Req. 2 | Chatbot |
 | RN-SGT-07 | En un pedido `ANULADO` con pago se informa "Si corresponde un reembolso, se procesará al medio de pago original", sin detalles internos. | SPEC-17 · Req. 2 | Chatbot |
@@ -213,13 +214,14 @@
 | RN-SGT-12 | Si Ventas indica `ENTREGADO` y Despacho aún no, prevalece Ventas. | SPEC-18 · RNF (Coherencia) | Ventas |
 | RN-SGT-13 | La consulta a Despacho usa un token de servicio vigente; ante `401` se renueva una vez y se reintenta; ante `403 SCOPE_INSUFICIENTE` no se reintenta. | SPEC-18 · Req. 4 y RNF | Seguridad / Despacho (acuerdo A4) |
 | RN-SGT-14 | Si Despacho no responde en 4 s, se muestra el estado según Ventas con el aviso de detalle no disponible. | SPEC-18 · Req. 4 | Chatbot |
+| RN-SGT-15 | El listado acepta `desde` y `hasta` opcionales como fechas ISO `YYYY-MM-DD`; filtran por `fechaCreacion` y se reenvían sin transformación a `GET /api/v1/pedidos/me`. Una fecha inválida responde `400 VALIDACION` sin llamar a Ventas. | SPEC-17 · Req. 1 | Ventas (filtros); Chatbot (validación) |
 
 ## RN-RCL — Reclamos
 
 | ID | Regla | Fuente | Dueño de la regla |
 |---|---|---|---|
 | RN-RCL-01 | Todo reclamo se asocia a un pedido del cliente. | SPEC-19 · Req. 1 | Chatbot |
-| RN-RCL-02 | El tipo es `RECLAMO` o `QUEJA`, y el motivo uno de: `PRODUCTO_DEFECTUOSO`, `PRODUCTO_EQUIVOCADO`, `PEDIDO_INCOMPLETO`, `INCUMPLIMIENTO_PLAZO_ENTREGA`, `NO_RECIBIDO`, `COBRO_INCORRECTO`, `ATENCION`, `OTRO`. | SPEC-19 · Req. 1 | Ventas (Libro de Reclamaciones); motivos ampliados por Chatbot |
+| RN-RCL-02 | El tipo es `RECLAMO` o `QUEJA`, y el motivo uno de los cinco del contrato de G5: `INCUMPLIMIENTO_PLAZO_ENTREGA`, `PRODUCTO_DEFECTUOSO_O_INCORRECTO`, `COBRO_INDEBIDO_O_NO_RECONOCIDO`, `ATENCION_INADECUADA`, `INCUMPLIMIENTO_GARANTIA`. No existe `OTRO`: el cliente elige el más cercano y lo detalla en `detalle`. Un motivo fuera de la lista responde `400 VALIDACION`. | SPEC-19 · Req. 1 | Ventas (G5, contrato 2026-11) |
 | RN-RCL-03 | La descripción del reclamo tiene entre 20 y 1000 caracteres. | SPEC-19 · Req. 1 | Chatbot |
 | RN-RCL-04 | El reclamo se registra solo cuando el cliente pulsa "Enviar reclamo", con `Idempotency-Key`; el mismo envío repetido genera un solo reclamo. | SPEC-19 · Req. 2 | Chatbot |
 | RN-RCL-05 | El documento del consumidor se reutiliza del último pedido del cliente; si no existe, se pide en el formulario con las reglas de RN-CHK-01. | SPEC-19 · Req. 2 | Chatbot (reglas de formato de Ventas) |

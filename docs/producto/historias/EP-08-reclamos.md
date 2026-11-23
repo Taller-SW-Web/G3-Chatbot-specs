@@ -20,6 +20,7 @@
 - `SPEC-19 · Req. 1 · Scenario: Reclamo expresado en lenguaje natural` — `preparar_reclamo` devuelve el formulario prellenado y editable con "Enviar reclamo".
 - `SPEC-19 · Req. 1 · Scenario: Falta el pedido` — con varios pedidos se muestra `OrderList` para elegir.
 - `SPEC-19 · Req. 1 · Scenario: Descripción insuficiente` — una descripción de menos de 20 caracteres se rechaza (máximo 1000).
+- `SPEC-19 · Req. 1 · Scenario: Motivo fuera de la lista del contrato` — el formulario solo ofrece los cinco motivos de G5; un valor fuera de la lista responde `400 VALIDACION` y no se registra.
 
 **Prioridad:** Should (ver nota de la épica).
 

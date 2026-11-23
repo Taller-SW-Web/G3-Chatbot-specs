@@ -163,3 +163,10 @@ L4: son mejoras de plataforma o deuda documental fuera de las 24 capabilities.
   llamaba. La evidencia de cierre combina lectura estática y el CI reportado por el equipo.
 - **Mantenimiento:** la próxima auditoría solo es necesaria si cambia un contrato, una capability o el
   DAG; el estado de referencia es este 24/24 con fecha 2026-11-21.
+
+> [!warning] Actualización 2026-11-22 — SPEC-19 y SPEC-24
+> El cambio `alinear-postventa-g5-2026-11` alinea las specs con el contrato real de G5: cinco motivos
+> de reclamo (sin `OTRO`) y CSAT al pie del detalle, con `409`/`422` como estados informativos y
+> `clienteId` derivado del `sub`. El código mergeado en #141/#109 todavía acepta ocho motivos y monta
+> `DeliveryRating` en la lista de pedidos; por eso las filas 19 y 24 de §2 dejan de estar "Al día"
+> hasta que se mergeen los PR de backend (`mod-postventa`) y frontend (`mod-orders`/`mod-postventa`).

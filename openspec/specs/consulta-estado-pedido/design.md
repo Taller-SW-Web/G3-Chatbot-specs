@@ -6,7 +6,7 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Ventas | `GET /api/v1/pedidos/me?estado=&page=&pageSize=` con token del cliente (rol `CLIENTE`) | ✅ `api-ventas.md` §1.4b (A15) |
+| Ventas | `GET /api/v1/pedidos/me?estado=&desde=&hasta=&page=&pageSize=` con token del cliente (rol `CLIENTE`) | ✅ `api-ventas.md` §1.4b (A15) |
 | Ventas | `GET /api/v1/pedidos/{id}` (detalle, estado e historial) | ✅ §1.3, con token del cliente (A15) |
 | Despacho | `GET /api/v1/seguimientos/pedidos/{idPedido}` (SPEC-18), scope `seguimientos:leer` concedido | ✅ contrato y scope (Seguridad #31); credenciales reales pendientes (el rol `SERVICIO_INTEGRACION` no existe; A4 retirado el 03/11) |
 
@@ -28,7 +28,7 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `GET /api/v1/pedidos` · `GET /api/v1/pedidos/{id}` | Proxy hacia `/pedidos/me` y `/pedidos/{id}`; reenvía el token del cliente y Ventas filtra por `sub`. Traduce `pagina`/`tamano` del chatbot a `page`/`pageSize` de Ventas (desde 1, máx. 50). |
+| `GET /api/v1/pedidos` · `GET /api/v1/pedidos/{id}` | Proxy hacia `/pedidos/me` y `/pedidos/{id}`; reenvía el token del cliente y Ventas filtra por `sub`. Reenvía `estado`, `desde`, `hasta`, `page` y `pageSize` sin transformación; `desde`/`hasta` son fechas ISO `YYYY-MM-DD` y una fecha inválida responde `400 VALIDACION` sin llamar a Ventas. |
 | `EstadoPedidoService` | Selecciona el pedido, mapea las etiquetas, arma la línea de tiempo y enriquece con Despacho (SPEC-18). |
 | `EstadoMapper` | Tabla de `contratos-integracion.md §4`. |
 | Herramientas `listar_pedidos` (`{soloEnCurso?}`) y `consultar_pedido` (`{pedidoId? | pedidoRef?}`) | Uso desde el chat. |
@@ -36,7 +36,7 @@
 ## Desglose para issues
 
 - [x] `[INT]` Acordar con Ventas el listado por cliente y el formato del historial (A8, resuelto)
-- [ ] `[BE]` Endpoints de pedidos con el token del cliente (`/pedidos/me`) y traducción de paginación
+- [ ] `[BE]` Endpoints de pedidos con el token del cliente (`/pedidos/me`), filtros `desde`/`hasta` y paginación `page`/`pageSize`
 - [ ] `[BE]` Completar cada `OrderCard` (miniaturas y dirección resumida) con `GET /pedidos/{id}` por pedido, como recomienda Ventas, porque `/pedidos/me` solo trae `pedidoId`, `canal`, `estado`, `total`, `moneda` y `fechaCreacion`; limitar a los pedidos de la página y reutilizar el snapshot local `order_ref` si ya existe
 - [ ] `[BE]` `EstadoPedidoService` y `EstadoMapper`
 - [ ] `[BE]` Herramientas `listar_pedidos` y `consultar_pedido`

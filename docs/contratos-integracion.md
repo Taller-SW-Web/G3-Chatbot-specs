@@ -270,8 +270,9 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     - `503 SERVICIO_NO_DISPONIBLE`: falla de `POST /auth/introspeccion` en Seguridad (nunca se asume `activo: true` por defecto).
 
 #### 2.5.2 Contratos detallados de Pedidos y Seguimiento (SPEC-16, SPEC-17, SPEC-18)
-- **`GET /api/v1/pedidos?estado=&page=1&pageSize=10`** (requiere sesión `CLIENTE`):
+- **`GET /api/v1/pedidos?estado=&desde=&hasta=&page=1&pageSize=10`** (requiere sesión `CLIENTE`):
   - Reenvía el token del cliente a `GET /api/v1/pedidos/me` de Ventas (A15).
+  - `desde` y `hasta` son opcionales, fechas ISO `YYYY-MM-DD`; filtran por `fechaCreacion` y se reenvían **sin transformación** a `GET /api/v1/pedidos/me` de Ventas. `estado`, `page` y `pageSize` mantienen su contrato actual.
   - **Respuesta `200 OK`:**
     ```json
     {
@@ -291,7 +292,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
       "pageSize": 10
     }
     ```
-  - **Errores:** `400 VALIDACION`, `401 REQUIERE_SESION`, `503 MODULO_NO_DISPONIBLE` (`modulo: "sales"`).
+  - **Errores:** `400 VALIDACION` (incluye `desde` o `hasta` con formato inválido), `401 REQUIERE_SESION`, `503 MODULO_NO_DISPONIBLE` (`modulo: "sales"`).
 
 - **`GET /api/v1/pedidos/{pedidoId}`** (requiere sesión `CLIENTE`):
   - Reenvía el token del cliente a `GET /api/v1/pedidos/{pedidoId}` de Ventas (A15). Si Ventas responde `403` o `404`, el BFF responde `404 RECURSO_NO_ENCONTRADO` para no revelar la existencia de pedidos ajenos (SPEC-17 Req. 1).
@@ -371,6 +372,8 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | GET | `/reclamos` | Proxy de `GET /api/v2/reclamos/me` con el token del cliente — reclamos del cliente. |
 | GET | `/reclamos/{codigoSeguimiento}` | Proxy de `GET /api/v2/reclamos/{codigoSeguimiento}` — estado y respuesta del reclamo. |
 
+**Motivos de reclamo (contrato real de G5, 2026-11).** G5 solo acepta cinco valores y **no existe `OTRO`**: `INCUMPLIMIENTO_PLAZO_ENTREGA`, `PRODUCTO_DEFECTUOSO_O_INCORRECTO`, `COBRO_INDEBIDO_O_NO_RECONOCIDO`, `ATENCION_INADECUADA` e `INCUMPLIMIENTO_GARANTIA`. El formulario ofrece solo esos cinco; el cliente elige el más cercano y explica el caso concreto en `detalle` (20 a 1000 caracteres). Un `motivo` fuera de la lista —incluidos los alias antiguos `PRODUCTO_DEFECTUOSO`, `PRODUCTO_EQUIVOCADO`, `PEDIDO_INCOMPLETO`, `NO_RECIBIDO`, `COBRO_INCORRECTO`, `ATENCION` y `OTRO`— responde `400 VALIDACION` con `errores[{campo: "motivo", mensaje}]` y no se reenvía a Ventas. Si la petición llega **directo** a G5 saltándose el BFF, G5 responde `400 FORMATO_INVALIDO` (ver §2.10); el contrato del chatbot sigue siendo `VALIDACION`.
+
 ### 2.7 Devoluciones y reembolsos (SPEC-21, SPEC-22) ✅
 | Método | Ruta | Descripción |
 |---|---|---|
@@ -396,6 +399,8 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `LIMITE_ADJUNTOS` | 422 | Más de 3 adjuntos por mensaje o más de 10 adjuntos pendientes por conversación (SPEC-23). |
 | `DEVOLUCION_NO_ELEGIBLE` | 422 | El pedido no está `ENTREGADO`, está fuera de plazo, o falta evidencia obligatoria. |
 | `RECLAMO_DUPLICADO` | 409 | Existe un reclamo abierto para el mismo pedido y motivo y no se envió `forzar: true`; incluye el `codigoSeguimiento` y el estado existentes. |
+| `CSAT_ALREADY_SUBMITTED` | 409 | Código de Ventas propagado: ya existe una encuesta para ese pedido. El chatbot lo muestra como "Ya calificaste este pedido", no como error, y marca `order_ref.csat_sent`. |
+| `ORDER_NOT_DELIVERED` | 422 | Código de Ventas propagado: el pedido no está `ENTREGADO` y no admite CSAT. El chatbot lo muestra como "Solo puedes calificar pedidos entregados" y refresca el detalle; no es un error de red. |
 | `DEVOLUCION_DUPLICADA` | 409 | Existe una solicitud abierta para el mismo pedido, motivo y líneas y no se envió `forzar: true`; incluye el `devolucionId` y el estado existentes. |
 | `VALORACION_YA_REGISTRADA` | 409 | El pedido ya tiene una valoración de compra; no se admite una segunda. |
 | `CODIGO_VENCIDO` | 410 | El desafío OTP superó los 5 minutos o ya fue consumido (SPEC-04). |
@@ -411,7 +416,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `RECURSO_NO_ENCONTRADO` | 404 | También se usa cuando el recurso existe pero no pertenece al cliente. |
 | `MODULO_NO_DISPONIBLE` / `SERVICIO_NO_DISPONIBLE` | 503 | Falló un módulo externo; incluye `modulo`. |
 | `DEMASIADAS_SOLICITUDES` | 429 | Se superó el rate limit. |
-| `VALIDACION` | 400 | Incluye `errores[{campo, mensaje}]`. |
+| `VALIDACION` | 400 | Incluye `errores[{campo, mensaje}]`. En reclamos también se usa cuando `motivo` no es uno de los cinco valores de G5 (SPEC-19 · Requisito 1). |
 | `DATO_INVALIDO` | 400 | Específico del documento de identidad (`tipoDocumento`/`numeroDocumento`); el frontend lo evita validando antes con las reglas de `SPEC-12` · Requisito 1, pero Ventas también lo aplica del lado suyo. |
 
 ### 2.9 Retroalimentación (SPEC-24)
@@ -421,10 +426,44 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 |---|---|---|---|
 | POST | `/mensajes/{mensajeId}/reaccion` | Opcional (`CLIENTE` o `chat_sid`) | `{reaccion: "POSITIVE"\|"NEGATIVE"}`; upsert por mensaje y autor. Responde `200 {mensajeId, reaccion}`. `404 RECURSO_NO_ENCONTRADO` si el mensaje no es de la conversación; `429 DEMASIADAS_SOLICITUDES` (la UI lo ignora en silencio). |
 | POST | `/pedidos/{pedidoId}/valoracion-compra` | `CLIENTE` | `{estrellas: 1..5, comentario?}`; una por pedido. Responde `201 {valoracionId, estrellas}`. `409 VALORACION_YA_REGISTRADA`. |
-| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | Proxy a `POST /api/v2/csat` de Ventas; el chatbot no guarda una calificación propia y marca `order_ref.csat_sent` con `201`/`409`. |
+| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | Proxy a `POST /api/v2/csat` de Ventas; el chatbot no guarda una calificación propia. El cuerpo del frontend es `{puntuacion, comentario?}` y **no lleva `clienteId`**: el backend lo arma con el `sub` del token y reenvía el token del cliente a Ventas. Solo se ofrece al pie del detalle de un pedido `ENTREGADO`, no en la lista. Marca `order_ref.csat_sent` con `201` o `409`. `409 CSAT_ALREADY_SUBMITTED` se muestra como "Ya calificaste este pedido"; `422 ORDER_NOT_DELIVERED`, como "Solo puedes calificar pedidos entregados". |
 | POST | `/sugerencias` | `CLIENTE` | `multipart/form-data` con `tipo` (`SUGERENCIA`/`BUG`), `titulo`, `descripcion`, `correoContacto`, `captura?` (JPG/PNG ≤ 5 MB) e `Idempotency-Key`. Responde `201 {sugerenciaId, codigoSeguimiento}`. Errores `400 VALIDACION`, `400 ADJUNTO_INVALIDO`, `429 DEMASIADAS_SOLICITUDES`. |
 
 La captura usa el puerto `AttachmentStorage` de SPEC-23 y se guarda en `feedback_suggestion.screenshot_key`; no usa la tabla `attachment`. La notificación interna se encola por outbox (`SEND_EMAIL`) y su estado vive en `feedback_suggestion.notification_status`; un fallo no se muestra al cliente.
+
+### 2.10 Evidencia G5 2026-11
+Corrida real contra G5 el **2026-11-22**. El gateway `https://g5-api-gateway.onrender.com` no fue usable server-to-server: devolvió un challenge de Cloudflare y `429`. Por eso se usaron los servicios directos **M1** (`https://g5-servicio-ventas.onrender.com`) y **M2** (`https://g5-ventas-postventas-backend.onrender.com`). El BFF del chatbot expone esas operaciones bajo su propio prefijo `/api/v1`; la columna "Ruta BFF" indica la ruta equivalente. **La tabla EV-01..EV-05 cubre los cinco motivos de reclamo, uno por caso.**
+
+Cuentas usadas: cuenta principal (`sub be1f271e-...`, dueña de 90101/90102) y cuenta secundaria (`sub 5068e541-...`, dueña de 90201).
+
+| Servicio G5 | Base ejecutada | Operaciones de esta corrida | Ruta BFF equivalente |
+|---|---|---|---|
+| M1 | `https://g5-servicio-ventas.onrender.com` | Pedidos: listado y detalle | `/api/v1/pedidos...` |
+| M2 | `https://g5-ventas-postventas-backend.onrender.com` | Reclamos, devoluciones y CSAT | `/api/v1/reclamos...`, `/api/v1/devoluciones...`, `/api/v1/pedidos/{pedidoId}/csat` |
+
+| Caso | Operación | Endpoint ejecutado (G5) | HTTP | Hora UTC | id | Ruta BFF equivalente | Nota |
+|---|---|---|---|---|---|---|---|
+| EV-01 | Reclamo `INCUMPLIMIENTO_PLAZO_ENTREGA` | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/reclamos` | 201 | 2026-11-22T18:20:13Z | `REC-2026-0009` | `POST /api/v1/reclamos` | Motivo 1 de 5 |
+| EV-02 | Reclamo `PRODUCTO_DEFECTUOSO_O_INCORRECTO` | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/reclamos` | 201 | 2026-11-22T18:27:06Z | `REC-2026-0010` | `POST /api/v1/reclamos` | Motivo 2 de 5 |
+| EV-03 | Reclamo `COBRO_INDEBIDO_O_NO_RECONOCIDO` | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/reclamos` | 201 | 2026-11-22T18:27:06Z | `REC-2026-0011` | `POST /api/v1/reclamos` | Motivo 3 de 5 |
+| EV-04 | Reclamo `ATENCION_INADECUADA` | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/reclamos` | 201 | 2026-11-22T18:27:07Z | `REC-2026-0012` | `POST /api/v1/reclamos` | Motivo 4 de 5 |
+| EV-05 | Reclamo `INCUMPLIMIENTO_GARANTIA` | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/reclamos` | 201 | 2026-11-22T18:27:08Z | `REC-2026-0013` | `POST /api/v1/reclamos` | Motivo 5 de 5 |
+| EV-06 | CSAT de pedido `ENTREGADO`: primer envío y reintento | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/csat` | 201 / 409 `CSAT_ALREADY_SUBMITTED` | 2026-11-22T18:22:39Z (aprox.) / 18:22:41Z | `PED-2026-90201` | `POST /api/v1/pedidos/{pedidoId}/csat` | Primer envío 201; reintento inmediato 409. 90101 y 90102 ya tenían CSAT (409) antes de esta corrida |
+| EV-07 | CSAT de pedido no entregado | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/csat` | 422 `ORDER_NOT_DELIVERED` | 2026-11-22T18:23:13Z | `PED-2026-90103` | `POST /api/v1/pedidos/{pedidoId}/csat` | Pedido en estado `PAGADO` |
+
+**Controles adicionales de la misma corrida**
+
+| Control | Endpoint ejecutado (G5) | Resultado | Hora UTC | id / nota |
+|---|---|---|---|---|
+| Reclamo con `motivo: "OTRO"` | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/reclamos` | 400 `FORMATO_INVALIDO` | 2026-11-22T18:23:14Z | Sin id. G5 rechaza el motivo fuera de su enum; el BFF valida antes y expone `400 VALIDACION` (SPEC-19) |
+| Listado de pedidos `/pedidos/me` | `GET https://g5-servicio-ventas.onrender.com/api/v1/pedidos/me` | 200, 11 pedidos | No registrada | Filtros `estado`, `desde`, `hasta`, `page` y `pageSize` verificados; BFF `GET /api/v1/pedidos` |
+| Detalle de pedido propio | `GET https://g5-servicio-ventas.onrender.com/api/v1/pedidos/{id}` | 200 | No registrada | Pedido de la cuenta dueña; BFF `GET /api/v1/pedidos/{id}` |
+| Detalle de pedido ajeno | `GET https://g5-servicio-ventas.onrender.com/api/v1/pedidos/{id}` | 403 `ACCESO_DENEGADO` | No registrada | El BFF lo traduce a `404 RECURSO_NO_ENCONTRADO`, igual que un pedido inexistente, por SPEC-17 |
+| Devolución en 90201 | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/devoluciones` | 201, `DEV-2026-0028` | No registrada | `motivo: "OTRO"` + evidencia; BFF `POST /api/v1/devoluciones` |
+| Devolución en 90101/90102 | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/devoluciones` | 400 `PLAZO_VENCIDO` | No registrada | Entregados el 15/11 y el 08/11; es dato de prueba de G5, no un fallo del canal |
+| Devolución con `TALLA_INCORRECTA` directo a G5 | `POST https://g5-ventas-postventas-backend.onrender.com/api/v2/devoluciones` | 400 `FORMATO_INVALIDO` | No registrada | G5 no acepta ese literal en F3; el mapeo del adapter a `OTRO` es obligatorio (SPEC-21) |
+
+**Lectura de la evidencia.** EV-01..EV-05 confirman que G5 acepta los cinco motivos y que el canal no debe enviar `OTRO`. EV-06 confirma el `201` inicial y el `409` de reintento; EV-07 confirma el `422` cuando el pedido no está `ENTREGADO`. Los `409` de 90101/90102 (ya calificados) y los `400 PLAZO_VENCIDO` de esas mismas cuentas (entregadas el 15/11 y 08/11) son **datos de prueba de G5, no fallos de G3**; 90201 se usó para el CSAT nuevo y para la devolución `DEV-2026-0028`. El `400 FORMATO_INVALIDO` de `motivo: "OTRO"` es la respuesta directa de G5 al saltarse el BFF; el contrato del chatbot sigue siendo `400 VALIDACION` porque valida antes de reenviar.
 
 ---
 
@@ -486,9 +525,9 @@ Errores de Seguridad: RFC 7807 con `code`. Lista completa: `TOKEN_INVALIDO`, `SC
 | `POST /api/v1/pedidos` (con `Idempotency-Key`) | Crear el pedido `CREADO` con el snapshot completo (`contacto`, `items`, `cupon`, `envio`, `pago`) | F1 §1.1 |
 | `POST /api/v1/pedidos/{id}/pagos/notificacion` | Notificar el resultado del pago simulado (`APROBADO`/`RECHAZADO`); transiciona `CREADO → PAGADO` | F1 §1.2 |
 | `GET /api/v1/pedidos/{id}` | Detalle, estado e historial. Con token del cliente (rol `CLIENTE`) solo devuelve pedidos propios | F1 §1.3 |
-| `GET /api/v1/pedidos/me?estado=&page=&pageSize=` | ✅ **Cambio (12/10).** Listado de los pedidos del cliente autenticado, con **token del cliente** (rol `CLIENTE`, sin scope; identidad por `sub`, nunca `clienteId`). Paginación `page` (desde 1) y `pageSize` (1 a 50, por defecto 10); responde `{items[{pedidoId, canal, estado, total, moneda, fechaCreacion}], total, page, pageSize}`. Reemplaza al listado `GET /api/v1/pedidos?clienteId=`, que ahora es solo del Gestor | F1 §1.4b |
+| `GET /api/v1/pedidos/me?estado=&desde=&hasta=&page=&pageSize=` | ✅ **Cambio (12/10).** Listado de los pedidos del cliente autenticado, con **token del cliente** (rol `CLIENTE`, sin scope; identidad por `sub`, nunca `clienteId`). Paginación `page` (desde 1) y `pageSize` (1 a 50, por defecto 10); `desde` y `hasta` son fechas ISO `YYYY-MM-DD` opcionales que filtran por `fechaCreacion`. Responde `{items[{pedidoId, canal, estado, total, moneda, fechaCreacion}], total, page, pageSize}`. Reemplaza al listado `GET /api/v1/pedidos?clienteId=`, que ahora es solo del Gestor | F1 §1.4b |
 | `POST /api/v1/pedidos/{id}/anulaciones` `{motivo: PAGO_NO_COMPLETADO, comentario}` | Anular un pedido `CREADO` o `PAGADO` sin intervención del Gestor; responde `200` directo (no `202`, porque ese motivo no pasa por autorización) | F2 §1.7 |
-| `POST /api/v2/reclamos` | Registrar un reclamo del Libro de Reclamaciones, con plazo confirmado de **15 días hábiles** | F6 §2.6 |
+| `POST /api/v2/reclamos` | Registrar un reclamo del Libro de Reclamaciones, con plazo confirmado de **15 días hábiles**. Motivos aceptados (no existe `OTRO`): `INCUMPLIMIENTO_PLAZO_ENTREGA`, `PRODUCTO_DEFECTUOSO_O_INCORRECTO`, `COBRO_INDEBIDO_O_NO_RECONOCIDO`, `ATENCION_INADECUADA`, `INCUMPLIMIENTO_GARANTIA` | F6 §2.6 |
 | `GET /api/v2/reclamos/{codigoSeguimiento}` | ✅ **Nuevo.** Detalle y `respuestaVisibleCliente` de un reclamo | F6 §2.7 |
 | `GET /api/v2/reclamos/me?estado=&pagina=&tamano=` | ✅ **Cambio (12/10).** Listado de los reclamos del cliente autenticado, con **token del cliente** (rol `CLIENTE`, sin scope; identidad por `sub`, sin `clienteId` ni `documento`); estados reales `REGISTRADO \| EN_PROCESO \| ATENDIDO \| DERIVADO`. Reemplaza al listado por `clienteId`/`documento`, que ahora es solo del Gestor | F6 §2.10b |
 | `PATCH /api/v2/reclamos/{id}/respuesta` | Solo lo usa el Gestor; el chatbot únicamente lee el resultado a través del detalle | F6 §2.9 |
@@ -577,3 +616,4 @@ Mejoras posibles: suscribirse a `pedido entregado` de Ventas y a `usuario.desact
 | A15 | ✅ Resuelto (12/10) | Ventas | Respuestas en G3-Chatbot-specs #9: (1) `ventas:pagos:webhook` ya está concedido a `modulo-chatbot`; (2) `/pedidos/me`, `/devoluciones/me` y `/reclamos/me` se llaman con el token del cliente, sin scope, filtrando por `sub`; (3) `POST /api/v2/csat` también usa el token del cliente (`403` si el `sub` no es el dueño del pedido), con puntuación `1`/`3`/`5` y comentario libre, y se muestra en el detalle del pedido entregado; (4) A8, A9, A13 y A14 coinciden con las specs vigentes; (5) los tres detalles por identificador también piden el token del cliente, y para miniaturas y dirección del listado de pedidos conviene pedir el detalle de cada pedido. Ventas documentará el acuerdo en `integraciones/ACUERDO_G3_CHATBOT.md` cuando enlacemos este cambio. | SPEC-15, SPEC-17, SPEC-19 a 22, SPEC-24 |
 | A16 | ✅ Respondido (15/10) | Productos | Respuesta oficial en G6-Productos-Ofertas-docs #87, sobre el contrato candidato OpenAPI `0.6.0-rc.1` (estable no significa desplegado). Confirmado: las diez operaciones del chatbot más `GET /precios/skus/{sku}` (`combos` queda fuera); los siete scopes (registro y concesión pendientes en Seguridad); cuatro estados de disponibilidad (con `INDETERMINADO`) y verificación por cantidad no vinculante; umbral global de `STOCK_BAJO` con ajuste por SKU; precio y stock separados de la búsqueda; consultas por lotes de hasta 100 SKU y sin endpoint masivo de detalle; `customer_ref` = `sub` del cliente. Comprometido para una etapa posterior (P1, aún no es contrato): filtros de talla y color, orden por precio, resumen de promociones, desglose por línea, monto faltante del cupón; matriz de errores y límites (B9, B10) sin cuota numérica. Sin fecha. | SPEC-06 a SPEC-13 |
 | A17 | 🟡 Respondido por G3 (23/10) · homologación pendiente | Productos | Cierre de compatibilidad del 20/10 en G6-Productos-Ofertas-docs #87, sin reabrir A16. G3 consolidó A16 en las specs principales (archivo de `alinear-specs-con-productos`) y corrigió las referencias a cantidades. **D1 aceptado:** la verificación por cantidad envía siempre `fulfillment: {mode: ENVIO_DOMICILIO}`, sin `fulfillment_ref`, y su resultado es informativo. **D2 aceptado:** lotes incompletos, SKU ausentes o que no coinciden, estados desconocidos y payloads incompatibles son "disponibilidad no obtenida", distinta de `INDETERMINADO`, y nunca se tratan como `AGOTADO`. **D3 aceptado en principio:** la homologación se hará con `MODULES_MODE=http` (ya existe en el backend), separada de las pruebas con adaptadores falsos; el entorno donde corre lo define Mathias. Las correcciones de código se piden por issue en los repositorios de backend y frontend. Pendiente de G6: URL, versión, SHA y evidencia del entorno, y la matriz B9–B10. Pendiente de Seguridad: registro y concesión de los siete scopes y credenciales (#33, #10). | SPEC-06 a SPEC-13 |
+| A18 | ✅ Evidencia entregada (2026-11-22) | Ventas (G5) | G5 publicó el contrato definitivo de postventa: cinco motivos de reclamo (`INCUMPLIMIENTO_PLAZO_ENTREGA`, `PRODUCTO_DEFECTUOSO_O_INCORRECTO`, `COBRO_INDEBIDO_O_NO_RECONOCIDO`, `ATENCION_INADECUADA`, `INCUMPLIMIENTO_GARANTIA`), sin `OTRO`; el cliente elige el más cercano y lo detalla. La corrida real usó los servicios directos M1/M2 porque el gateway devolvió challenge de Cloudflare y `429`. EV-01..EV-05 cubren los cinco motivos (`REC-2026-0009` a `REC-2026-0013`), EV-06/07 cubren CSAT `201`/`409` y `422`, 90201 se usó para el CSAT nuevo y la devolución `DEV-2026-0028`, y 90101/90102 ya estaban calificados (409) y sus devoluciones fuera de plazo (400 `PLAZO_VENCIDO`). Esos `409` y `400 PLAZO_VENCIDO` son **datos de prueba de G5, no fallos del canal**. Detalle y rutas BFF en §2.10. | SPEC-19, SPEC-21, SPEC-24 |

@@ -20,7 +20,7 @@
 | `MessageFeedback` (en `MessageRenderer`) | Fila de 👍, 👎 y "Copiar" debajo de cada bloque de respuesta; estado optimista al tocar un ícono. |
 | `useReaction` (hook) | Envía la reacción al backend, con reintento silencioso en segundo plano si falla. |
 | `PurchaseRatingModal` | Popup "Califica tu compra" tras el pago: estrellas (1–5), comentario opcional, "Enviar calificación" (deshabilitado sin estrellas) y "Ahora no". Al guardar con éxito, el popup se reemplaza por "¡Gracias por tu calificación!". Se monta junto con `OrderConfirmation` (SPEC-15). Se guarda en el chatbot. "Ahora no" se recuerda por pedido en el navegador (LocalStorage, con `orderId` como clave): es por dispositivo por diseño y no se guarda en el backend, así que al borrar el almacenamiento o abrir otro dispositivo el popup puede volver a mostrarse. |
-| `DeliveryRatingFooter` | Bloque al pie del detalle de un pedido (`OrderDetail`), solo si el estado es `ENTREGADO` y no está calificado: "¿Qué tal fue tu pedido?", tres caritas (5, 3, 1) y "Enviar calificación" (deshabilitado sin carita). Se envía a Ventas; con `201`, el bloque se reemplaza por "¡Gracias por tu calificación!". |
+| `DeliveryRatingFooter` | Bloque al pie del detalle de un pedido (`OrderDetail`), solo si el estado es `ENTREGADO` y no está calificado: "¿Qué tal fue tu pedido?", tres caritas (5, 3, 1) y "Enviar calificación" (deshabilitado sin carita). Se envía a Ventas; con `201`, el bloque se reemplaza por "¡Gracias por tu calificación!". No se monta en la lista de pedidos (`OrderHistoryPage`); `409 CSAT_ALREADY_SUBMITTED` se muestra como "Ya calificaste este pedido" y `422 ORDER_NOT_DELIVERED` como "Solo puedes calificar pedidos entregados". |
 | `FeedbackEntryPoint` (en `AccountPage` / "Mi cuenta") | Sección "Ayúdanos a mejorar" con el botón "Enviar sugerencia / Reportar bug". |
 | `FeedbackForm` | Toggle Sugerencia/Bug, campo de título, descripción con contador (0/1000), correo prellenado desde el perfil, `AttachmentPicker` opcional (reutiliza el componente de selección de imagen de SPEC-23) y botones "Cancelar"/"Enviar". |
 | Puerto `ChatbotApiPort` (ampliado) | `enviarReaccion`, `enviarCalificacion`, `enviarSugerencia`. |
@@ -66,7 +66,7 @@ La calificación del pedido (CSAT) **no se guarda** como calificación propia: v
 - **Reacción:** cuerpo `{ "reaccion": "POSITIVE" | "NEGATIVE" }`. El upsert usa `(message_id, customer_id, anonymous_sid)`; cambiar de 👍 a 👎 actualiza la fila, no crea otra. "Copiar" no llama al backend.
 - **Sugerencia:** `multipart/form-data` con `tipo`, `titulo`, `descripcion`, `correoContacto`, `captura?` y `Idempotency-Key`. Supuesto explícito: una sola llamada multipart; si el frontend hace carga previa, se cambia a `capturaId`. La captura se sube al bucket privado con `AttachmentStorage` y se guarda solo `feedback_suggestion.screenshot_key`; no usa la tabla `attachment`.
 - **Valoración de compra:** `{ "estrellas": 1..5, "comentario?": "..." }`; una fila por `order_id` (`UNIQUE`). Un segundo envío responde `409 VALORACION_YA_REGISTRADA`.
-- **CSAT:** se reenvía a Ventas; el chatbot no guarda una calificación propia. `order_ref.csat_sent` se marca con `201` o `409 CSAT_ALREADY_SUBMITTED` cuando existe la fila; si el pedido viene de otro canal, no hay fila y se responde igual.
+- **CSAT:** se reenvía a Ventas; el chatbot no guarda una calificación propia. El cuerpo del frontend es `{ puntuacion, comentario? }` y no incluye `clienteId`; el backend lo arma con el `sub` del token. `order_ref.csat_sent` se marca con `201` o `409 CSAT_ALREADY_SUBMITTED` cuando existe la fila; si el pedido viene de otro canal, no hay fila y se responde igual. `409` se muestra como "Ya calificaste este pedido" y `422 ORDER_NOT_DELIVERED` como "Solo puedes calificar pedidos entregados", sin tratarlos como errores de red.
 - **Notificación interna:** no tiene endpoint propio; el worker de outbox procesa `SEND_EMAIL` y actualiza `feedback_suggestion.notification_status` (`PENDING` → `SENT`/`FAILED`). Un fallo no se muestra al cliente.
 
 ### Encaje en los casos de uso del núcleo
@@ -83,7 +83,7 @@ Se agrega un caso de uso ligero, `GestionarRetroalimentacionUseCase` (sin depend
 - [ ] `[BE]` Notificación interna por correo (outbox, reutilizando `EmailSender` de SPEC-16)
 - [ ] `[BE]` `RateLimiter`: 30 reacciones/min, 5 sugerencias/hora
 - [ ] `[FE]` `MessageFeedback` y `useReaction` con estado optimista
-- [ ] `[FE]` `PurchaseRatingModal` tras la confirmación del pedido y `DeliveryRatingFooter` en el detalle de un pedido `ENTREGADO`
+- [ ] `[FE]` `PurchaseRatingModal` tras la confirmación del pedido y `DeliveryRatingFooter` solo al pie del detalle de un pedido `ENTREGADO` (no en la lista), con los textos de `409`/`422` y sin `clienteId` en el cuerpo
 - [ ] `[FE]` `FeedbackEntryPoint` en "Mi cuenta" y `FeedbackForm` completo
 - [x] `[INT]` Dar seguimiento al issue abierto en `G5-Ventas-Postventas` sobre la autenticación de `POST /api/v2/csat` (pregunta abierta 1 de la spec; resuelta en el acuerdo A15)
 - [x] `[INT]` Actualizar `SPEC-16` para quitar la exclusión del CSAT de su "Fuera de alcance"

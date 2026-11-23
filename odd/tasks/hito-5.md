@@ -9,7 +9,7 @@ Presentar el Hito 5 con los cuatro entregables del curso:
 3. Evidencia de pruebas de performance.
 4. Uso de API Management y mecanismo asincrónico entre microservicios.
 
-Fecha de presentación: por confirmar.
+Fecha de presentación: 2026-11-28.
 
 ## Problema
 
@@ -147,12 +147,14 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 - Los adjuntos (SPEC-23) viven en un volumen de Railway; se pierden si el servicio se recrea, como ocurrió con la cuenta anterior.
 - El fake de Ventas pierde los pedidos con cada deploy: no conviene desplegar justo antes de la presentación.
 - El gateway agrega un salto de red y otro punto de falla delante del backend.
+- Plazo corto (6 días desde el desglose): la fase 0 (ADR del broker y del gateway) bloquea H5-M2, H5-M3, H5-G2 y H5-G3.
 
 ## Progreso
 
 - 2026-11-22: auditoría del estado para el Hito 5 y desglose de tareas. Verificado en Railway que solo Ventas está en fake. Decisión del broker: RabbitMQ en CloudAMQP. Reasignación: CI/CD y seguridad (H5-C1 a H5-C5) pasa a David; RabbitMQ (H5-M1 a H5-M4) pasa a Mathias. Pruebas de contrato (H5-I1) pasan a Sonny y ZAP (H5-C2) a Sebastian. Mathias revisa los PR abiertos al 2026-11-22 (H5-R1 a H5-R3); los autores corrigen lo que pida la revisión. Se agregan las evals del chatbot (H5-E1, Sonny) y la evaluación del frontend (H5-F1, Diego); el guion de la presentación no se trata como tarea.
+- 2026-11-22: **H5-C0 hecha**. `API_PROXY_TARGET` agregada al entorno Preview de Vercel; los previews de #112 y #113 se volvieron a desplegar y ambos PR tienen los 13 checks en verde. Los previews usan el backend de producción, porque Railway tiene un solo entorno.
 
 ## Siguiente paso
 
-1. Confirmar la fecha de presentación.
-2. Ejecutar la fase 0 (H5-C0, H5-M1 y H5-G1).
+1. Ejecutar la fase 0 (H5-C0, H5-M1 y H5-G1).
+2. Revisar los PR abiertos (H5-R1 a H5-R3).

@@ -17,6 +17,11 @@ El frontend NO DEBE (SHALL NOT) enviar `clienteId`: el backend lo arma con el `s
 - **CUANDO** el cliente no ha tocado ninguna de las tres caritas
 - **ENTONCES** el botón "Enviar calificación" permanece deshabilitado hasta que elija una carita
 
+#### Scenario: Puntuación fuera de la escala acordada
+- **DADO** el bloque de calificación visible en el detalle de un pedido
+- **CUANDO** llega una petición con `puntuacion` distinta de 1, 3 o 5 (por ejemplo, 4)
+- **ENTONCES** responde `400 VALIDACION` con `errores[{campo: "puntuacion", mensaje}]`, no se llama a Ventas y no se marca `order_ref.csat_sent`
+
 #### Scenario: El cliente lo descarta
 - **DADO** el bloque de calificación visible
 - **CUANDO** el cliente no responde y sale de la pantalla

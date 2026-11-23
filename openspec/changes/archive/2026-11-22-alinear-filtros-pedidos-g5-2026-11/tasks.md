@@ -3,7 +3,7 @@
 ## 1. Spec
 
 - [x] 1.1 `consulta-estado-pedido`: documentar `desde`/`hasta` como fechas ISO `YYYY-MM-DD` que filtran por `fechaCreacion` y se reenvían a `GET /api/v1/pedidos/me`.
-- [x] 1.2 Agregar el escenario de filtro por rango y el de fecha inválida (`400 VALIDACION`).
+- [x] 1.2 Agregar el escenario de filtro por rango, el de fecha inválida y el de rango invertido (`400 VALIDACION`).
 
 ## 2. Contratos y diseño
 

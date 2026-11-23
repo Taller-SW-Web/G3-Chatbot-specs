@@ -2,10 +2,10 @@
 
 ## Why
 
-G5 publicó los filtros opcionales `desde` y `hasta` para `GET /api/v1/pedidos/me`, y el BFF ya los
-implementa en `GET /api/v1/pedidos`. La spec vigente de `consulta-estado-pedido` solo describe el
-filtro por `estado` y la paginación, así que el contrato del canal queda incompleto para el change
-manager del backend.
+G5 publicó los filtros opcionales `desde` y `hasta` para `GET /api/v1/pedidos/me`; el contrato se
+implementa en el cambio de `mod-orders` (backend #150) y todavía no está en `main`. La spec vigente de
+`consulta-estado-pedido` solo describe el filtro por `estado` y la paginación, así que el contrato del
+canal queda incompleto para el change manager del backend.
 
 ## What Changes
 
@@ -13,7 +13,8 @@ manager del backend.
   `desde` y `hasta`, fechas ISO `YYYY-MM-DD` que filtran por `fechaCreacion`.
 - Los filtros se reenvían **sin transformación** a `GET /api/v1/pedidos/me` de Ventas; `estado`,
   `page` y `pageSize` conservan su contrato actual.
-- Una fecha inválida responde `400 VALIDACION` con `errores[{campo, mensaje}]`, sin llamar a Ventas.
+- Una fecha inválida o un rango invertido (`desde > hasta`) responde `400 VALIDACION` con
+  `errores[{campo, mensaje}]`, sin llamar a Ventas.
 - `docs/contratos-integracion.md` §2.5.2 y §3.3 reflejan los mismos parámetros.
 - El diseño de `consulta-estado-pedido` y las reglas de producto se actualizan para no dejar el
   listado descrito a medias.
@@ -24,8 +25,9 @@ manager del backend.
 
 ## Impacto
 
-- **Backend (`mod-orders`):** el endpoint ya implementa los filtros; el cambio fija el contrato y la
-  validación (`YYYY-MM-DD`, `400 VALIDACION`).
+- **Backend (`mod-orders`):** el contrato se implementa en el cambio de `mod-orders` (backend #150),
+  que agrega los filtros y la validación (`YYYY-MM-DD`, `400 VALIDACION`); no se afirma que ya estén
+  en `main`.
 - **Frontend:** no se agrega una pantalla ni un control nuevo; si la UI usa los filtros, consume el
   mismo contrato.
 - **Datos:** sin migraciones ni columnas nuevas.

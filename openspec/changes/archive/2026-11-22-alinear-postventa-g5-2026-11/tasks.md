@@ -4,7 +4,7 @@
 
 - [x] 1.1 `creacion-reclamo`: reemplazar los ocho motivos de G3 por los cinco de G5, eliminar `OTRO` y los alias, y exigir detalle (mín. 20) para el motivo más cercano.
 - [x] 1.2 `creacion-reclamo`: actualizar los ejemplos de payload y duplicados a los nuevos motivos y agregar el escenario de motivo inválido (`400 VALIDACION`).
-- [x] 1.3 `retroalimentacion-cliente`: explicitar el bloque al pie del detalle, los textos de `409`/`422` y el `clienteId` derivado del `sub`.
+- [x] 1.3 `retroalimentacion-cliente`: explicitar el bloque al pie del detalle, los textos de `409`/`422`/`400` y el `clienteId` derivado del `sub`.
 - [x] 1.4 Validar con `npx @fission-ai/openspec validate --specs` (sin `--strict`).
 
 ## 2. Contratos y documentos
@@ -13,7 +13,7 @@
 - [x] 2.2 `docs/contratos-integracion.md` §2.8: códigos `CSAT_ALREADY_SUBMITTED` y `ORDER_NOT_DELIVERED` con su significado en la UI.
 - [x] 2.3 `docs/contratos-integracion.md` §2.9: CSAT al pie del detalle, `clienteId` del backend, `409`/`422` como estados informativos.
 - [x] 2.4 `docs/contratos-integracion.md` §3.3 y §6: referencia al enum de reclamos y acuerdo A18.
-- [x] 2.5 `docs/contratos-integracion.md`: plantilla "Evidencia G5 2026-11" con siete casos (hora UTC, endpoint, HTTP, id).
+- [x] 2.5 `docs/contratos-integracion.md`: evidencia G5 2026-11 completada con los siete casos reales (hora UTC, endpoint, HTTP, id).
 - [x] 2.6 `docs/producto/reglas-negocio.md`: RN-RCL-02 con los cinco motivos; ajustar RN-CNV-38/39 si hace falta.
 - [x] 2.7 `docs/producto/historias/EP-08-reclamos.md`, `EP-02-conversacion.md`, `docs/propuestas-ux.md`, `docs/conversacion/intenciones.md` y `dialogos-ejemplo.md`: quitar referencias a motivos que G5 no reconoce y alinear el texto de `422`.
 

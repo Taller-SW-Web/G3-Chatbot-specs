@@ -460,6 +460,7 @@
 **Criterios de aceptación**
 - `SPEC-24 · Req. 2 · Scenario: Calificación enviada` — al elegir una carita y pulsar "Enviar calificación" el frontend llama a `POST /api/v1/pedidos/{pedidoId}/csat` sin `clienteId`; el backend lo arma con el `sub` y reenvía a `POST /api/v2/csat` con `canal: "CHATBOT"`; con `201`, el bloque se reemplaza por "¡Gracias por tu calificación!".
 - `SPEC-24 · Req. 2 · Scenario: Sin carita seleccionada` — sin una carita elegida, "Enviar calificación" sigue deshabilitado.
+- `SPEC-24 · Req. 2 · Scenario: Puntuación fuera de la escala acordada` — un valor distinto de 1/3/5 responde `400 VALIDACION` antes de llamar a Ventas.
 - `SPEC-24 · Req. 2 · Scenario: El cliente lo descarta` — si sale sin responder, no se envía nada y el bloque vuelve a aparecer al reabrir el pedido.
 - `SPEC-24 · Req. 2 · Scenario: Encuesta ya registrada para ese pedido` — un `409 CSAT_ALREADY_SUBMITTED` muestra "Ya calificaste este pedido", sin error, y marca `order_ref.csat_sent`.
 - `SPEC-24 · Req. 2 · Scenario: Ventas no disponible al calificar` — se informa que no se pudo enviar, el bloque se conserva para reintentar y el detalle sigue usable.

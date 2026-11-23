@@ -20,9 +20,9 @@
    muestra como "Ya calificaste este pedido" y `422 ORDER_NOT_DELIVERED` como "Solo puedes calificar
    pedidos entregados"; ninguno se presenta como fallo de red. En ambos casos se refresca el detalle
    para reflejar el estado vigente.
-6. **La evidencia no se inventa.** La tabla "Evidencia G5 2026-11" queda como plantilla con siete
-   casos y columnas de hora UTC, endpoint, HTTP e id. Se completa solo con capturas y respuestas
-   reales del backend.
+6. **La evidencia se completó con la corrida real.** La tabla "Evidencia G5 2026-11" reúne los siete
+   casos de la corrida del 2026-11-22 con hora UTC, endpoint, HTTP e id reales; el detalle está en
+   `docs/contratos-integracion.md` §2.10. No se inventan resultados.
 
 ## Flujo de reclamo
 

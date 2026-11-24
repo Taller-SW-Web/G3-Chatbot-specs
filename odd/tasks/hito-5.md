@@ -22,7 +22,7 @@ Estado verificado el 2026-11-22 contra `development` (backend `1c9c333`, fronten
 | Pruebas de performance | No existen: sin SLO, sin scripts, sin workflow ni reporte |
 | API Management | No hay gateway. Solo prefijo `/api/v1`, rate limiter en memoria, exportación de OpenAPI y el proxy de Next.js |
 | Mecanismo asíncrono | Outbox transaccional con worker (ADR-0011: `NOTIFY_SALES_PAYMENT`, `REQUEST_CANCELLATION`, `SEND_EMAIL`) dentro del mismo proceso. ADR-0010 declara "sin eventos y sin broker" |
-| Producción (Railway) | Un solo entorno (`production`) y un servicio. `SALES_MODE=fake`; `SECURITY_MODE`, `PRODUCTS_MODE`, `DISPATCH_MODE` y `MODULES_MODE` en `http`; `OUTBOX_WORKER_ENABLED=true`; `ATTACHMENT_STORAGE=local` sobre un volumen de Railway |
+| Producción (Railway) | Un solo entorno (`production`) y un servicio. Todos los módulos en `http` (`SALES_MODE`, `SECURITY_MODE`, `PRODUCTS_MODE`, `DISPATCH_MODE` y `MODULES_MODE`; verificado el 2026-11-24, sin fakes desplegados); `OUTBOX_WORKER_ENABLED=true`; `ATTACHMENT_STORAGE=local` sobre un volumen de Railway |
 | PRs abiertos | Backend #149 y #150, frontend #112 y #113 (SPEC-17, 19, 20 y 24), specs #36 y #30. Los PR #112 y #113 fallan solo en el preview de Vercel por falta de `API_PROXY_TARGET` en el entorno Preview |
 
 ## Alcance
@@ -34,11 +34,13 @@ Estado verificado el 2026-11-22 contra `development` (backend `1c9c333`, fronten
 - RabbitMQ en CloudAMQP (plan gratuito) como mecanismo asíncrono entre procesos, alimentado por el outbox.
 - Cierre de los PR abiertos de SPEC-17, 19, 20 y 24.
 
-Fuera de alcance: integración real con Ventas G5 (sigue `SALES_MODE=fake`), lote 2 de `audit-2026-11-fixes.md`, migración de adjuntos a Supabase Storage.
+Fuera de alcance: lote 2 de `audit-2026-11-fixes.md`, migración de adjuntos a Supabase Storage.
 
 ## Decisiones
 
 - 2026-11-22: **RabbitMQ en CloudAMQP (plan Little Lemur)** para el entregable 4. El enunciado pide "uso de" un mecanismo asincrónico "entre microservicios"; el outbox solo es un proceso interno. Se mantiene el outbox: su worker publica en RabbitMQ y un consumidor que corre como proceso separado procesa los eventos. Límites del plan: 1 M de mensajes al mes, 20 conexiones, 100 colas, 10 000 mensajes en cola y borrado de colas inactivas a los 28 días.
+
+- 2026-11-24: **Los cuatro tipos de tarea del outbox pasan por el broker** (`NOTIFY_SALES_PAYMENT`, `REQUEST_CANCELLATION`, `SEND_EMAIL` y `SEND_FEEDBACK_EMAIL`), porque producción ya tiene todos los módulos en `http` y un consumidor aparte puede llamar a Ventas. Se registra en [ADR-0030](../../docs/arquitectura/adr/ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md). ADR-0010 queda **modificado, no reemplazado**: la integración con los módulos externos sigue siendo REST síncrona. Sin cambio de esquema del outbox; interruptor de reversa `OUTBOX_DISPATCH_MODE=broker|direct`.
 
 ## Restricciones
 
@@ -59,7 +61,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 | ID | Responsable | Repositorio | Prioridad | Tarea |
 |---|---|---|---|---|
 | H5-C0 | @Taller-SW-Web/chatbot | frontend | 🔴 | Agregar `API_PROXY_TARGET` al entorno Preview de Vercel para desbloquear el preview de #112 y #113 |
-| H5-M1 | @Taller-SW-Web/chatbot | specs | 🔴 | ADR nuevo del broker (RabbitMQ en CloudAMQP, eventos, colas, reintentos y DLQ) que reemplaza a ADR-0010; actualizar ADR-0011 |
+| H5-M1 | @Taller-SW-Web/chatbot | specs | 🔴 | ADR nuevo del broker (RabbitMQ en CloudAMQP, eventos, colas, reintentos y DLQ) que modifica a ADR-0010 (no lo reemplaza); actualizar ADR-0011. Redactada el 2026-11-24 como ADR-0030 |
 | H5-G1 | @Taller-SW-Web/chatbot | specs | 🔴 | ADR de API Management: elección del gateway, despliegue, rutas, rate limit, autenticación y publicación de OpenAPI |
 
 ### Fase 1: en paralelo
@@ -145,7 +147,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 - CloudAMQP es un servicio externo más que puede fallar en la presentación. Mitigación: el outbox retiene los eventos.
 - Una corrida de carga contra CloudAMQP agota la cuota mensual. Mitigación: performance solo contra RabbitMQ local.
 - Los adjuntos (SPEC-23) viven en un volumen de Railway; se pierden si el servicio se recrea, como ocurrió con la cuenta anterior.
-- El fake de Ventas pierde los pedidos con cada deploy: no conviene desplegar justo antes de la presentación.
+- No conviene desplegar justo antes de la presentación (un deploy reinicia el worker y el consumidor).
 - El gateway agrega un salto de red y otro punto de falla delante del backend.
 - Plazo corto (6 días desde el desglose): la fase 0 (ADR del broker y del gateway) bloquea H5-M2, H5-M3, H5-G2 y H5-G3.
 
@@ -154,7 +156,10 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 - 2026-11-22: auditoría del estado para el Hito 5 y desglose de tareas. Verificado en Railway que solo Ventas está en fake. Decisión del broker: RabbitMQ en CloudAMQP. Reasignación dentro del equipo: CI/CD y seguridad (H5-C1 a H5-C5), RabbitMQ (H5-M1 a H5-M4), pruebas de contrato (H5-I1) y ZAP (H5-C2). El equipo revisa los PR abiertos al 2026-11-22 (H5-R1 a H5-R3); los autores corrigen lo que pida la revisión. Se agregan las evals del chatbot (H5-E1) y la evaluación del frontend (H5-F1); el guion de la presentación no se trata como tarea.
 - 2026-11-22: **H5-C0 hecha**. `API_PROXY_TARGET` agregada al entorno Preview de Vercel; los previews de #112 y #113 se volvieron a desplegar y ambos PR tienen los 13 checks en verde. Los previews usan el backend de producción, porque Railway tiene un solo entorno.
 
+- 2026-11-24: **H5-M1 redactada** (ADR-0030 nuevo; ADR-0010 y ADR-0011 actualizados con una sección de actualización; índice de ADR y nota en `c4.md`). Commit pendiente de confirmación del usuario. **H5-R1, H5-R2 y H5-R3 hechas**: backend #149 y #150 y frontend #112 y #113 mergeados; specs #36 mergeado y #30 cerrado.
+
 ## Siguiente paso
 
-1. Ejecutar la fase 0 (H5-C0, H5-M1 y H5-G1).
-2. Revisar los PR abiertos (H5-R1 a H5-R3).
+1. H5-G1: ADR de API Management.
+2. H5-M2: cuenta de CloudAMQP, `RABBITMQ_URL` en Railway y relay en el worker.
+3. H5-M3: consumidor como proceso separado, con healthcheck y prueba de integración contra RabbitMQ en CI.

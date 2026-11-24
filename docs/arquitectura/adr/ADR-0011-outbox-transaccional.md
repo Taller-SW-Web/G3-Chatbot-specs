@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada
+Aceptada; modificada por [ADR-0030](ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md) (ver [Actualización](#actualización-2026-11-24-el-worker-pasa-a-ser-relay-hacia-rabbitmq))
 
 ## Fecha
 
@@ -31,7 +31,7 @@ Aceptada
 | Alternativa | Por qué se descartó |
 |---|---|
 | Llamar a Ventas y al SMTP en línea dentro de la petición de pago (*alternativa estándar, no documentada*) | Un fallo o timeout de Ventas perdería la notificación de un pago ya aprobado y bloquearía la respuesta al cliente |
-| Broker de mensajería (RabbitMQ) | En esta versión no se usan eventos ([ADR-0010](ADR-0010-integracion-sincrona-por-api-sin-eventos.md)) |
+| Broker de mensajería (RabbitMQ) | En esta versión no se usan eventos ([ADR-0010](ADR-0010-integracion-sincrona-por-api-sin-eventos.md)). **Ya no vigente:** el 2026-11-24 se adopta RabbitMQ en CloudAMQP, alimentado por este mismo outbox ([ADR-0030](ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md)) |
 
 ## Consecuencias
 
@@ -44,6 +44,17 @@ Aceptada
 - Las tareas `FAILED` requieren revisión manual.
 - No hay plazo de retención definido para `outbox.payload` (`privacidad.md` §2).
 - No está decidido si el worker corre como proceso aparte o dentro de la API ([C4, preguntas abiertas](../c4.md#preguntas-abiertas)).
+
+## Actualización 2026-11-24: el worker pasa a ser relay hacia RabbitMQ
+
+El outbox **se mantiene**: las tareas se siguen escribiendo en la misma transacción que el cambio de estado local, con los mismos cuatro tipos (`NOTIFY_SALES_PAYMENT`, `REQUEST_CANCELLATION`, `SEND_EMAIL` y `SEND_FEEDBACK_EMAIL`, que se agregó después del registro original). Lo que cambia, según [ADR-0030](ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md) y con `OUTBOX_DISPATCH_MODE=broker`:
+
+- El worker pasa a ser un **relay**: publica cada tarea pendiente en RabbitMQ con confirmaciones del publicador y mensajes persistentes, y solo marca la fila `PROCESSED` tras la confirmación del broker. Con el broker caído las filas quedan `PENDING` y se reintenta la publicación con backoff, sin incrementar `attempts`.
+- El **backoff de 5 intentos** (5 s, 15 s, 45 s, 2 min, 5 min) y la **clasificación** no reintentable (`400`, `409`) o reintentable (cualquier otro error, incluidos `5xx`, `429` y *timeout*) se mueven al **consumidor**, que los aplica con colas de espera con TTL. Agotados los intentos, o ante un error no reintentable, la fila queda `FAILED` y el mensaje va a la DLQ para revisión manual. El correo conserva su propia política de reintentos (1, 5 y 15 min, SPEC-16).
+- La **idempotencia** de la entrega no cambia: `transaccionId` para el pago y `(order_id, resend_number)` para el correo.
+- Con `OUTBOX_DISPATCH_MODE=direct` rige el comportamiento descrito arriba (el worker llama a Ventas y al SMTP); es el valor por omisión y el interruptor de reversa.
+- **Pregunta abierta resuelta:** el consumidor corre como **proceso aparte**; el relay permanece donde corre hoy el worker, en el *lifespan* de la API (`OUTBOX_WORKER_ENABLED`). Hoy ese worker es un bucle `asyncio` y no APScheduler, y producción tiene un único servicio; `SKIP LOCKED` permite más de una instancia sin duplicar publicaciones.
+- Sin cambio de esquema: en modo `broker`, `PROCESSED` significa "publicada y confirmada por el broker".
 
 ## Referencias
 

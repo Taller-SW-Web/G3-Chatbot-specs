@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada
+Aceptada; modificada por [ADR-0030](ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md) (ver [Actualización](#actualización-2026-11-24-broker-propio-del-chatbot))
 
 ## Fecha
 
@@ -38,6 +38,15 @@ Aceptada
 **Negativas y riesgos aceptados**
 - La disponibilidad y la latencia del canal dependen de las de cada módulo; se acotan con timeouts por integración (Seguridad 3–5 s, Productos 3–4 s, Despacho 4 s, Ventas 5 s) y degradación controlada (p. ej. SPEC-18 · Req. 4 muestra el estado de Ventas si Despacho no responde).
 - Sin eventos no hay avisos proactivos: el cliente se entera de un cambio solo cuando consulta (los correos posteriores están fuera de alcance, SPEC-16).
+
+## Actualización 2026-11-24: broker propio del chatbot
+
+La integración **sigue siendo REST síncrona** con los módulos externos G2, G5, G6 y G7; esta decisión no se reemplaza. Lo que cambia es el alcance de la regla "no publica eventos":
+
+- Ahora aplica **solo a los módulos externos**: el chatbot no publica ni consume eventos de G2, G5, G6 ni G7, y no usa el bus `seguridad.usuarios` de Seguridad.
+- **Internamente** el chatbot publica las tareas de su outbox en su propio RabbitMQ (CloudAMQP) y las consume en un proceso aparte, según [ADR-0030](ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md).
+- Las llamadas a Ventas (notificación de pago, anulación) siguen siendo REST con el token de servicio; ahora las hace el consumidor y no el worker del API. Los reintentos pasan de `next_attempt_at` a colas de espera del broker ([ADR-0011](ADR-0011-outbox-transaccional.md#actualización-2026-11-24-el-worker-pasa-a-ser-relay-hacia-rabbitmq)).
+- Las consecuencias sobre "no hace falta infraestructura de mensajería" ya no se cumplen para el chatbot: hay un broker externo, con su riesgo y su cuota (ver ADR-0030).
 
 ## Referencias
 

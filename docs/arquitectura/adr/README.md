@@ -23,8 +23,8 @@ Reglas:
 | [ADR-0007](ADR-0007-rest-para-acciones-y-websocket-para-streaming.md) | REST para acciones y WebSocket solo para el streaming, con *fallback* y modo degradado | Reemplazada por ADR-0021 | 2026-09-24 |
 | [ADR-0008](ADR-0008-access-token-en-localstorage-y-refresh-en-cookie.md) | Access token en LocalStorage y refresh token en cookie `httpOnly` | Aceptada | 2026-09-24 |
 | [ADR-0009](ADR-0009-token-de-servicio-con-servicetokenprovider.md) | Token de servicio `client_credentials` con `ServiceTokenProvider` desde el Hito 4 | Aceptada | 2026-09-24 |
-| [ADR-0010](ADR-0010-integracion-sincrona-por-api-sin-eventos.md) | Integración síncrona por API, sin consumo ni publicación de eventos | Aceptada | 2026-09-24 |
-| [ADR-0011](ADR-0011-outbox-transaccional.md) | Outbox transaccional para notificaciones a Ventas y correos | Aceptada | 2026-09-24 |
+| [ADR-0010](ADR-0010-integracion-sincrona-por-api-sin-eventos.md) | Integración síncrona por API, sin consumo ni publicación de eventos | Aceptada; modificada por ADR-0030 | 2026-09-24 |
+| [ADR-0011](ADR-0011-outbox-transaccional.md) | Outbox transaccional para notificaciones a Ventas y correos | Aceptada; modificada por ADR-0030 | 2026-09-24 |
 | [ADR-0012](ADR-0012-claves-de-idempotencia.md) | `Idempotency-Key` en toda operación que crea algo en otro módulo o mueve dinero | Aceptada | 2026-09-24 |
 | [ADR-0013](ADR-0013-solo-referencias-locales-a-agregados-externos.md) | Solo referencias locales a agregados de otros módulos | Aceptada | 2026-09-24 |
 | [ADR-0014](ADR-0014-pago-simulado-detras-de-paymentgateway.md) | Pago simulado con tarjeta detrás de `PaymentGateway` | Aceptada | 2026-09-24 |
@@ -43,5 +43,6 @@ Reglas:
 | [ADR-0027](ADR-0027-duplicados-de-postventa-y-forzar.md) | Duplicados de postventa con 409 y confirmación explícita (`forzar`) | Aceptada | 2026-11-21 |
 | [ADR-0028](ADR-0028-adjuntos-almacenamiento-externo-privado.md) | Adjuntos del chat con almacenamiento externo privado, no disco local | Aceptada | 2026-11-21 |
 | [ADR-0029](ADR-0029-modelo-de-datos-de-retroalimentacion.md) | Modelo de datos de retroalimentación: tablas propias y CSAT en Ventas | Aceptada | 2026-11-21 |
+| [ADR-0030](ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md) | RabbitMQ en CloudAMQP como mecanismo asíncrono del outbox, con consumidor en un proceso aparte | Aceptada | 2026-11-24 |
 
 Las vistas que estas decisiones explican están en el [modelo C4](../c4.md).

@@ -6,7 +6,7 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Seguridad | `GET /auth/me` → `celular` (solo para saber qué número está vigente hoy) | ✅ |
+| Seguridad | `GET /auth/me` → `correo` (contacto verificado por defecto) y `celular` (opcional, para saber qué número está vigente hoy) | ✅ |
 | Seguridad | Mecanismo de validación de celular por canal | ✅ **Decidido fuera de alcance del ciclo** (acuerdo A2, acta de integración 23/09) — no se vuelve a asumir como pendiente; se reevalúa en Hito 4 solo si se abre un issue nuevo con un caso concreto |
 | Propio | `POST /contacto/celular/solicitar-otp` y `POST /contacto/celular/verificar-otp` | ✅ Implementado (D1, 2026-11-21; backend #141 · `b75fbea6`, frontend #109 · `7432d463`) |
 
@@ -23,9 +23,9 @@
 | Componente | Responsabilidad |
 |---|---|
 | `POST /api/v1/contacto/celular/solicitar-otp` | Exige sesión `CLIENTE`; lee el celular vigente de `GET /auth/me`, genera un desafío y lo envía por `SmsSender`. No acepta un celular arbitrario en el cuerpo. |
-| `POST /api/v1/contacto/celular/verificar-otp` | Valida el código contra el hash del desafío vigente, marca el desafío como consumido y guarda `local_phone_verification`; ejecuta la `accionPendiente`. |
+| `POST /api/v1/contacto/celular/verificar-otp` | Valida el código contra el hash del desafío vigente, marca el desafío como consumido y guarda `local_phone_verification`; ejecuta la `accionPendiente` si existe. |
 | `SmsSender` (interfaz) + `SimulatedSmsSender` | Adaptador propio, reemplazable. El código solo se expone con `MODO_QA=true` y nunca en producción. |
-| `CheckoutGuard.exigir_celular_verificado()` | Compara el `celular` vigente en `GET /auth/me` contra `local_phone_verification.phone` del cliente; exige coincidencia exacta. Si `REQUIRE_PHONE_VERIFICATION=false`, no bloquea. |
+| `CheckoutGuard` | Con la precedencia de flags del RNF: `REQUIRE_PHONE_VERIFICATION=true` exige solo el celular verificado localmente (`403 CELULAR_NO_VERIFICADO`); si no, `REQUIRE_VERIFIED_CONTACT=true` acepta el correo del perfil o una verificación local vigente del celular y, si no hay ninguno, responde `403 CONTACTO_NO_VERIFICADO`; con ambos flags en `false` no bloquea. En el modo por defecto el correo del perfil es el contacto verificado y el snapshot usa ese correo, no el `email` del cliente. |
 | Herramienta LLM `verificar_celular` | Devuelve el estado o el bloque de formulario; no recibe ni devuelve el código. |
 | Tabla `phone_otp_challenge` | Desafío OTP vigente: `customer_id`, `phone`, `code_hash` (HMAC-SHA256 con `PHONE_OTP_SECRET`), `expires_at`, `attempts`, `consumed_at`, `created_at` (ver `modelo-datos.md`). |
 | Tabla `local_phone_verification` | Verificación exitosa, solo inserción: `{customer_id, phone, verified_at}`. No guarda el código ni los intentos. |
@@ -49,8 +49,9 @@
 | `CODIGO_VENCIDO` | 410 | El desafío superó los 5 minutos o ya fue consumido. |
 | `LIMITE_REENVIOS` | 429 | Se superaron los 3 envíos en 15 minutos; incluye `reintentarEn` y `Retry-After`. |
 | `CELULAR_NO_DISPONIBLE` | 409 | El perfil no tiene un celular válido que verificar (supuesto explícito; si el equipo prefiere `422`, se ajusta en el PR). |
-| `SERVICIO_NO_DISPONIBLE` | 503 | Seguridad no responde al leer el celular vigente; el checkout queda bloqueado, no se omite la verificación. |
-| `CELULAR_NO_VERIFICADO` | 403 | `POST /checkout` con `REQUIRE_PHONE_VERIFICATION=true` y sin verificación vigente para el número actual. |
+| `SERVICIO_NO_DISPONIBLE` | 503 | Seguridad no responde al leer el perfil; el checkout queda bloqueado (`403 CONTACTO_NO_VERIFICADO` con `motivo: SEGURIDAD_NO_DISPONIBLE`), no se omite el guard. |
+| `CONTACTO_NO_VERIFICADO` | 403 | `POST /checkout` sin un contacto verificado en el modo por defecto (`REQUIRE_VERIFIED_CONTACT=true` y `REQUIRE_PHONE_VERIFICATION=false`). Incluye `motivo` (`SIN_SESION`, `SEGURIDAD_NO_DISPONIBLE`, `SIN_CONTACTO_VERIFICADO`) y `celularEnmascarado` opcional. |
+| `CELULAR_NO_VERIFICADO` | 403 | Modo legado: `POST /checkout` con `REQUIRE_PHONE_VERIFICATION=true` y sin verificación vigente para el número actual. |
 
 ### Reglas de vigencia y límites
 
@@ -58,14 +59,14 @@
 - La comparación con `local_phone_verification` es por valor exacto del celular (`+51` + 9 dígitos). Si el perfil cambia de número, la verificación anterior no aplica.
 - El código se guarda como HMAC-SHA256 con `PHONE_OTP_SECRET`; el hash no se devuelve, no se loguea y no se envía al LLM.
 - Los intentos se reinician con cada desafío nuevo. El límite de reenvíos se calcula contando los desafíos creados para el cliente en los últimos 15 minutos (`created_at`), no con un contador aparte. La ventana es **deslizante** (ADR-0026, punto 3; spec, Requisito 2): solo cuentan los envíos de los últimos 15 minutos contados hacia atrás desde la solicitud, no desde el primer envío. Un cliente que envió en t=0, t=10 y t=16 min puede enviar en t=16, porque el de t=0 ya salió de la ventana. `reintentarEn` indica cuándo sale de la ventana el envío más antiguo (`BE/src/modules/mod_auth/application/manage_phone_verification_use_case.py:101-108`). *Alineación 2026-11-21: este párrafo describía una ventana fija desde el primer envío, que contradecía al ADR, la spec y el código.*
-- La bandera `REQUIRE_PHONE_VERIFICATION` se lee al arranque. Supuesto explícito: por defecto `true` en producción; `false` solo para pruebas/demos.
+- Las banderas se leen al arranque, con esta precedencia: `REQUIRE_PHONE_VERIFICATION=true` (modo legado, solo celular) → si no, `REQUIRE_VERIFIED_CONTACT=true` (correo del perfil o celular verificado) → ambos `false` (sin guard). Supuesto explícito: en producción `REQUIRE_VERIFIED_CONTACT=true` y `REQUIRE_PHONE_VERIFICATION=false`; ambos `false` solo para pruebas/demos.
 
 ## Desglose para issues
 
 - [ ] `[BE]` Tabla `phone_otp_challenge` y migración; `local_phone_verification` se mantiene solo para verificaciones exitosas
 - [ ] `[BE]` `SmsSender` (interfaz) y `SimulatedSmsSender` con `MODO_QA`
 - [ ] `[BE]` Endpoints `contacto/celular/solicitar-otp` y `/verificar-otp`, totalmente propios
-- [ ] `[BE]` `CheckoutGuard` comparando el celular vigente contra la verificación local, con la bandera `REQUIRE_PHONE_VERIFICATION`
+- [ ] `[BE]` `CheckoutGuard` con correo verificado por defecto, celular opcional y la precedencia `REQUIRE_PHONE_VERIFICATION` / `REQUIRE_VERIFIED_CONTACT`
 - [ ] `[BE]` Herramienta `verificar_celular`
 - [ ] `[FE]` Bloque `FORMULARIO/OTP_CELULAR` reutilizando `OtpInput`
 - [ ] `[QA]` Pruebas de todos los escenarios, incluido el cambio de celular que invalida la verificación previa, el reenvío, el código consumido y la bandera desactivada

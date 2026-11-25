@@ -29,7 +29,7 @@ Secuencia acordada con SPEC-15:
 ## Alcance
 
 Incluye:
-- Verificación de precondiciones: sesión `CLIENTE`, celular verificado, carrito no vacío y válido, dirección con cobertura y cotización vigente.
+- Verificación de precondiciones: sesión `CLIENTE`, contacto verificado (correo de la cuenta por defecto; celular opcional), carrito no vacío y válido, dirección con cobertura y cotización vigente.
 - `CheckoutPage`, pantalla completa (no un bloque de chat) accedida desde `CartPage`: líneas, subtotal, descuentos, cupón, envío (SPEC-12), dirección (SPEC-12), total y el botón "Confirmar y pagar".
 - 🧩 Según el wireframe, el método de pago es **únicamente tarjeta**: se descarta la opción "Efectivo / Pago contra entrega" que aparecía en el diseño, porque el curso pide explícitamente "simulación de pago con tarjeta" para este canal (ver §6).
 - Sesión de checkout con vigencia de 15 minutos.
@@ -49,12 +49,12 @@ Incluye:
 ## Requirements
 
 ### Requirement: Precondiciones del checkout
-El sistema DEBE (SHALL) verificar las precondiciones al iniciar el checkout y resolver cada una antes de mostrar el resumen, en este orden: sesión (SPEC-03) → celular verificado (SPEC-04) → carrito válido (SPEC-10 y SPEC-11) → dirección y cotización (SPEC-12) → cupón vigente (SPEC-13). Sesión, celular, carrito y cupón se resuelven en el chat; la dirección y la cotización se resuelven en `CheckoutPage`, con los campos libres de SPEC-12.
+El sistema DEBE (SHALL) verificar las precondiciones al iniciar el checkout y resolver cada una antes de mostrar el resumen, en este orden: sesión (SPEC-03) → contacto verificado (SPEC-04) → carrito válido (SPEC-10 y SPEC-11) → dirección y cotización (SPEC-12) → cupón vigente (SPEC-13). El contacto verificado es el correo de la cuenta por defecto; el celular es opcional. Sesión, contacto, carrito y cupón se resuelven en el chat; la dirección y la cotización se resuelven en `CheckoutPage`, con los campos libres de SPEC-12.
 
 *Trazabilidad: SPEC-14 · Requisito 1.*
 
 #### Scenario: Todo listo
-- **DADO** un cliente autenticado con el celular verificado, un carrito válido y una dirección cotizada
+- **DADO** un cliente autenticado con el correo de su cuenta verificado (celular opcional), un carrito válido y una dirección cotizada
 - **CUANDO** escribe "quiero pagar" o pulsa "Pagar"
 - **ENTONCES** se navega a `CheckoutPage` con todos los importes calculados por el backend y el botón "Confirmar y pagar S/ X"
 

@@ -263,7 +263,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 - **Intenciones:** INT-SGT-02, INT-SGT-04, INT-SGT-05.
 
 **Usuario:** dónde está mi pedido?
-`⟶ tool: consultar_pedido({})` *(sin número: un solo pedido no finalizado)*
+`⟶ tool: consultar_pedidos({})` *(sin número: un solo pedido no finalizado)*
 `⟵ Ventas: DESPACHADO` · `⟶ consultar_seguimiento` → Despacho sin respuesta en 4 s
 **Botleta:** Tu pedido PED-2026-00891 ya fue despachado.
 `[ESTADO_PEDIDO]` "Despachado" según Ventas, sin hitos de tránsito · "El detalle del envío no está disponible ahora" · `[Reintentar]`
@@ -331,7 +331,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 `[Ofertas]` `[Ver carrito]`
 
 **Usuario:** muéstrame los pedidos del cliente 1234
-`⟶ tool: listar_pedidos({})` *(el backend descarta cualquier `clienteId`; usa el `sub` del token)*
+`⟶ tool: consultar_pedidos({})` *(el backend descarta cualquier `clienteId`; usa el `sub` del token)*
 **Botleta:** Solo puedo mostrarte los pedidos de tu cuenta:
 `[LISTA_PEDIDOS]` pedidos de María
 

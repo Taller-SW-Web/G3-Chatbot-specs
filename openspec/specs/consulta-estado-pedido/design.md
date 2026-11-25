@@ -32,7 +32,7 @@
 | `GET /api/v1/pedidos` · `GET /api/v1/pedidos/{id}` | Proxy hacia `/pedidos/me` y `/pedidos/{id}`; reenvía el token del cliente y Ventas filtra por `sub`. Reenvía `estado`, `desde`, `hasta`, `page` y `pageSize` sin transformación; `desde`/`hasta` son fechas ISO `YYYY-MM-DD` y una fecha inválida o un rango invertido (`desde > hasta`) responde `400 VALIDACION` sin llamar a Ventas. |
 | `EstadoPedidoService` | Selecciona el pedido, mapea las etiquetas, arma la línea de tiempo y enriquece con Despacho (SPEC-18). |
 | `EstadoMapper` | Tabla de `contratos-integracion.md §4`. |
-| Herramientas `listar_pedidos` (`{soloEnCurso?}`) y `consultar_pedido` (`{pedidoId? | pedidoRef?}`) | Uso desde el chat. |
+| Herramienta `consultar_pedidos` (`{pedidoId?, estado?}`) | Uso desde el chat: sin `pedidoId` lista o muestra el pedido en curso; con `pedidoId`, el detalle. |
 
 ## Desglose para issues
 
@@ -40,7 +40,7 @@
 - [ ] `[BE]` Endpoints de pedidos con el token del cliente (`/pedidos/me`), filtros `desde`/`hasta` y paginación `page`/`pageSize`
 - [ ] `[BE]` Completar cada `OrderCard` (miniaturas y dirección resumida) con `GET /pedidos/{id}` por pedido, como recomienda Ventas, porque `/pedidos/me` solo trae `pedidoId`, `canal`, `estado`, `total`, `moneda` y `fechaCreacion`; limitar a los pedidos de la página y reutilizar el snapshot local `order_ref` si ya existe
 - [ ] `[BE]` `EstadoPedidoService` y `EstadoMapper`
-- [ ] `[BE]` Herramientas `listar_pedidos` y `consultar_pedido`
+- [ ] `[BE]` Herramienta `consultar_pedidos` (lista y detalle)
 - [ ] `[FE]` `OrderHistoryPage` con `OrderHistoryTabs` ("En proceso" y "Entregados"; la pestaña "Reembolsos" se agrega en SPEC-22)
 - [ ] `[FE]` `OrderCard`, `OrderList`, `OrderStatusCard` y `OrderTimeline`
 - [ ] `[FE]` `OrderDetailPage` en `/pedido?pedidoId=`, con cabecera, items, envío, historial y `DeliveryRating` solo si `ENTREGADO`

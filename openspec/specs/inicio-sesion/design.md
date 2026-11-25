@@ -33,7 +33,7 @@
 | `GET /api/v1/sesion/perfil` | Proxy de `/auth/me` (incluye `celularVerificado`, que usa SPEC-04). |
 | `JwtValidator` (dependencia FastAPI `get_cliente_actual`) | JWKS cacheado; exige el rol `CLIENTE`; expone `customer_id = sub`. |
 | `SesionService.post_login()` | Liga la conversación, fusiona los carritos y ejecuta la `accionPendiente`. |
-| Herramientas LLM `solicitar_login` y `cerrar_sesion` | Devuelven el bloque `FORMULARIO/LOGIN` o ejecutan el logout. |
+| Herramientas LLM `solicitar_login` y `cerrar_sesion` | `solicitar_login` devuelve el bloque `FORMULARIO/LOGIN`; `cerrar_sesion` devuelve la acción `CERRAR_SESION`, que el frontend ejecuta contra `POST /sesion/logout` (el backend no borra cookies desde la herramienta). |
 
 ## Desglose para issues
 

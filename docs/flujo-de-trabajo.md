@@ -122,8 +122,7 @@ Owners actuales (tomados de los manifiestos):
 |---|---|
 | Todos los módulos | @Taller-SW-Web/chatbot |
 
-El owner revisa el fondo del módulo; cualquier miembro del equipo puede dar la aprobación que falte
-(CODEOWNERS usa el equipo, no una persona, para no bloquear el PR propio).
+La aprobación de PRs la dan los code owners `@MathiasTL` y `@Ankarmin`. El ruleset “Code owners con bypass Mathias/David” exige 1 aprobación + code owner review al resto del equipo; Mathias y David tienen bypass `pull_request` para mergear sus propios PRs sin otra aprobación. Los checks de CI siguen obligatorios para todos (`enforce_admins=true`, `strict=true`). El ownership de módulos sigue siendo del equipo `@Taller-SW-Web/chatbot`.
 
 ## 5. Definition of Done
 

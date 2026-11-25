@@ -136,7 +136,7 @@ Fuentes: SPEC-17 · Req. 1–4; SPEC-18 · Req. 1–4; SPEC-19 · Req. 1–4; SP
 flowchart TD
     A["Cliente con sesión pregunta por un pedido"] --> B{"¿Qué quiere?"}
     B -- "Estado / ¿dónde está?" --> C{"¿Cuántos pedidos en curso?"}
-    C -- "Uno" --> C1["consultar_pedido<br/>ESTADO_PEDIDO"]
+    C -- "Uno" --> C1["consultar_pedidos<br/>ESTADO_PEDIDO"]
     C -- "Varios" --> C2["LISTA_PEDIDOS para elegir"]
     C -- "Ninguno" --> C3["'Aún no tienes pedidos' + Ver ofertas"]
     C2 --> C1

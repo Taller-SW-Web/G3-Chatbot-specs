@@ -16,28 +16,28 @@
 
 ## 2. Backend — catálogo y acciones (`mod_chat`, `mod_catalog`, `mod_orders`)
 
-- [ ] 2.1 `shared/domain/block.py`: agregar `LISTA_RECLAMOS` y `LISTA_DEVOLUCIONES` a `BlockType` (el frontend ya los declara con TODO en `BloqueTipo.ts`; quitarlo al cablearlos).
-- [ ] 2.2 `mod_chat`/`ActionDispatcher`: agregar `CONFIRMAR_RECLAMO` y `CONFIRMAR_DEVOLUCION`; verificar que las cuatro acciones de cliente no estén en `QUICK_ACTIONS` (deben caer en `ACCION_DESCONOCIDA` si llegan).
-- [ ] 2.3 `mod_orders`/`order_handlers.py`: aplicar la regla D7 — `consultar_pedidos` sin argumentos muestra `ESTADO_PEDIDO` solo si hay exactamente un pedido no finalizado; con un único pedido finalizado devuelve `LISTA_PEDIDOS`.
-- [ ] 2.4 `mod_chat`: implementar el handler de `consultar_seguimiento` con `SeguimientoPedido` → `ESTADO_PEDIDO.datos.seguimiento` y sus hitos; tolerar `404` de Despacho como «aún se está preparando» (SPEC-18).
-- [ ] 2.5 `mod_chat`: implementar `iniciar_checkout` como devolución de la acción `IR_A_CHECKOUT` (sin llamar a `POST /checkout`), con `REQUIERE_SESION` y `accionPendiente = INICIAR_CHECKOUT` cuando falte sesión.
-- [ ] 2.6 `mod_chat`: implementar `cerrar_sesion`, `nueva_conversacion` y `buscar_conversaciones` como devolución de sus acciones de cliente; ninguna debe tocar cookies ni crear conversaciones.
-- [ ] 2.7 `mod_chat`: implementar `solicitar_login`, `reenviar_verificacion` (formulario `REENVIO_VERIFICACION`), `aplicar_cupon` y `quitar_cupon`; registrar sus contratos en `tool_contracts.py`.
-- [ ] 2.8 `mod_chat`: registrar en `tool_contracts.py` y en el `ToolRegistry` las seis herramientas de postventa (`preparar_reclamo`, `listar_reclamos`, `consultar_reclamo`, `preparar_devolucion`, `listar_devoluciones`, `consultar_devolucion`).
-- [ ] 2.9 `mod_postventa`: handlers de las seis herramientas, con pertenencia por `sub` y bloques según el contrato de `datos`; `CONFIRMAR_RECLAMO`/`CONFIRMAR_DEVOLUCION` registran, persisten el mensaje y devuelven la constancia.
-- [ ] 2.10 Pruebas unitarias por herramienta: argumentos inválidos (`extra="forbid"`), `REQUIERE_SESION`, pertenencia ajena, bloque esperado y ausencia de alias.
+- [x] 2.1 `shared/domain/block.py`: agregar `LISTA_RECLAMOS` y `LISTA_DEVOLUCIONES` a `BlockType` (el frontend ya los declara con TODO en `BloqueTipo.ts`; quitarlo al cablearlos).
+- [x] 2.2 `mod_chat`/`ActionDispatcher`: agregar `CONFIRMAR_RECLAMO` y `CONFIRMAR_DEVOLUCION`; verificar que las cuatro acciones de cliente no estén en `QUICK_ACTIONS` (deben caer en `ACCION_DESCONOCIDA` si llegan).
+- [x] 2.3 `mod_orders`/`order_handlers.py`: aplicar la regla D7 — `consultar_pedidos` sin argumentos muestra `ESTADO_PEDIDO` solo si hay exactamente un pedido no finalizado; con un único pedido finalizado devuelve `LISTA_PEDIDOS`.
+- [x] 2.4 `mod_chat`: implementar el handler de `consultar_seguimiento` con `SeguimientoPedido` → `ESTADO_PEDIDO.datos.seguimiento` y sus hitos; tolerar `404` de Despacho como «aún se está preparando» (SPEC-18).
+- [x] 2.5 `mod_chat`: implementar `iniciar_checkout` como devolución de la acción `IR_A_CHECKOUT` (sin llamar a `POST /checkout`), con `REQUIERE_SESION` y `accionPendiente = INICIAR_CHECKOUT` cuando falte sesión.
+- [x] 2.6 `mod_chat`: implementar `cerrar_sesion`, `nueva_conversacion` y `buscar_conversaciones` como devolución de sus acciones de cliente; ninguna debe tocar cookies ni crear conversaciones.
+- [x] 2.7 `mod_chat`: implementar `solicitar_login`, `reenviar_verificacion` (formulario `REENVIO_VERIFICACION`), `aplicar_cupon` y `quitar_cupon`; registrar sus contratos en `tool_contracts.py`.
+- [x] 2.8 `mod_chat`: registrar en `tool_contracts.py` y en el `ToolRegistry` las seis herramientas de postventa (`preparar_reclamo`, `listar_reclamos`, `consultar_reclamo`, `preparar_devolucion`, `listar_devoluciones`, `consultar_devolucion`).
+- [x] 2.9 `mod_postventa`: handlers de las seis herramientas, con pertenencia por `sub` y bloques según el contrato de `datos`; `CONFIRMAR_RECLAMO`/`CONFIRMAR_DEVOLUCION` registran, persisten el mensaje y devuelven la constancia.
+- [x] 2.10 Pruebas unitarias por herramienta: argumentos inválidos (`extra="forbid"`), `REQUIERE_SESION`, pertenencia ajena, bloque esperado y ausencia de alias.
 
 ## 3. Frontend — renderer y acciones (`mod-chat`, `mod-orders`, `mod-postventa`)
 
-- [ ] 3.1 `MessageBubble.renderBloque`: agregar los casos `LISTA_PEDIDOS`, `ESTADO_PEDIDO`, `LISTA_RECLAMOS`, `ESTADO_RECLAMO`, `CONSTANCIA_RECLAMO`, `LISTA_DEVOLUCIONES`, `ESTADO_DEVOLUCION` y `CONSTANCIA_DEVOLUCION` importando por `public.ts`.
-- [ ] 3.2 `Bloque.ts`/`BloqueTipo.ts`: uniones discriminadas para los ocho bloques, con `datos` según el contrato del delta.
-- [ ] 3.3 `mod-orders`: adaptar `ListaPedidos` a `{pedidoId, fecha, total, estado, estadoEtiqueta, canal}` y `EstadoPedido` a `datos.hitos` + `datos.seguimiento`; agregar la acción "Ver seguimiento" cuando `detalleDisponible` sea verdadero.
-- [ ] 3.4 `mod-postventa`: adaptar `ListaReclamos`, `EstadoReclamo`, `ConstanciaReclamo`, `ListaDevoluciones`, `EstadoDevolucion` y `ConstanciaDevolucion` al contrato de `datos`; mostrar `respuestaVisibleCliente` y `resolucion.fundamento` sin reformular.
-- [ ] 3.5 `ChatPage.ejecutarAccionRapida`: interceptar `IR_A_CHECKOUT`, `CERRAR_SESION`, `NUEVO_CHAT` y `BUSCAR_CHATS` antes de `ejecutarAccionChatUseCase`; ejecutarlas una sola vez por turno y no al rehidratar el historial.
-- [ ] 3.6 `CERRAR_SESION`: reutilizar el logout de `mod-auth` (`POST /sesion/logout` + limpieza de `chatStore`), sin duplicar la lógica.
-- [ ] 3.7 `IR_A_CHECKOUT`: navegar a `/checkout` con la sección de dirección enfocada; sin sesión, abrir el login y conservar `INICIAR_CHECKOUT`.
-- [ ] 3.8 Pruebas de renderer: un caso por bloque con el `datos` real del backend; probar que un bloque desconocido sigue sin renderizarse y que los ocho nuevos sí.
-- [ ] 3.9 Cablear `FORMULARIO/LOGIN` y `FORMULARIO/REENVIO_VERIFICACION` en el chat (hoy `MessageBubble` solo pinta `OTP_CELULAR` y `REGISTRO`), reutilizando `LoginForm`/`ReenviarVerificacionForm` o abriendo `AuthModal`.
+- [x] 3.1 `MessageBubble.renderBloque`: agregar los casos `LISTA_PEDIDOS`, `ESTADO_PEDIDO`, `LISTA_RECLAMOS`, `ESTADO_RECLAMO`, `CONSTANCIA_RECLAMO`, `LISTA_DEVOLUCIONES`, `ESTADO_DEVOLUCION` y `CONSTANCIA_DEVOLUCION` importando por `public.ts`.
+- [x] 3.2 `Bloque.ts`/`BloqueTipo.ts`: uniones discriminadas para los ocho bloques, con `datos` según el contrato del delta.
+- [x] 3.3 `mod-orders`: adaptar `ListaPedidos` a `{pedidoId, fecha, total, estado, estadoEtiqueta, canal}` y `EstadoPedido` a `datos.hitos` + `datos.seguimiento`; agregar la acción "Ver seguimiento" cuando `detalleDisponible` sea verdadero.
+- [x] 3.4 `mod-postventa`: adaptar `ListaReclamos`, `EstadoReclamo`, `ConstanciaReclamo`, `ListaDevoluciones`, `EstadoDevolucion` y `ConstanciaDevolucion` al contrato de `datos`; mostrar `respuestaVisibleCliente` y `resolucion.fundamento` sin reformular.
+- [x] 3.5 `ChatPage.ejecutarAccionRapida`: interceptar `IR_A_CHECKOUT`, `CERRAR_SESION`, `NUEVO_CHAT` y `BUSCAR_CHATS` antes de `ejecutarAccionChatUseCase`; ejecutarlas una sola vez por turno y no al rehidratar el historial.
+- [x] 3.6 `CERRAR_SESION`: reutilizar el logout de `mod-auth` (`POST /sesion/logout` + limpieza de `chatStore`), sin duplicar la lógica.
+- [x] 3.7 `IR_A_CHECKOUT`: navegar a `/checkout` con la sección de dirección enfocada; sin sesión, abrir el login y conservar `INICIAR_CHECKOUT`.
+- [x] 3.8 Pruebas de renderer: un caso por bloque con el `datos` real del backend; probar que un bloque desconocido sigue sin renderizarse y que los ocho nuevos sí.
+- [x] 3.9 Cablear `FORMULARIO/LOGIN` y `FORMULARIO/REENVIO_VERIFICACION` en el chat (hoy `MessageBubble` solo pinta `OTP_CELULAR` y `REGISTRO`), reutilizando `LoginForm`/`ReenviarVerificacionForm` o abriendo `AuthModal`.
 
 ## 4. Evaluación y QA
 
@@ -50,3 +50,5 @@
 ## 5. Archivo
 
 - [ ] 5.1 Aplicar el delta a `openspec/specs/motor-conversacion/spec.md` y mover el cambio a `openspec/changes/archive/` cuando las tareas 2.x y 3.x estén mergeadas.
+
+> Implementado en backend #166 y frontend #141 (2026-11-25). Quedan las tareas 4.x (evals/E2E/QA) y 5.1 (archivar el delta).

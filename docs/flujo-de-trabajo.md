@@ -122,8 +122,7 @@ Owners actuales (tomados de los manifiestos):
 |---|---|
 | Todos los módulos | @Taller-SW-Web/chatbot |
 
-El owner revisa el fondo del módulo; cualquier miembro del equipo puede dar la aprobación que falte
-(CODEOWNERS usa el equipo, no una persona, para no bloquear el PR propio).
+La aprobación de PRs la dan los code owners `@MathiasTL` y `@Ankarmin`; el resto del equipo no puede aprobar. GitHub no permite autoaprobarse, así que cada PR de Mathias o David necesita la aprobación del otro. El ownership de módulos sigue siendo del equipo `@Taller-SW-Web/chatbot`.
 
 ## 5. Definition of Done
 

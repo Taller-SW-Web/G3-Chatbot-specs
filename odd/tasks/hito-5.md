@@ -90,9 +90,10 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 | ID | Responsable | Repositorio | Prioridad | Tarea |
 |---|---|---|---|---|
 | H5-P1 | Alonso | specs | 🔴 | Definir SLO (latencia p95, tasa de error, throughput) para catálogo, chat y checkout |
-| H5-P2 | Alonso | backend | 🔴 | Scripts de k6 para catálogo, chat y checkout contra el stack local o de CI con módulos fake y RabbitMQ en Docker |
+| H5-P2 | Alonso | backend | 🔴 | Scripts de k6 para catálogo, chat y checkout contra el stack local o de CI con módulos fake. La corrida con RabbitMQ en Docker pasa a H5-P5 |
 | H5-P3 | Alonso | backend | 🟡 | Workflow manual de k6 en GitHub Actions y reporte con resultados frente a los SLO |
 | H5-P4 | Diego | frontend | 🟡 | Lighthouse CI con presupuesto de rendimiento y accesibilidad |
+| H5-P5 | Mathias | backend, specs | 🔴 | Agregar RabbitMQ en Docker y el consumidor a la corrida de k6 (`performance.yml`) y registrar el resultado en `docs/slo-performance.md`. Depende de H5-M2 y H5-M3. Issue: [backend#168](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/168) |
 
 #### D. API Management y mecanismo asíncrono
 
@@ -161,6 +162,8 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 - 2026-11-25: **H5-C5 hecha**. ADR-0024 pasa a **Aceptada** con fecha 2026-11-25; el índice de ADR y el conteo de `docs/arquitectura/README.md` quedan alineados. El diagrama `docs/diagrams/pipeline-ci-cd.{excalidraw,svg}` se rehízo con los jobs en vigor: lint/typecheck, unitarias, integración con migraciones, OpenAPI, module boundaries, Trivy + hadolint, SonarCloud, dependency-review, `pip-audit`/`pnpm audit` (advisory) y E2E; CodeQL, secret scanning con push protection y Dependabot van en la banda transversal. DAST con OWASP ZAP queda marcado como pendiente (H5-C2). Verificado con `python scripts/check_links.py` y `npx @fission-ai/openspec validate --specs`.
 
 - 2026-11-25: **H5-C1 hecha**. `pip-audit` bloqueante en backend #162 (excepción puntual `PYSEC-2026-1845` de pytest, documentada) y `pnpm audit` bloqueante en frontend #134 (sin excepciones vigentes). **H5-C3 parcial, asignada a Mathias**: entorno `G3-Chatbot / production` creado en frontend con revisores Mathias y David; backend ya lo tenía; implementación del deploy por Actions en [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139). El deploy de Vercel sigue fuera de GitHub Actions, así que la aprobación del entorno aún no bloquea el despliegue. **H5-C4 hecha**: `CODEOWNERS` solo `@MathiasTL` y `@Ankarmin`; ruleset “Code owners con bypass Mathias/David” exige 1 aprobación + code owner review al resto, con bypass `pull_request` para Mathias/David. Los checks siguen obligatorios (`enforce_admins=true`, `strict=true`); el bypass permite mergear sus PRs sin otra aprobación, no autoaprobarse. **H5-C5 hecha** (ver entrada anterior); el diagrama ya refleja `pip-audit` y `pnpm audit` como bloqueantes tras H5-C1.
+
+- 2026-11-25: **Nueva tarea H5-P5, asignada a Mathias**: la corrida de k6 con RabbitMQ en Docker sale de H5-P2, porque depende del relay y el consumidor de H5-M2 y H5-M3, que son de Mathias y aún no existen. Así H5-P2 se cierra con los scripts y la corrida sin broker (backend #167, specs #57). Implementación en [backend#168](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/168).
 
 ## Siguiente paso
 

@@ -122,7 +122,7 @@ Owners actuales (tomados de los manifiestos):
 |---|---|
 | Todos los módulos | @Taller-SW-Web/chatbot |
 
-La aprobación de PRs la dan los code owners `@MathiasTL` y `@Ankarmin`; el resto del equipo no puede aprobar. GitHub no permite autoaprobarse, así que cada PR de Mathias o David necesita la aprobación del otro. El ownership de módulos sigue siendo del equipo `@Taller-SW-Web/chatbot`.
+La aprobación de PRs la dan los code owners `@MathiasTL` y `@Ankarmin`. El ruleset “Code owners con bypass Mathias/David” exige 1 aprobación + code owner review al resto del equipo; Mathias y David tienen bypass `pull_request` para mergear sus propios PRs sin otra aprobación. Los checks de CI siguen obligatorios para todos (`enforce_admins=true`, `strict=true`). El ownership de módulos sigue siendo del equipo `@Taller-SW-Web/chatbot`.
 
 ## 5. Definition of Done
 

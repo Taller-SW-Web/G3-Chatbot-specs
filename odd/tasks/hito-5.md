@@ -72,7 +72,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 |---|---|---|---|---|
 | H5-C1 | David | backend, frontend | 🔴 | Hacer bloqueantes `pip-audit` y `pnpm audit` (quitar `\|\| echo`), con lista de excepciones justificadas |
 | H5-C2 | Sebastian | backend | 🔴 | DAST con OWASP ZAP baseline contra el stack levantado en CI y reporte como artefacto |
-| H5-C3 | David | backend, frontend | 🟡 | Entorno `production` en GitHub con aprobación requerida (CI-12) |
+| H5-C3 | Mathias | backend, frontend | 🟡 | Entorno `production` en GitHub con aprobación requerida (CI-12) |
 | H5-C4 | David | backend, frontend | 🟡 | Protección de rama: `enforce_admins=true` y revisión de code owners |
 | H5-C5 | David | specs | 🔴 | Pasar ADR-0024 a "Aceptada" y actualizar el diagrama del pipeline con los pasos de seguridad |
 

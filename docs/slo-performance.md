@@ -19,7 +19,7 @@ Los SLO se miden contra el **stack local o de CI**, nunca contra producción:
 | Base de datos | PostgreSQL 18 en Docker, con las migraciones al día |
 | Módulos externos | `MODULES_MODE=fake`: Seguridad, Productos, Ventas y Despacho en memoria ([ADR-0022](arquitectura/adr/ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md)) |
 | LLM | `LLM_PROVIDER=fake`: un modelo con guion fijo que pide `buscar_productos` y cierra con texto, sin red |
-| Broker | RabbitMQ en Docker cuando exista (H5-M2 y H5-M3); hasta entonces el outbox trabaja solo |
+| Broker | RabbitMQ en Docker, nunca CloudAMQP ([ADR-0030](arquitectura/adr/ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md)), cuando existan el relay y el consumidor (H5-M2 y H5-M3); hasta entonces el outbox trabaja solo |
 
 Por qué no se mide contra producción (restricción de `hito-5.md`):
 

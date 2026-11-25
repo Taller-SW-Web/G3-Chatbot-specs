@@ -82,37 +82,37 @@ de operación que cubra `/health`; el comportamiento queda documentado en
 ## 3. Plan S/M/L
 
 El plan original se conserva para trazabilidad. Los ítems de plataforma o deuda documental que no son
-capabilities de las 24 quedan como mejoras posteriores; no bloquean el cierre 24/24. El responsable
-vigente de todos los ítems es el equipo canónico `@Taller-SW-Web/chatbot`; la columna «Dueño sugerido»
-se conserva por trazabilidad del plan original y apunta al equipo, no a personas.
+capabilities de las 24 quedan como mejoras posteriores; no bloquean el cierre 24/24. La columna
+«Dueño sugerido» conserva el reparto original de tareas; el ownership de módulos sigue siendo del
+equipo `@Taller-SW-Web/chatbot`.
 
 ### S — Corto plazo
 
 | ID | Acción | Módulo / repo | Dueño sugerido | Estado | Criterio de cierre |
 |---|---|---|---|---|---|
-| S1 | Contrato de `/contacto/celular`: `solicitar-otp`/`verificar-otp` | `mod-auth` (BE/FE) | @Taller-SW-Web/chatbot | ✅ Cerrado (D1) | No queda ninguna llamada del FE a un endpoint ausente; spec y `docs/openapi.json` coinciden |
-| S2 | Gate que compare los `endpoints` de cada `module.manifest.ts` contra `docs/openapi.json` | Plataforma / CI | @Taller-SW-Web/chatbot | ⬜ Posterior al cierre | El gate falla si un endpoint del manifiesto no existe o tiene otro tag |
+| S1 | Contrato de `/contacto/celular`: `solicitar-otp`/`verificar-otp` | `mod-auth` (BE/FE) | @Ankarmin | ✅ Cerrado (D1) | No queda ninguna llamada del FE a un endpoint ausente; spec y `docs/openapi.json` coinciden |
+| S2 | Gate que compare los `endpoints` de cada `module.manifest.ts` contra `docs/openapi.json` | Plataforma / CI | @Ankarmin | ⬜ Posterior al cierre | El gate falla si un endpoint del manifiesto no existe o tiene otro tag |
 | S3 | Revisar los `MODULE.md` de `mod-auth`, `mod-postventa` y `mod-chat` | Docs de módulo | Owner de cada módulo | ✅ Cerrado | `MODULE.md` no promete rutas inexistentes |
-| S4 | Cerrar la deuda de nombres históricos de `mod-catalog` | `mod-catalog` | @Taller-SW-Web/chatbot | ⬜ Posterior al cierre | Grep de nombres antiguos en docs históricos = 0 o marcados como históricos |
+| S4 | Cerrar la deuda de nombres históricos de `mod-catalog` | `mod-catalog` | @SOoOnny | ⬜ Posterior al cierre | Grep de nombres antiguos en docs históricos = 0 o marcados como históricos |
 
 ### M — Medio plazo
 
 | ID | Acción | Módulo / repo | Dueño sugerido | Estado | Criterio de cierre |
 |---|---|---|---|---|---|
-| M1 | Detección de duplicados de reclamos y devoluciones con `forzar: true` | `mod-postventa` | @Taller-SW-Web/chatbot | ✅ Cerrado (D4) | Escenarios de duplicado y “previa resuelta” pasan; no se crea duplicado sin confirmación |
-| M2 | Revalidación de stock en checkout con `409 CARRITO_DESACTUALIZADO` y `lineas` | `mod-checkout` + `mod-cart` | @Taller-SW-Web/chatbot | ✅ Cerrado (D3) | Prueba del carrito que cambia entre agregar y pagar; no se crea checkout/pedido con líneas bloqueantes |
-| M3 | Guardado opcional de dirección con `guardarDireccion` sin bloquear | `mod-checkout` + `mod-shipping` | @Taller-SW-Web/chatbot | ✅ Cerrado (D6) | Escenarios “cliente marca guardar” y “Seguridad falla” cubiertos; `avisoDireccion` visible |
-| M4 | Aplicar el enum de `orden` en la búsqueda | `mod-catalog` | @Taller-SW-Web/chatbot | ✅ Cerrado (D7) | Test de cada valor y de `400 VALIDACION`; `_ = orden` desaparece |
-| M5 | Ampliar el catálogo de tools conversacionales | `mod-chat` | @Taller-SW-Web/chatbot | ⬜ Posterior al cierre | Mejora de cobertura conversacional; no es requisito de las 24 |
+| M1 | Detección de duplicados de reclamos y devoluciones con `forzar: true` | `mod-postventa` | @MathiasTL | ✅ Cerrado (D4) | Escenarios de duplicado y “previa resuelta” pasan; no se crea duplicado sin confirmación |
+| M2 | Revalidación de stock en checkout con `409 CARRITO_DESACTUALIZADO` y `lineas` | `mod-checkout` + `mod-cart` | @MathiasTL + @SOoOnny | ✅ Cerrado (D3) | Prueba del carrito que cambia entre agregar y pagar; no se crea checkout/pedido con líneas bloqueantes |
+| M3 | Guardado opcional de dirección con `guardarDireccion` sin bloquear | `mod-checkout` + `mod-shipping` | @SOoOnny + @MathiasTL | ✅ Cerrado (D6) | Escenarios “cliente marca guardar” y “Seguridad falla” cubiertos; `avisoDireccion` visible |
+| M4 | Aplicar el enum de `orden` en la búsqueda | `mod-catalog` | @SOoOnny | ✅ Cerrado (D7) | Test de cada valor y de `400 VALIDACION`; `_ = orden` desaparece |
+| M5 | Ampliar el catálogo de tools conversacionales | `mod-chat` | @Ankarmin | ⬜ Posterior al cierre | Mejora de cobertura conversacional; no es requisito de las 24 |
 
 ### L — Largo plazo
 
 | ID | Acción | Módulo / repo | Dueño sugerido | Estado | Criterio de cierre |
 |---|---|---|---|---|---|
-| L1 | SPEC-04 completo (H-17): OTP, guard, flag y UI | `mod-auth` + `mod-checkout` | @Taller-SW-Web/chatbot | ✅ Cerrado (D1) | Los 3 requisitos y sus escenarios pasan; `CELULAR_NO_VERIFICADO` real |
-| L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @Taller-SW-Web/chatbot | 🟡 Parcial (D2): falta el storage de producción | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501 |
-| L3 | SPEC-24 completo: reacciones, sugerencias/bugs, valoración, CSAT y outbox | `mod-chat` + `mod-postventa` + `mod-checkout` | @Taller-SW-Web/chatbot | ✅ Cerrado (D5) | Los mecanismos tienen endpoints, tablas y pruebas; la UI dejó de ser estado local |
-| L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Taller-SW-Web/chatbot | ⬜ Posterior al cierre | S2 convertido en gate bloqueante y documentado en `modularizacion.md` |
+| L1 | SPEC-04 completo (H-17): OTP, guard, flag y UI | `mod-auth` + `mod-checkout` | @Ankarmin | ✅ Cerrado (D1) | Los 3 requisitos y sus escenarios pasan; `CELULAR_NO_VERIFICADO` real |
+| L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @MathiasTL + @Ankarmin | 🟡 Parcial (D2): falta el storage de producción | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501 |
+| L3 | SPEC-24 completo: reacciones, sugerencias/bugs, valoración, CSAT y outbox | `mod-chat` + `mod-postventa` + `mod-checkout` | @Ankarmin + @MathiasTL | ✅ Cerrado (D5) | Los mecanismos tienen endpoints, tablas y pruebas; la UI dejó de ser estado local |
+| L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Ankarmin | ⬜ Posterior al cierre | S2 convertido en gate bloqueante y documentado en `modularizacion.md` |
 
 ## 4. Decisiones de producto resueltas (2026-11-21)
 

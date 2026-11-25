@@ -110,7 +110,7 @@ equipo `@Taller-SW-Web/chatbot`.
 | ID | Acción | Módulo / repo | Dueño sugerido | Estado | Criterio de cierre |
 |---|---|---|---|---|---|
 | L1 | SPEC-04 completo (H-17): OTP, guard, flag y UI | `mod-auth` + `mod-checkout` | @Ankarmin | ✅ Cerrado (D1); D2 de SPEC-04 documentado (2026-11-25) | Los 3 requisitos y sus escenarios pasan; `CELULAR_NO_VERIFICADO` sigue siendo el error del modo legado y `CONTACTO_NO_VERIFICADO` cubre el modo por defecto. |
-| L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @MathiasTL + @Ankarmin | 🟡 Parcial (D2): adaptador en `development`, falta promoción y configuración | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501; `ATTACHMENT_STORAGE=supabase` verificado en producción |
+| L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @SebJoq21 | 🟡 Parcial (D2): adaptador en `development`, falta promoción y configuración | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501; `ATTACHMENT_STORAGE=supabase` verificado en producción. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53) |
 | L3 | SPEC-24 completo: reacciones, sugerencias/bugs, valoración, CSAT y outbox | `mod-chat` + `mod-postventa` + `mod-checkout` | @Ankarmin + @MathiasTL | ✅ Cerrado (D5) | Los mecanismos tienen endpoints, tablas y pruebas; la UI dejó de ser estado local |
 | L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Ankarmin | ⬜ Posterior al cierre | S2 convertido en gate bloqueante y documentado en `modularizacion.md` |
 
@@ -187,3 +187,9 @@ L4: son mejoras de plataforma o deuda documental fuera de las 24 capabilities.
 > `REQUIRE_VERIFIED_CONTACT`; `REQUIRE_PHONE_VERIFICATION` queda como modo legado. El requisito del curso
 > se cumple con la capacidad disponible, no con exigirla en cada compra. D1 y su evidencia de
 > implementación se conservan como historial; esta nota no reescribe la auditoría del 2026-11-21.
+
+> [!note] Actualización 2026-11-25 — L2 asignada a Sebastian
+> El proyecto Supabase `olzsuqpowkndoeljpiax` es de **Sebastian (@SebJoq21)**, que queda como responsable
+> de L2: bucket privado, variables de Railway, migración vs pérdida de los archivos locales y verificación
+> de carga + reinicio + lectura. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53).
+> Mathias conserva la promoción `development` → `main` (H5-X1) y la coordinación del deploy.

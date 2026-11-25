@@ -103,6 +103,18 @@ Criterios de la tabla:
 
 ## 4. Resultados
 
+### 2026-11-25 · corrida local sobre `development` `cf75beb`
+
+Repetida después de los cambios del 2026-11-25 (contacto verificado en el checkout, backend #163, y
+catálogo M5 de herramientas del chat, backend #166), con las mismas condiciones que la del 2026-11-24.
+**Los tres flujos siguen cumpliendo todos los SLO**, con 0 % de errores y ningún `429`.
+
+| Flujo | p95 más alto | Throughput medido | SLO de throughput |
+|---|---|---|---|
+| Catálogo | 26 ms (búsqueda) | 20,01 solicitudes/s | ≥ 19 solicitudes/s |
+| Chat | 358 ms (turno completo; primer evento SSE 131 ms) | 2,30 mensajes/s | ≥ 1,5 mensajes/s |
+| Checkout | 341 ms (pago) | 1,90 compras/s | ≥ 0,3 compras/s |
+
 ### 2026-11-24 · corrida local
 
 Backend en la rama `feat/h5-p2-k6-performance` (sobre `development` `4fe2558`), PostgreSQL 18 en

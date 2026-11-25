@@ -91,7 +91,7 @@ equipo `@Taller-SW-Web/chatbot`.
 | ID | Acción | Módulo / repo | Dueño sugerido | Estado | Criterio de cierre |
 |---|---|---|---|---|---|
 | S1 | Contrato de `/contacto/celular`: `solicitar-otp`/`verificar-otp` | `mod-auth` (BE/FE) | @Ankarmin | ✅ Cerrado (D1) | No queda ninguna llamada del FE a un endpoint ausente; spec y `docs/openapi.json` coinciden |
-| S2 | Gate que compare los `endpoints` de cada `module.manifest.ts` contra `docs/openapi.json` | Plataforma / CI | @Ankarmin | ⬜ Posterior al cierre | El gate falla si un endpoint del manifiesto no existe o tiene otro tag |
+| S2 | Gate que compare los `endpoints` de cada `module.manifest.ts` contra `docs/openapi.json` | Plataforma / CI | @Ankarmin | ✅ Cerrado (2026-11-25) | El gate falla si un endpoint del manifiesto no existe o tiene otro tag. Evidencia: `G3-Chatbot-frontend/scripts/check-modules.mjs:262-328` (contrato) y job `modules` del CI, requerido por `check`; FE #108 · `ffabd60` |
 | S3 | Revisar los `MODULE.md` de `mod-auth`, `mod-postventa` y `mod-chat` | Docs de módulo | Owner de cada módulo | ✅ Cerrado | `MODULE.md` no promete rutas inexistentes |
 | S4 | Cerrar la deuda de nombres históricos de `mod-catalog` | `mod-catalog` | @SOoOnny | ⬜ Posterior al cierre | Grep de nombres antiguos en docs históricos = 0 o marcados como históricos |
 
@@ -112,7 +112,13 @@ equipo `@Taller-SW-Web/chatbot`.
 | L1 | SPEC-04 completo (H-17): OTP, guard, flag y UI | `mod-auth` + `mod-checkout` | @Ankarmin | ✅ Cerrado (D1); D2 de SPEC-04 documentado (2026-11-25) | Los 3 requisitos y sus escenarios pasan; `CELULAR_NO_VERIFICADO` sigue siendo el error del modo legado y `CONTACTO_NO_VERIFICADO` cubre el modo por defecto. |
 | L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @SebJoq21 | 🟡 Parcial (D2): adaptador en `development`, falta promoción y configuración | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501; `ATTACHMENT_STORAGE=supabase` verificado en producción. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53) |
 | L3 | SPEC-24 completo: reacciones, sugerencias/bugs, valoración, CSAT y outbox | `mod-chat` + `mod-postventa` + `mod-checkout` | @Ankarmin + @MathiasTL | ✅ Cerrado (D5) | Los mecanismos tienen endpoints, tablas y pruebas; la UI dejó de ser estado local |
-| L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Ankarmin | ⬜ Posterior al cierre | S2 convertido en gate bloqueante y documentado en `modularizacion.md` |
+| L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Ankarmin | ✅ Cerrado (2026-11-25) | S2 convertido en gate bloqueante y documentado en `docs/arquitectura/modularizacion.md` §5 y §9. [BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165) agregó `Verify committed OpenAPI is up to date` (`export_openapi.py --check`) al job `openapi`; `--check` pasa (47 paths) y falla sobre una copia alterada. Mergeado y verificado en CI |
+
+> **Excepción documentada (CSAT).** El manifiesto de `mod-orders` declara
+> `/pedidos/{pedidoId}/csat`, pero el OpenAPI lo etiqueta `mod-postventa`. El gate lo acepta como
+> advertencia hasta el **2026-12-19** mediante `contractTagExceptions` en
+> `G3-Chatbot-frontend/scripts/module-boundaries.exceptions.json`; al vencer la fecha, `modules:check`
+> falla y obliga a alinear el tag o renovar la excepción.
 
 ## 4. Decisiones de producto resueltas (2026-11-21)
 
@@ -147,8 +153,9 @@ prueba y el CI está en verde.
 | SPEC-24 `retroalimentacion-cliente` | D5 | ✅ Cerrado | Reacciones, sugerencias/bugs, CSAT, valoración y outbox interno | BE #141 · `b75fbea6`; FE #109 · `7432d463`; tests de feedback y CSAT |
 
 **Resultado:** 23 de 24 capabilities en ✅ y **SPEC-23 en 🟡** hasta la promoción a `main` y la configuración del storage. Las 5 correcciones mecánicas (SPEC-01, SPEC-05, SPEC-09,
-SPEC-20 y SPEC-22) se promovieron al verificar el código mergeado. El cierre no depende de S2, S4, M5 ni
-L4: son mejoras de plataforma o deuda documental fuera de las 24 capabilities.
+SPEC-20 y SPEC-22) se promovieron al verificar el código mergeado. El cierre no depende de S4 ni M5:
+son deuda documental y una mejora conversacional fuera de las 24 capabilities. S2 quedó cerrado el
+2026-11-25; L4 queda pendiente del merge del gate de drift ([BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165)).
 
 ## 6. Notas de método y límites
 
@@ -193,3 +200,14 @@ L4: son mejoras de plataforma o deuda documental fuera de las 24 capabilities.
 > de L2: bucket privado, variables de Railway, migración vs pérdida de los archivos locales y verificación
 > de carga + reinicio + lectura. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53).
 > Mathias conserva la promoción `development` → `main` (H5-X1) y la coordinación del deploy.
+
+> [!note] Actualización 2026-11-25 — S2 cerrado; L4 pendiente del gate de drift
+> El job `modules` del frontend descarga `docs/openapi.json` de `development`, ejecuta
+> `pnpm modules:check` y es requerido por `check` (FE #108 · `ffabd60`). El gate falla ante un endpoint
+> del manifiesto ausente o con otro tag; CSAT queda como excepción documentada hasta el 2026-12-19. El
+> estado quedó reflejado en
+> [modularizacion.md](arquitectura/modularizacion.md#estado-real-del-gate-de-contrato).
+> Para cerrar L4, [BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165) agrega
+> `Verify committed OpenAPI is up to date` (`python scripts/export_openapi.py --check`) al job
+> `openapi`; `--check` pasa con 47 paths y falla sobre una copia alterada. L4 queda cerrado pendiente
+> de ese merge, no verificado en producción.

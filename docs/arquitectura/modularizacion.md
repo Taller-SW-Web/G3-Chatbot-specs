@@ -201,8 +201,8 @@ al navegador.
 |---|---|---|---|
 | Estructura, fronteras y tags | `G3-Chatbot-backend/scripts/check_modules.py` | ids, `MODULE.md`, `public.py`, imports, tags `mod-*`, composition root | Bloqueante en CI |
 | Manifiestos y fronteras | `G3-Chatbot-frontend/scripts/check-modules.mjs` | paridad de ids, estructura, `dependsOn`, registry generado, imports profundos | Bloqueante en CI |
-| OpenAPI del backend | `G3-Chatbot-backend/scripts/export_openapi.py --check` | que `docs/openapi.json` esté al día y sea válido | Bloqueante en CI |
-| Endpoints del manifiesto contra OpenAPI | — | que cada `endpoint` del frontend exista y tenga el tag del módulo | **Manual / pendiente** (ver §9) |
+| OpenAPI del backend | `G3-Chatbot-backend/scripts/export_openapi.py` + job `openapi` | que `docs/openapi.json` se genere desde la app, sea válido y coincida con el archivo comprometido | Generación, validación y check de drift bloqueantes en CI (BE #165, mergeado) |
+| Endpoints del manifiesto contra OpenAPI | `G3-Chatbot-frontend/scripts/check-modules.mjs` + job `modules` | que cada `endpoint` del frontend exista y tenga el tag del módulo | **Bloqueante en CI**: `modules` es requerido por `check`; allowlist CSAT con `reviewBy` 2026-12-19 |
 
 ## 6. Auto-discovery: nadie edita una lista compartida
 
@@ -253,11 +253,15 @@ módulo, sin lógica de negocio.
 
 ## 9. Deuda y huecos conocidos
 
-- **Verificación cruzada de OpenAPI.** El manifiesto del frontend declara endpoints y existe un gate de
-  contrato por módulo (H-04), pero la cobertura todavía no es total. El test
-  `api-rutas-contrato.test.ts` fija rutas a mano e incluye `POST /contacto/celular/verificar-otp`, ya
-  mergeado. Queda como mejora de plataforma convertir el gate en bloqueante para todos los endpoints;
-  no bloquea el cierre 24/24.
+- **Verificación cruzada de OpenAPI.** El gate de contrato (H-04) es bloqueante: el job `modules` del
+  frontend descarga `docs/openapi.json` de `development`, ejecuta `pnpm modules:check` y `check` lo
+  exige en la rama protegida. Falla si un endpoint del manifiesto no existe o si el tag no coincide; la
+  única excepción es CSAT (`/pedidos/{pedidoId}/csat`, tag `mod-postventa`), registrada en
+  `scripts/module-boundaries.exceptions.json` con `reviewBy` 2026-12-19. El backend genera, valida y
+  verifica el drift del OpenAPI en CI: el job `openapi` incluye
+  `Verify committed OpenAPI is up to date` (`python scripts/export_openapi.py --check`, 47 paths), mergeado
+  en [BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165), así que un archivo
+  comprometido desactualizado rompe el pipeline.
 - **SPEC-04 (validación de celular).** ✅ Implementado el 2026-11-21 (D1): `phone_otp_challenge`,
   endpoints de OTP, `SimulatedSmsSender`, `CheckoutGuard` real y `REQUIRE_PHONE_VERIFICATION` están en
   `development` (backend #141 · `b75fbea6`, frontend #109 · `7432d463`). **D2 (2026-11-25):** el guard
@@ -272,10 +276,10 @@ módulo, sin lógica de negocio.
 - **Orden de búsqueda (SPEC-06).** ✅ Implementado (D7): el router valida el enum `relevancia |
   precio_asc | precio_desc | nombre_asc | nombre_desc` y aplica el orden.
 
-Quedan como mejoras posteriores, fuera de las 24 capabilities: el gate de contrato bloqueante (S2), la
-deuda de nombres históricos (S4), la ampliación de tools conversacionales (M5) y el endurecimiento de
-OpenAPI (L4). El detalle y la evidencia de cierre están en
-[`docs/auditoria-specs-2026-11.md`](../auditoria-specs-2026-11.md).
+Quedan como mejoras posteriores, fuera de las 24 capabilities: la deuda de nombres históricos (S4) y
+la ampliación de tools conversacionales (M5). El gate de contrato bloqueante (S2) y el gate de drift
+OpenAPI (L4) quedaron cerrados el 2026-11-25 ([BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165)).
+El detalle y la evidencia están en [`docs/auditoria-specs-2026-11.md`](../auditoria-specs-2026-11.md).
 
 ## 10. Mapa de las 24 specs a módulos
 

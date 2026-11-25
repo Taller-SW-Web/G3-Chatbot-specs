@@ -13,7 +13,7 @@ El Canal Chatbot es el canal de venta conversacional del Marketplace Multicanal 
 | **Visitante anónimo** | Sin token; conversaciones ligadas a la cookie `chat_sid` | Conversar, reaccionar con 👍/👎 a las respuestas, buscar, ver recomendaciones y ofertas, ver detalle, armar un carrito anónimo (expira a los 7 días de inactividad), registrarse e iniciar sesión | SPEC-05, SPEC-06 a 11 (Requiere sesión: No), SPEC-24 · Req. 1 |
 | **Cliente registrado sin verificar** | Cuenta `PENDIENTE_VERIFICACION` en Seguridad | Verificar el correo y pedir reenvío del enlace; no puede iniciar sesión | SPEC-01 · Req. 3, SPEC-02 |
 | **Cliente autenticado** | Token con rol `CLIENTE` (`sub` = `customer_id`) | Todo lo anterior, más: carrito persistente, dirección y cotización, cupones, consulta de pedidos, reclamos, devoluciones y reembolsos, calificar la entrega y valorar la compra, y enviar sugerencias o reportar bugs | SPEC-03, SPEC-05 · Req. 6, SPEC-24 · Req. 2–4 y 7 |
-| **Cliente autenticado con celular verificado** | Verificación local vigente para el celular actual del perfil | Iniciar el checkout y pagar | SPEC-04 · Req. 1, SPEC-14 · Req. 1 |
+| **Cliente autenticado con contacto verificado** | Correo de la cuenta verificado por G7 (por defecto); el celular verificado localmente es opcional | Iniciar el checkout y pagar | SPEC-04 · Req. 1, SPEC-14 · Req. 1 |
 | **Usuario sin rol `CLIENTE`** (p. ej., vendedor) | Token sin `CLIENTE` | Nada: se cierra su sesión con "Esta cuenta no puede comprar desde este canal" | SPEC-03 · Req. 1 |
 
 Actores externos que **no** usan el canal pero deciden sobre sus datos: el Gestor de Ventas (responde reclamos y resuelve devoluciones) y el Gestor Comercial de Productos (crea promociones y cupones).
@@ -37,7 +37,7 @@ Agrupadas por épica (ver [`epicas.md`](epicas.md)). Una línea por capacidad.
 - Verificación de correo por enlace de un solo uso (24 h) y reenvío limitado a 3 por hora ([SPEC-02](../../openspec/specs/verificacion-correo/spec.md)).
 - Login con MFA opcional, renovación silenciosa del token (15 min), retoma de la acción pendiente, fusión del carrito y logout ([SPEC-03](../../openspec/specs/inicio-sesion/spec.md)).
 - Pantalla "Mi cuenta" de solo lectura con datos del perfil, estado local del celular, último documento enmascarado y accesos a pedidos, reclamos y cierre de sesión (SPEC-03 · Req. 7); no permite editar datos del perfil.
-- Verificación local del celular por OTP simulado (6 dígitos, 5 min, 3 intentos) antes del primer pago ([SPEC-04](../../openspec/specs/validacion-celular/spec.md)).
+- Verificación local del celular por OTP simulado (6 dígitos, 5 min, 3 intentos), disponible de forma opcional desde "Mi cuenta"; el checkout usa el correo verificado por G7 como contacto por defecto ([SPEC-04](../../openspec/specs/validacion-celular/spec.md)).
 
 **EP-02 · Motor de conversación**
 - Conversaciones múltiples (crear, listar, buscar en una pantalla propia, retomar), pantalla de inicio, interpretación con herramientas, streaming por SSE con reconsulta única del historial si el stream se corta, botones "Preguntar en el chat", acciones rápidas fijas, guardarraíles, modo degradado, límites de uso y presentación del asistente virtual con aviso de privacidad ([SPEC-05](../../openspec/specs/motor-conversacion/spec.md)).

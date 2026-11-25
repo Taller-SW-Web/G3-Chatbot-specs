@@ -40,8 +40,8 @@ graph LR
 
 ## EP-01 · Identidad y sesión
 
-- **Objetivo:** que el cliente cree su cuenta, verifique su correo, inicie sesión (con MFA si corresponde), mantenga la sesión viva, consulte su información en "Mi cuenta" y valide su celular antes de pagar, sin salir del canal.
-- **Valor de negocio:** habilita todas las acciones protegidas (pago, pedidos, postventa) y cubre el lineamiento "validación del número celular y correo del cliente". Sin esta épica no hay compra.
+- **Objetivo:** que el cliente cree su cuenta, verifique su correo, inicie sesión (con MFA si corresponde), mantenga la sesión viva, consulte su información en "Mi cuenta" y pueda validar su celular de forma opcional, sin salir del canal.
+- **Valor de negocio:** habilita todas las acciones protegidas (pago, pedidos, postventa) y cubre el lineamiento "validación del número celular y correo del cliente" con la capacidad de OTP disponible, aunque el checkout use el correo verificado como contacto por defecto. Sin esta épica no hay compra.
 - **Specs:** SPEC-01 Registro · SPEC-02 Verificación de correo · SPEC-03 Inicio de sesión, MFA y sesión · SPEC-04 Validación local de celular.
 - **Hito:** Hito 3 (SPEC-01 a 03) y Hito 4 (SPEC-04).
 - **Dependencias:** EP-02 (herramientas y acción pendiente); EP-04 para la fusión de carritos; Seguridad ✅ (todos los endpoints confirmados; A1 resuelto con una acción pendiente; A2 decidido fuera de alcance de Seguridad).
@@ -80,7 +80,7 @@ graph LR
 - **Valor de negocio:** cubre el lineamiento "grabación del pedido y pago con tarjeta" y la parte de cupones del lineamiento de ofertas. Es la operación más sensible del canal.
 - **Specs:** SPEC-12 Dirección, documento y envío · SPEC-13 Cupones · SPEC-14 Checkout y pago simulado.
 - **Hito:** Hito 4.
-- **Dependencias:** EP-01 (sesión y celular verificado), EP-04 (carrito válido), EP-06 (creación del pedido); Seguridad ✅ (A3, credenciales reales desde Hito 4); Ventas ✅ (A8, A9, A14); Despacho ✅ contrato y scopes (Seguridad #31, credenciales reales desde Hito 4); Productos 🟡 (A5: scopes sujetos a confirmación del PO; A6 resuelto).
+- **Dependencias:** EP-01 (sesión y contacto verificado), EP-04 (carrito válido), EP-06 (creación del pedido); Seguridad ✅ (A3, credenciales reales desde Hito 4); Ventas ✅ (A8, A9, A14); Despacho ✅ contrato y scopes (Seguridad #31, credenciales reales desde Hito 4); Productos 🟡 (A5: scopes sujetos a confirmación del PO; A6 resuelto).
 - **Historias:** [historias/EP-05-checkout-pago.md](historias/EP-05-checkout-pago.md)
 
 ## EP-06 · Grabación y confirmación del pedido

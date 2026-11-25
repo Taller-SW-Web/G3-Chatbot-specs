@@ -82,7 +82,7 @@ flowchart TD
 
 ## (c) Checkout y pago
 
-El orden de precondiciones es el de SPEC-14 · Req. 1: sesión → celular verificado → carrito válido → dirección y cotización → cupón vigente. Sesión, celular, carrito y cupón se resuelven en el chat; **la dirección y la cotización se resuelven en `CheckoutPage`**, nunca por texto.
+El orden de precondiciones es el de SPEC-14 · Req. 1: sesión → contacto verificado → carrito válido → dirección y cotización → cupón vigente. El contacto verificado es el correo de la cuenta por defecto; el celular es opcional. Sesión, contacto, carrito y cupón se resuelven en el chat; **la dirección y la cotización se resuelven en `CheckoutPage`**, nunca por texto.
 
 Fuentes: SPEC-14 · Req. 1–6; SPEC-03 · Req. 3; SPEC-04 · Req. 1–2; SPEC-10 · Req. 2; SPEC-11 · Req. 3; SPEC-12 · Req. 1–5; SPEC-13 · Req. 4; SPEC-15 · Req. 1–3; SPEC-16 · Req. 3.
 
@@ -91,8 +91,8 @@ flowchart TD
     A["'quiero pagar' o botón Pagar<br/>iniciar_checkout"] --> B{"1. ¿Sesión CLIENTE?"}
     B -- "No" --> B1["REQUIERE_SESION<br/>login o registro<br/>accionPendiente = INICIAR_CHECKOUT"]
     B1 --> B
-    B -- "Sí" --> C{"2. ¿Celular verificado?"}
-    C -- "No" --> C1["403 CELULAR_NO_VERIFICADO<br/>FORMULARIO/OTP_CELULAR<br/>6 dígitos, 5 min, 3 intentos"]
+    B -- "Sí" --> C{"2. ¿Contacto verificado?<br/>correo del perfil por defecto"}
+    C -- "No" --> C1["403 CONTACTO_NO_VERIFICADO<br/>defensivo: SIN_CONTACTO_VERIFICADO,<br/>SEGURIDAD_NO_DISPONIBLE o SIN_SESION<br/>no se pide OTP"]
     C1 --> C
     C -- "Sí" --> D{"3. ¿Carrito válido?<br/>revalidación masiva de stock"}
     D -- "Vacío o sin líneas válidas" --> D1["'Tu carrito no tiene productos disponibles para comprar'"]
@@ -127,6 +127,8 @@ flowchart TD
     O1 --> K
     O -- "Sí" --> O2["FAILED · anulación PAGO_NO_COMPLETADO<br/>carrito ACTIVE<br/>'No pudimos procesar el pago. Tu carrito sigue guardado'"]
 ```
+
+> En el modo por defecto (`REQUIRE_VERIFIED_CONTACT=true`, `REQUIRE_PHONE_VERIFICATION=false`) el checkout no pide OTP: el correo verificado por G7 es el contacto. `CELULAR_NO_VERIFICADO` solo aparece en el modo legado (`REQUIRE_PHONE_VERIFICATION=true`); la verificación del celular sigue disponible de forma opcional desde "Mi cuenta".
 
 ## (d) Postventa: estado, seguimiento, reclamo y devolución
 

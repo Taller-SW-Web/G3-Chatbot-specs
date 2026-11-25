@@ -188,11 +188,11 @@
 |---|---|---|---|---|---|---|
 | EP-05 | Must | 5 | Hito 4 | `SPEC-14 · Req. 1` | RN-CHK-17 | — (orquesta HU-IDE-06, HU-IDE-12, HU-CAR-02, HU-CHK-04, HU-CHK-09) |
 
-**Como** cliente, **quiero** que al decir "quiero pagar" el chat resuelva en orden lo que falte (sesión, celular, carrito, dirección, cupón), **para** llegar al resumen de pago sin callejones sin salida.
+**Como** cliente, **quiero** que al decir "quiero pagar" el chat resuelva en orden lo que falte (sesión, contacto, carrito, dirección, cupón), **para** llegar al resumen de pago sin callejones sin salida.
 
 **Criterios de aceptación**
 - `SPEC-14 · Req. 1 · Scenario: Todo listo` — se navega a `CheckoutPage` con los importes calculados por el backend y el botón "Confirmar y pagar S/ X".
-- `SPEC-14 · Req. 1 · Scenario: Falta una precondición` — sesión, celular, carrito o cupón se resuelven en el chat; si falta la dirección, se navega a `CheckoutPage` con la sección de dirección enfocada.
+- `SPEC-14 · Req. 1 · Scenario: Falta una precondición` — sesión, contacto, carrito o cupón se resuelven en el chat; si falta la dirección, se navega a `CheckoutPage` con la sección de dirección enfocada.
 - `SPEC-14 · Req. 1 · Scenario: Carrito vacío o solo con productos no disponibles` — se informa y se ofrece "Buscar productos".
 
 **Prioridad:** Must: es la entrada al pago con tarjeta que exige el curso.

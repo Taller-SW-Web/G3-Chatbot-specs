@@ -144,7 +144,7 @@ Las decisiones D1–D7 no añaden módulos ni cambian el DAG; amplían superfici
 | `mod-checkout` | `shared/` | Tabla `purchase_rating` para la valoración de la experiencia de compra | D5 · feedback |
 | `mod-postventa` | `shared/` | `order_ref.csat_sent` y outbox para la notificación interna de sugerencias | D5 · feedback |
 | `mod-auth` | `shared/` | Escritura de `phone_otp_challenge` y `local_phone_verification` | D1 · OTP |
-| `mod-checkout` | `shared/` | Lectura de `local_phone_verification` para el `CheckoutGuard`; no importa `mod-auth` | D1 · OTP |
+| `mod-checkout` | `shared/` | Lectura de `local_phone_verification` para el `CheckoutGuard`; el correo del perfil llega por el adaptador de Seguridad, no por `mod-auth` | D1 · D2 · OTP |
 
 Regla: si el código prefiere resolver alguno de estos usos por una capacidad en vez de por `public.py`, se registra en `src/shared/infrastructure/di/capabilities.py` y se actualiza esta tabla; el DAG no cambia.
 
@@ -260,7 +260,10 @@ módulo, sin lógica de negocio.
   no bloquea el cierre 24/24.
 - **SPEC-04 (validación de celular).** ✅ Implementado el 2026-11-21 (D1): `phone_otp_challenge`,
   endpoints de OTP, `SimulatedSmsSender`, `CheckoutGuard` real y `REQUIRE_PHONE_VERIFICATION` están en
-  `development` (backend #141 · `b75fbea6`, frontend #109 · `7432d463`).
+  `development` (backend #141 · `b75fbea6`, frontend #109 · `7432d463`). **D2 (2026-11-25):** el guard
+  pasa a contacto verificado con `REQUIRE_VERIFIED_CONTACT` (correo del perfil por defecto o celular
+  verificado localmente) y `REQUIRE_PHONE_VERIFICATION` queda como modo legado; el OTP sigue disponible
+  de forma opcional desde "Mi cuenta".
 - **SPEC-23 (adjuntos).** 🟡 El flujo de adjuntos está implementado en `development` el 2026-11-21 (D2): `attachment`, endpoints de carga, borrado y URL firmada, EXIF/miniaturas, limpieza y `adjuntoIds`. El adaptador `SupabaseAttachmentStorage` y el selector `ATTACHMENT_STORAGE=local|supabase` entraron después en `development` (backend #144 · `e4faadf`). Falta la promoción `development` → `main` (H5-X1), el bucket privado y las variables de storage; producción conserva `ATTACHMENT_STORAGE=local` en su configuración, sobre un volumen efímero (ADR-0028, [runbook](../operacion/adjuntos-supabase.md)).
 - **SPEC-24 (retroalimentación).** ✅ Implementado el 2026-11-21 (D5): reacciones, sugerencias/bugs,
   CSAT, valoración de compra y outbox interno están mergeados; la UI dejó de ser estado local.

@@ -1,6 +1,8 @@
 # Catálogo de intenciones
 
 > Diseño conversacional sobre [SPEC-05 · Req. 3](../../openspec/specs/motor-conversacion/spec.md) (tabla de intenciones y herramientas) y [SPEC-05 · Req. 6](../../openspec/specs/motor-conversacion/spec.md) (sesión y confirmación por herramienta). Los nombres de herramientas, códigos de error y límites salen de las specs; si algo aquí las contradice, mandan las specs.
+>
+> **Vigente (2026-11-25):** los nombres de este catálogo siguen el delta [2026-11-25-catalogo-tools-motor-conversacion](../../openspec/changes/2026-11-25-catalogo-tools-motor-conversacion/proposal.md) (M5): `consultar_pedidos` consolida `listar_pedidos` + `consultar_pedido`, y `silenciar_complementos` entra al catálogo. Mientras el delta no se archive, `openspec/specs/motor-conversacion/spec.md` conserva la tabla anterior; este documento y el delta son la referencia operativa.
 
 ## 1. Qué es una intención en este canal
 
@@ -15,6 +17,7 @@ El chatbot **no entrena un clasificador de intenciones (NLU)**: el LLM recibe el
 
 - **ID:** `INT-<ÁREA>-NN`, con las áreas de [`trazabilidad.md`](../producto/trazabilidad.md) (`IDE`, `CNV`, `CAT`, `CAR`, `CHK`, `PED`, `SGT`, `RCL`, `DEV`) más `SIS` para las intenciones de sistema.
 - **Herramienta(s):** nombres exactos de SPEC-05 · Req. 3. "Sin herramienta" = respuesta de texto (y, si aplica, acciones rápidas).
+- **Acciones de cliente:** `IR_A_CHECKOUT`, `CERRAR_SESION`, `NUEVO_CHAT` y `BUSCAR_CHATS` no son herramientas ni se despachan por `ActionDispatcher`: las devuelve una herramienta en un bloque `ACCIONES_RAPIDAS` y las ejecuta el frontend (navegar, llamar a `POST /sesion/logout`, crear la conversación o abrir `/buscar`). Si se listan en la columna «Herramienta(s)», es porque una herramienta las produce.
 - **Confirmación UI:** lo que exige SPEC-05 · Req. 6 (o la spec citada). "No" en una acción reversible significa que se ejecuta y se informa; Botleta **no** agrega un "¿estás seguro?" conversacional que la spec no pide.
 - **Sesión:** según SPEC-05 · Req. 6. Si falta, la herramienta devuelve `REQUIERE_SESION`, se muestra el login y se guarda la `accionPendiente`.
 - Los slots se describen en el catálogo de §4; aquí solo se listan con `*` cuando son obligatorios.
@@ -32,7 +35,7 @@ El chatbot **no entrena un clasificador de intenciones (NLU)**: el LLM recibe el
 | INT-IDE-03 | Reenviar el enlace de verificación del correo | `reenviar_verificacion` | correo (en el formulario) | No | No | SPEC-02 · Req. 2 |
 | INT-IDE-04 | Verificar el celular por iniciativa propia | `verificar_celular` | — (el código va en `FORMULARIO/OTP_CELULAR`) | No | Sí | SPEC-04 · Req. 3 |
 | INT-IDE-05 | Indicar que el celular registrado no es el suyo | Sin herramienta (orientación al perfil) | — | No | Sí | SPEC-04 · Req. 3 |
-| INT-IDE-06 | Cerrar sesión | `cerrar_sesion` | — | No | Sí | SPEC-03 · Req. 6 |
+| INT-IDE-06 | Cerrar sesión | `cerrar_sesion` (acción `CERRAR_SESION`; el frontend llama a `POST /sesion/logout`) | — | No | Sí | SPEC-03 · Req. 6 |
 
 **Frases de ejemplo**
 
@@ -77,11 +80,11 @@ El chatbot **no entrena un clasificador de intenciones (NLU)**: el LLM recibe el
 
 | ID | Descripción | Herramienta(s) | Slots | Confirmación UI | Sesión | Spec |
 |---|---|---|---|---|---|---|
-| INT-CNV-01 | Empezar una conversación nueva | `nueva_conversacion` | — | No | No | SPEC-05 · Req. 1 |
-| INT-CNV-02 | Buscar entre conversaciones anteriores | `buscar_conversaciones` | `q`* (término) | No | No | SPEC-05 · Req. 1 |
+| INT-CNV-01 | Empezar una conversación nueva | `nueva_conversacion` (acción `NUEVO_CHAT`) | — | No | No | SPEC-05 · Req. 1 |
+| INT-CNV-02 | Buscar entre conversaciones anteriores | `buscar_conversaciones` (acción `BUSCAR_CHATS`) | `q`* (término) | No | No | SPEC-05 · Req. 1 |
 | INT-CNV-03 | Acciones rápidas fijas | `VER_OFERTAS`, `RASTREAR_PEDIDO`, `AYUDA_DEVOLUCION` (ActionDispatcher, sin LLM) | — | No | Según acción | SPEC-05 · Req. 14 |
 
-Las acciones fijas son controles de UI y no intenciones que el LLM deba inferir. "Preguntar en el chat" desde una tarjeta abre una conversación nueva con un primer mensaje contextual y continúa por las intenciones/herramientas de pedidos, seguimiento, reclamos o devoluciones existentes (SPEC-05 · Req. 13).
+Las acciones fijas son controles de UI y no intenciones que el LLM deba inferir. `NUEVO_CHAT` y `BUSCAR_CHATS` son acciones de cliente: el backend las devuelve y el frontend crea la conversación o abre `/buscar`; no pasan por el dispatcher. "Preguntar en el chat" desde una tarjeta abre una conversación nueva con un primer mensaje contextual y continúa por las intenciones/herramientas de pedidos, seguimiento, reclamos o devoluciones existentes (SPEC-05 · Req. 13).
 
 **Frases de ejemplo**
 
@@ -112,7 +115,7 @@ Las acciones fijas son controles de UI y no intenciones que el LLM deba inferir.
 | INT-CAT-08 | Ver el detalle de un producto | `ver_detalle_producto` | `productoRef`* (u identificación por nombre en el carrusel) | No | No | SPEC-09 · Req. 3 |
 | INT-CAT-09 | Elegir talla y color por texto | `agregar_al_carrito` con `talla`/`color` (si falta un atributo, se pregunta solo ese con chips); `ver_detalle_producto` si el cliente aún está en el detalle | `talla`, `color` (solo el atributo que falte) | No | No | SPEC-09 · Req. 4 |
 | INT-CAT-10 | Preguntar el precio de un producto | `buscar_productos` o `ver_detalle_producto` | producto* | No | No | SPEC-05 · Req. 7 |
-| INT-CAT-11 | Rechazar los complementos sugeridos | Sin herramienta (fija `contexto.crossSellSilenciado = true`) | — | No | No | SPEC-07 · Req. 3 |
+| INT-CAT-11 | Rechazar los complementos sugeridos | `silenciar_complementos` (sin argumentos; fija `contexto.crossSellSilenciado = true`) | — | No | No | SPEC-07 · Req. 3; SPEC-05 · Req. 3 |
 
 > 🧩 **Mensajes con imágenes (SPEC-23).** Un mensaje con una imagen adjunta no es una intención nueva: el LLM interpreta la imagen y la convierte en los mismos criterios de texto de INT-CAT-01 (por ejemplo "busco algo así" con la foto de unas zapatillas). No hay búsqueda por similitud visual. Si no puede deducir criterios, hace una sola pregunta aclaratoria; si la imagen no tiene relación con la tienda, aplica INT-SIS-04. Ver [D-16](dialogos-ejemplo.md#d-16--búsqueda-a-partir-de-una-imagen). Las frases del conjunto de evaluación siguen siendo solo de texto.
 
@@ -242,8 +245,8 @@ Las acciones fijas son controles de UI y no intenciones que el LLM deba inferir.
 |---|---|---|---|---|---|---|
 | INT-CHK-01 | Aplicar un cupón | `aplicar_cupon` | `codigo`* (se normaliza sin espacios y en mayúsculas) | No; **Sí** solo si reemplaza un cupón ya aplicado | Sí (si no, `accionPendiente = APLICAR_CUPON{codigo}`) | SPEC-13 · Req. 1, 3 |
 | INT-CHK-02 | Quitar el cupón | `quitar_cupon` | — | No | Sí | SPEC-13 · Alcance |
-| INT-CHK-03 | Pagar / ir al checkout | `iniciar_checkout` | — | **Sí** (el pago solo se ejecuta en `CheckoutPage`) | Sí (si no, `accionPendiente = INICIAR_CHECKOUT`) | SPEC-14 · Req. 1; SPEC-05 · Req. 6 |
-| INT-CHK-04 | Preguntar por el costo o el plazo del envío, o dar una dirección | `iniciar_checkout` (lleva a `CheckoutPage` con la sección de dirección enfocada; la dirección nunca se envía al LLM); `ver_carrito` si ya hay cotización vigente | — | No | Sí | SPEC-05 · Req. 3, SPEC-12 · Req. 4 y RNF *Privacidad* |
+| INT-CHK-03 | Pagar / ir al checkout | `iniciar_checkout` (acción `IR_A_CHECKOUT`) | — | **Sí** (el pago solo se ejecuta en `CheckoutPage`) | Sí (si no, `accionPendiente = INICIAR_CHECKOUT`) | SPEC-14 · Req. 1; SPEC-05 · Req. 6 |
+| INT-CHK-04 | Preguntar por el costo o el plazo del envío, o dar una dirección | `iniciar_checkout` (acción `IR_A_CHECKOUT`: navega a `CheckoutPage` con la sección de dirección enfocada; la dirección nunca se envía al LLM); `ver_carrito` si ya hay cotización vigente | — | No | Sí | SPEC-05 · Req. 3, SPEC-12 · Req. 4 y RNF *Privacidad* |
 | INT-CHK-05 | Preguntar por otros medios de pago (Yape, efectivo, cuotas) | Sin herramienta | — | No | No | SPEC-14 · Fuera de alcance |
 
 **Frases de ejemplo**
@@ -298,9 +301,9 @@ Las acciones fijas son controles de UI y no intenciones que el LLM deba inferir.
 
 | ID | Descripción | Herramienta(s) | Slots | Confirmación UI | Sesión | Spec |
 |---|---|---|---|---|---|---|
-| INT-SGT-01 | Ver mis pedidos | `listar_pedidos` | — (el cliente sale del token, nunca de los argumentos) | No | Sí | SPEC-17 · Req. 1; SPEC-05 · Req. 6 |
-| INT-SGT-02 | Consultar el estado de un pedido | `consultar_pedido` (sin número: `listar_pedidos` y regla de un solo pedido en curso) | `pedidoId` | No | Sí | SPEC-17 · Req. 1–2 |
-| INT-SGT-03 | Preguntas cerradas: "¿ya llegó?", "¿cuándo llega?", "¿por qué se anuló?" | `consultar_pedido` (+ `consultar_seguimiento` si está `DESPACHADO`) | `pedidoId` | No | Sí | SPEC-17 · Req. 3 |
+| INT-SGT-01 | Ver mis pedidos | `consultar_pedidos` | — (el cliente sale del token, nunca de los argumentos) | No | Sí | SPEC-17 · Req. 1; SPEC-05 · Req. 6 |
+| INT-SGT-02 | Consultar el estado de un pedido | `consultar_pedidos` con `pedidoId`; sin número, `consultar_pedidos` sin argumentos aplica la regla de un solo pedido no finalizado | `pedidoId` | No | Sí | SPEC-17 · Req. 1–2 |
+| INT-SGT-03 | Preguntas cerradas: "¿ya llegó?", "¿cuándo llega?", "¿por qué se anuló?" | `consultar_pedidos` (+ `consultar_seguimiento` si está `DESPACHADO`) | `pedidoId` | No | Sí | SPEC-17 · Req. 3 |
 | INT-SGT-04 | Seguimiento del despacho en ruta | `consultar_seguimiento` | `pedidoId` | No | Sí | SPEC-18 · Req. 1–2 |
 | INT-SGT-05 | Ubicación exacta o datos del repartidor | `consultar_seguimiento` (responde con los límites de la información) | `pedidoId` | No | Sí | SPEC-18 · Req. 3 |
 | INT-SGT-06 | Anular un pedido | Sin herramienta: no se ofrece en el canal; se ofrece crear un reclamo | — | No | Sí | SPEC-17 · Fuera de alcance; SPEC-15 · Fuera de alcance |

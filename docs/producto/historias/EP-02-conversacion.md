@@ -397,7 +397,7 @@
 **Como** cliente que está revisando un pedido, seguimiento, reclamo o devolución, **quiero** abrir una conversación contextual desde su tarjeta, **para** consultar el estado sin copiar el identificador ni volver a explicar el tema.
 
 **Criterios de aceptación**
-- `SPEC-05 · Req. 13 · Scenario: Desde una tarjeta de pedido` — se crea una conversación nueva, se envía el primer mensaje contextual y se obtiene `ESTADO_PEDIDO` con `consultar_pedido`.
+- `SPEC-05 · Req. 13 · Scenario: Desde una tarjeta de pedido` — se crea una conversación nueva, se envía el primer mensaje contextual y se obtiene `ESTADO_PEDIDO` con `consultar_pedidos`.
 - `SPEC-05 · Req. 13 · Scenario: Desde el seguimiento de un pedido` — el primer mensaje identifica el `pedidoId` y se responde con `consultar_seguimiento`.
 - `SPEC-05 · Req. 13 · Scenario: Desde una solicitud de devolución o cambio` — se identifica la solicitud y se responde con `consultar_devolucion`.
 - `SPEC-05 · Req. 13 · Scenario: Desde un reclamo` — se identifica el reclamo y se responde con `consultar_reclamo`.

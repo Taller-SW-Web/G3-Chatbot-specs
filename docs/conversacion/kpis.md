@@ -22,7 +22,7 @@
 | **Éxito de pago** | Pagos aprobados sobre intentos válidos | `payment_attempt` `APPROVED` / `payment_attempt` totales (excluyendo tarjetas de rechazo de prueba) | `payment_attempt.result`, `payment_attempt.last4` | ✅ | ≥ 95 % | Por hito |
 | **Checkouts con 3 rechazos** | Checkouts que agotan los intentos | checkouts `FAILED` / checkouts con al menos un intento | `checkout.status`, `checkout.payment_attempts` | ✅ | ≤ 5 % | Por hito |
 | **Turnos promedio hasta comprar** | Esfuerzo conversacional de una compra | promedio de mensajes `CUSTOMER` entre el primer mensaje de la conversación y la creación del checkout pagado | `message` (role, `created_at`) + `checkout` + `cart.conversation_id` 🟠 (el carrito de cliente no guarda `conversation_id`; hay que registrar en qué conversación se inició el checkout) | 🟠 | ≤ 8 turnos | Por hito |
-| **Postventa autoservida** | Consultas de pedido, reclamo o devolución resueltas en el chat | turnos con `consultar_pedido`/`consultar_seguimiento`/`consultar_reclamo`/`consultar_devolucion` con `result_code = OK` / turnos con esas herramientas | `message.tool_name`, `message.result_code` | ✅ | ≥ 90 % | Por hito |
+| **Postventa autoservida** | Consultas de pedido, reclamo o devolución resueltas en el chat | turnos con `consultar_pedidos`/`consultar_seguimiento`/`consultar_reclamo`/`consultar_devolucion` con `result_code = OK` / turnos con esas herramientas | `message.tool_name`, `message.result_code` | ✅ | ≥ 90 % | Por hito |
 
 ## 3. KPIs de calidad conversacional
 

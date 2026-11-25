@@ -37,7 +37,7 @@ Reglas:
 | [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md) | Streaming de la respuesta por SSE en la respuesta del `POST`, sin WebSocket | Aceptada | 2026-10-11 |
 | [ADR-0022](ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md) | Módulos simulados en proceso para los entornos desplegados | Aceptada | 2026-10-16 |
 | [ADR-0023](ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md) | Proxy del frontend hacia la API (mismo origen) | Aceptada | 2026-10-16 |
-| [ADR-0024](ADR-0024-calidad-y-seguridad-en-el-pipeline.md) | Pipeline de CI/CD con gate de calidad, seguridad y pruebas | Propuesta | 2026-11-07 |
+| [ADR-0024](ADR-0024-calidad-y-seguridad-en-el-pipeline.md) | Pipeline de CI/CD con gate de calidad, seguridad y pruebas | Aceptada | 2026-11-25 |
 | [ADR-0025](ADR-0025-monolito-modular-por-capacidad.md) | Monolito modular por capacidad en backend y frontend (homologa el ADR-0024 del backend) | Aceptada | 2026-11-21 |
 | [ADR-0026](ADR-0026-almacen-de-otp-y-guard-de-celular.md) | Almacén de OTP y guard de celular verificado en el checkout | Aceptada | 2026-11-21 |
 | [ADR-0027](ADR-0027-duplicados-de-postventa-y-forzar.md) | Duplicados de postventa con 409 y confirmación explícita (`forzar`) | Aceptada | 2026-11-21 |

@@ -112,7 +112,7 @@ equipo `@Taller-SW-Web/chatbot`.
 | L1 | SPEC-04 completo (H-17): OTP, guard, flag y UI | `mod-auth` + `mod-checkout` | @Ankarmin | ✅ Cerrado (D1); D2 de SPEC-04 documentado (2026-11-25) | Los 3 requisitos y sus escenarios pasan; `CELULAR_NO_VERIFICADO` sigue siendo el error del modo legado y `CONTACTO_NO_VERIFICADO` cubre el modo por defecto. |
 | L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @SebJoq21 | 🟡 Parcial (D2): adaptador en `development`, falta promoción y configuración | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501; `ATTACHMENT_STORAGE=supabase` verificado en producción. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53) |
 | L3 | SPEC-24 completo: reacciones, sugerencias/bugs, valoración, CSAT y outbox | `mod-chat` + `mod-postventa` + `mod-checkout` | @Ankarmin + @MathiasTL | ✅ Cerrado (D5) | Los mecanismos tienen endpoints, tablas y pruebas; la UI dejó de ser estado local |
-| L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Ankarmin | ✅ Cerrado (2026-11-25) | S2 convertido en gate bloqueante y documentado en `docs/arquitectura/modularizacion.md` §5 y §9. `python scripts/export_openapi.py --check` pasa (47 paths); el job `openapi` del backend genera y valida el esquema, pero no ejecuta `--check` (mejora residual) |
+| L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Ankarmin | 🟡 Cerrado pendiente de merge del gate | S2 convertido en gate bloqueante y documentado en `docs/arquitectura/modularizacion.md` §5 y §9. [BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165) agrega `Verify committed OpenAPI is up to date` (`export_openapi.py --check`) al job `openapi`; `--check` pasa (47 paths) y falla sobre una copia alterada. Pendiente de merge; no verificado en producción |
 
 > **Excepción documentada (CSAT).** El manifiesto de `mod-orders` declara
 > `/pedidos/{pedidoId}/csat`, pero el OpenAPI lo etiqueta `mod-postventa`. El gate lo acepta como
@@ -154,8 +154,8 @@ prueba y el CI está en verde.
 
 **Resultado:** 23 de 24 capabilities en ✅ y **SPEC-23 en 🟡** hasta la promoción a `main` y la configuración del storage. Las 5 correcciones mecánicas (SPEC-01, SPEC-05, SPEC-09,
 SPEC-20 y SPEC-22) se promovieron al verificar el código mergeado. El cierre no depende de S4 ni M5:
-son deuda documental y una mejora conversacional fuera de las 24 capabilities. S2 y L4 quedaron
-cerrados el 2026-11-25.
+son deuda documental y una mejora conversacional fuera de las 24 capabilities. S2 quedó cerrado el
+2026-11-25; L4 queda pendiente del merge del gate de drift ([BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165)).
 
 ## 6. Notas de método y límites
 
@@ -201,11 +201,13 @@ cerrados el 2026-11-25.
 > de carga + reinicio + lectura. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53).
 > Mathias conserva la promoción `development` → `main` (H5-X1) y la coordinación del deploy.
 
-> [!note] Actualización 2026-11-25 — S2 y L4 cerrados
+> [!note] Actualización 2026-11-25 — S2 cerrado; L4 pendiente del gate de drift
 > El job `modules` del frontend descarga `docs/openapi.json` de `development`, ejecuta
 > `pnpm modules:check` y es requerido por `check` (FE #108 · `ffabd60`). El gate falla ante un endpoint
 > del manifiesto ausente o con otro tag; CSAT queda como excepción documentada hasta el 2026-12-19. El
 > estado quedó reflejado en
 > [modularizacion.md](arquitectura/modularizacion.md#estado-real-del-gate-de-contrato).
-> `python scripts/export_openapi.py --check` pasa con 47 paths, pero el job `openapi` del backend aún
-> no ejecuta `--check`; la verificación de drift del archivo comprometido sigue siendo local.
+> Para cerrar L4, [BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165) agrega
+> `Verify committed OpenAPI is up to date` (`python scripts/export_openapi.py --check`) al job
+> `openapi`; `--check` pasa con 47 paths y falla sobre una copia alterada. L4 queda cerrado pendiente
+> de ese merge, no verificado en producción.

@@ -72,7 +72,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 |---|---|---|---|---|
 | H5-C1 | David | backend, frontend | 🔴 | Hacer bloqueantes `pip-audit` y `pnpm audit` (quitar `\|\| echo`), con lista de excepciones justificadas |
 | H5-C2 | Sebastian | backend | 🔴 | DAST con OWASP ZAP baseline contra el stack levantado en CI y reporte como artefacto |
-| H5-C3 | Mathias | backend, frontend | 🟡 | Entorno `production` en GitHub con aprobación requerida (CI-12) |
+| H5-C3 | Mathias | backend, frontend | 🟡 | Entorno `production` en GitHub con aprobación requerida (CI-12). Implementación: [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139) |
 | H5-C4 | David | backend, frontend | 🟡 | Protección de rama: `enforce_admins=true` y revisión de code owners |
 | H5-C5 | David | specs | 🔴 | Pasar ADR-0024 a "Aceptada" y actualizar el diagrama del pipeline con los pasos de seguridad |
 
@@ -160,7 +160,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 
 - 2026-11-25: **H5-C5 hecha**. ADR-0024 pasa a **Aceptada** con fecha 2026-11-25; el índice de ADR y el conteo de `docs/arquitectura/README.md` quedan alineados. El diagrama `docs/diagrams/pipeline-ci-cd.{excalidraw,svg}` se rehízo con los jobs en vigor: lint/typecheck, unitarias, integración con migraciones, OpenAPI, module boundaries, Trivy + hadolint, SonarCloud, dependency-review, `pip-audit`/`pnpm audit` (advisory) y E2E; CodeQL, secret scanning con push protection y Dependabot van en la banda transversal. DAST con OWASP ZAP queda marcado como pendiente (H5-C2). Verificado con `python scripts/check_links.py` y `npx @fission-ai/openspec validate --specs`.
 
-- 2026-11-25: **H5-C1 hecha**. `pip-audit` bloqueante en backend #162 (excepción puntual `PYSEC-2026-1845` de pytest, documentada) y `pnpm audit` bloqueante en frontend #134 (sin excepciones vigentes). **H5-C3 parcial**: entorno `G3-Chatbot / production` creado en frontend con revisores Mathias y David; backend ya lo tenía. El deploy de Vercel sigue fuera de GitHub Actions, así que la aprobación del entorno aún no bloquea el despliegue. **H5-C4 parcial**: `enforce_admins=true` en ambos repos; `require_code_owner_reviews` sigue en `false` para no bloquear PRs unipersonales. **H5-C5 hecha** (ver entrada anterior); el diagrama ya refleja `pip-audit` y `pnpm audit` como bloqueantes tras H5-C1.
+- 2026-11-25: **H5-C1 hecha**. `pip-audit` bloqueante en backend #162 (excepción puntual `PYSEC-2026-1845` de pytest, documentada) y `pnpm audit` bloqueante en frontend #134 (sin excepciones vigentes). **H5-C3 parcial, asignada a Mathias**: entorno `G3-Chatbot / production` creado en frontend con revisores Mathias y David; backend ya lo tenía; implementación del deploy por Actions en [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139). El deploy de Vercel sigue fuera de GitHub Actions, así que la aprobación del entorno aún no bloquea el despliegue. **H5-C4 hecha**: `CODEOWNERS` queda solo con `@MathiasTL` y `@Ankarmin`; `require_code_owner_reviews=true` con 1 aprobación y `enforce_admins=true`. GitHub no permite autoaprobarse, así que Mathias y David se aprueban mutuamente; el resto del equipo no puede aprobar. **H5-C5 hecha** (ver entrada anterior); el diagrama ya refleja `pip-audit` y `pnpm audit` como bloqueantes tras H5-C1.
 
 ## Siguiente paso
 

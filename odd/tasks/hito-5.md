@@ -158,6 +158,8 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 
 - 2026-11-24: **H5-M1 redactada** (ADR-0030 nuevo; ADR-0010 y ADR-0011 actualizados con una sección de actualización; índice de ADR y nota en `c4.md`). Commit pendiente de confirmación del usuario. **H5-R1, H5-R2 y H5-R3 hechas**: backend #149 y #150 y frontend #112 y #113 mergeados; specs #36 mergeado y #30 cerrado.
 
+- 2026-11-25: **H5-C5 hecha**. ADR-0024 pasa a **Aceptada** con fecha 2026-11-25; el índice de ADR y el conteo de `docs/arquitectura/README.md` quedan alineados. El diagrama `docs/diagrams/pipeline-ci-cd.{excalidraw,svg}` se rehízo con los jobs en vigor: lint/typecheck, unitarias, integración con migraciones, OpenAPI, module boundaries, Trivy + hadolint, SonarCloud, dependency-review, `pip-audit`/`pnpm audit` (advisory) y E2E; CodeQL, secret scanning con push protection y Dependabot van en la banda transversal. DAST con OWASP ZAP queda marcado como pendiente (H5-C2). Verificado con `python scripts/check_links.py` y `npx @fission-ai/openspec validate --specs`.
+
 ## Siguiente paso
 
 1. H5-G1: ADR de API Management.

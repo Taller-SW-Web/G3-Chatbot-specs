@@ -2,11 +2,11 @@
 
 ## Estado
 
-Propuesta
+Aceptada
 
 ## Fecha
 
-2026-11-07
+2026-11-25
 
 ## Contexto
 
@@ -67,6 +67,7 @@ Límites de la decisión: no se adopta SonarQube self-hosted, mutation testing, 
 ## Referencias
 
 - [`odd/tasks/ci-calidad-seguridad.md`](../../../odd/tasks/ci-calidad-seguridad.md) — plan, fases, tareas y criterios de aceptación.
+- [`docs/diagrams/pipeline-ci-cd.svg`](../../diagrams/pipeline-ci-cd.svg) — diagrama del pipeline con los jobs de calidad y seguridad en vigor (fuente editable en [`pipeline-ci-cd.excalidraw`](../../diagrams/pipeline-ci-cd.excalidraw)).
 - `.github/workflows/ci.yml` de `G3-Chatbot-backend` y `G3-Chatbot-frontend`.
 - [ADR-0020](ADR-0020-despliegue-en-railway-vercel-y-supabase.md) — despliegue en Railway, Vercel y Supabase.
 - [ADR-0023](ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md) — proxy del frontend hacia la API.

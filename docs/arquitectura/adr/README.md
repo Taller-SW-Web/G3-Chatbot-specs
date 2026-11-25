@@ -39,7 +39,7 @@ Reglas:
 | [ADR-0023](ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md) | Proxy del frontend hacia la API (mismo origen) | Aceptada | 2026-10-16 |
 | [ADR-0024](ADR-0024-calidad-y-seguridad-en-el-pipeline.md) | Pipeline de CI/CD con gate de calidad, seguridad y pruebas | Aceptada | 2026-11-25 |
 | [ADR-0025](ADR-0025-monolito-modular-por-capacidad.md) | Monolito modular por capacidad en backend y frontend (homologa el ADR-0024 del backend) | Aceptada | 2026-11-21 |
-| [ADR-0026](ADR-0026-almacen-de-otp-y-guard-de-celular.md) | Almacén de OTP y guard de celular verificado en el checkout | Aceptada | 2026-11-21 |
+| [ADR-0026](ADR-0026-almacen-de-otp-y-guard-de-celular.md) | Almacén de OTP y guard de contacto verificado en el checkout | Aceptada; actualizada 2026-11-25 (D2) | 2026-11-21 |
 | [ADR-0027](ADR-0027-duplicados-de-postventa-y-forzar.md) | Duplicados de postventa con 409 y confirmación explícita (`forzar`) | Aceptada | 2026-11-21 |
 | [ADR-0028](ADR-0028-adjuntos-almacenamiento-externo-privado.md) | Adjuntos del chat con almacenamiento externo privado, no disco local | Aceptada | 2026-11-21 |
 | [ADR-0029](ADR-0029-modelo-de-datos-de-retroalimentacion.md) | Modelo de datos de retroalimentación: tablas propias y CSAT en Ventas | Aceptada | 2026-11-21 |

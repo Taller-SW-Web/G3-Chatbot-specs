@@ -27,7 +27,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 | D-04 | Pedido ambiguo con aclaración | SPEC-05 · Req. 3, 5; SPEC-07 · Req. 1 | INT-SIS-05, INT-CAT-04 |
 | D-05 | Cupón inválido | SPEC-08 · Req. 4; SPEC-13 · Req. 1, 2, 5 | INT-CAT-06, INT-CHK-01 |
 | D-06 | Pago rechazado 3 veces | SPEC-14 · Req. 5; SPEC-15 · Req. 3 | INT-CHK-03 |
-| D-07 | Anónimo que quiere pagar: login, fusión, celular y dirección | SPEC-01 · Req. 1; SPEC-03 · Req. 3–4; SPEC-04 · Req. 1–2; SPEC-14 · Req. 1 | INT-CHK-03, INT-IDE-02 |
+| D-07 | Anónimo que quiere pagar: login, fusión, contacto y dirección | SPEC-01 · Req. 1; SPEC-03 · Req. 3–4; SPEC-04 · Req. 1, 3; SPEC-14 · Req. 1 | INT-CHK-03, INT-IDE-02 |
 | D-08 | Estado y seguimiento con Despacho caído | SPEC-17 · Req. 1, 4; SPEC-18 · Req. 1, 3, 4 | INT-SGT-02, INT-SGT-04, INT-SGT-05 |
 | D-09 | Cambio fuera de plazo → reclamo | SPEC-21 · Req. 1; SPEC-19 · Req. 1–2 | INT-DEV-01, INT-RCL-01 |
 | D-10 | Fuera de dominio | SPEC-05 · Req. 3 | INT-SIS-04 |
@@ -59,7 +59,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 ## D-02 · Compra completa
 
-- **Precondiciones:** María con sesión iniciada, celular verificado localmente, dirección predeterminada guardada en Seguridad (Miraflores); carrito vacío.
+- **Precondiciones:** María con sesión iniciada, correo verificado por G7 (celular opcional), dirección predeterminada guardada en Seguridad (Miraflores); carrito vacío.
 - **Referencias:** SPEC-05 · Req. 3, 5, 12; SPEC-06 · Req. 1; SPEC-09 · Req. 3–4; SPEC-10 · Req. 1; SPEC-11 · Req. 1; SPEC-07 · Req. 3; SPEC-14 · Req. 1–5; SPEC-12 · Req. 2, 4; SPEC-15 · Req. 1–2; SPEC-16 · Req. 3.
 - **Intenciones:** INT-CAT-01, INT-CAT-08, INT-CAT-09, INT-CAT-11, INT-CHK-03.
 
@@ -95,7 +95,7 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 **Usuario:** quiero pagar
 `⟶ tool: iniciar_checkout({})`
-`⟵ sesión ✓ → celular verificado ✓ → carrito válido ✓ → (dirección y cotización en CheckoutPage) → sin cupón`
+`⟵ sesión ✓ → contacto verificado ✓ (correo del perfil) → carrito válido ✓ → (dirección y cotización en CheckoutPage) → sin cupón`
 **Botleta:** Te llevo a la pantalla de pago para que revises tu pedido.
 *(Pantalla `CheckoutPage`: dirección prellenada con "Usando tu dirección guardada · Cambiar", documento DNI por completar con la nota "El documento del comprobante puede ser distinto al de tu cuenta.", "Envío a Miraflores: S/ 12.50 · llega en 1 día hábil aprox.", total S/ 302.40 y el botón `[Confirmar y pagar S/ 302.40]`.)*
 *(María completa `tipoDocumento: DNI`, `numeroDocumento: 72458912` y pulsa `[Confirmar y pagar S/ 302.40]` → `POST /checkout` con `Idempotency-Key` → pedido `CREADO` en Ventas, checkout `PENDING_PAYMENT` con 15 min de vigencia.)*
@@ -230,8 +230,8 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 
 ## D-07 · Anónimo que quiere pagar
 
-- **Precondiciones:** visitante anónimo con 2 × SKU-A en el carrito; María tiene cuenta con 1 × SKU-B en su carrito, celular sin verificar y sin direcciones guardadas.
-- **Referencias:** SPEC-01 · Req. 1 (Acción protegida sin sesión), SPEC-05 · Req. 6 (Herramienta protegida sin sesión), SPEC-03 · Req. 1, 3, 4, SPEC-04 · Req. 1–2, SPEC-14 · Req. 1 (Falta una precondición), SPEC-12 · Req. 2.
+- **Precondiciones:** visitante anónimo con 2 × SKU-A en el carrito; María tiene cuenta con 1 × SKU-B en su carrito, correo verificado por G7 (celular opcional) y sin direcciones guardadas.
+- **Referencias:** SPEC-01 · Req. 1 (Acción protegida sin sesión), SPEC-05 · Req. 6 (Herramienta protegida sin sesión), SPEC-03 · Req. 1, 3, 4, SPEC-04 · Req. 1, 3, SPEC-14 · Req. 1 (Falta una precondición), SPEC-12 · Req. 2.
 - **Intenciones:** INT-CHK-03, INT-IDE-02.
 
 **Usuario:** quiero pagar
@@ -246,13 +246,10 @@ Datos de ejemplo: cliente "María" (correo `maria@ejemplo.com`, celular `+51 987
 **Botleta:** Hola, María
 **Botleta:** Unimos los productos que agregaste con los de tu cuenta
 *(Se retoma `INICIAR_CHECKOUT` sin que María lo repita; `accionPendiente` se limpia.)*
-`⟵ 403 CELULAR_NO_VERIFICADO` · se guarda `accionPendiente = INICIAR_CHECKOUT`
-**Botleta:** Para coordinar la entrega necesitamos confirmar tu celular +51 9****4321
-`[FORMULARIO/OTP_CELULAR]`
-*(María ingresa el código de 6 dígitos en el formulario; nunca pasa por el LLM.)*
-**Botleta:** ¡Listo! Tu celular quedó verificado
-*(Se ejecuta de nuevo la acción pendiente: carrito válido ✓; sin dirección → la app navega a `CheckoutPage` con la sección de dirección enfocada.)*
+`⟵ contacto verificado ✓ (correo del perfil) · carrito válido ✓; sin dirección → la app navega a CheckoutPage con la sección de dirección enfocada.`
 *(Pantalla `CheckoutPage`: campos vacíos, `distrito` como selector obligatorio; al cotizar, se muestra el resumen con los importes actualizados sin volver al chat.)*
+
+> El checkout no pide verificar el celular: el correo verificado por G7 es el contacto por defecto. Si María quiere verificarlo, puede hacerlo de forma opcional desde "Mi cuenta" (SPEC-04 · Req. 3).
 
 ---
 

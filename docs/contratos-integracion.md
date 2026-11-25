@@ -196,6 +196,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     }
     ```
   - `cartId` es opcional; si se indica, debe identificar un carrito del cliente autenticado. El servidor obtiene las líneas del carrito propio y resuelve precios, disponibilidad, descuentos y cupón con Productos, y costo y plazo de envío con Despacho, según SPEC-14. El cliente y el LLM no envían líneas ni importes. La respuesta contiene el resumen calculado por el servidor.
+  - **Contacto verificado y snapshot:** el guard de contacto usa el correo del perfil (`GET /auth/me`), no el `email` de `contacto`; el snapshot del pedido también toma el correo del perfil. El `email` que envíe el cliente no reemplaza al correo verificado de la cuenta.
   - **Validación de `contacto.tipoDocumento` / `numeroDocumento` (SPEC-12 Req. 1, A14):**
     - `DNI`: `^[0-9]{8}$`
     - `RUC`: `^(10|15|17|20)[0-9]{9}$`
@@ -222,7 +223,8 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     - `400 VALIDACION`: falta cabecera `Idempotency-Key`, dirección incompleta o el cuerpo contiene campos no admitidos, incluidos líneas e importes.
     - `400 DATO_INVALIDO`: falta o es inválido un dato de `contacto`, incluidos `nombreCompleto`, `tipoDocumento` y `numeroDocumento` (A14).
     - `401 REQUIERE_SESION` / `401 TOKEN_INVALIDO`: sin sesión o token inválido.
-    - `403 CELULAR_NO_VERIFICADO`: el cliente aún no tiene el celular verificado (SPEC-04 / SPEC-14 Req. 1). Solo aplica con `REQUIRE_PHONE_VERIFICATION=true` (por defecto en producción; ver D1).
+    - `403 CONTACTO_NO_VERIFICADO`: no se pudo confirmar un contacto verificado (SPEC-04 / SPEC-14 Req. 1). Incluye `motivo` (`SIN_SESION`, `SEGURIDAD_NO_DISPONIBLE`, `SIN_CONTACTO_VERIFICADO`) y, si el perfil tiene celular, `celularEnmascarado` opcional. Es defensivo: una cuenta activa con correo verificado no lo recibe.
+    - `403 CELULAR_NO_VERIFICADO`: modo legado con `REQUIRE_PHONE_VERIFICATION=true`; el celular vigente no tiene verificación local (SPEC-04).
     - `409 CARRITO_VACIO`: el carrito no tiene líneas disponibles para comprar.
     - `409 STOCK_INSUFICIENTE` / `409 PRODUCTO_NO_DISPONIBLE`: validación de stock fallida en Productos o rechazo `409` de Ventas al crear el pedido (segunda barrera). Se responde `409` con su `code`, nunca `500` (`BE/src/modules/mod_checkout/adapters/http/checkout_router.py:66-67`).
     - `409 CARRITO_DESACTUALIZADO`: cambió el precio, el stock, el cupón o la cotización respecto al resumen confirmado; incluye `lineas` con las líneas bloqueantes (`motivo`: `AGOTADO`, `STOCK_INSUFICIENTE` o `NO_CONFIRMADO`, con `nombre` y `mensaje`) y `summary` actualizado por el servidor. No se crea checkout ni pedido hasta que el cliente confirme el nuevo resumen.
@@ -232,6 +234,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     - `422 SIN_COBERTURA`: el distrito no tiene cobertura de Despacho.
     - `503 ERROR_VENTAS`: Ventas respondió con un error no clasificable al crear el pedido (distinto de `409` por stock y de `400` por datos); el checkout no se crea y se puede reintentar con la misma `Idempotency-Key` (`checkout_router.py:68`, `manage_checkout_use_case.py:373-374`).
     - `503 MODULO_NO_DISPONIBLE` / `503 SERVICIO_NO_DISPONIBLE`: Ventas, Productos o Despacho no disponible; también cuando la revalidación de stock no puede obtener una respuesta válida (no se asume disponibilidad).
+  - **Guard de contacto y precedencia de flags (SPEC-04):** `REQUIRE_PHONE_VERIFICATION=true` activa el modo legado y exige solo el celular verificado localmente; si está en `false`, `REQUIRE_VERIFIED_CONTACT=true` (valor por defecto en producción) acepta el correo del perfil o el celular verificado localmente; con ambos en `false` no hay guard (solo pruebas/demos). El modo legado tiene precedencia sobre el flag nuevo. Una cuenta activa con correo verificado supera el guard por defecto.
 
 - **`GET /api/v1/checkout/{checkoutId}`** (requiere sesión `CLIENTE`):
   - **Respuesta `200 OK`:** misma estructura que `POST /checkout` (`status` ∈ `PENDING_PAYMENT | PAYMENT_APPROVED | CONFIRMED | FAILED | EXPIRED`).
@@ -389,7 +392,8 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 |---|---|---|
 | `REQUIERE_SESION` | 401 | La acción necesita sesión de cliente. |
 | `DATO_INVALIDO` | 400 | Un dato de `contacto` del checkout falta o no cumple las reglas de nombre y documento de Ventas (A14). |
-| `CELULAR_NO_VERIFICADO` | 403 | El checkout requiere el celular verificado. |
+| `CONTACTO_NO_VERIFICADO` | 403 | El checkout no pudo confirmar un contacto verificado en el modo por defecto. Incluye `motivo` (`SIN_SESION`, `SEGURIDAD_NO_DISPONIBLE`, `SIN_CONTACTO_VERIFICADO`) y `celularEnmascarado` opcional; es defensivo (SPEC-04 / SPEC-14 Req. 1). |
+| `CELULAR_NO_VERIFICADO` | 403 | Modo legado: el checkout requiere el celular verificado localmente (`REQUIRE_PHONE_VERIFICATION=true`). |
 | `STOCK_INSUFICIENTE` | 409 | Cantidad no disponible para uno o más SKU; no incluye cantidades, porque Productos no las expone (A16). También lo devuelve `POST /checkout` cuando Ventas rechaza el pedido por stock (segunda barrera, SPEC-10). |
 | `ERROR_VENTAS` | 503 | Ventas falló al crear el pedido en `POST /checkout` con un error no clasificable; no se crea checkout y se puede reintentar con la misma `Idempotency-Key`. |
 | `ERROR_PROCESAMIENTO` | 503 | Error transitorio del simulador de pago en `POST /checkout/{id}/pago` (`PROCESSING_ERROR`); incluye `motivo` e `intentosRestantes`. |

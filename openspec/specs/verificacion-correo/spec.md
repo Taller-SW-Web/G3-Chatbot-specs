@@ -21,6 +21,8 @@ El reenvío (`POST /auth/verificar-correo/reenviar`) responde siempre `202`, par
 
 El curso exige al Canal Chatbot la "validación del correo del cliente"; esta spec la cubre.
 
+🧩 **Contacto de compra por defecto (25/11/2026).** El correo verificado por Seguridad (G7) es el contacto verificado que usa el checkout del chatbot; no hace falta un OTP de correo adicional. `POST /api/v1/checkout` toma el correo del perfil (`GET /auth/me`) para el snapshot del pedido y **no** el `email` que envíe el cliente en `contacto`. El celular queda como verificación opcional (SPEC-04).
+
 ## Alcance
 
 Incluye:
@@ -31,7 +33,7 @@ Incluye:
 
 ### Fuera de alcance
 
-- Verificación por código OTP de correo: Seguridad usa enlace para el registro.
+- Verificación por código OTP de correo: Seguridad usa enlace para el registro y el correo verificado es el contacto de compra por defecto; no se añade otro paso.
 - Cambio de correo: es SPEC-16 de Seguridad (usa el mismo endpoint, pero no se ofrece desde el chatbot).
 - Plantilla y envío del correo de verificación: los gestiona Seguridad.
 

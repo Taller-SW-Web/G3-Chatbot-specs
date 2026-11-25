@@ -206,20 +206,20 @@
 
 ---
 
-## HU-IDE-12 · Verificar mi celular antes del primer pago
+## HU-IDE-12 · Verificar mi celular de forma opcional desde Mi cuenta
 
 | Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
 |---|---|---|---|---|---|---|
-| EP-01 | Must | 3 | Hito 4 | `SPEC-04 · Req. 1` | RN-IDE-19 | Seguridad ✅ (`GET /auth/me`); A2 ✅ (decidido fuera de alcance de Seguridad) |
+| EP-01 | Must | 3 | Hito 4 | `SPEC-04 · Req. 1 y 3` | RN-IDE-19 | Seguridad ✅ (`GET /auth/me`); A2 ✅ (decidido fuera de alcance de Seguridad) |
 
-**Como** cliente autenticado que va a pagar, **quiero** que el sistema me pida confirmar mi celular solo cuando no está verificado para el número actual, **para** asegurar que la entrega se coordine con un número que controlo.
+**Como** cliente autenticado, **quiero** poder verificar mi celular desde "Mi cuenta" cuando yo lo decida, **para** tener un contacto alternativo verificado sin que ese paso sea requisito para comprar.
 
 **Criterios de aceptación**
-- `SPEC-04 · Req. 1 · Scenario: Primer checkout con celular sin verificar` — se responde `403 CELULAR_NO_VERIFICADO`, se muestra el bloque `FORMULARIO/OTP_CELULAR` y se guarda `accionPendiente`.
-- `SPEC-04 · Req. 1 · Scenario: Celular ya verificado` — el checkout continúa sin pedir verificación.
-- `SPEC-04 · Req. 1 · Scenario: El cliente cambió su celular desde la última verificación` — el número nuevo exige verificarse otra vez, detectado automáticamente.
+- `SPEC-04 · Req. 1 · Scenario: Cuenta activa con correo verificado y celular sin OTP` — el checkout continúa con el correo del perfil, sin pedir OTP ni mostrar `FORMULARIO/OTP_CELULAR`.
+- `SPEC-04 · Req. 3 · Scenario: OTP opcional desde "Mi cuenta"` — el cliente inicia la verificación desde `AccountPage`, completa el código y ve "Celular verificado" sin salir de la pantalla; la compra ya estaba habilitada por su correo.
+- `SPEC-04 · Req. 1 · Scenario: Modo legado con REQUIRE_PHONE_VERIFICATION=true` — solo con el flag legado se responde `403 CELULAR_NO_VERIFICADO` y se ofrece el OTP; no es el modo por defecto.
 
-**Prioridad:** Must: el curso exige la validación del número celular del cliente.
+**Prioridad:** Must: mantiene implementada y disponible la validación de celular que pide el curso, pero **no es precondición de compra**; el contacto por defecto es el correo verificado por G7.
 
 ---
 
@@ -229,7 +229,7 @@
 |---|---|---|---|---|---|---|
 | EP-01 | Must | 5 | Hito 4 | `SPEC-04 · Req. 2` | RN-IDE-20 | — (adaptador SMS propio y simulado) |
 
-**Como** cliente que debe verificar su celular, **quiero** recibir un código y validarlo con reglas claras de vigencia e intentos, **para** completar la verificación y seguir con el pago.
+**Como** cliente que quiere verificar su celular, **quiero** recibir un código y validarlo con reglas claras de vigencia e intentos, **para** completar la verificación opcional y dejar un contacto alternativo.
 
 **Criterios de aceptación**
 - `SPEC-04 · Req. 2 · Scenario: Verificación exitosa` — se guarda la verificación local y se ejecuta la acción pendiente.
@@ -237,7 +237,7 @@
 - `SPEC-04 · Req. 2 · Scenario: Código vencido` — tras 5 minutos se informa el vencimiento y se habilita "Enviar otro código".
 - `SPEC-04 · Req. 2 · Scenario: Límite de envíos` — tras 3 envíos en 15 minutos se muestra el aviso con temporizador.
 
-**Prioridad:** Must, porque completa el lineamiento de validación del celular.
+**Prioridad:** Must, porque mantiene disponible el lineamiento de validación del celular, aunque no bloquea el checkout.
 
 **Notas:** el código solo se expone en pruebas con `MODO_QA=true` (RNF de SPEC-04).
 
@@ -255,7 +255,7 @@
 - `SPEC-04 · Req. 3 · Scenario: El cliente indica que el número no es el suyo` — el chat explica que el cambio se hace en el perfil, muestra el enlace y conserva el carrito.
 - `SPEC-04 · Req. 3 · Scenario: Verificación iniciada por el cliente` — se muestra el estado actual o se inicia el flujo de HU-IDE-13.
 
-**Prioridad:** Should: mejora la experiencia, pero el flujo obligatorio ya se cubre con HU-IDE-12 y HU-IDE-13.
+**Prioridad:** Should: mejora la experiencia; la verificación opcional ya se cubre con HU-IDE-12 y HU-IDE-13.
 
 ---
 

@@ -100,7 +100,7 @@ Basado en el deber de información de la Ley 29733 (contenido exacto **a verific
 | Derechos del titular | ARCO y cómo ejercerlos (§6); derecho a acudir a la Autoridad Nacional de Protección de Datos Personales |
 | Banco de datos | Inscripción del banco de datos en el registro correspondiente (**a verificar** si aplica y quién la hace) |
 | Almacenamiento en el navegador | Token en LocalStorage, cookies `chat_sid` y de refresh, y la confirmación del aviso de imágenes en LocalStorage |
-| Consecuencia de no dar los datos | Sin sesión se puede explorar y armar el carrito; para pagar se necesitan cuenta, celular verificado, documento y dirección |
+| Consecuencia de no dar los datos | Sin sesión se puede explorar y armar el carrito; para pagar se necesitan cuenta, contacto verificado (correo de la cuenta por defecto; celular opcional), documento y dirección |
 
 ### Enfoque de consentimiento (propuesta)
 - **Aviso informado al inicio**, visible antes del primer mensaje, sin casillas premarcadas (SPEC-05 · Req. 12).

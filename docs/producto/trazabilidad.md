@@ -33,7 +33,7 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-IDE-09](historias/EP-01-identidad-sesion.md#hu-ide-09--conservar-mi-carrito-anónimo-al-iniciar-sesión) | Conservar mi carrito anónimo al iniciar sesión | `SPEC-03 · Req. 4` | RN-IDE-16, RN-CAR-01, RN-CAR-07 | `POST /sesion/login` (post-login), `GET /carrito` | PRO `GET /inventario/disponibilidad/comercial` 🟡 | Hito 3 | Must | 3 |
 | [HU-IDE-10](historias/EP-01-identidad-sesion.md#hu-ide-10--mantener-mi-sesión-activa-de-forma-segura) | Mantener mi sesión activa de forma segura | `SPEC-03 · Req. 5` | RN-IDE-13, RN-IDE-14 | `POST /sesion/refresh` | SEG `POST /auth/refresh`, `GET /auth/.well-known/jwks.json` | Hito 3 | Must | 5 |
 | [HU-IDE-11](historias/EP-01-identidad-sesion.md#hu-ide-11--cerrar-sesión) | Cerrar sesión | `SPEC-03 · Req. 6` | RN-IDE-17 | `POST /sesion/logout` | SEG `POST /auth/logout` | Hito 3 | Must | 2 |
-| [HU-IDE-12](historias/EP-01-identidad-sesion.md#hu-ide-12--verificar-mi-celular-antes-del-primer-pago) | Verificar mi celular antes del primer pago | `SPEC-04 · Req. 1` | RN-IDE-19 | `POST /checkout` (`403 CELULAR_NO_VERIFICADO`) | SEG `GET /auth/me` | Hito 4 | Must | 3 |
+| [HU-IDE-12](historias/EP-01-identidad-sesion.md#hu-ide-12--verificar-mi-celular-de-forma-opcional-desde-mi-cuenta) | Verificar mi celular de forma opcional desde Mi cuenta | `SPEC-04 · Req. 1 y 3` | RN-IDE-19 | `POST /checkout` (`403 CONTACTO_NO_VERIFICADO` defensivo; `403 CELULAR_NO_VERIFICADO` solo legado) | SEG `GET /auth/me` | Hito 4 | Must | 3 |
 | [HU-IDE-13](historias/EP-01-identidad-sesion.md#hu-ide-13--recibir-y-validar-el-código-de-mi-celular) | Recibir y validar el código de mi celular | `SPEC-04 · Req. 2` | RN-IDE-20 | `POST /contacto/celular/solicitar-otp`, `POST /contacto/celular/verificar-otp` | — (SMS simulado propio) | Hito 4 | Must | 5 |
 | [HU-IDE-14](historias/EP-01-identidad-sesion.md#hu-ide-14--recibir-orientación-si-el-celular-no-es-el-mío-o-verificarlo-por-iniciativa-propia) | Recibir orientación si el celular no es el mío o verificarlo por iniciativa propia | `SPEC-04 · Req. 3` | RN-IDE-21 | `POST /chat/conversaciones/{id}/mensajes` (herramienta `verificar_celular`) | SEG `GET /auth/me` | Hito 4 | Should | 2 |
 | [HU-IDE-15](historias/EP-01-identidad-sesion.md#hu-ide-15--consultar-mi-cuenta-sin-editar-mi-perfil) | Consultar mi cuenta sin editar mi perfil | `SPEC-03 · Req. 7`; `SPEC-04 · Req. 3` | RN-IDE-22 | `GET /sesion/perfil`, `GET /pedidos`, `GET /reclamos` | SEG `GET /auth/me` | Hito 4 | Should | 5 |
@@ -159,9 +159,9 @@ Cada uno de los **119 requisitos** de las 24 specs (sin cambios pendientes en `o
 | `SPEC-03 · Req. 5` | Renovación y validación de la sesión | HU-IDE-10 |
 | `SPEC-03 · Req. 6` | Cierre de sesión | HU-IDE-11 |
 | `SPEC-03 · Req. 7` | Pantalla "Mi cuenta" | HU-IDE-15 |
-| `SPEC-04 · Req. 1` | Exigir el celular verificado antes del checkout | HU-IDE-12 |
+| `SPEC-04 · Req. 1` | Contacto verificado antes del checkout (correo por defecto; celular opcional) | HU-IDE-12 |
 | `SPEC-04 · Req. 2` | Envío y verificación del código | HU-IDE-13 |
-| `SPEC-04 · Req. 3` | El celular es incorrecto | HU-IDE-14, HU-IDE-15 |
+| `SPEC-04 · Req. 3` | El celular es incorrecto | HU-IDE-12, HU-IDE-14, HU-IDE-15 |
 | `SPEC-05 · Req. 1` | Conversaciones múltiples | HU-CNV-01, HU-CNV-02 |
 | `SPEC-05 · Req. 2` | Pantalla de inicio | HU-CNV-03, HU-CNV-21 |
 | `SPEC-05 · Req. 3` | Interpretación de la intención mediante herramientas | HU-CNV-04 |

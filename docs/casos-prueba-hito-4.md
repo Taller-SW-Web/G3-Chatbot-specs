@@ -61,11 +61,13 @@ API_PROXY_TARGET=http://localhost:8000 pnpm test:e2e tests/e2e/smoke.spec.ts
 E2E_BASE_URL=https://g3-chatbot-frontend.vercel.app pnpm test:e2e tests/e2e/smoke.spec.ts
 ```
 
-E2E-08 a E2E-11 requieren una sesión de cliente con el celular verificado. Contra producción eso implica el MFA de G7, así que esa parte del recorrido se prepara a mano o con `SECURITY_MODE=fake` en local.
+E2E-08 a E2E-11 requieren una sesión de cliente; el celular ya no es requisito de compra: el contacto por defecto es el correo verificado por G7. Contra producción eso implica el MFA de G7, así que esa parte del recorrido se prepara a mano o con `SECURITY_MODE=fake` en local.
 
 ## Casos por spec
 
 ### SPEC-04 · Validación local de celular por OTP
+
+> **Actualización D2 (2026-11-25).** Este documento conserva los casos del Hito 4 (D1). En el modo por defecto, el checkout usa el correo verificado por G7 como contacto y el celular es opcional: los casos `CP-H4-04-01`, `CP-H4-04-03` y la precondición de `CP-H4-14-01` describen el **modo legado** (`REQUIRE_PHONE_VERIFICATION=true`). La spec vigente está en [`validacion-celular/spec.md`](../openspec/specs/validacion-celular/spec.md).
 
 Fuente: [`openspec/specs/validacion-celular/spec.md`](../openspec/specs/validacion-celular/spec.md).
 

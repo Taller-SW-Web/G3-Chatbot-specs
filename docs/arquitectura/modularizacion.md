@@ -139,7 +139,7 @@ Las decisiones D1–D7 no añaden módulos ni cambian el DAG; amplían superfici
 |---|---|---|---|
 | `mod-checkout` | `mod-cart` | `ManageCartUseCase.validate_cart` vía `mod_cart.public` (validación masiva con detalle por línea) | D3 · stock |
 | `mod-checkout` | `mod-shipping` | `GuardarDireccionOpcional` en `mod_shipping.public` (nueva función; el guardado en Seguridad no bloquea el checkout) | D6 · dirección |
-| `mod-chat` | `shared/` | Puerto `AttachmentStorage` y adaptadores `local` (desarrollo) y `supabase` (producción, en implementación), según `ATTACHMENT_STORAGE` | D2 · adjuntos |
+| `mod-chat` | `shared/` | Puerto `AttachmentStorage` con adaptadores `local` (desarrollo) y `supabase` (implementado en `development`, pendiente de promoción a `main` y configuración de producción), según `ATTACHMENT_STORAGE` | D2 · adjuntos |
 | `mod-chat` | `shared/` | Tablas `message_reaction` y `feedback_suggestion`; `AttachmentStorage` para la captura de un bug | D5 · feedback |
 | `mod-checkout` | `shared/` | Tabla `purchase_rating` para la valoración de la experiencia de compra | D5 · feedback |
 | `mod-postventa` | `shared/` | `order_ref.csat_sent` y outbox para la notificación interna de sugerencias | D5 · feedback |
@@ -261,8 +261,7 @@ módulo, sin lógica de negocio.
 - **SPEC-04 (validación de celular).** ✅ Implementado el 2026-11-21 (D1): `phone_otp_challenge`,
   endpoints de OTP, `SimulatedSmsSender`, `CheckoutGuard` real y `REQUIRE_PHONE_VERIFICATION` están en
   `development` (backend #141 · `b75fbea6`, frontend #109 · `7432d463`).
-- **SPEC-23 (adjuntos).** ✅ Implementado el 2026-11-21 (D2): `attachment`, endpoints de carga, borrado
-  y URL firmada, `AttachmentStorage`, EXIF/miniaturas, limpieza y `adjuntoIds` están mergeados.
+- **SPEC-23 (adjuntos).** 🟡 El flujo de adjuntos está implementado en `development` el 2026-11-21 (D2): `attachment`, endpoints de carga, borrado y URL firmada, EXIF/miniaturas, limpieza y `adjuntoIds`. El adaptador `SupabaseAttachmentStorage` y el selector `ATTACHMENT_STORAGE=local|supabase` entraron después en `development` (backend #144 · `e4faadf`). Falta la promoción `development` → `main` (H5-X1), el bucket privado y las variables de storage; producción conserva `ATTACHMENT_STORAGE=local` en su configuración, sobre un volumen efímero (ADR-0028, [runbook](../operacion/adjuntos-supabase.md)).
 - **SPEC-24 (retroalimentación).** ✅ Implementado el 2026-11-21 (D5): reacciones, sugerencias/bugs,
   CSAT, valoración de compra y outbox interno están mergeados; la UI dejó de ser estado local.
 - **Cupones, stock y direcciones.** ✅ Implementado (D3 y D6): el checkout invoca `validate_cart` y

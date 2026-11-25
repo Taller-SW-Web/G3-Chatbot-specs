@@ -28,13 +28,21 @@ Aceptada
 
 **Límites:** no se usa el almacenamiento de Ventas (la evidencia de devolución sigue siendo de SPEC-21), no se aceptan PDF en el chat, no hay búsqueda por similitud visual y el plazo de retención de los adjuntos sigue sin decidirse.
 
-## Estado de implementación (2026-11-21)
+## Estado de implementación (2026-11-25)
 
-> **El adaptador de Supabase aún no está en producción.** En `development` y en `main` del backend solo existe `LocalAttachmentStorage` (`BE/src/shared/infrastructure/storage/local_attachment_storage.py:1-6`), cableado en `mod_chat/module.py`. El `SupabaseAttachmentStorage` y el selector `ATTACHMENT_STORAGE=local|supabase` se están implementando en la rama `fix/audit-wave-0-1` del backend y no se consideran vigentes hasta que esa rama se fusione y se despliegue.
+> **El adaptador existe, pero producción todavía no lo usa.** `SupabaseAttachmentStorage`, el selector `ATTACHMENT_STORAGE=local|supabase` (`build_attachment_storage`) y el listado de objetos que usa la reconciliación de huérfanos están mergeados en `development` (backend PR #144, commit `e4faadf`). `main` no contiene `src/shared/infrastructure/storage/` ni el corte modular actual del backend, y producción se despliega desde `main` ([ADR-0020](ADR-0020-despliegue-en-railway-vercel-y-supabase.md)); la promoción `development` → `main` (H5-X1) sigue pendiente.
 >
-> **Riesgo mientras tanto:** en Railway el sistema de archivos del contenedor es efímero. Cada reinicio o despliegue pierde las imágenes del chat y las capturas de bugs (SPEC-24), mientras las filas `attachment` y `feedback_suggestion.screenshot_key` siguen apuntando a claves inexistentes. Este ADR describe la decisión, no el estado desplegado; las versiones anteriores de este y otros documentos que daban el almacenamiento externo por implementado se corrigen con esta nota.
+> **Lo que falta para cumplir este ADR:**
 >
-> **Criterio de cierre:** `ATTACHMENT_STORAGE=supabase` configurado en el entorno desplegado y verificado con una carga y una lectura reales tras un reinicio.
+> 1. Promover `development` a `main` y desplegar el backend.
+> 2. Crear el bucket privado y configurar `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ATTACHMENT_BUCKET`, `ATTACHMENT_PUBLIC_BASE_URL` y `ATTACHMENT_SIGNING_SECRET` en la API y en el worker. El orden, la verificación y el rollback están en el [runbook de adjuntos en Supabase](../../operacion/adjuntos-supabase.md).
+> 3. Decidir si los archivos que hoy están en el volumen de Railway se migran al bucket o se aceptan como perdidos.
+>
+> **Riesgo mientras tanto:** el entorno de producción declara `ATTACHMENT_STORAGE=local` sobre un volumen de Railway; mientras el servicio no ejecute el código que lee esa variable, el valor no tiene efecto. Cuando lo ejecute, si el servicio se recrea, las imágenes del chat y las capturas de bugs (SPEC-24) se pierden, mientras las filas `attachment` y `feedback_suggestion.screenshot_key` siguen apuntando a claves inexistentes; la interfaz las muestra como "Imagen no disponible". El volumen no sustituye un storage externo: no ofrece backup propio ni lectura compartida entre réplicas. Este ADR describe la decisión, no el estado desplegado.
+>
+> **Requisito vigente:** producción NO DEBE (SHALL NOT) arrancar con `local`. En el código de `development` el arranque solo registra un aviso (`BE/src/infrastructure/main.py:38-43`) en vez de abortar, y en `main` la variable ni existe; la prohibición se aplica por configuración del despliegue y queda como brecha a cerrar en código o en la verificación de despliegue.
+>
+> **Criterio de cierre:** `ATTACHMENT_STORAGE=supabase` en el entorno desplegado desde `main`, con el bucket privado y las variables del runbook configuradas en la API y el worker, verificado con una carga, un reinicio del servicio y una lectura posterior.
 
 ## Alternativas consideradas
 
@@ -65,6 +73,7 @@ Aceptada
 ## Referencias
 
 - [`adjuntos-imagenes-chat/spec.md`](../../../openspec/specs/adjuntos-imagenes-chat/spec.md) y [`design.md`](../../../openspec/specs/adjuntos-imagenes-chat/design.md)
+- [`adjuntos-supabase.md`](../../operacion/adjuntos-supabase.md) — runbook de bucket, variables, despliegue, verificación y rollback
 - [`modelo-datos.md`](../../modelo-datos.md) — tabla `attachment`
 - [ADR-0019](ADR-0019-imagenes-como-entrada-del-llm.md) — decisión original de imágenes y `AttachmentStorage`
 - [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md) — `200 text/event-stream`

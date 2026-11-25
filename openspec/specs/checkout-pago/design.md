@@ -34,7 +34,7 @@
 | `PaymentSimulator` (interfaz `PaymentGateway`) | Tabla de tarjetas de prueba; reemplazable por una pasarela real a futuro. |
 | Job `ExpirarCheckouts` | Cada minuto; encola las anulaciones. |
 | Middleware de logging | Excluye el body de `/pago`. |
-| Herramienta `iniciar_checkout` | Solo prepara el resumen; **nunca paga**. |
+| Herramienta `iniciar_checkout` | Devuelve la acción `IR_A_CHECKOUT`; no crea el checkout, no cotiza, no pide dirección y **nunca paga**. |
 
 ## Desglose para issues
 

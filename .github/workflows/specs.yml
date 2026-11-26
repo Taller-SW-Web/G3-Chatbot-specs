@@ -2,9 +2,9 @@ name: Specs
 
 on:
   pull_request:
-    branches: [main]
+    branches: [development]
   push:
-    branches: [main]
+    branches: [development]
 
 permissions:
   contents: read

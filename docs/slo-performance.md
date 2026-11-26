@@ -145,7 +145,7 @@ corridos en serie. **Los tres flujos cumplen todos los SLO.**
 
 Lectura: con los módulos y el LLM en fake, el backend queda uno o dos órdenes de magnitud por debajo
 de los techos. El margen es el presupuesto que queda para la latencia de los módulos reales y de
-OpenAI. La corrida en GitHub Actions (H5-P3) se agrega aquí cuando el workflow llegue a `development`.
+OpenAI. El workflow manual `performance.yml` ya está en `development` (H5-P3), pero aún no registra una corrida en GitHub Actions; la corrida local del 2026-11-25 es la evidencia vigente. El checkout se mide en serie hasta ampliar el fake de Seguridad ([backend#190](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/190)), y la corrida con RabbitMQ en Docker queda en [backend#168](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/168) (H5-P5).
 
 ## 5. Fuera de alcance
 

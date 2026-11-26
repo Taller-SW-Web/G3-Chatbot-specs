@@ -1,9 +1,10 @@
 # Runbook: adjuntos del chat en Supabase Storage
 
-> **Estado verificado el 2026-11-25.** Este documento describe cómo llevar los adjuntos de SPEC-23 a un
+> **Estado verificado el 2026-11-26.** Este documento describe cómo llevar los adjuntos de SPEC-23 a un
 > bucket privado de Supabase Storage y cómo volver atrás. **No afirma que producción ya use Supabase:**
-> hoy `main` no contiene el adaptador y la configuración de producción sigue con `ATTACHMENT_STORAGE=local`
-> sobre un volumen de Railway. Las decisiones que aún no están tomadas se marcan como pendientes, sin plazos.
+> el adaptador está en `development` y producción ejecuta esa rama, pero la configuración sigue con
+> `ATTACHMENT_STORAGE=local` sobre un volumen de Railway. `main` es un placeholder de un commit con solo
+> `README.md`; no se promueve a `main`. Las decisiones que aún no están tomadas se marcan como pendientes, sin plazos.
 >
 > Alcance: operación del almacenamiento de adjuntos (SPEC-23) y de las capturas de bugs de SPEC-24.
 > No cubre la base de datos, el LLM ni el resto del despliegue.
@@ -14,8 +15,8 @@
 |---|---|
 | Adaptador `SupabaseAttachmentStorage` | ✅ En `development` (backend PR #144, commit `e4faadf`), con `build_attachment_storage` y el listado de objetos que usa la reconciliación de huérfanos |
 | Selector `ATTACHMENT_STORAGE=local\|supabase` | ✅ En `development`; el valor por defecto sigue siendo `local` |
-| Rama de producción | `main` ([ADR-0020](../arquitectura/adr/ADR-0020-despliegue-en-railway-vercel-y-supabase.md)); no contiene `src/shared/infrastructure/storage/` |
-| Promoción `development` → `main` | 🟡 Pendiente (H5-X1) |
+| Rama de producción | `development` ([ADR-0020](../arquitectura/adr/ADR-0020-despliegue-en-railway-vercel-y-supabase.md), enmienda del 2026-11-26); contiene `src/shared/infrastructure/storage/` |
+| `main` | Placeholder de un commit con solo `README.md`; no es rama de despliegue ni se promueve desde `development` |
 | Bucket privado | 🟡 No creado ni documentado |
 | Variables de storage en Railway | 🟡 Sin configurar; solo consta `ATTACHMENT_STORAGE=local` sobre un volumen |
 | Migración de los archivos locales | 🟡 Sin decisión ni script; el volumen puede haberse perdido al recrear el servicio |
@@ -26,8 +27,8 @@
 
 1. Si los archivos que hoy están en el volumen se migran al bucket o se aceptan como perdidos (§9).
 2. Quién tiene acceso al proyecto de Supabase y al entorno de Railway (credenciales, §3).
-3. Si el servicio de producción ejecuta realmente `main` (§4, paso 0). Si ejecuta otra rama, la
-   promoción H5-X1 sigue siendo necesaria para que producción quede en `main`.
+3. Qué commit de `development` está desplegado en producción y si API y worker comparten el mismo
+   commit (§4, paso 0). `main` no es una rama de despliegue.
 
 ## 2. Cómo funciona el almacenamiento
 
@@ -67,15 +68,16 @@ Antes de tocar variables:
       servicios (API y worker). La topología de [ADR-0020](../arquitectura/adr/ADR-0020-despliegue-en-railway-vercel-y-supabase.md)
       separa el worker; el estado del 2026-11-24 registra un solo entorno y un solo servicio.
 - [ ] Confirmar que el código desplegado contiene el adaptador. En el repositorio de backend:
-      `git ls-tree -r --name-only origin/main -- src/shared/infrastructure/storage` (hoy no devuelve
-      nada). Si el servicio ejecuta `development`, el adaptador existe pero producción no está en `main`.
+      `git ls-tree -r --name-only origin/development -- src/shared/infrastructure/storage` (devuelve
+      `factory.py`, `local_attachment_storage.py` y `supabase_attachment_storage.py`). Producción
+      ejecuta `development`; `main` es un placeholder sin código.
 - [ ] Revisar las variables actuales: `ATTACHMENT_STORAGE`, `ATTACHMENT_STORAGE_PATH`, `APP_ENV`,
       `OUTBOX_WORKER_ENABLED` y las URLs públicas.
 - [ ] Anotar el volumen actual y su punto de montaje (`ATTACHMENT_STORAGE_PATH`, por defecto
       `var/attachments`) si se va a migrar.
 
-Si el código desplegado no lee `ATTACHMENT_STORAGE` (porque `main` es anterior al corte modular),
-configurar `supabase` no cambia nada: primero se promueve el código.
+Si el código desplegado no lee `ATTACHMENT_STORAGE`, el servicio no está ejecutando `development`:
+primero hay que corregir la rama de despliegue y verificar el commit, no configurar `supabase`.
 
 ## 5. Paso 1 — Crear el bucket privado (requiere credenciales)
 
@@ -121,25 +123,23 @@ Configurar **a la vez** en la API y en el worker. La aplicación valida al arran
 
 ## 7. Paso 3 — Orden de despliegue
 
-1. **Promover el código.** Fusionar `development` → `main` (H5-X1) y esperar el despliegue. En este
-   punto el servicio sigue con `ATTACHMENT_STORAGE=local`; es un despliegue normal, sin bucket.
-2. **Verificar el código.** Confirmar que el despliegue contiene `src/shared/infrastructure/storage/` y
-   que el arranque no falla. Si el servicio usa migraciones de Alembic, deben terminar antes de la API.
-3. **Configurar las variables del §6** en la API y en el worker, en un solo cambio. No configurar
+1. **Verificar el código desplegado.** Confirmar que producción ejecuta un commit de `development` que
+   contiene `src/shared/infrastructure/storage/` y que el arranque no falla. `main` no es una rama de
+   despliegue. Si el servicio usa migraciones de Alembic, deben terminar antes de la API.
+2. **Configurar las variables del §6** en la API y en el worker, en un solo cambio. No configurar
    `ATTACHMENT_STORAGE=supabase` en un servicio y `local` en el otro: la API escribiría en Supabase y el
    worker buscaría huérfanos en el disco (o al revés).
-4. **Reiniciar ambos servicios.** Un reinicio de Railway basta; no hace falta reconstruir la imagen.
-5. **Revisar los logs de arranque:**
+3. **Reiniciar ambos servicios.** Un reinicio de Railway basta; no hace falta reconstruir la imagen.
+4. **Revisar los logs de arranque:**
    - No debe aparecer `ATTACHMENT_STORAGE=local in production: uploads sit on the ephemeral container disk...`.
    - No debe aparecer `Refusing to start with APP_ENV=production and unsafe settings...`.
    - El worker debe registrar `Attachment cleanup started (every 3600s)`.
-6. Si el arranque falla, corregir la variable faltante y reiniciar. No continuar con la verificación
+5. Si el arranque falla, corregir la variable faltante y reiniciar. No continuar con la verificación
    hasta que ambos procesos estén sanos.
 
-> **Por qué primero el código y después las variables:** en `main` anterior al corte modular la
-> variable `ATTACHMENT_STORAGE` no existe; ponerla antes no tiene efecto y da una falsa sensación de
-> avance. El orden inverso (variables primero) tampoco rompe nada, pero deja un despliegue intermedio
-> con `supabase` configurado y sin adaptador.
+> **Por qué primero el código y después las variables:** el adaptador ya está en `development` y
+> producción ejecuta esa rama; el paso 1 solo confirma el commit desplegado. Poner `supabase` antes de
+> verificar el código daría una falsa sensación de avance si el servicio estuviera en otra rama.
 
 ## 8. Paso 4 — Verificación post-despliegue
 
@@ -276,14 +276,14 @@ No es un estado aceptable en producción (ADR-0028).
 - **Cupo:** el plan gratuito puede agotar almacenamiento o ancho de banda; las imágenes se normalizan a
   2048 px y se limita el tamaño por imagen, pero no hay alerta de cupo.
 - **Guarda de arranque:** en `development`, `APP_ENV=production` con `ATTACHMENT_STORAGE=local` solo
-  registra un aviso, no aborta; en `main` la variable aún no existe. El requisito del ADR sigue siendo no
-  arrancar así; la brecha se cierra en código o en la verificación de despliegue.
+  registra un aviso, no aborta. El requisito del ADR sigue siendo no arrancar así; la brecha se cierra
+  en código en [backend#185](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/185).
 - **Secretos:** rotar `SUPABASE_SERVICE_KEY` si se filtra; rotar `ATTACHMENT_SIGNING_SECRET` invalida
   las URLs firmadas vivas (caducan en minutos).
 
 ## 12. Checklist de cierre
 
-- [ ] Código del adaptador desplegado desde `main` (H5-X1).
+- [ ] Código del adaptador desplegado desde `development` (commit verificado; `main` es placeholder).
 - [ ] Bucket privado creado y ruta pública bloqueada.
 - [ ] Variables del §6 configuradas en API y worker, con secretos en el vault.
 - [ ] Arranque sin avisos de `local` ni de ajustes inseguros.

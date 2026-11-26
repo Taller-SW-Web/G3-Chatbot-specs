@@ -11,7 +11,9 @@ Presentar el Hito 5 con los cuatro entregables del curso:
 
 Fecha de presentación: 2026-11-28.
 
-## Problema
+## Estado inicial (2026-11-22)
+
+> Esta sección conserva el punto de partida del desglose. El estado vigente está en **Estado actual** y **Progreso**.
 
 Estado verificado el 2026-11-22 contra `development` (backend `1c9c333`, frontend `2b47b56`) y la configuración de Railway.
 
@@ -24,6 +26,18 @@ Estado verificado el 2026-11-22 contra `development` (backend `1c9c333`, fronten
 | Mecanismo asíncrono | Outbox transaccional con worker (ADR-0011: `NOTIFY_SALES_PAYMENT`, `REQUEST_CANCELLATION`, `SEND_EMAIL`) dentro del mismo proceso. ADR-0010 declara "sin eventos y sin broker" |
 | Producción (Railway) | Un solo entorno (`production`) y un servicio. Todos los módulos en `http` (`SALES_MODE`, `SECURITY_MODE`, `PRODUCTS_MODE`, `DISPATCH_MODE` y `MODULES_MODE`; verificado el 2026-11-24, sin fakes desplegados); `OUTBOX_WORKER_ENABLED=true`; `ATTACHMENT_STORAGE=local` sobre un volumen de Railway |
 | PRs abiertos | Backend #149 y #150, frontend #112 y #113 (SPEC-17, 19, 20 y 24), specs #36 y #30. Los PR #112 y #113 fallan solo en el preview de Vercel por falta de `API_PROXY_TARGET` en el entorno Preview |
+
+## Estado actual (2026-11-26)
+
+| Área | Estado |
+|---|---|
+| CI/CD y seguridad | H5-C1, H5-C4 y H5-C5 hechas; H5-C3 redefinida para desplegar producción desde `development` (frontend #139); H5-C2 (ZAP) pendiente (backend #173) |
+| Pruebas de integración | H5-I2 hecha (sin `test.fixme`); H5-I1 (contratos), H5-E1 (evals) y H5-I3 (evidencia) pendientes (backend #174, #175; specs #61) |
+| Pruebas de performance | H5-P1 y H5-P2 hechas; H5-P3 tiene el workflow en `development` pero aún no registra una corrida en Actions; H5-P4 (Lighthouse) y H5-P5 (RabbitMQ) pendientes (frontend #144, backend #168) |
+| API Management | H5-G1 (ADR), H5-G2 y H5-G3 (gateway) pendientes (specs #59, backend #178/#179, frontend #142) |
+| Mecanismo asíncrono | H5-M1 hecha (ADR-0030); H5-M2 (relay), H5-M3 (consumidor) y H5-M4 (evidencia) pendientes (backend #176/#177, specs #63) |
+| Producción | `development` es la rama por defecto y la que despliega Railway/Vercel; `main` es un placeholder de un commit con solo `README.md` desde el 2026-11-26. No se promueve `development` a `main`. H5-X1 se limita a verificar producción (backend #183) |
+| Specs y documentación | S2 y L4 cerrados; M5 (specs #64) y S4 (backend #188) pendientes; SPEC-23 sigue 🟡 por bucket, variables y fail-closed (specs #53, backend #185), no por promoción a `main` |
 
 ## Alcance
 
@@ -72,7 +86,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 |---|---|---|---|---|
 | H5-C1 | David | backend, frontend | 🔴 | Hacer bloqueantes `pip-audit` y `pnpm audit` (quitar `\|\| echo`), con lista de excepciones justificadas |
 | H5-C2 | Sebastian | backend | 🔴 | DAST con OWASP ZAP baseline contra el stack levantado en CI y reporte como artefacto |
-| H5-C3 | Mathias | backend, frontend | 🟡 | Entorno `production` en GitHub con aprobación requerida (CI-12). Implementación: [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139) |
+| H5-C3 | Mathias | backend, frontend | 🟡 | Entorno `production` en GitHub con aprobación requerida (CI-12) y deploy de producción por Actions **desde `development`**, con smoke y rollback. Implementación: [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139) |
 | H5-C4 | David | backend, frontend | 🟡 | Protección de rama: `enforce_admins=true` y revisión de code owners |
 | H5-C5 | David | specs | 🔴 | Pasar ADR-0024 a "Aceptada" y actualizar el diagrama del pipeline con los pasos de seguridad |
 
@@ -124,7 +138,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 | ID | Responsable | Repositorio | Prioridad | Tarea |
 |---|---|---|---|---|
 | H5-Q1 | Nikol | specs | 🔴 | Casos de prueba del Hito 5 y validación del DoD |
-| H5-X1 | Mathias | backend, frontend | 🔴 | Promover `development` a `main` y verificar el flujo completo en producción (gateway, broker y consumidor) |
+| H5-X1 | Mathias | backend, frontend | 🔴 | Verificar el flujo completo en producción sobre `development` (gateway, broker y consumidor). **No** se promueve `development` a `main`: `main` es un placeholder de un commit con solo `README.md` desde el 2026-11-26. Implementación: [backend#183](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/183) |
 
 ## Criterios de aceptación
 
@@ -166,8 +180,14 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 
 - 2026-11-25: **Nueva tarea H5-P5, asignada a Mathias**: la corrida de k6 con RabbitMQ en Docker sale de H5-P2, porque depende del relay y el consumidor de H5-M2 y H5-M3, que son de Mathias y aún no existen. Así H5-P2 se cierra con los scripts y la corrida sin broker (backend #167, specs #57). Implementación en [backend#168](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/168).
 
+- 2026-11-26: **Auditoría de alineación y limpieza de docs.** `main` quedó como placeholder de un único commit con solo `README.md` en backend, frontend y specs; `development` es la rama por defecto y la que despliega producción. Se corrigieron las referencias que aún promovían `development` a `main` (H5-X1, H5-C3, ADR-0020, ADR-0028, C4, runbook de adjuntos, privacidad y flujo de trabajo). H5-I2 se verifica hecha (no quedan `test.fixme`); H5-P2 queda hecha con la corrida local y H5-P3 queda implementada pero sin corrida registrada en Actions. Los pendientes reales se enlazan por issue en **Estado actual**; M5 y S4 siguen abiertos.
+
 ## Siguiente paso
 
-1. H5-G1: ADR de API Management.
-2. H5-M2: cuenta de CloudAMQP, `RABBITMQ_URL` en Railway y relay en el worker.
-3. H5-M3: consumidor como proceso separado, con healthcheck y prueba de integración contra RabbitMQ en CI.
+1. H5-C2: DAST con ZAP ([backend#173](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/173)).
+2. H5-M2 y H5-M3: relay y consumidor de RabbitMQ ([backend#176](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/176), [#177](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/177)); después H5-M4 ([specs#63](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/63)) y H5-P5 ([backend#168](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/168)).
+3. H5-G1: ADR de API Management ([specs#59](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/59)); después H5-G2/G3 ([backend#178](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/178), [#179](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/179); [frontend#142](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/142)).
+4. H5-I1 (contratos), H5-E1 (evals), H5-I3 (evidencia) y H5-Q1 (casos de prueba): [backend#174](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/174), [#175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175); [specs#60](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/60), [#61](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/61).
+5. H5-P4 (Lighthouse) y H5-F1 (evaluación integral): [frontend#144](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/144), [#145](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/145); H5-C3 (deploy por Actions desde `development`): [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139).
+6. SPEC-23/L2: bucket, variables y fail-closed ([specs#53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53), [backend#185](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/185)).
+7. H5-X1: verificar producción sobre `development` ([backend#183](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/183)).

@@ -71,3 +71,13 @@ Mathias (líder y DevOps) decidió el 2026-10-10 los destinos de despliegue. **L
 ## Enmienda (2026-10-11)
 
 El [ADR-0021](ADR-0021-streaming-por-sse-en-la-respuesta-del-post.md) reemplazó al ADR-0007: la respuesta del asistente ya no se transmite por un WebSocket persistente, sino por SSE en la respuesta del `POST`. Donde este ADR cita el WebSocket (contexto, tabla de destinos, alternativa *serverless* y consecuencias positivas), léase ahora "respuesta HTTP en streaming de larga duración". El worker de larga duración sigue siendo un motivo válido contra el backend *serverless*, y las respuestas en streaming de larga duración son otro. La decisión de despliegue no cambia.
+
+## Enmienda (2026-11-26)
+
+La frase "la rama `development` despliega a *staging* y la rama `main` a producción" ya no describe el estado operativo. Desde el **2026-11-26**, en los tres repositorios (`G3-Chatbot-backend`, `G3-Chatbot-frontend` y `G3-Chatbot-specs`):
+
+- `development` es la rama por defecto y la única que contiene el código; Railway y Vercel despliegan producción desde `development`. No hay un *staging* separado.
+- `main` es un **placeholder intencional**: un único commit inicial con solo `README.md`, con la fecha de creación del repositorio. No se promueve `development` a `main`.
+- La verificación de producción (H5-X1) se hace sobre el despliegue de `development`; no requiere alinear `main`.
+
+Esta enmienda no cambia los destinos ni la topología de despliegue; solo corrige la rama de producción. Los documentos que asumían una promoción a `main` se corrigen con esta misma fecha.

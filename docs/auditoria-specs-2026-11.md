@@ -15,7 +15,7 @@
 |---|---|---|
 | ✅ Al día | La spec describe el comportamiento y los contratos que el código implementa hoy | **23** |
 | ⚠️ Drift mecánico corregido | Nombres, rutas, campos o estados desalineados; corregidos sin cambiar comportamiento | **0** |
-| 🟡 En implementación | Decisión de producto cerrada y contrato escrito; falta promoción o configuración de despliegue | **1** (SPEC-23, almacenamiento de producción) |
+| 🟡 En implementación | Decisión de producto cerrada y contrato escrito; falta configuración de despliegue | **1** (SPEC-23, almacenamiento de producción) |
 | **Total** | | **24** |
 
 > **Corrección 2026-11-21 (auditoría posterior).** El cierre 24/24 "Al día" sobrestimaba SPEC-23: el backend desplegado solo tiene el adaptador de disco local y el de Supabase está en `development` (backend #144 · `e4faadf`) pero no en `main`, mientras la configuración de producción conserva `ATTACHMENT_STORAGE=local` (ADR-0028). La fila 23 y L2 pasan a 🟡. Además, los cambios `alinear-specs-con-prototipo` y `alinear-specs-con-ventas` se archivaron el mismo día: las specs base pasan a **119 requisitos y 416 escenarios** (antes 116 y 389), y ya no quedan cambios pendientes en `openspec/changes/`. Los hallazgos de la auditoría posterior (SPEC-AUD-01 a 34) se tratan fuera de esta tabla.
@@ -68,7 +68,7 @@ a cada repositorio y todas las rutas backend llevan el prefijo `/api/v1`.
 | 20 | `consulta-reclamo` (SPEC-20) | `mod-postventa` | ✅ Al día | `BE/src/modules/mod_postventa/adapters/http/claims_router.py:74` (lista), `:94` (detalle); `BE/src/modules/mod_postventa/application/postventa_service.py:210-226`; estados G5 `REGISTRADO`/`EN_PROCESO`/`ATENDIDO`/`DERIVADO` | Rutas y estados alineados; #141 |
 | 21 | `solicitud-devolucion-cambio` (SPEC-21) | `mod-postventa` | ✅ Al día | `BE/src/modules/mod_postventa/adapters/http/returns_router.py:64` (evidencia 201), `:100` (devolución 201); `BE/src/modules/mod_postventa/application/postventa_service.py:94-104` (`DEVOLUCION_DUPLICADA`) y `:305-338` (pedido + motivo + líneas) | Implementado D4: detección autoritativa y `forzar`; #141 |
 | 22 | `consulta-devolucion-reembolso` (SPEC-22) | `mod-postventa` | ✅ Al día | `BE/src/modules/mod_postventa/adapters/http/returns_router.py:126` (lista), `:148` (detalle); `BE/src/modules/mod_postventa/application/postventa_service.py:121-140`; `postventa_dto.py` (`resolucion`, `estadoReembolso`) | Rutas y estados alineados; #141 |
-| 23 | `adjuntos-imagenes-chat` (SPEC-23) | `mod-chat` (+ `shared/`) | 🟡 En implementación | `BE/src/modules/mod_chat/adapters/http/attachment_router.py:51` (carga 201), `:80` (borrado 204), `:113` (URL firmada); `BE/src/modules/mod_chat/application/attachment_service.py`; `BE/src/modules/mod_chat/adapters/http/chatbot_router.py:183-213` (`adjuntoIds`); `BE/src/shared/application/ports/attachment_storage_port.py`; `BE/src/shared/infrastructure/storage/supabase_attachment_storage.py` | Implementado D2 con adaptador **local**: límites, EXIF, miniaturas, URL firmada (HMAC), limpieza y `adjuntoIds`; BE #141 / FE #109. El adaptador `SupabaseAttachmentStorage` y el selector `ATTACHMENT_STORAGE=local\|supabase` están en `development` (BE #144 · `e4faadf`). **Pendiente:** promoción `development` → `main` (H5-X1), bucket privado y variables `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ATTACHMENT_BUCKET`, `ATTACHMENT_PUBLIC_BASE_URL` y `ATTACHMENT_SIGNING_SECRET`; producción conserva `local` en su configuración y el disco local es efímero en Railway, así que no es aceptable (ADR-0028, [runbook](operacion/adjuntos-supabase.md)) |
+| 23 | `adjuntos-imagenes-chat` (SPEC-23) | `mod-chat` (+ `shared/`) | 🟡 En implementación | `BE/src/modules/mod_chat/adapters/http/attachment_router.py:51` (carga 201), `:80` (borrado 204), `:113` (URL firmada); `BE/src/modules/mod_chat/application/attachment_service.py`; `BE/src/modules/mod_chat/adapters/http/chatbot_router.py:183-213` (`adjuntoIds`); `BE/src/shared/application/ports/attachment_storage_port.py`; `BE/src/shared/infrastructure/storage/supabase_attachment_storage.py` | Implementado D2 con adaptador **local**: límites, EXIF, miniaturas, URL firmada (HMAC), limpieza y `adjuntoIds`; BE #141 / FE #109. El adaptador `SupabaseAttachmentStorage` y el selector `ATTACHMENT_STORAGE=local\|supabase` están en `development` (BE #144 · `e4faadf`). **Pendiente:** bucket privado, variables `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ATTACHMENT_BUCKET`, `ATTACHMENT_PUBLIC_BASE_URL` y `ATTACHMENT_SIGNING_SECRET`, y fail-closed de `local` ([backend#185](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/185)); producción ejecuta `development` y conserva `local` en su configuración, y el disco local es efímero en Railway, así que no es aceptable (ADR-0028, [runbook](operacion/adjuntos-supabase.md)) |
 | 24 | `retroalimentacion-cliente` (SPEC-24) | `mod-postventa` + `mod-chat` + `mod-checkout` | ✅ Al día | `BE/src/modules/mod_chat/adapters/http/feedback_router.py:53` (reacción), `:78` (`/sugerencias`); `BE/src/modules/mod_chat/application/feedback_service.py`; `BE/src/modules/mod_postventa/adapters/http/csat_router.py:29`; `order_ref.csat_sent`; `FE/src/modules/mod-chat/ui/BotFeedback.tsx`, `SugerenciaForm.tsx` y `FE/src/modules/mod-checkout/ui/RatingPopup.tsx` conectados | Implementado D5: reacciones, sugerencias/bugs, CSAT, valoración de compra y outbox interno; #141/#109 |
 
 **Nota operativa (fuera de las 24 capabilities).** El contrato de `/health` cambió con la validación de
@@ -110,7 +110,7 @@ equipo `@Taller-SW-Web/chatbot`.
 | ID | Acción | Módulo / repo | Dueño sugerido | Estado | Criterio de cierre |
 |---|---|---|---|---|---|
 | L1 | SPEC-04 completo (H-17): OTP, guard, flag y UI | `mod-auth` + `mod-checkout` | @Ankarmin | ✅ Cerrado (D1); D2 de SPEC-04 documentado (2026-11-25) | Los 3 requisitos y sus escenarios pasan; `CELULAR_NO_VERIFICADO` sigue siendo el error del modo legado y `CONTACTO_NO_VERIFICADO` cubre el modo por defecto. |
-| L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @SebJoq21 | 🟡 Parcial (D2): adaptador en `development`, falta promoción y configuración | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501; `ATTACHMENT_STORAGE=supabase` verificado en producción. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53) |
+| L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @SebJoq21 | 🟡 Parcial (D2): adaptador en `development`, falta configuración | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501; falta verificar `ATTACHMENT_STORAGE=supabase` en producción. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53) |
 | L3 | SPEC-24 completo: reacciones, sugerencias/bugs, valoración, CSAT y outbox | `mod-chat` + `mod-postventa` + `mod-checkout` | @Ankarmin + @MathiasTL | ✅ Cerrado (D5) | Los mecanismos tienen endpoints, tablas y pruebas; la UI dejó de ser estado local |
 | L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Ankarmin | ✅ Cerrado (2026-11-25) | S2 convertido en gate bloqueante y documentado en `docs/arquitectura/modularizacion.md` §5 y §9. [BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165) agregó `Verify committed OpenAPI is up to date` (`export_openapi.py --check`) al job `openapi`; `--check` pasa (47 paths) y falla sobre una copia alterada. Mergeado y verificado en CI |
 
@@ -149,10 +149,10 @@ prueba y el CI está en verde.
 | SPEC-12 `direccion-cotizacion-envio` | D6 | ✅ Cerrado | `guardarDireccion`, `GuardarDireccionOpcional` y `avisoDireccion` | BE #141 · `b75fbea6`; FE #109 · `7432d463`; tests de fallo no bloqueante |
 | SPEC-19 `creacion-reclamo` | D4 | ✅ Cerrado | Detección autoritativa, `409 RECLAMO_DUPLICADO` y `forzar` | BE #141 · `b75fbea6`; tests de duplicado/forzar/idempotencia |
 | SPEC-21 `solicitud-devolucion-cambio` | D4 | ✅ Cerrado | Detección por pedido + motivo + líneas, `409 DEVOLUCION_DUPLICADA` y `forzar` | BE #141 · `b75fbea6`; tests de duplicado/forzar/evidencia |
-| SPEC-23 `adjuntos-imagenes-chat` | D2 | 🟡 Parcial (configuración) | `AttachmentStorage` local y Supabase, carga/borrado/URL firmada, EXIF/miniaturas, `adjuntoIds` y limpieza; falta promoción a `main`, bucket y variables | BE #141 · `b75fbea6`; BE #144 · `e4faadf`; FE #109 · `7432d463`; tests de storage y seguridad; [runbook](operacion/adjuntos-supabase.md) |
+| SPEC-23 `adjuntos-imagenes-chat` | D2 | 🟡 Parcial (configuración) | `AttachmentStorage` local y Supabase, carga/borrado/URL firmada, EXIF/miniaturas, `adjuntoIds` y limpieza; faltan bucket y variables | BE #141 · `b75fbea6`; BE #144 · `e4faadf`; FE #109 · `7432d463`; tests de storage y seguridad; [runbook](operacion/adjuntos-supabase.md) |
 | SPEC-24 `retroalimentacion-cliente` | D5 | ✅ Cerrado | Reacciones, sugerencias/bugs, CSAT, valoración y outbox interno | BE #141 · `b75fbea6`; FE #109 · `7432d463`; tests de feedback y CSAT |
 
-**Resultado:** 23 de 24 capabilities en ✅ y **SPEC-23 en 🟡** hasta la promoción a `main` y la configuración del storage. Las 5 correcciones mecánicas (SPEC-01, SPEC-05, SPEC-09,
+**Resultado:** 23 de 24 capabilities en ✅ y **SPEC-23 en 🟡** hasta la configuración del storage. Las 5 correcciones mecánicas (SPEC-01, SPEC-05, SPEC-09,
 SPEC-20 y SPEC-22) se promovieron al verificar el código mergeado. El cierre no depende de S4 ni M5:
 son deuda documental y una mejora conversacional fuera de las 24 capabilities. S2 quedó cerrado el
 2026-11-25; L4 queda pendiente del merge del gate de drift ([BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165)).
@@ -183,8 +183,8 @@ son deuda documental y una mejora conversacional fuera de las 24 capabilities. S
 > El backend **#144** (`e4faadf`) mergeó `SupabaseAttachmentStorage`, el selector
 > `ATTACHMENT_STORAGE=local|supabase` y el listado de objetos para la reconciliación de huérfanos.
 > `main` todavía no lo contiene y la configuración de producción conserva `local` sobre un volumen de
-> Railway. Para cerrar SPEC-23 faltan la promoción `development` → `main` (**H5-X1**), el bucket privado
-> y las variables de storage; el orden, la verificación y el rollback están en el
+> Railway. Para cerrar SPEC-23 faltan el bucket privado, las variables de storage y el fail-closed
+> (la promoción a `main` ya no aplica; ver nota del 2026-11-26); el orden, la verificación y el rollback están en el
 > [runbook de adjuntos en Supabase](operacion/adjuntos-supabase.md).
 
 > [!note] Actualización 2026-11-25 — D2 de SPEC-04: contacto verificado por correo
@@ -199,7 +199,8 @@ son deuda documental y una mejora conversacional fuera de las 24 capabilities. S
 > El proyecto Supabase `olzsuqpowkndoeljpiax` es de **Sebastian (@SebJoq21)**, que queda como responsable
 > de L2: bucket privado, variables de Railway, migración vs pérdida de los archivos locales y verificación
 > de carga + reinicio + lectura. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53).
-> Mathias conserva la promoción `development` → `main` (H5-X1) y la coordinación del deploy.
+> Mathias conserva la coordinación del deploy y H5-X1 (corregido el 2026-11-26: H5-X1 solo verifica
+> producción sobre `development`; `main` es un placeholder y no se promueve).
 
 > [!note] Actualización 2026-11-25 — S2 cerrado; L4 pendiente del gate de drift
 > El job `modules` del frontend descarga `docs/openapi.json` de `development`, ejecuta
@@ -211,3 +212,14 @@ son deuda documental y una mejora conversacional fuera de las 24 capabilities. S
 > `Verify committed OpenAPI is up to date` (`python scripts/export_openapi.py --check`) al job
 > `openapi`; `--check` pasa con 47 paths y falla sobre una copia alterada. L4 queda cerrado pendiente
 > de ese merge, no verificado en producción.
+
+> [!note] Actualización 2026-11-26 — `main` placeholder y estado real de los pendientes
+> Desde el 2026-11-26, `main` es un **placeholder de un único commit** con solo `README.md` en los tres
+> repositorios; `development` es la rama por defecto y la que despliega producción (ADR-0020, enmienda
+> del 2026-11-26). Por eso **SPEC-23/L2 ya no está bloqueada por una promoción a `main`**: el adaptador
+> de Supabase está en `development` y producción ejecuta esa rama. Sigue 🟡 por el bucket privado, las
+> variables de storage y el fail-closed de `local` ([specs#53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53),
+> [backend#185](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/185)). **L4 queda cerrado**:
+> BE #165 se mergeó el 2026-11-25 (`f7fd0af`) y el gate de drift corre en CI. **M5** (specs#64) y **S4**
+> (backend#188) siguen abiertos; no son requisitos de las 24 capabilities. El estado de las 24 specs no
+> cambia: 23 ✅ y SPEC-23 🟡.

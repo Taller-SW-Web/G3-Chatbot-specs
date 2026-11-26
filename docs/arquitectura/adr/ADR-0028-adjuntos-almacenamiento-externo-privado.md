@@ -28,21 +28,21 @@ Aceptada
 
 **Límites:** no se usa el almacenamiento de Ventas (la evidencia de devolución sigue siendo de SPEC-21), no se aceptan PDF en el chat, no hay búsqueda por similitud visual y el plazo de retención de los adjuntos sigue sin decidirse.
 
-## Estado de implementación (2026-11-25)
+## Estado de implementación (2026-11-26)
 
-> **El adaptador existe, pero producción todavía no lo usa.** `SupabaseAttachmentStorage`, el selector `ATTACHMENT_STORAGE=local|supabase` (`build_attachment_storage`) y el listado de objetos que usa la reconciliación de huérfanos están mergeados en `development` (backend PR #144, commit `e4faadf`). `main` no contiene `src/shared/infrastructure/storage/` ni el corte modular actual del backend, y producción se despliega desde `main` ([ADR-0020](ADR-0020-despliegue-en-railway-vercel-y-supabase.md)); la promoción `development` → `main` (H5-X1) sigue pendiente.
+> **El adaptador existe y producción ejecuta `development`.** `SupabaseAttachmentStorage`, el selector `ATTACHMENT_STORAGE=local|supabase` (`build_attachment_storage`) y el listado de objetos que usa la reconciliación de huérfanos están mergeados en `development` (backend PR #144, commit `e4faadf`). Desde el 2026-11-26 `main` es un placeholder de un commit con solo `README.md`; producción se despliega desde `development` ([ADR-0020](ADR-0020-despliegue-en-railway-vercel-y-supabase.md), enmienda del 2026-11-26). No hay promoción a `main`.
 >
 > **Lo que falta para cumplir este ADR:**
 >
-> 1. Promover `development` a `main` y desplegar el backend.
-> 2. Crear el bucket privado y configurar `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ATTACHMENT_BUCKET`, `ATTACHMENT_PUBLIC_BASE_URL` y `ATTACHMENT_SIGNING_SECRET` en la API y en el worker. El orden, la verificación y el rollback están en el [runbook de adjuntos en Supabase](../../operacion/adjuntos-supabase.md).
-> 3. Decidir si los archivos que hoy están en el volumen de Railway se migran al bucket o se aceptan como perdidos.
+> 1. Crear el bucket privado y configurar `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ATTACHMENT_BUCKET`, `ATTACHMENT_PUBLIC_BASE_URL` y `ATTACHMENT_SIGNING_SECRET` en la API y en el worker. El orden, la verificación y el rollback están en el [runbook de adjuntos en Supabase](../../operacion/adjuntos-supabase.md).
+> 2. Cerrar el fail-closed de `APP_ENV=production` con `ATTACHMENT_STORAGE=local` ([backend#185](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/185)).
+> 3. Decidir si los archivos que hoy están en el volumen de Railway se migran al bucket o se aceptan como perdidos, y definir la política de backup de los objetos.
 >
-> **Riesgo mientras tanto:** el entorno de producción declara `ATTACHMENT_STORAGE=local` sobre un volumen de Railway; mientras el servicio no ejecute el código que lee esa variable, el valor no tiene efecto. Cuando lo ejecute, si el servicio se recrea, las imágenes del chat y las capturas de bugs (SPEC-24) se pierden, mientras las filas `attachment` y `feedback_suggestion.screenshot_key` siguen apuntando a claves inexistentes; la interfaz las muestra como "Imagen no disponible". El volumen no sustituye un storage externo: no ofrece backup propio ni lectura compartida entre réplicas. Este ADR describe la decisión, no el estado desplegado.
+> **Riesgo mientras tanto:** el entorno de producción declara `ATTACHMENT_STORAGE=local` sobre un volumen de Railway; si el servicio se recrea, las imágenes del chat y las capturas de bugs (SPEC-24) se pierden, mientras las filas `attachment` y `feedback_suggestion.screenshot_key` siguen apuntando a claves inexistentes; la interfaz las muestra como "Imagen no disponible". El volumen no sustituye un storage externo: no ofrece backup propio ni lectura compartida entre réplicas.
 >
-> **Requisito vigente:** producción NO DEBE (SHALL NOT) arrancar con `local`. En el código de `development` el arranque solo registra un aviso (`BE/src/infrastructure/main.py:38-43`) en vez de abortar, y en `main` la variable ni existe; la prohibición se aplica por configuración del despliegue y queda como brecha a cerrar en código o en la verificación de despliegue.
+> **Requisito vigente:** producción NO DEBE (SHALL NOT) arrancar con `local`. En el código de `development` el arranque solo registra un aviso (`BE/src/infrastructure/main.py:38-43`) en vez de abortar; la prohibición se aplica por configuración y la brecha de código se cierra en #185.
 >
-> **Criterio de cierre:** `ATTACHMENT_STORAGE=supabase` en el entorno desplegado desde `main`, con el bucket privado y las variables del runbook configuradas en la API y el worker, verificado con una carga, un reinicio del servicio y una lectura posterior.
+> **Criterio de cierre:** `ATTACHMENT_STORAGE=supabase` en el entorno de producción (`development`), con el bucket privado y las variables del runbook configuradas en la API y el worker, verificado con una carga, un reinicio del servicio y una lectura posterior.
 
 ## Alternativas consideradas
 

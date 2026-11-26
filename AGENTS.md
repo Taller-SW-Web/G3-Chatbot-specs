@@ -52,7 +52,7 @@ spec → implementación → tests → contrato → PR por módulo → revisión
 | 5. Contrato | `export_openapi.py`, `modules:sync`, manifiesto del frontend | `docs/openapi.json`, `registry.generated.ts` |
 | 6. PR | Un módulo, diff pequeño, checklist completa | GitHub PR |
 | 7. Coherencia | Se compara con specs previas, estados cerrados y ADR | Revisión |
-| 8. Merge | CI verde y revisión aprobada | `main` / `development` |
+| 8. Merge | CI verde y revisión aprobada | `development` (rama por defecto y de producción; `main` es un placeholder de un commit con solo `README.md`) |
 
 El detalle operativo, la Definition of Done y la checklist de PR están en
 [`docs/flujo-de-trabajo.md`](docs/flujo-de-trabajo.md).

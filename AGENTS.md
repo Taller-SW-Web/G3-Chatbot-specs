@@ -36,11 +36,15 @@ resuélvelo en la spec antes de implementar**. No inventes comportamiento en el 
 6. **No se commitean secretos.** `.env`, tokens, claves y credenciales quedan fuera del diff.
 7. **El contrato manda.** Un endpoint nuevo va primero al `design.md` y a `docs/openapi.json`; el
    adapter del frontend y su `module.manifest.ts` se actualizan en el mismo cambio.
+8. **Un issue no se cierra hasta que su PR esté mergeado.** El cierre cita el PR, el commit y la
+   verificación; la referencia es `development`. Un issue puede cerrarse como duplicado, obsoleto o
+   no aplicable con justificación, pero no como `completed` si el trabajo sigue en un PR abierto o
+   solo está en una rama.
 
 ## 3. Flujo de trabajo
 
 ```text
-spec → implementación → tests → contrato → PR por módulo → revisión de coherencia → merge
+spec → implementación → tests → contrato → PR por módulo → revisión de coherencia → merge → cierre del issue
 ```
 
 | Paso | Qué se hace | Artefacto |

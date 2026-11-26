@@ -24,7 +24,7 @@
 | `NotificacionService` | Encola, deduplica y gestiona los reenvíos. |
 | `EmailSender` (interfaz) + `SmtpEmailSender` | Envío; implementación falsa para las pruebas. |
 | Plantillas Jinja2 `confirmacion_pedido.html` y `.txt` | Contenido del correo. |
-| Tarea de outbox `SEND_EMAIL` | La procesa `OutboxWorker`. |
+| Tarea de outbox `SEND_EMAIL` | La procesa `OutboxWorker` en `direct` o el consumidor de RabbitMQ en `broker` (ADR-0030). |
 | `POST /api/v1/pedidos/{id}/reenviar-confirmacion` | Reenvío con límite de 2. |
 
 ## Desglose para issues

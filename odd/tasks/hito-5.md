@@ -31,7 +31,7 @@ Estado verificado el 2026-11-22 contra `development` (backend `1c9c333`, fronten
 
 | Área | Estado |
 |---|---|
-| CI/CD y seguridad | H5-C1, H5-C4 y H5-C5 hechas; H5-C3 redefinida para desplegar producción desde `development` (frontend #139); H5-C2 (ZAP) pendiente (backend #173) |
+| CI/CD y seguridad | H5-C1, H5-C2, H5-C4 y H5-C5 hechas; H5-C3 redefinida para desplegar producción desde `development` (frontend #139) |
 | Pruebas de integración | H5-I2 hecha (sin `test.fixme`); H5-I1 (contratos), H5-E1 (evals) y H5-I3 (evidencia) pendientes (backend #174, #175; specs #61) |
 | Pruebas de performance | H5-P1, H5-P2, H5-P3 y H5-P5 hechas; la corrida con RabbitMQ y consumidor está en el run 45887721116 y en `docs/slo-performance.md`; H5-P4 (Lighthouse) pendiente (frontend #144) |
 | API Management | H5-G1 (ADR), H5-G2 y H5-G3 (gateway) pendientes (specs #59, backend #178/#179, frontend #142) |
@@ -184,12 +184,13 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 
 - 2026-11-26: **H5-M3 (código) y H5-P5 hechas.** Backend #197 mergeó el consumidor RabbitMQ como proceso separado, el handler compartido, el healthcheck y los reintentos/DLX; también agregó RabbitMQ 4.1 y el consumidor a `performance.yml`. La corrida 45887721116 cumple los SLO con 1533 eventos consumidos, 0 reintentos/DLQ/fallos y checkout a 12,77 compras/s; el resultado quedó en `docs/slo-performance.md` (#78) y el consumidor en el C4 (#79). Falta el despliegue operativo del consumidor en Railway y el cambio de producción a `broker` (H5-M3/#177).
 
+- 2026-11-26: **H5-C2 hecha.** Backend #210 agregó el job DAST con OWASP ZAP baseline/OpenAPI safe scan, reportes HTML/JSON/MD como artefacto, resumen en el Step Summary y gate bloqueante de alertas High integrado en el check `test`. El gate exige que toda excepción `IGNORE` esté documentada en `docs/seguridad/zap-exceptions.md`; además falla si ZAP no completa el escaneo.
+
 ## Siguiente paso
 
-1. H5-C2: DAST con ZAP ([backend#173](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/173)).
-2. H5-M3: desplegar el consumidor como servicio Railway y pasar producción a `broker` cuando `/health` esté sano ([backend#177](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/177)); después H5-M4 ([specs#63](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/63)). H5-P5 ya está cerrada con el run 45887721116 y el SLO actualizado.
-3. H5-G1: ADR de API Management ([specs#59](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/59)); después H5-G2/G3 ([backend#178](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/178), [#179](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/179); [frontend#142](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/142)).
-4. H5-I1 (contratos), H5-E1 (evals), H5-I3 (evidencia) y H5-Q1 (casos de prueba): [backend#174](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/174), [#175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175); [specs#60](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/60), [#61](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/61).
-5. H5-P4 (Lighthouse) y H5-F1 (evaluación integral): [frontend#144](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/144), [#145](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/145); H5-C3 (deploy por Actions desde `development`): [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139).
-6. SPEC-23/L2: bucket y variables ([specs#53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53)); fail-closed ya implementado en backend #198.
-7. H5-X1: verificar producción sobre `development` ([backend#183](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/183)).
+1. H5-M3: desplegar el consumidor como servicio Railway y pasar producción a `broker` cuando `/health` esté sano ([backend#177](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/177)); después H5-M4 ([specs#63](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/63)). H5-P5 ya está cerrada con el run 45887721116 y el SLO actualizado.
+2. H5-G1: ADR de API Management ([specs#59](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/59)); después H5-G2/G3 ([backend#178](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/178), [#179](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/179); [frontend#142](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/142)).
+3. H5-I1 (contratos), H5-E1 (evals), H5-I3 (evidencia) y H5-Q1 (casos de prueba): [backend#174](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/174), [#175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175); [specs#60](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/60), [#61](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/61).
+4. H5-P4 (Lighthouse) y H5-F1 (evaluación integral): [frontend#144](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/144), [#145](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/145); H5-C3 (deploy por Actions desde `development`): [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139).
+5. SPEC-23/L2: bucket y variables ([specs#53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53)); fail-closed ya implementado en backend #198.
+6. H5-X1: verificar producción sobre `development` ([backend#183](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/183)).

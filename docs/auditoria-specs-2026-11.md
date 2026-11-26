@@ -44,6 +44,13 @@ figuraban como ⚠️ (`registro-cliente`, `motor-conversacion`, `tarjetas-detal
 Leyenda de evidencia: `BE` = `G3-Chatbot-backend`, `FE` = `G3-Chatbot-frontend`. Las rutas son relativas
 a cada repositorio y todas las rutas backend llevan el prefijo `/api/v1`.
 
+> **Actualización 2026-11-26:** las filas 3 (`inicio-sesion`) y 17 (`consulta-estado-pedido`) pasan a 🟡.
+> El login no invoca `merge_cart_lines` (Req. 4, [backend#184](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/184))
+> y el detalle de un pedido `ANULADO` no muestra el motivo ni el aviso de reembolso
+> ([backend#182](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/182),
+> [frontend#143](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/143)). El resto de la tabla
+> conserva el estado verificado el 2026-11-21.
+
 | # | Capability | Módulo(s) | Estado | Evidencia (`archivo:línea`) | Acción |
 |---|---|---|---|---|---|
 | 1 | `registro-cliente` (SPEC-01) | `mod-auth` | ✅ Al día | `BE/src/modules/mod_auth/adapters/http/session_router.py:387` (201); `BE/src/modules/mod_auth/application/manage_session_use_case.py:114-116` (`estado`, `correoEnmascarado`); `BE/src/shared/infrastructure/http/security_client.py:205` (`canalOrigen: CHATBOT`) | Cerrada: spec y código alineados; merge #141/#109 |
@@ -152,7 +159,7 @@ prueba y el CI está en verde.
 | SPEC-23 `adjuntos-imagenes-chat` | D2 | 🟡 Parcial (configuración) | `AttachmentStorage` local y Supabase, carga/borrado/URL firmada, EXIF/miniaturas, `adjuntoIds` y limpieza; faltan bucket y variables | BE #141 · `b75fbea6`; BE #144 · `e4faadf`; FE #109 · `7432d463`; tests de storage y seguridad; [runbook](operacion/adjuntos-supabase.md) |
 | SPEC-24 `retroalimentacion-cliente` | D5 | ✅ Cerrado | Reacciones, sugerencias/bugs, CSAT, valoración y outbox interno | BE #141 · `b75fbea6`; FE #109 · `7432d463`; tests de feedback y CSAT |
 
-**Resultado:** 23 de 24 capabilities en ✅ y **SPEC-23 en 🟡** hasta la configuración del storage. Las 5 correcciones mecánicas (SPEC-01, SPEC-05, SPEC-09,
+**Resultado al 2026-11-21:** 23 de 24 capabilities en ✅ y **SPEC-23 en 🟡** hasta la configuración del storage. **Actualizado el 2026-11-26:** 21 ✅, con `inicio-sesion` y `consulta-estado-pedido` en 🟡 (ver notas finales). Las 5 correcciones mecánicas (SPEC-01, SPEC-05, SPEC-09,
 SPEC-20 y SPEC-22) se promovieron al verificar el código mergeado. El cierre no depende de S4 ni M5:
 son deuda documental y una mejora conversacional fuera de las 24 capabilities. S2 quedó cerrado el
 2026-11-25; L4 queda pendiente del merge del gate de drift ([BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165)).
@@ -222,4 +229,17 @@ son deuda documental y una mejora conversacional fuera de las 24 capabilities. S
 > [backend#185](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/185)). **L4 queda cerrado**:
 > BE #165 se mergeó el 2026-11-25 (`f7fd0af`) y el gate de drift corre en CI. **M5** (specs#64) sigue
 > abierto; **S4** (backend#188) se cerró el 2026-11-26 al alinear los documentos vigentes a `ProductsClient`.
-> Ninguno es requisito de las 24 capabilities. El estado de las 24 specs no cambia: 23 ✅ y SPEC-23 🟡.
+> Ninguno es requisito de las 24 capabilities. El estado real de las 24 specs es **21 ✅, SPEC-23 🟡,
+> `inicio-sesion` 🟡 y `consulta-estado-pedido` 🟡**.
+
+> [!warning] Hallazgo 2026-11-26 — `inicio-sesion` no cumple el Req. 4
+> `merge_cart_lines` existe y tiene pruebas unitarias, pero `POST /sesion/login` no la invoca y el estado
+> `MERGED` no se usa. La auditoría del 2026-11-21 marcaba `inicio-sesion` como ✅; la fila 3 queda 🟡 hasta
+> que el login fusione el carrito anónimo. Seguimiento:
+> [backend#184](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/184).
+
+> [!warning] Hallazgo 2026-11-26 — `consulta-estado-pedido` no muestra la anulación completa
+> La spec exige "Anulado el {fecha}" con el motivo general y el aviso de reembolso. El backend no expone
+> el motivo y la UI solo muestra "Anulado". Seguimiento:
+> [backend#182](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/182) y
+> [frontend#143](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/143). La fila 17 queda 🟡.

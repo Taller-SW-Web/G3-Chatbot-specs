@@ -25,7 +25,7 @@
 | `GET /api/v1/pedidos/{id}/seguimiento` | Control de pertenencia (vía Ventas o `order_ref`) y consulta a Despacho. |
 | `ServiceTokenProvider` | Obtiene y cachea el token `client_credentials` de Seguridad. |
 | `DespachoClient.seguimiento(idPedido)` | Timeout de 4 s, renovación ante `401` y caché de 30 s. |
-| `SeguimientoMapper` | Lista blanca de campos y mapeo de etiquetas. |
+| `SeguimientoMapper` | Lista blanca de campos y mapeo de etiquetas; normaliza `etiqueta` de G2 a `titulo` en la respuesta para la UI y el LLM. |
 | Herramienta `consultar_seguimiento` (`{pedidoId? | pedidoRef?}`) | Uso desde el chat. |
 
 ## Desglose para issues

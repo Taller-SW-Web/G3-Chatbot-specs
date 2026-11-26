@@ -76,7 +76,7 @@ a cada repositorio y todas las rutas backend llevan el prefijo `/api/v1`.
 | 21 | `solicitud-devolucion-cambio` (SPEC-21) | `mod-postventa` | ✅ Al día | `BE/src/modules/mod_postventa/adapters/http/returns_router.py:64` (evidencia 201), `:100` (devolución 201); `BE/src/modules/mod_postventa/application/postventa_service.py:94-104` (`DEVOLUCION_DUPLICADA`) y `:305-338` (pedido + motivo + líneas) | Implementado D4: detección autoritativa y `forzar`; #141 |
 | 22 | `consulta-devolucion-reembolso` (SPEC-22) | `mod-postventa` | ✅ Al día | `BE/src/modules/mod_postventa/adapters/http/returns_router.py:126` (lista), `:148` (detalle); `BE/src/modules/mod_postventa/application/postventa_service.py:121-140`; `postventa_dto.py` (`resolucion`, `estadoReembolso`) | Rutas y estados alineados; #141 |
 | 23 | `adjuntos-imagenes-chat` (SPEC-23) | `mod-chat` (+ `shared/`) | 🟡 En implementación | `BE/src/modules/mod_chat/adapters/http/attachment_router.py:51` (carga 201), `:80` (borrado 204), `:113` (URL firmada); `BE/src/modules/mod_chat/application/attachment_service.py`; `BE/src/modules/mod_chat/adapters/http/chatbot_router.py:183-213` (`adjuntoIds`); `BE/src/shared/application/ports/attachment_storage_port.py`; `BE/src/shared/infrastructure/storage/supabase_attachment_storage.py` | Implementado D2 con adaptador **local**: límites, EXIF, miniaturas, URL firmada (HMAC), limpieza y `adjuntoIds`; BE #141 / FE #109. El adaptador `SupabaseAttachmentStorage` y el selector `ATTACHMENT_STORAGE=local\|supabase` están en `development` (BE #144 · `e4faadf`). **Pendiente:** bucket privado y variables `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `ATTACHMENT_BUCKET`, `ATTACHMENT_PUBLIC_BASE_URL` y `ATTACHMENT_SIGNING_SECRET`; el fail-closed de `local` ya está implementado en backend #198. Producción ejecuta `development` y conserva `local` en su configuración hasta configurar Supabase; el disco local es efímero en Railway, así que no es aceptable (ADR-0028, [runbook](operacion/adjuntos-supabase.md)) |
-| 24 | `retroalimentacion-cliente` (SPEC-24) | `mod-postventa` + `mod-chat` + `mod-checkout` | ✅ Al día | `BE/src/modules/mod_chat/adapters/http/feedback_router.py:53` (reacción), `:78` (`/sugerencias`); `BE/src/modules/mod_chat/application/feedback_service.py`; `BE/src/modules/mod_postventa/adapters/http/csat_router.py:29`; `order_ref.csat_sent`; `FE/src/modules/mod-chat/ui/BotFeedback.tsx`, `SugerenciaForm.tsx` y `FE/src/modules/mod-checkout/ui/RatingPopup.tsx` conectados | Implementado D5: reacciones, sugerencias/bugs, CSAT, valoración de compra y outbox interno; #141/#109 |
+| 24 | `retroalimentacion-cliente` (SPEC-24) | `mod-postventa` + `mod-chat` + `mod-checkout` | ✅ Al día | `BE/src/modules/mod_chat/adapters/http/feedback_router.py:53` (reacción), `:78` (`/sugerencias`); `BE/src/modules/mod_chat/application/feedback_service.py`; `BE/src/modules/mod_postventa/adapters/http/csat_router.py:29`; `order_ref.csat_sent`; `FE/src/modules/mod-chat/ui/BotFeedback.tsx`, `SugerenciaForm.tsx` y `FE/src/modules/mod-checkout/ui/RatingPopup.tsx` conectados | Implementado D5: reacciones, sugerencias/bugs, CSAT, valoración de compra y outbox interno; #141/#109. El contrato del CSAT es de `mod-postventa`; la UI y el adapter del frontend se mueven a `mod-postventa` y se inyectan desde `app/pedido/page.tsx` (ver nota de excepción CSAT) |
 
 **Nota operativa (fuera de las 24 capabilities).** El contrato de `/health` cambió con la validación de
 capacidades: `discovery.configure_modules` aborta si falta una `REQUIRED_CAPABILITIES` y, si falta una
@@ -121,11 +121,13 @@ equipo `@Taller-SW-Web/chatbot`.
 | L3 | SPEC-24 completo: reacciones, sugerencias/bugs, valoración, CSAT y outbox | `mod-chat` + `mod-postventa` + `mod-checkout` | @Ankarmin + @MathiasTL | ✅ Cerrado (D5) | Los mecanismos tienen endpoints, tablas y pruebas; la UI dejó de ser estado local |
 | L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Ankarmin | ✅ Cerrado (2026-11-25) | S2 convertido en gate bloqueante y documentado en `docs/arquitectura/modularizacion.md` §5 y §9. [BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165) agregó `Verify committed OpenAPI is up to date` (`export_openapi.py --check`) al job `openapi`; `--check` pasa (47 paths) y falla sobre una copia alterada. Mergeado y verificado en CI |
 
-> **Excepción documentada (CSAT).** El manifiesto de `mod-orders` declara
-> `/pedidos/{pedidoId}/csat`, pero el OpenAPI lo etiqueta `mod-postventa`. El gate lo acepta como
-> advertencia hasta el **2026-12-19** mediante `contractTagExceptions` en
-> `G3-Chatbot-frontend/scripts/module-boundaries.exceptions.json`; al vencer la fecha, `modules:check`
-> falla y obliga a alinear el tag o renovar la excepción.
+> **Excepción transitoria (CSAT).** El dueño canónico de CSAT es `mod-postventa`: su backend expone
+> `/pedidos/{pedidoId}/csat` y el OpenAPI lo etiqueta `mod-postventa`; su frontend debe contener el
+> adapter y la UI (`DeliveryRatingFooter`, inyectado como slot desde `app/pedido/page.tsx` en el detalle
+> del pedido). Mientras el adapter y la UI sigan en `mod-orders`, su manifiesto declara el endpoint y el
+> gate lo acepta como advertencia hasta el **2026-12-19** mediante `contractTagExceptions` en
+> `G3-Chatbot-frontend/scripts/module-boundaries.exceptions.json`; al mover el adapter/UI a
+> `mod-postventa` se retira la excepción.
 
 ## 4. Decisiones de producto resueltas (2026-11-21)
 

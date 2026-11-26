@@ -40,6 +40,10 @@ entre capacidades también es una regla verificable.
 | `mod-postventa` | Devoluciones, reclamos, evidencias y CSAT | `mod_postventa` — `/devoluciones`, `/reclamos`, `/evidencias`, `/pedidos/{id}/csat` | `POST/GET /devoluciones*`, `POST/GET /reclamos*`, `POST /evidencias`, `POST /pedidos/{id}/csat` | `/devolucion`, `/reclamo` | @Taller-SW-Web/chatbot |
 | `mod-chat` | Conversaciones, historial, SSE, tools, acciones directas, reacciones, sugerencias y adjuntos | `mod_chat` — `/chat/conversaciones`, `/mensajes/{id}/reaccion`, `/sugerencias` | `POST/GET /chat/conversaciones`, `/buscar`, `/{id}/mensajes` (SSE en el `POST`), `POST /mensajes/{id}/reaccion`, `POST /sugerencias`, `/chat/adjuntos/{id}` | `/chat/[id]`, `/sugerencias` | @Taller-SW-Web/chatbot |
 
+El CSAT es de `mod-postventa` también en el frontend: `DeliveryRatingFooter` se inyecta como slot desde
+`app/pedido/page.tsx` en el detalle del pedido. `mod-orders` conserva el detalle del pedido
+(`OrderDetailPage`) y el flag `csatEnviado`; no es dueño del adapter ni de la UI del CSAT.
+
 Cada módulo backend contiene:
 
 ```text
@@ -256,7 +260,10 @@ módulo, sin lógica de negocio.
 - **Verificación cruzada de OpenAPI.** El gate de contrato (H-04) es bloqueante: el job `modules` del
   frontend descarga `docs/openapi.json` de `development`, ejecuta `pnpm modules:check` y `check` lo
   exige en la rama protegida. Falla si un endpoint del manifiesto no existe o si el tag no coincide; la
-  única excepción es CSAT (`/pedidos/{pedidoId}/csat`, tag `mod-postventa`), registrada en
+  única excepción es CSAT (`/pedidos/{pedidoId}/csat`): el endpoint y su tag pertenecen a
+  `mod-postventa`, pero el manifiesto de `mod-orders` todavía lo declara mientras el adapter y la UI de
+  CSAT no se muevan a `mod-postventa` (decisión del 2026-11-26: el dueño canónico es `mod-postventa`).
+  Está registrada en
   `scripts/module-boundaries.exceptions.json` con `reviewBy` 2026-12-19. El backend genera, valida y
   verifica el drift del OpenAPI en CI: el job `openapi` incluye
   `Verify committed OpenAPI is up to date` (`python scripts/export_openapi.py --check`, 47 paths), mergeado

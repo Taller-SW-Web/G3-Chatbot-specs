@@ -334,7 +334,8 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 
 - **`GET /api/v1/pedidos/{pedidoId}/seguimiento`** (requiere sesión `CLIENTE`):
   - Verifica primero que `pedidoId` pertenezca al cliente en Ventas (SPEC-18 Req. 1) y luego consulta `GET /api/v1/seguimientos/pedidos/{pedidoId}` en Despacho con el token de servicio de `modulo-chatbot` (`aud=api-despacho`, scope `seguimientos:leer`, A11/A4).
-  - **Lista blanca obligatoria (SPEC-18 Req. 3 y RNF Privacidad):** solo se exponen `pedidoId`, `estado`, `estadoEtiqueta`, `fechaProgramada`, `distrito`, `hitos[{titulo, fecha, completado}]`, `recibidoPor` (solo para la UI del frontend, nunca para el LLM) y `detalleDisponible`. Se descartan coordenadas GPS, teléfono/datos del repartidor, dirección completa y motivos internos de fallo.
+  - **Lista blanca obligatoria (SPEC-18 Req. 3 y RNF Privacidad):** de Despacho solo se aceptan `pedidoId`, `estado`, `estadoEtiqueta`, `fechaProgramada`, `distrito`, `hitos[{etiqueta, fecha, completado}]` (campo real de Despacho), `recibidoPor` (solo para la UI del frontend, nunca para el LLM) y `detalleDisponible`. Se descartan coordenadas GPS, teléfono/datos del repartidor, dirección completa y motivos internos de fallo.
+  - **Mapeo de hitos.** Despacho publica el texto de cada hito como `etiqueta`. El BFF (`SeguimientoMapper`) lo normaliza a `titulo` en la respuesta de `/pedidos/{pedidoId}/seguimiento`, que es el campo que consumen la UI y el LLM; `titulo` no existe en el contrato de G2. `fecha` y `completado` pasan sin cambios.
   - Si el pedido está `PAGADO` o `EN_PREPARACION` y Despacho responde `404`, no es un error: devuelve `200 OK` con `detalleDisponible: false`, `estado: "EN_PREPARACION"`, `estadoEtiqueta: "En preparación"`, `hitos: []` y `mensaje: "Tu pedido aún se está preparando; te mostraremos el seguimiento cuando salga del centro de despacho"`.
   - **Respuesta `200 OK`:**
     ```json
@@ -355,6 +356,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     }
     ```
   - **Errores:** `401 REQUIERE_SESION`, `404 RECURSO_NO_ENCONTRADO` (pedido ajeno o inexistente en Ventas), `503 MODULO_NO_DISPONIBLE`.
+  - **Origen de `hitos[].titulo`:** el BFF lo obtiene de `etiqueta` en la respuesta de Despacho; el contrato expuesto al frontend y al LLM conserva `titulo`. No se reenvía el payload crudo de G2.
 
 - **`POST /api/v1/pedidos/{pedidoId}/reenviar-confirmacion`** (requiere sesión `CLIENTE` y cabecera `Idempotency-Key`):
   - Verifica pertenencia del pedido y encola un reenvío de confirmación (`CONFIRMATION_RESEND`, máx. 2 reenvíos por pedido, SPEC-16 Req. 3).
@@ -432,7 +434,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 |---|---|---|---|
 | POST | `/mensajes/{mensajeId}/reaccion` | Opcional (`CLIENTE` o `chat_sid`) | `{reaccion: "POSITIVE"\|"NEGATIVE"}`; upsert por mensaje y autor. Responde `200 {mensajeId, reaccion}`. `404 RECURSO_NO_ENCONTRADO` si el mensaje no es de la conversación; `429 DEMASIADAS_SOLICITUDES` (la UI lo ignora en silencio). |
 | POST | `/pedidos/{pedidoId}/valoracion-compra` | `CLIENTE` | `{estrellas: 1..5, comentario?}`; una por pedido. Responde `201 {valoracionId, estrellas}`. `409 VALORACION_YA_REGISTRADA`. |
-| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | Proxy a `POST /api/v2/csat` de Ventas; el chatbot no guarda una calificación propia. El cuerpo del frontend es `{puntuacion, comentario?}` y **no lleva `clienteId`**: el backend lo arma con el `sub` del token y reenvía el token del cliente a Ventas. Solo se ofrece al pie del detalle de un pedido `ENTREGADO`, no en la lista. `puntuacion` solo acepta 1, 3 o 5; otro valor responde `400 VALIDACION` antes de llamar a Ventas. Marca `order_ref.csat_sent` con `201` o `409`. `409 CSAT_ALREADY_SUBMITTED` se muestra como "Ya calificaste este pedido"; `422 ORDER_NOT_DELIVERED`, como "Solo puedes calificar pedidos entregados". |
+| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | `mod-postventa` hace de proxy a `POST /api/v2/csat` de Ventas; el chatbot no guarda una calificación propia. El cuerpo del frontend es `{puntuacion, comentario?}` y **no lleva `clienteId`**: el backend lo arma con el `sub` del token y reenvía el token del cliente a Ventas. Solo se ofrece al pie del detalle de un pedido `ENTREGADO`, no en la lista. `puntuacion` solo acepta 1, 3 o 5; otro valor responde `400 VALIDACION` antes de llamar a Ventas. Marca `order_ref.csat_sent` con `201` o `409`. `409 CSAT_ALREADY_SUBMITTED` se muestra como "Ya calificaste este pedido"; `422 ORDER_NOT_DELIVERED`, como "Solo puedes calificar pedidos entregados". |
 | POST | `/sugerencias` | `CLIENTE` | `multipart/form-data` con `tipo` (`SUGERENCIA`/`BUG`), `titulo`, `descripcion`, `correoContacto`, `captura?` (JPG/PNG ≤ 5 MB) e `Idempotency-Key`. Responde `201 {sugerenciaId, codigoSeguimiento}`. Errores `400 VALIDACION`, `400 ADJUNTO_INVALIDO`, `429 DEMASIADAS_SOLICITUDES`. |
 
 La captura usa el puerto `AttachmentStorage` de SPEC-23 y se guarda en `feedback_suggestion.screenshot_key`; no usa la tabla `attachment`. La notificación interna se encola por outbox (`SEND_EMAIL`) y su estado vive en `feedback_suggestion.notification_status`; un fallo no se muestra al cliente.
@@ -561,7 +563,7 @@ Códigos esperados: `400` datos incompletos o inconsistentes, `403` el cliente n
 | Endpoint | Uso | Estado |
 |---|---|---|
 | `POST /api/v1/cotizaciones` con `Auth: service-token`, scope `cotizaciones:calcular`, audience `api-despacho` → `destino`, `lineas[]`, `coberturaDisponible`, `tipoCotizacion`, `nombreZona`, `costoEnvio`, `moneda`, `plazoEstimadoDiasHabiles`, `fechaEstimadaEntrega` | Cotización real del pedido | ✅ contrato y scope concedido a `modulo-chatbot` (Seguridad #31, cerrado); credenciales reales en Hito 4 |
-| `GET /api/v1/seguimientos/pedidos/{idPedido}` con token de servicio, scope `seguimientos:leer` | Seguimiento del pedido | ✅ contrato y scope concedido a `modulo-chatbot` (Seguridad #31, cerrado); credenciales reales en Hito 4 |
+| `GET /api/v1/seguimientos/pedidos/{idPedido}` con token de servicio, scope `seguimientos:leer` | Seguimiento del pedido; cada hito llega con `etiqueta`, `fecha` y `completado` | ✅ contrato y scope concedido a `modulo-chatbot` (Seguridad #31, cerrado); credenciales reales en Hito 4 |
 
 **Notas de integración**
 - El canal ya no manda `pesoKg` ni `volumenM3`; el payload real usa `destino` y, si aplica, `lineas` con `sku` + `cantidad`.

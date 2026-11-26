@@ -244,7 +244,7 @@ Recopilado de la sección *Fuera de alcance* de las 24 specs, sin duplicados. Cu
 
 | # | Riesgo | Probabilidad / impacto | Mitigación | Épicas |
 |---|---|---|---|---|
-| R1 | **A5 🟡:** las rutas de Productos son una propuesta; el contrato real puede diferir y obligar a rehacer clientes y DTOs justo antes de la demo de Hito 3. | Alta / Alto | Aislar `ProductsClient` detrás de un puerto; mock respx con datos semilla; issue de coordinación con Productos bloqueando las historias `contrato:provisional`. | EP-02, 03, 04, 05, 09 |
+| R1 | **A5 ✅ (cerrado 2026-11-26):** contrato real y siete scopes concedidos; el riesgo de rehacer clientes por rutas ya no aplica. | Bajo / Bajo | Se conserva `ProductsClient` detrás de un puerto y los tests de contrato; el histórico del riesgo queda en esta fila. | EP-02, 03, 04, 05, 09 |
 | R2 | **A6 🟡:** sin definir quién agrega peso y volumen, la cotización usa pesos por categoría que pueden no coincidir con el costo real. | Media / Medio | Registrar cada uso del valor por defecto; revisar al cerrar A6. | EP-05 |
 | R3 | **A11 🟡 / A4 🟡:** el seguimiento de Despacho no tiene endpoint unificado ni rol de servicio emitido; SPEC-18 podría no ser demostrable en Hito 5–6. | Alta / Medio | Historias de SPEC-18 en Should; degradación al estado de Ventas (SPEC-18 · Req. 4). | EP-07 |
 | R4 | **A12 🟡:** la autenticación del cotizador (pública o con API key) no está definida. | Media / Medio | `DespachoClient` con autenticación configurable. | EP-05 |

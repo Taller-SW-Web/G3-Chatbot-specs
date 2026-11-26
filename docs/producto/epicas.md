@@ -6,6 +6,8 @@
 > - **Postventa** (SPEC-19 a 22) → EP-08 *Reclamos* (SPEC-19, 20) y EP-09 *Devoluciones y reembolsos* (SPEC-21, 22).
 >
 > El **Hito** de cada spec sale del "Orden sugerido de implementación" del README.
+>
+> **Estado (2026-11-26):** A5 y A6 están cerrados (contrato real, siete scopes concedidos y credenciales en uso). Los marcadores 🟡 de A5/A6 en las tablas de dependencias son históricos; el estado vigente está en [`alcance.md`](alcance.md).
 
 ## Resumen
 

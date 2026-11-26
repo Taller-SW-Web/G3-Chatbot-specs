@@ -2,6 +2,8 @@
 
 Esta carpeta organiza las 24 specs de [`openspec/specs/`](../../openspec/specs/) en términos de producto ágil: alcance, épicas, historias de usuario, reglas de negocio y trazabilidad. **No reemplaza a las specs**: el comportamiento (requisitos y escenarios DADO/CUANDO/ENTONCES) se define únicamente en cada `spec.md`, y aquí solo se referencia por nombre.
 
+> **Nota de estado (2026-11-26):** A5 (Productos) y A6 (Despacho) están cerrados: contrato real, scopes concedidos y credenciales en uso. Los marcadores 🟡 de A5/A6 en las páginas de épicas e historias son históricos; el estado vigente está en [`alcance.md`](alcance.md) y [`contratos-integracion.md`](../contratos-integracion.md).
+
 ## Contenido
 
 | Documento | Para qué sirve | Lectores principales |

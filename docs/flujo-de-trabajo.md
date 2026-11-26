@@ -84,7 +84,9 @@ merge hasta que producto decida.
 ### Paso 7 — Merge
 
 CI verde + revisión aprobada. El merge es squash y el mensaje sigue Conventional Commits
-(`feat(mod-cart): ...`, `docs(specs): corrige drift de ...`). `main` siempre queda desplegable.
+(`feat(mod-cart): ...`, `docs(specs): corrige drift de ...`). `development` es la rama por defecto y la
+que despliega producción; debe quedar siempre desplegable. `main` es un placeholder de un commit con
+solo `README.md` y no recibe promociones.
 
 ## 3. El spec delta obligatorio
 

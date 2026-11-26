@@ -8,6 +8,8 @@ Este repositorio es la **fuente de verdad de las especificaciones** del Canal Ch
 
 > **Cómo se trabaja:** la spec se lee antes de tocar código; si el código avanza sin estar en la spec, la spec se actualiza en el mismo PR. Un PR toca un solo módulo y `shared/` exige la etiqueta `cross-modulo`. El flujo completo, la Definition of Done y la checklist de PR están en [`AGENTS.md`](AGENTS.md) y [`docs/flujo-de-trabajo.md`](docs/flujo-de-trabajo.md).
 
+> **Ramas (2026-11-26):** `development` es la rama por defecto y la que despliega producción en los tres repos. `main` es un placeholder intencional de un único commit con solo `README.md`; no se promueve `development` a `main`. Ver la enmienda de [ADR-0020](docs/arquitectura/adr/ADR-0020-despliegue-en-railway-vercel-y-supabase.md).
+
 Hay una especificación por capacidad, en `openspec/specs/<capacidad>/`. Cada capacidad tiene dos archivos:
 
 - **`spec.md` (comportamiento):** Propósito, Contexto, Alcance y Fuera de alcance, Requisitos con escenarios, requisitos no funcionales y Criterio de completitud.

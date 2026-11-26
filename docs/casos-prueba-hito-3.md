@@ -1,6 +1,8 @@
 # Casos de prueba del Hito 3
 
 > Tarea H3-16 de [`odd/tasks/hito-3.md`](../odd/tasks/hito-3.md): casos de prueba a partir de los escenarios de las specs del hito y E2E de humo con Playwright.
+>
+> **Nota (2026-11-26):** documento histórico del Hito 3. La referencia a que Vercel publica producción desde `main` ya no aplica: producción ejecuta `development` y `main` es un placeholder de un commit con solo `README.md`.
 
 Cada caso sale de un escenario (`#### Scenario`) de las specs del alcance del hito, sin reinterpretarlo: **Dado** es la precondición, **Cuando** la acción y **Entonces** el resultado esperado. Si una spec cambia, el caso cambia con ella.
 

@@ -100,9 +100,9 @@ Ningún código generado entra sin pasar por los mismos controles que el código
 | Control | Cómo se aplica | Evidencia |
 |---|---|---|
 | Specs como contrato | El código implementa requisitos y escenarios ya escritos; las pruebas citan el escenario que cubren | [Casos de prueba](casos-prueba-hito-3.md) |
-| Pruebas | Backend: más de 420 pruebas unitarias y más de 30 de integración contra PostgreSQL 18. Frontend: pruebas unitarias con Vitest y E2E con Playwright; las E2E de humo están en revisión (PR #20 del frontend) | `tests/` de cada repo |
+| Pruebas | Backend: más de 420 pruebas unitarias y más de 30 de integración contra PostgreSQL 18. Frontend: pruebas unitarias con Vitest y E2E con Playwright; las E2E de humo corren en CI | `tests/` de cada repo |
 | CI obligatorio | `pytest` en el backend; `lint`, `typecheck`, `test` y `build` en el frontend | `.github/workflows/` de cada repo |
-| Revisión humana | `main` y `development` protegidas: PR obligatorio con una aprobación, y se descartan aprobaciones si llegan commits nuevos | Protección de ramas en GitHub (backend y frontend) |
+| Revisión humana | `development` (producción) y `main` (placeholder) protegidas: PR obligatorio con una aprobación, y se descartan aprobaciones si llegan commits nuevos | Protección de ramas en GitHub (backend y frontend) |
 | Prueba manual | Los tramos con riesgo se verifican por HTTP o en el navegador contra una base migrada y, desde el 2026-10-16, contra el modelo real | ADR-0005 (enmienda del 2026-10-16) |
 | Reglas de estilo | Archivos de código e identificadores de base de datos en inglés | [README §6](../README.md#6-cómo-trabajar-con-openspec) |
 

@@ -40,7 +40,7 @@ Aceptada
 >
 > **Riesgo mientras tanto:** el entorno de producción declara `ATTACHMENT_STORAGE=local` sobre un volumen de Railway; si el servicio se recrea, las imágenes del chat y las capturas de bugs (SPEC-24) se pierden, mientras las filas `attachment` y `feedback_suggestion.screenshot_key` siguen apuntando a claves inexistentes; la interfaz las muestra como "Imagen no disponible". El volumen no sustituye un storage externo: no ofrece backup propio ni lectura compartida entre réplicas.
 >
-> **Requisito vigente:** producción NO DEBE (SHALL NOT) arrancar con `local`. En el código de `development` el arranque solo registra un aviso (`BE/src/infrastructure/main.py:38-43`) en vez de abortar; la prohibición se aplica por configuración y la brecha de código se cierra en #185.
+> **Requisito vigente:** producción NO DEBE (SHALL NOT) arrancar con `local`. El fail-closed está implementado desde backend #198 (`ALLOW_LOCAL_ATTACHMENTS=false` por defecto): `Settings.__post_init__` aborta el arranque si `APP_ENV=production` y `ATTACHMENT_STORAGE=local`. La única excepción es `ALLOW_LOCAL_ATTACHMENTS=true`, aceptada explícitamente por el PO; en ese caso el arranque continúa con un WARNING sobre el disco efímero.
 >
 > **Criterio de cierre:** `ATTACHMENT_STORAGE=supabase` en el entorno de producción (`development`), con el bucket privado y las variables del runbook configuradas en la API y el worker, verificado con una carga, un reinicio del servicio y una lectura posterior.
 

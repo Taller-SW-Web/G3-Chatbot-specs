@@ -88,6 +88,16 @@ CI verde + revisión aprobada. El merge es squash y el mensaje sigue Conventiona
 que despliega producción; debe quedar siempre desplegable. `main` es un placeholder de un commit con
 solo `README.md` y no recibe promociones.
 
+### Paso 8 — Cierre del issue
+
+Un issue **no se cierra como completado** hasta que el PR que lo resuelve esté mergeado en
+`development` y la verificación o evidencia esté registrada. El comentario de cierre cita el PR, el
+commit y la prueba (CI, test o verificación manual). Un PR abierto o una rama con el cambio **no**
+justifican el cierre.
+
+Excepciones: duplicado, obsoleto o no aplicable. Se cierran con el motivo explícito y, si corresponde,
+el enlace al issue o PR que los reemplaza; nunca con `completed` si el trabajo sigue pendiente.
+
 ## 3. El spec delta obligatorio
 
 Un *spec delta* es el cambio mínimo en la spec que refleja el avance del código. Ejemplos:

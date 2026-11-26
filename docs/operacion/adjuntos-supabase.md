@@ -11,10 +11,11 @@
 
 ## 1. Estado de partida
 
-| Elemento | Estado (2026-11-25) |
+| Elemento | Estado (2026-11-26) |
 |---|---|
 | Adaptador `SupabaseAttachmentStorage` | ✅ En `development` (backend PR #144, commit `e4faadf`), con `build_attachment_storage` y el listado de objetos que usa la reconciliación de huérfanos |
 | Selector `ATTACHMENT_STORAGE=local\|supabase` | ✅ En `development`; el valor por defecto sigue siendo `local` |
+| Fail-closed en producción | ✅ Desde backend #198: `APP_ENV=production` + `local` aborta salvo `ALLOW_LOCAL_ATTACHMENTS=true` |
 | Rama de producción | `development` ([ADR-0020](../arquitectura/adr/ADR-0020-despliegue-en-railway-vercel-y-supabase.md), enmienda del 2026-11-26); contiene `src/shared/infrastructure/storage/` |
 | `main` | Placeholder de un commit con solo `README.md`; no es rama de despliegue ni se promueve desde `development` |
 | Bucket privado | 🟡 No creado ni documentado |
@@ -104,7 +105,8 @@ Configurar **a la vez** en la API y en el worker. La aplicación valida al arran
 
 | Variable | Valor | ¿Secreta? | Notas |
 |---|---|---|---|
-| `ATTACHMENT_STORAGE` | `supabase` | No | `local` sigue siendo el valor por defecto del código |
+| `ATTACHMENT_STORAGE` | `supabase` | No | `local` sigue siendo el valor por defecto del código, pero en producción aborta el arranque salvo la excepción |
+| `ALLOW_LOCAL_ATTACHMENTS` | `false` | No | Solo excepción del PO para arrancar producción con `local`; no usar por defecto |
 | `SUPABASE_URL` | `https://<project-ref>.supabase.co` | No | Sin `/storage/v1` ni barra final |
 | `SUPABASE_SERVICE_KEY` | Clave de servicio del proyecto | **Sí** | Vault; solo backend; omitir RLS |
 | `ATTACHMENT_BUCKET` | `chat-attachments` | No | Debe coincidir con el bucket creado |
@@ -250,8 +252,9 @@ No es un estado aceptable en producción (ADR-0028).
 
 1. Poner `ATTACHMENT_STORAGE=local` en la API y el worker, con `ATTACHMENT_STORAGE_PATH` apuntando a un
    volumen montado y persistente.
-2. Reiniciar ambos servicios. El arranque registrará el aviso de `local` en producción; se acepta solo
-   durante la ventana del incidente.
+2. Reiniciar ambos servicios con `ALLOW_LOCAL_ATTACHMENTS=true` (la excepción del PO). Sin ese flag,
+   producción aborta el arranque por el fail-closed de backend #198. Se acepta solo durante la ventana
+   del incidente.
 3. Las cargas nuevas van al disco. Las imágenes subidas mientras Supabase estuvo activo siguen en el
    bucket: la API no las encuentra en el disco y las muestra como "Imagen no disponible" hasta volver a
    `supabase`.
@@ -275,9 +278,10 @@ No es un estado aceptable en producción (ADR-0028).
   backup del bucket; queda como decisión pendiente.
 - **Cupo:** el plan gratuito puede agotar almacenamiento o ancho de banda; las imágenes se normalizan a
   2048 px y se limita el tamaño por imagen, pero no hay alerta de cupo.
-- **Guarda de arranque:** en `development`, `APP_ENV=production` con `ATTACHMENT_STORAGE=local` solo
-  registra un aviso, no aborta. El requisito del ADR sigue siendo no arrancar así; la brecha se cierra
-  en código en [backend#185](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/185).
+- **Guarda de arranque:** desde backend #198, `APP_ENV=production` con `ATTACHMENT_STORAGE=local`
+  **aborta el arranque** (fail-closed). La única excepción es `ALLOW_LOCAL_ATTACHMENTS=true`, aceptada
+  explícitamente por el PO; en ese caso arranca con un WARNING y los adjuntos siguen siendo efímeros.
+  Ver [ADR-0028](../arquitectura/adr/ADR-0028-adjuntos-almacenamiento-externo-privado.md).
 - **Secretos:** rotar `SUPABASE_SERVICE_KEY` si se filtra; rotar `ATTACHMENT_SIGNING_SECRET` invalida
   las URLs firmadas vivas (caducan en minutos).
 

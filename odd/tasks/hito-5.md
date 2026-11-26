@@ -37,7 +37,7 @@ Estado verificado el 2026-11-22 contra `development` (backend `1c9c333`, fronten
 | API Management | H5-G1 (ADR), H5-G2 y H5-G3 (gateway) pendientes (specs #59, backend #178/#179, frontend #142) |
 | Mecanismo asíncrono | H5-M1 hecha (ADR-0030); H5-M2 (relay), H5-M3 (consumidor) y H5-M4 (evidencia) pendientes (backend #176/#177, specs #63) |
 | Producción | `development` es la rama por defecto y la que despliega Railway/Vercel; `main` es un placeholder de un commit con solo `README.md` desde el 2026-11-26. No se promueve `development` a `main`. H5-X1 se limita a verificar producción (backend #183) |
-| Specs y documentación | S2, L4 y S4 cerrados; M5 (specs #64) pendiente; SPEC-23 sigue 🟡 por bucket, variables y fail-closed (specs #53, backend #185), no por promoción a `main`; `inicio-sesion` queda 🟡 por el Req. 4 (backend #184) y `consulta-estado-pedido` por la anulación/reembolso (backend #182, frontend #143) |
+| Specs y documentación | S2, L4 y S4 cerrados; M5 (specs #64) pendiente; SPEC-23 sigue 🟡 por bucket y variables (specs #53), con fail-closed ya implementado (backend #198) y sin promoción a `main`; `inicio-sesion` queda 🟡 por el Req. 4 (backend #184) y `consulta-estado-pedido` por la anulación/reembolso (backend #182, frontend #143) |
 
 ## Alcance
 
@@ -189,5 +189,5 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 3. H5-G1: ADR de API Management ([specs#59](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/59)); después H5-G2/G3 ([backend#178](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/178), [#179](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/179); [frontend#142](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/142)).
 4. H5-I1 (contratos), H5-E1 (evals), H5-I3 (evidencia) y H5-Q1 (casos de prueba): [backend#174](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/174), [#175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175); [specs#60](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/60), [#61](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/61).
 5. H5-P4 (Lighthouse) y H5-F1 (evaluación integral): [frontend#144](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/144), [#145](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/145); H5-C3 (deploy por Actions desde `development`): [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139).
-6. SPEC-23/L2: bucket, variables y fail-closed ([specs#53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53), [backend#185](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/185)).
+6. SPEC-23/L2: bucket y variables ([specs#53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53)); fail-closed ya implementado en backend #198.
 7. H5-X1: verificar producción sobre `development` ([backend#183](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/183)).

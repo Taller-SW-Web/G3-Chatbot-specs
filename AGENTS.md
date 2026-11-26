@@ -130,3 +130,30 @@ npx @fission-ai/openspec validate --specs
 > `--strict` no se usa: el formato híbrido escribe los escenarios con Gherkin en español
 > (`DADO`/`CUANDO`/`ENTONCES`) y el validador estricto exige `WHEN`/`THEN` en inglés. El comando sin
 > `--strict` valida las 24 specs y deja los avisos de Gherkin como advertencia, no como error.
+
+## 8. Issues, escalamiento y documentación
+
+Estas reglas aplican a los tres repositorios. Complementan la Regla 8 de §2 (cierre después del merge).
+
+1. **Incoherencia issue ↔ spec.** Si una issue contradice la spec, pide comportamiento que la spec no
+   define o mezcla alcance de dos módulos, **detente y no implementes**. Crea una issue en
+   `G3-Chatbot-specs` asignada a `@Ankarmin`, con label `bloqueante` si impide avanzar, y enlaza la
+   issue original como bloqueada. Incluye la spec y el requisito afectado, la contradicción exacta, el
+   impacto y las opciones. La issue original no se cierra hasta que la decisión quede registrada en la
+   spec.
+2. **Duplicados.** Antes de crear una issue, busca una abierta o cerrada. Si ya está resuelta, ciérrala
+   con PR/commit/evidencia; si es obsoleta, ciérrala con motivo y enlace al reemplazo. No crees dos
+   issues para el mismo trabajo.
+3. **Contenido mínimo.** Toda issue debe tener un responsable, contexto, alcance, criterios de
+   aceptación verificables y evidencia esperada. Si cruza repos, crea una issue por repo y una de
+   coordinación; no dupliques el mismo alcance.
+4. **Bloqueo externo.** Si depende de G2/G5/G6/G7, abre la issue en el repo del otro grupo con lo que
+   necesitas y sus criterios de cierre, y enlázala desde tu issue. No la repliques en G3.
+5. **Ramas y despliegue.** `development` es la rama por defecto y la de producción; `main` es un
+   placeholder de un commit con solo `README.md`. Los PR van a `development`; no se promueve ni
+   despliega desde `main`.
+6. **Higiene del repo compartido.** No reescribas la historia compartida de `development` (force push
+   o rebase publicado), no borres tags o ramas sin coordinar y no pegues secretos en issues o PRs.
+7. **Documentación sin duplicados.** El estado se actualiza en los documentos existentes:
+   `odd/tasks/hito-5.md` para Hito 5, `docs/auditoria-specs-2026-11.md` para specs vs código y
+   `docs/slo-performance.md` para performance. No crees un documento paralelo.

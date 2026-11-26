@@ -25,14 +25,14 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `POST /api/v1/checkout` | Guardas de precondición, revalidación completa, creación del checkout y del pedido (SPEC-15). |
+| `POST /api/v1/checkout` | Guardas de precondición, revalidación completa y creación del checkout; lo persiste en `PENDING_PAYMENT` antes de crear el pedido (SPEC-15). La llamada a Ventas tiene `CHECKOUT_SALES_DEADLINE_SECONDS` (30 s por defecto): si vence, responde `503 MODULO_NO_DISPONIBLE` recuperable con `checkoutId`, `orderId` provisional y `reintentable=true`; la misma `Idempotency-Key` reconcilia el pedido real. |
 | `GET /api/v1/checkout/{id}` | Estado del checkout. |
 | `POST /api/v1/checkout/{id}/pago` | Validación, simulación, registro del intento y disparo de la notificación. |
-| `CheckoutService` | Orquesta las precondiciones, la revalidación, la vigencia y los intentos. |
+| `CheckoutService` | Orquesta las precondiciones, la revalidación, la vigencia y los intentos. Persiste el checkout antes de Ventas, aplica el deadline, reconcilia por `Idempotency-Key` y bloquea el pago mientras el pedido sea provisional (`PEDIDO_EN_PROCESO`). |
 | `IntrospeccionClient` | Llama a `POST /auth/introspeccion` con el token de servicio de `modulo-chatbot`; timeout de 3 s, sin caché (la sesión se valida en el momento exacto del pago). |
 | `CardValidator` | Luhn, BIN, vencimiento y CVV. |
 | `PaymentSimulator` (interfaz `PaymentGateway`) | Tabla de tarjetas de prueba; reemplazable por una pasarela real a futuro. |
-| Job `ExpirarCheckouts` | Cada minuto; encola las anulaciones. |
+| Job `ExpirarCheckouts` | Cada minuto; reconcilia el pedido pendiente con la misma `Idempotency-Key` antes de encolar la anulación con el `pedidoId` real. |
 | Middleware de logging | Excluye el body de `/pago`. |
 | Herramienta `iniciar_checkout` | Devuelve la acción `IR_A_CHECKOUT`; no crea el checkout, no cotiza, no pide dirección y **nunca paga**. |
 

@@ -55,3 +55,7 @@ Mathias (líder del equipo) decidió el 2026-10-16 que **el navegador llama a la
 - [`c4.md`](../c4.md#vista-de-despliegue) (vista de despliegue)
 
 > **Alineación 2026-11-21.** Este ADR decía `SameSite=Lax` para todas las cookies. El backend fija `Strict` en la cookie de refresh y en la de desafío MFA (`BE/src/modules/mod_auth/adapters/http/session_router.py:224` y `:272`) y `Lax` solo en `chat_sid` (`BE/src/modules/mod_chat/adapters/http/chatbot_router.py:88`); la documentación se alinea con el código implementado, que coincide con ADR-0008 y SPEC-03.
+
+## Enmienda (2026-11-26)
+
+Con la incorporación del API Gateway ([ADR-0031](ADR-0031-api-gateway-kong-oss.md)), el destino configurado en `API_PROXY_TARGET` pasa de apuntar directamente al servicio FastAPI a apuntar al servicio **Kong OSS** desplegado delante del backend en Railway. El mecanismo de mismo origen en Vercel (`/api/*` vía `rewrites`), las cookies de primera parte y el requisito de no almacenar en búfer el streaming SSE permanecen sin cambios; Kong reenvía internamente hacia FastAPI y respeta `X-Forwarded-For` para el rate limiting por IP.

@@ -44,5 +44,6 @@ Reglas:
 | [ADR-0028](ADR-0028-adjuntos-almacenamiento-externo-privado.md) | Adjuntos del chat con almacenamiento externo privado, no disco local | Aceptada | 2026-11-21 |
 | [ADR-0029](ADR-0029-modelo-de-datos-de-retroalimentacion.md) | Modelo de datos de retroalimentación: tablas propias y CSAT en Ventas | Aceptada | 2026-11-21 |
 | [ADR-0030](ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md) | RabbitMQ en CloudAMQP como mecanismo asíncrono del outbox, con consumidor en un proceso aparte | Aceptada | 2026-11-24 |
+| [ADR-0031](ADR-0031-api-gateway-kong-oss.md) | Kong OSS en modo DB-less como API Gateway delante del backend | Aceptada | 2026-11-26 |
 
 Las vistas que estas decisiones explican están en el [modelo C4](../c4.md).

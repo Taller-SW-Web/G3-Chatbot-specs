@@ -8,7 +8,7 @@ Esta carpeta documenta la arquitectura del Canal Chatbot con tres herramientas c
 |---|---|---|
 | [`modularizacion.md`](modularizacion.md) | Monolito modular por capacidad: los 8 módulos, el DAG, `shared/`, el contrato backend↔frontend, auto-discovery y gates. Es la vista de entrada para trabajar en el código | Todo el equipo, backend, frontend |
 | [`c4.md`](c4.md) | Diagramas C4 en Mermaid: contexto (nivel 1), contenedores (nivel 2 con los 8 módulos), entorno de desarrollo, despliegue y componentes (nivel 3: módulos y fronteras). Cada diagrama trae una tabla de elementos con su spec de origen | Todo el equipo, docentes, otros módulos |
-| [`adr/`](adr/README.md) | Registro de decisiones de arquitectura (formato de Michael Nygard): 28 aceptadas, 1 reemplazada y 1 propuesta, con índice y [plantilla](adr/plantilla.md) | Tech lead, backend, frontend |
+| [`adr/`](adr/README.md) | Registro de decisiones de arquitectura (formato de Michael Nygard): 29 aceptadas, 1 reemplazada y 1 propuesta, con índice y [plantilla](adr/plantilla.md) | Tech lead, backend, frontend |
 
 ## Relación con el resto del repositorio
 

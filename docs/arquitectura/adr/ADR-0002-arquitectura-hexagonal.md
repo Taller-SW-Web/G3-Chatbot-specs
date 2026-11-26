@@ -31,7 +31,7 @@ El frontend y el backend se organizan en **arquitectura hexagonal (puertos y ada
 ## Consecuencias
 
 **Positivas**
-- Un contrato provisional que cambia solo afecta a su adaptador; el riesgo R1 (A5) se mitiga aislando `ProductosClient` detrás de un puerto (`alcance.md` §9).
+- Un contrato provisional que cambia solo afecta a su adaptador; el riesgo R1 (A5) se mitiga aislando `ProductsClient` detrás de un puerto (`alcance.md` §9).
 - Las dos vías de entrada (texto con LLM y botón directo) llegan al mismo caso de uso (README §1.3.3).
 - Los casos de uso se prueban con adaptadores falsos (respx, `EmailSender` falso, LLM mockeado).
 

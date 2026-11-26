@@ -93,7 +93,7 @@ equipo `@Taller-SW-Web/chatbot`.
 | S1 | Contrato de `/contacto/celular`: `solicitar-otp`/`verificar-otp` | `mod-auth` (BE/FE) | @Ankarmin | ✅ Cerrado (D1) | No queda ninguna llamada del FE a un endpoint ausente; spec y `docs/openapi.json` coinciden |
 | S2 | Gate que compare los `endpoints` de cada `module.manifest.ts` contra `docs/openapi.json` | Plataforma / CI | @Ankarmin | ✅ Cerrado (2026-11-25) | El gate falla si un endpoint del manifiesto no existe o tiene otro tag. Evidencia: `G3-Chatbot-frontend/scripts/check-modules.mjs:262-328` (contrato) y job `modules` del CI, requerido por `check`; FE #108 · `ffabd60` |
 | S3 | Revisar los `MODULE.md` de `mod-auth`, `mod-postventa` y `mod-chat` | Docs de módulo | Owner de cada módulo | ✅ Cerrado | `MODULE.md` no promete rutas inexistentes |
-| S4 | Cerrar la deuda de nombres históricos de `mod-catalog` | `mod-catalog` | @SOoOnny | ⬜ Posterior al cierre | Grep de nombres antiguos en docs históricos = 0 o marcados como históricos |
+| S4 | Cerrar la deuda de nombres históricos de `mod-catalog` | `mod-catalog` | @SOoOnny | ✅ Cerrado (2026-11-26) | Los documentos vigentes usan `ProductsClient`; el nombre `ProductosClient` solo queda en el cambio archivado, marcado como histórico |
 
 ### M — Medio plazo
 
@@ -220,6 +220,6 @@ son deuda documental y una mejora conversacional fuera de las 24 capabilities. S
 > de Supabase está en `development` y producción ejecuta esa rama. Sigue 🟡 por el bucket privado, las
 > variables de storage y el fail-closed de `local` ([specs#53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53),
 > [backend#185](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/185)). **L4 queda cerrado**:
-> BE #165 se mergeó el 2026-11-25 (`f7fd0af`) y el gate de drift corre en CI. **M5** (specs#64) y **S4**
-> (backend#188) siguen abiertos; no son requisitos de las 24 capabilities. El estado de las 24 specs no
-> cambia: 23 ✅ y SPEC-23 🟡.
+> BE #165 se mergeó el 2026-11-25 (`f7fd0af`) y el gate de drift corre en CI. **M5** (specs#64) sigue
+> abierto; **S4** (backend#188) se cerró el 2026-11-26 al alinear los documentos vigentes a `ProductsClient`.
+> Ninguno es requisito de las 24 capabilities. El estado de las 24 specs no cambia: 23 ✅ y SPEC-23 🟡.

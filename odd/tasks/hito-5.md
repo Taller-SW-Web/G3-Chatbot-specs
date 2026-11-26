@@ -37,7 +37,7 @@ Estado verificado el 2026-11-22 contra `development` (backend `1c9c333`, fronten
 | API Management | H5-G1 (ADR), H5-G2 y H5-G3 (gateway) pendientes (specs #59, backend #178/#179, frontend #142) |
 | Mecanismo asíncrono | H5-M1 hecha (ADR-0030); H5-M2 (relay), H5-M3 (consumidor) y H5-M4 (evidencia) pendientes (backend #176/#177, specs #63) |
 | Producción | `development` es la rama por defecto y la que despliega Railway/Vercel; `main` es un placeholder de un commit con solo `README.md` desde el 2026-11-26. No se promueve `development` a `main`. H5-X1 se limita a verificar producción (backend #183) |
-| Specs y documentación | S2 y L4 cerrados; M5 (specs #64) y S4 (backend #188) pendientes; SPEC-23 sigue 🟡 por bucket, variables y fail-closed (specs #53, backend #185), no por promoción a `main` |
+| Specs y documentación | S2, L4 y S4 cerrados; M5 (specs #64) pendiente; SPEC-23 sigue 🟡 por bucket, variables y fail-closed (specs #53, backend #185), no por promoción a `main` |
 
 ## Alcance
 

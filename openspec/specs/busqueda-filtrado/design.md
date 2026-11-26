@@ -33,13 +33,13 @@
 | `CatalogoService.buscar()` | Normaliza, consulta, mapea a `ProductoResumen`, aplica el orden solicitado y guarda `ultimoCarrusel` y `filtrosVigentes`. |
 | `OrdenadorResultados` | Traduce `orden` al parámetro de Productos o, para precio, ordena la página enriquecida; valida el conjunto cerrado y responde `400 VALIDACION` si no pertenece. |
 | `Normalizador` | Sinónimos, similitud con `SequenceMatcher` (corte 0.8) y caché de categorías y marcas. |
-| `ProductosClient` | httpx con timeout de 4 s y token de servicio si Productos lo requiere. |
+| `ProductsClient` | httpx con timeout de 4 s y token de servicio si Productos lo requiere. |
 | `GET /api/v1/catalogo/productos` | Misma búsqueda para las acciones directas. |
 
 ## Desglose para issues
 
 - [ ] `[INT]` Acordar con Productos el endpoint real de búsqueda, filtros y scopes pendientes (`catalogo:leer`)
-- [ ] `[BE]` `ProductosClient` (búsqueda, categorías, marcas y precios) más un mock con datos semilla
+- [ ] `[BE]` `ProductsClient` (búsqueda, categorías, marcas y precios) más un mock con datos semilla
 - [ ] `[BE]` `Normalizador` con `sinonimos.yaml` y fuzzy match
 - [ ] `[BE]` Herramienta `buscar_productos` y `CatalogoService.buscar`
 - [ ] `[BE]` Endpoint `GET /catalogo/productos` y acción `BUSCAR_PAGINA`

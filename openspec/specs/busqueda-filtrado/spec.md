@@ -4,7 +4,7 @@
 
 ## Responsables
 
-- **Sonny:** `ProductosClient`, `GestionarCatalogo` (búsqueda y filtros) y mock de Productos.
+- **Sonny:** `ProductsClient`, `GestionarCatalogo` (búsqueda y filtros) y mock de Productos.
 - **Alonso:** herramienta de búsqueda.
 - **Nikol (QA):** casos de prueba a partir de los escenarios, pruebas E2E si el flujo es crítico y validación contra la definición de terminado.
 

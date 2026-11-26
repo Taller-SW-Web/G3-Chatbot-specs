@@ -98,6 +98,26 @@ justifican el cierre.
 Excepciones: duplicado, obsoleto o no aplicable. Se cierran con el motivo explícito y, si corresponde,
 el enlace al issue o PR que los reemplaza; nunca con `completed` si el trabajo sigue pendiente.
 
+### Paso 8.1 — Incoherencia con la spec
+
+Si la issue contradice la spec, pide comportamiento que la spec no define o mezcla alcance de dos
+módulos, **no implementes**. Abre una issue en `G3-Chatbot-specs` asignada a `@Ankarmin`, con label
+`bloqueante` si frena el avance, enlaza la issue original como bloqueada y documenta: spec y requisito
+afectado, contradicción exacta, impacto y opciones. La issue original no se cierra hasta que la
+decisión quede registrada en la spec.
+
+### Paso 8.2 — Duplicados y contenido mínimo
+
+Antes de crear una issue, busca una abierta o cerrada. Si ya está resuelta, ciérrala con
+PR/commit/evidencia; si es obsoleta, ciérrala con motivo y enlace al reemplazo. Toda issue lleva
+responsable, contexto, alcance, criterios de aceptación verificables y evidencia esperada. Si cruza
+repos, una issue por repo y una de coordinación; no dupliques el mismo alcance.
+
+### Paso 8.3 — Bloqueos externos
+
+Si el bloqueo es de G2/G5/G6/G7, abre la issue en el repo del otro grupo con lo que necesitas y sus
+criterios de cierre, y enlázala desde tu issue. No la repliques en G3.
+
 ## 3. El spec delta obligatorio
 
 Un *spec delta* es el cambio mínimo en la spec que refleja el avance del código. Ejemplos:

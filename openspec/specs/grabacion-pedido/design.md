@@ -22,7 +22,7 @@
 
 | Componente | Responsabilidad |
 |---|---|
-| `PedidoService.crear_en_ventas()` | Arma y valida el snapshot con los nombres de campo reales de Ventas, lo envía y guarda `order_ref`. |
+| `PedidoService.crear_en_ventas()` | Arma y valida el snapshot con los nombres de campo reales de Ventas. El checkout ya está persistido antes de la llamada; si Ventas no responde dentro del deadline, el checkout conserva el snapshot y la misma `Idempotency-Key` reconcilia el `pedidoId` y guarda `order_ref` sin duplicar. |
 | `SnapshotBuilder` | Construye `contacto` (con documento, SPEC-12), `items`, `cupon`, `envio` y `pago` a partir del carrito, los totales y el perfil. |
 | `VentasClient` | `crear()`, `notificarPago()`, `anular()`, `obtener()` y `listar()`; token de servicio o del cliente según la operación; timeout de 5 s; normaliza `codigo` → `code`. |
 | `OutboxWorker` | En `OUTBOX_DISPATCH_MODE=direct` procesa `NOTIFY_SALES_PAYMENT`, `REQUEST_CANCELLATION` y `SEND_EMAIL` con backoff; en `broker` publica en RabbitMQ con confirmaciones (ADR-0030) y el consumidor de H5-M3 procesa con `ack` manual y DLQ. En ambos modos distingue errores reintentables (`5xx`, timeout) de no reintentables (`400`, `409`). |

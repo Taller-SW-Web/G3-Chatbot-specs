@@ -227,8 +227,10 @@ módulo, sin lógica de negocio.
 1. **Se lee la spec del módulo antes de tocar código.** `openspec/specs/<capability>/spec.md` para el
    comportamiento y `design.md` para el contrato. Si la spec no existe o está desactualizada, se
    corrige primero.
-2. **Si el código avanza sin estar en la spec, la spec se actualiza en el mismo PR.** Es un *spec
-   delta* obligatorio: no se deja para un PR posterior.
+2. **Si el código avanza sin estar en la spec, el cambio de spec viaja en el mismo cambio coordinado.**
+   Es un *spec delta* obligatorio: PR de código + PR de specs enlazados, o issue en specs asignada a
+   `@Ankarmin` y `@MathiasTL`. Solo los autores habilitados abren PRs en specs; no se deja para un PR
+   posterior sin issue.
 3. **Revisión de coherencia.** Antes de mergear, se compara lo nuevo con lo que ya existía: no se
    contradicen specs previas, estados ya cerrados ni decisiones de ADR. Si hay conflicto, se marca la
    decisión y se actualiza el ADR o la spec; no se silencia.

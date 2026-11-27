@@ -6,7 +6,7 @@
 
 Este repositorio es la **fuente de verdad de las especificaciones** del Canal Chatbot, gestionadas con [OpenSpec](https://github.com/Fission-AI/OpenSpec) y el flujo SDD de gentle-ai. No contiene código de aplicación: el backend y el frontend viven en repositorios hermanos (`G3-Chatbot-backend` y `G3-Chatbot-frontend`).
 
-> **Cómo se trabaja:** la spec se lee antes de tocar código; si el código avanza sin estar en la spec, la spec se actualiza en el mismo PR. Un PR toca un solo módulo y `shared/` exige la etiqueta `cross-modulo`. El flujo completo, la Definition of Done y la checklist de PR están en [`AGENTS.md`](AGENTS.md) y [`docs/flujo-de-trabajo.md`](docs/flujo-de-trabajo.md).
+> **Cómo se trabaja:** la spec se lee antes de tocar código; si el código avanza sin estar en la spec, el cambio de spec viaja en el mismo cambio coordinado (PR de código + PR de specs enlazados) o se reporta con una issue en `G3-Chatbot-specs` asignada a `@Ankarmin` y `@MathiasTL`. Solo `@MathiasTL`, `@Ankarmin` y `@nikaaat` abren PRs en specs; el resto no crea ramas ni PRs. Un PR de código toca un solo módulo y `shared/` exige la etiqueta `cross-modulo`. El flujo completo, la Definition of Done y la checklist de PR están en [`AGENTS.md`](AGENTS.md) y [`docs/flujo-de-trabajo.md`](docs/flujo-de-trabajo.md).
 
 > **Ramas (2026-11-26):** `development` es la rama por defecto y la que despliega producción en los tres repos. `main` es un placeholder intencional de un único commit con solo `README.md`; no se promueve `development` a `main`. Ver la enmienda de [ADR-0020](docs/arquitectura/adr/ADR-0020-despliegue-en-railway-vercel-y-supabase.md).
 
@@ -282,7 +282,7 @@ spec → implementación → tests → contrato → PR por módulo → revisión
 Reglas que no se negocian:
 
 1. **Se lee la spec del módulo antes de tocar código.** `spec.md` para el comportamiento y `design.md` para el contrato.
-2. **Si el código avanza sin estar en la spec, la spec se actualiza en el mismo PR.** Es un *spec delta* obligatorio, no un pendiente.
+2. **Si el código avanza sin estar en la spec, el cambio de spec viaja en el mismo cambio coordinado.** Es un *spec delta* obligatorio, no un pendiente: PR de código + PR de specs enlazados, o issue en `G3-Chatbot-specs` asignada a `@Ankarmin` y `@MathiasTL`. Solo los owners habilitados abren PRs en specs.
 3. **Revisión de coherencia.** Lo nuevo no contradice specs previas, estados ya cerrados ni ADR; si hay conflicto, se marca la decisión y se actualiza la spec o el ADR.
 4. **Un PR/MR por módulo.** `shared/` solo entra con la etiqueta `cross-modulo` y revisión del owner de plataforma.
 5. **Contrato antes que UI.** Endpoint nuevo → `design.md` + OpenAPI → adapter del frontend + `module.manifest.ts` en el mismo cambio.

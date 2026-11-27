@@ -63,8 +63,10 @@ Cada escenario tocado tiene al menos una prueba automatizada que lo referencia p
 
 ### Paso 5 — PR por módulo
 
-Un PR toca un solo `mod-*`. Si toca `shared/`, lleva la etiqueta `cross-modulo` y revisión del owner de
-plataforma. El PR incluye la spec delta en el mismo diff.
+Un PR de código toca un solo `mod-*`. Si toca `shared/`, lleva la etiqueta `cross-modulo` y revisión del
+owner de plataforma. El cambio de spec viaja en el mismo cambio coordinado: PR de código + PR de specs
+enlazados. Solo `@MathiasTL`, `@Ankarmin` y `@nikaaat` abren PRs en `G3-Chatbot-specs`; el resto abre
+una issue asignada a `@Ankarmin` y `@MathiasTL` y espera a que un owner la convierta en PR.
 
 ### Paso 6 — Revisión de coherencia
 
@@ -101,10 +103,14 @@ el enlace al issue o PR que los reemplaza; nunca con `completed` si el trabajo s
 ### Paso 8.1 — Incoherencia con la spec
 
 Si la issue contradice la spec, pide comportamiento que la spec no define o mezcla alcance de dos
-módulos, **no implementes**. Abre una issue en `G3-Chatbot-specs` asignada a `@Ankarmin`, con label
-`bloqueante` si frena el avance, enlaza la issue original como bloqueada y documenta: spec y requisito
-afectado, contradicción exacta, impacto y opciones. La issue original no se cierra hasta que la
-decisión quede registrada en la spec.
+módulos, **no implementes**. Abre una issue en `G3-Chatbot-specs` asignada a `@Ankarmin` y
+`@MathiasTL`, con label `bloqueante` si frena el avance, enlaza la issue original como bloqueada y
+documenta: spec y requisito afectado, contradicción exacta, impacto y opciones. La issue original no se
+cierra hasta que la decisión quede registrada en la spec.
+
+**PRs en specs.** Solo `@MathiasTL`, `@Ankarmin` y `@nikaaat` abren PRs en `G3-Chatbot-specs`. El resto
+del equipo no crea ramas ni PRs: usa la plantilla de issue “Spec change request”, asignada a
+`@Ankarmin` y `@MathiasTL`. Un workflow de guardia cierra los PRs de autores no habilitados.
 
 ### Paso 8.2 — Duplicados y contenido mínimo
 
@@ -130,8 +136,11 @@ Un *spec delta* es el cambio mínimo en la spec que refleja el avance del códig
 | Se decide no implementar algo | Moverlo a «Fuera de alcance» con la decisión y el motivo |
 | Se cambia una ruta o un tag | Actualizar `design.md`, el manifiesto y el OpenAPI |
 
-El delta va en el **mismo PR** que el código. Un PR de código sin delta se rechaza en la revisión de
-coherencia, salvo que el cambio sea puramente interno y no altere comportamiento, contrato ni estados.
+El delta va en el **mismo cambio coordinado** que el código: PR de código + PR de specs enlazados. Si el
+autor del código no puede abrir el PR de specs, abre una issue asignada a `@Ankarmin` y `@MathiasTL`; un
+owner la convierte en PR. Un PR de código sin delta ni issue/PR de specs enlazado se rechaza en la
+revisión de coherencia, salvo que el cambio sea puramente interno y no altere comportamiento, contrato
+ni estados.
 
 Un **cambio de comportamiento nuevo** se tramita primero en `openspec/changes/<cambio>/` (propuesta,
 specs delta, diseño, tareas, verificación y archivo). Una **corrección de drift** o un avance que ya
@@ -154,7 +163,16 @@ Owners actuales (tomados de los manifiestos):
 |---|---|
 | Todos los módulos | @Taller-SW-Web/chatbot |
 
-La aprobación de PRs la dan los code owners `@MathiasTL` y `@Ankarmin`. El ruleset “Code owners con bypass Mathias/David” exige 1 aprobación + code owner review al resto del equipo; Mathias y David tienen bypass `pull_request` para mergear sus propios PRs sin otra aprobación. Los checks de CI siguen obligatorios para todos (`enforce_admins=true`, `strict=true`). El ownership de módulos sigue siendo del equipo `@Taller-SW-Web/chatbot`.
+La aprobación de PRs la dan los code owners `@MathiasTL` y `@Ankarmin`. En backend y frontend, el ruleset
+"Code owners con bypass Mathias/David" exige 1 aprobación + code owner review al resto del equipo;
+Mathias y David tienen bypass `pull_request` para mergear sus propios PRs sin otra aprobación. Los checks
+de CI siguen obligatorios para todos (`enforce_admins=true`, `strict=true`). El ownership de módulos sigue
+siendo del equipo `@Taller-SW-Web/chatbot`.
+
+En `G3-Chatbot-specs` rige el mismo ruleset y CODEOWNERS, pero solo `@MathiasTL`, `@Ankarmin` y
+`@nikaaat` pueden abrir PRs; Nikol no tiene bypass y necesita la aprobación de un code owner. El resto
+del equipo reporta con una issue asignada a `@Ankarmin` y `@MathiasTL`. Un workflow de guardia cierra los
+PRs de autores no habilitados.
 
 ## 5. Definition of Done
 

@@ -2,7 +2,7 @@
 
 > Diseño conversacional sobre [SPEC-05 · Req. 3](../../openspec/specs/motor-conversacion/spec.md) (tabla de intenciones y herramientas) y [SPEC-05 · Req. 6](../../openspec/specs/motor-conversacion/spec.md) (sesión y confirmación por herramienta). Los nombres de herramientas, códigos de error y límites salen de las specs; si algo aquí las contradice, mandan las specs.
 >
-> **Vigente (2026-11-25):** los nombres de este catálogo siguen el delta [2026-11-25-catalogo-tools-motor-conversacion](../../openspec/changes/2026-11-25-catalogo-tools-motor-conversacion/proposal.md) (M5): `consultar_pedidos` consolida `listar_pedidos` + `consultar_pedido`, y `silenciar_complementos` entra al catálogo. Mientras el delta no se archive, `openspec/specs/motor-conversacion/spec.md` conserva la tabla anterior; este documento y el delta son la referencia operativa.
+> **Vigente (2026-11-26):** los nombres de este catálogo siguen el cambio [2026-11-25-catalogo-tools-motor-conversacion](../../openspec/changes/archive/2026-11-25-catalogo-tools-motor-conversacion/proposal.md) (M5), ya archivado en `openspec/specs/motor-conversacion/spec.md`: `consultar_pedidos` consolida los nombres retirados `listar_pedidos` y `consultar_pedido`, y `silenciar_complementos` entra al catálogo.
 
 ## 1. Qué es una intención en este canal
 

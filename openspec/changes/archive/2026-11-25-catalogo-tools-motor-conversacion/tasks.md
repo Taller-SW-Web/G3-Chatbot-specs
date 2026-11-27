@@ -43,12 +43,12 @@
 
 - [ ] 4.1 Actualizar `evals/intenciones.jsonl`: las frases de EP-07 apuntan a `consultar_pedidos` (con y sin `pedidoId`) y las de INT-CAT-11 a `silenciar_complementos`.
 - [ ] 4.2 Verificar precisión de intención ≥ 90 % con el catálogo nuevo.
-- [ ] 4.3 Prueba E2E: "mis pedidos" → lista; elegir uno → estado; "¿ya viene?" → seguimiento; "mis reclamos" → lista; abrir uno → estado; enviar reclamo → constancia.
-- [ ] 4.4 Prueba de contrato: `CERRAR_SESION` enviada al BFF responde `ACCION_DESCONOCIDA` y no borra cookies; `IR_A_CHECKOUT` no crea checkout.
-- [ ] 4.5 Revisar que ningún documento operativo (fuera de los históricos) siga citando `listar_pedidos` o `consultar_pedido`.
+- [x] 4.3 Prueba E2E: "mis pedidos" → lista; elegir uno → estado; "¿ya viene?" → seguimiento; "mis reclamos" → lista; abrir uno → estado; enviar reclamo → constancia. Frontend `tests/e2e/pedidos-reclamos.fixture.spec.ts` (rama `test/m5-e2e-pedidos-reclamos`), con respuestas del BFF simuladas según este contrato, porque el job `E2E` del CI no tiene LLM. Cubre los cinco primeros pasos; "enviar reclamo → constancia" queda pendiente porque el chat no pinta `FORMULARIO/RECLAMO` ([frontend#159](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/159)).
+- [x] 4.4 Prueba de contrato: `CERRAR_SESION` enviada al BFF responde `ACCION_DESCONOCIDA` y no borra cookies; `IR_A_CHECKOUT` no crea checkout. Backend `tests/unit/mod_chat/test_m5_client_actions_contract.py` (rama `test/m5-contrato-acciones-cliente`), por HTTP contra el `ActionDispatcher` real; cubre también `NUEVO_CHAT` y `BUSCAR_CHATS`.
+- [x] 4.5 Revisar que ningún documento operativo (fuera de los históricos) siga citando `listar_pedidos` o `consultar_pedido`. Revisado el 2026-11-26 en specs, backend y frontend: solo quedan los registros históricos (`docs/casos-prueba-hito-3.md` y el desglose de SPEC-17 en `EP-07-seguimiento.md`), la nota de `docs/conversacion/intenciones.md` y `mod_chat/MODULE.md` del backend, que los citan como nombres retirados, y la spec base, que se actualiza al archivar.
 
 ## 5. Archivo
 
-- [ ] 5.1 Aplicar el delta a `openspec/specs/motor-conversacion/spec.md` y mover el cambio a `openspec/changes/archive/` cuando las tareas 2.x y 3.x estén mergeadas.
+- [x] 5.1 Aplicar el delta a `openspec/specs/motor-conversacion/spec.md` y mover el cambio a `openspec/changes/archive/` cuando las tareas 2.x y 3.x estén mergeadas.
 
-> Implementado en backend #166 y frontend #141 (2026-11-25). Quedan las tareas 4.x (evals/E2E/QA) y 5.1 (archivar el delta).
+> Implementado en backend #166 y frontend #141 (2026-11-25). Archivado el 2026-11-26 ([specs#64](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/64)). Quedan fuera del archivo: 4.1 y 4.2 (evals, [backend#175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175)) y el formulario de reclamo y devolución en el chat ([frontend#159](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/159)).

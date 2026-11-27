@@ -11,9 +11,10 @@ Este documento reúne la evidencia verificable del Hito 5. No repite los casos: 
 |---|---|---|
 | CI/CD y seguridad | ✅ | Backend #210 (DAST), #212/#214/#215 (CI); frontend #152; specs #220; runs de `development` |
 | Pruebas de integración y E2E | ✅ | Backend y frontend CI; `tests/integration`, `tests/e2e` |
-| Pruebas de contrato G7/G6/G2/G5 | 🟡 | Pendiente backend #174 |
-| Evals del chatbot | 🟡 | Pendiente backend #175 |
+| Pruebas de contrato G7/G6/G2/G5 | ✅ | `tests/contract/`, job bloqueante `contract`; backend #226–#229, run 46050322098 |
+| Evals del chatbot | 🟡 | Suite y workflow mergeados (backend #230); falta la corrida real con `LLM_API_KEY` (#175) |
 | Performance | ✅ | [`slo-performance.md`](slo-performance.md), run 45887721116 |
+| Lighthouse y accesibilidad | ✅ | Frontend #180, job `lighthouse`, run 46048924659 |
 | API Management | 🟡 | ADR-0031 y código #211/#214 mergeados; despliegue #178/#179 |
 | Mecanismo asíncrono | ✅ | [`evidencia-mecanismo-asincrono.md`](evidencia-mecanismo-asincrono.md); #215 mergeado |
 | Casos de prueba y DoD | ✅ | [`casos-prueba-hito-5.md`](casos-prueba-hito-5.md) |
@@ -23,8 +24,8 @@ Este documento reúne la evidencia verificable del Hito 5. No repite los casos: 
 
 | Evidencia | Enlace |
 |---|---|
-| Backend `development`: lint, tipos, unitarias, integración, OpenAPI, módulos, DAST, Trivy, Sonar y gate `test` | [run 45932607534](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/45932607534) · `41bdbd2` |
-| Frontend `development`: lint/typecheck, unitarias, E2E, build, módulos, Sonar y Vercel | [run 45925602758](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/45925602758) · `ecf4794` |
+| Backend `development`: lint, tipos, unitarias, contrato, integración, OpenAPI, módulos, DAST, Trivy, Sonar y gate `test` | [run 46050322098](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/46050322098) · `11a25be` |
+| Frontend `development`: lint/typecheck, unitarias, Lighthouse, E2E, build, módulos, Sonar y Vercel | [run 46048924659](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/46048924659) · `a99886e` |
 | Specs `development`: OpenSpec y enlaces | [run 45936461820](https://github.com/Taller-SW-Web/G3-Chatbot-specs/actions/runs/45936461820) · `c4340c5` |
 | DAST con OWASP ZAP y gate de alertas High | Backend #210, job `DAST (OWASP ZAP)` |
 | Ruleset y CODEOWNERS en backend/frontend | H5-C4, ADR-0024; `.github/CODEOWNERS` |
@@ -59,7 +60,7 @@ Los E2E corren con los módulos externos en `fake` (ADR-0022) y sin LLM real; lo
 | Corrida con RabbitMQ y consumidor (H5-P5) | [run 45887721116](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/45887721116) |
 | Resultado | 1533 eventos consumidos, 0 reintentos/DLQ/fallos; checkout 12,77 compras/s |
 
-Lighthouse CI (H5-P4) está implementado en frontend #156, todavía pendiente de merge; no se usa como evidencia cerrada.
+Lighthouse CI (H5-P4) corre en el gate `check` con el preset móvil y presupuestos bloqueantes de LCP, CLS, peso JS/total y accesibilidad, más TBT como proxy de INP. La excepción de CI 4800/350 está aprobada y documentada en [`rendimiento-lighthouse.md`](../../G3-Chatbot-frontend/docs/rendimiento-lighthouse.md). Evidencia: frontend #180, [run 46048924659](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/46048924659), job `Lighthouse CI`; el reporte se publica como artefacto `lighthouse-reports`.
 
 ## 6. Mecanismo asíncrono
 
@@ -70,14 +71,15 @@ La evidencia completa está en [`evidencia-mecanismo-asincrono.md`](evidencia-me
 - Prueba con el broker caído: el outbox retiene y publica al volver, sin perder eventos.
 - Corrección de reconexión del consumidor en backend #215, mergeada y desplegada; logs de `consumer_started` y `event=consumed`.
 
-## 7. Contratos y evals (pendientes)
+## 7. Contratos y evals
+
+Contratos G7/G6/G2/G5: cerrados con backend #226–#229. `tests/contract/` fija los OpenAPI publicados con hash en `contracts.lock.json`, los clientes se prueban con `respx` y el job `contract` es bloqueante dentro de `test`; el drift semanal vive en `contract-drift.yml`. Evidencia: [run 46050322098](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/46050322098), job `Contract tests`.
 
 | Pendiente | Issue | Qué falta |
 |---|---|---|
-| Contratos G7/G6/G2/G5 | [backend #174](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/174) | Fixtures y job de contrato bloqueante en CI |
-| Evals del chatbot | [backend #175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175) | Evals contra LLM real con aserciones sobre herramientas y datos |
+| Evals del chatbot | [backend #175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175) | Configurar `LLM_API_KEY` en el environment `evals` y adjuntar la primera corrida real |
 
-No se presentan como evidencia cerrada. Cuando se mergeen, este documento debe actualizarse y enlazar sus runs.
+La suite y el workflow de evals están en `development` (backend #230): 9 casos, reporte `evals-report.json`, corrida manual o nocturna. Sin la clave, la corrida manual falla en cerrado y la programada se omite con aviso explícito; por eso no se presenta como evidencia cerrada todavía.
 
 ## 8. Producción
 
@@ -90,8 +92,8 @@ No se presentan como evidencia cerrada. Cuando se mergeen, este documento debe a
 
 ## 9. Limitaciones conocidas
 
-- **Contratos y evals** siguen en backend #174/#175; no hay job de contrato ni evals reales en CI.
-- **Lighthouse** está pendiente de merge (#156); H5-P4 no está cerrado.
+- **Evals** están implementadas y en CI, pero sin corrida real hasta configurar `LLM_API_KEY` en backend #175.
+- **Lighthouse** ya está en el gate `check` (H5-P4 cerrado, frontend #180); la deuda de LCP/TBT en CI sigue en frontend #164.
 - **Gateway** no está desplegado en Railway; H5-G2/G3 no están operativos.
 - **Adjuntos** en producción usan almacenamiento local y volumen efímero; el cierre operativo y el checklist están en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27).
 - **SMTP** no está configurado en producción; los correos usan `FakeEmailSender`.

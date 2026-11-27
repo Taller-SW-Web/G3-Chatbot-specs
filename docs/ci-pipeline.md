@@ -11,7 +11,7 @@ Este documento describe el pipeline vigente de los tres repositorios y cómo ope
 - **Schedule semanal:** lunes 08:00 UTC backend, 09:00 UTC frontend. Corre todo, incluido `pip-audit`/`pnpm audit` y los E2E.
 - **Sin secretos nuevos:** `SONAR_TOKEN` ya existe en backend y frontend; `GITHUB_TOKEN` es automático. No se usan tokens de GitLab, Nexus ni registry.
 - **Sonar sin token:** si un PR necesita Sonar y no hay `SONAR_TOKEN`, el job falla. Los PRs de fork no reciben secretos: un maintainer debe ejecutar el análisis en una rama del repo base antes de mergear. Para Dependabot, configura el Dependabot secret `SONAR_TOKEN`.
-- **Ramas protegidas:** `development` exige el check `test` (backend), `check` (frontend) u `OpenSpec y enlaces` (specs), con rama actualizada, conversación resuelta y sin force push; `enforce_admins` está activo. Los PRs de forks requieren aprobación de un maintainer (`all_external_contributors`).
+- **Ramas protegidas:** `development` exige `test` + `Analyze (python)` (backend), `check` + `Analyze (javascript-typescript)` (frontend) u `OpenSpec y enlaces` (specs), con rama actualizada, conversación resuelta y sin force push; `enforce_admins` está activo. Los PRs de forks requieren aprobación de un maintainer (`all_external_contributors`).
 - **Supply-chain:** todas las acciones están fijadas por SHA y la organización exige SHA pinning (`sha_pinning_required=true`).
 
 ## Backend

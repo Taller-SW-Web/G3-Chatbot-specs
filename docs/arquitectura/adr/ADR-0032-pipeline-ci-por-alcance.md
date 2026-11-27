@@ -29,7 +29,7 @@ El pipeline se organiza por **alcance calculado una vez** y **orden de costo**:
 - Un job `notify` publica (o actualiza) un comentario en el PR cuando el pipeline falla, con los jobs fallidos y un extracto de cada log.
 - La cobertura mantiene el trinquete actual: 85 % backend y 80/74/78/80 frontend, con subida por módulo cuando se toque. No se adopta un 100 % global.
 
-Los nombres `test` (backend) y `check` (frontend) se conservan porque son los checks requeridos de `development`. El agregador falla si un job que el alcance pidió no terminó en `success`; un job omitido a propósito no cuenta como aprobado. `development` de specs exige el check `OpenSpec y enlaces`, rama actualizada, conversación resuelta y no permite force push ni borrado; `enforce_admins` queda activo.
+Los nombres `test` (backend) y `check` (frontend) se conservan porque son los checks requeridos de `development`, junto con los checks de CodeQL (`Analyze (python)` y `Analyze (javascript-typescript)`). El agregador falla si un job que el alcance pidió no terminó en `success`; un job omitido a propósito no cuenta como aprobado. `development` de specs exige el check `OpenSpec y enlaces`, rama actualizada, conversación resuelta y no permite force push ni borrado; `enforce_admins` queda activo.
 
 ## Alternativas consideradas
 
@@ -57,6 +57,7 @@ Los nombres `test` (backend) y `check` (frontend) se conservan porque son los ch
 - Un PR puede mergear sin DAST/E2E; se compensa con el pipeline de `development`, el schedule semanal y la etiqueta `ci:full`.
 - Los PRs de fork no reciben `SONAR_TOKEN`: el job de Sonar falla y un maintainer debe ejecutar el análisis en una rama del repo base antes de mergear. Los PRs de forks requieren aprobación de maintainer (`all_external_contributors`).
 - Las acciones están fijadas por SHA y el repositorio exige SHA pinning; una actualización de acción pasa por Dependabot o un PR explícito.
+- El workflow y los scripts de alcance viajan en el PR, así que un PR malicioso podría intentar debilitar el gate. La defensa es la revisión obligatoria de code owners, la protección de rama y ejecutar los helpers con token (`sonar`, `notify`) desde el commit base cuando existe. No se usa `pull_request_target` para ejecutar código del PR.
 - El cálculo de alcance es código que mantener; si el merge-base falla, el pipeline se vuelve completo y más lento, pero no se salta gates.
 - La matriz de integración multiplica los servicios (PostgreSQL y RabbitMQ por shard). En este repositorio son 5 shards como máximo y solo cuando el alcance los pide.
 - La cobertura de integración se combina en un job extra; si un shard falla, el merge y Sonar se omiten y el agregador falla.

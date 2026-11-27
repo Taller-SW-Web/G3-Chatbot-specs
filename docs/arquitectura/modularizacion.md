@@ -42,7 +42,9 @@ entre capacidades también es una regla verificable.
 
 El CSAT es de `mod-postventa` también en el frontend: `DeliveryRatingFooter` se inyecta como slot desde
 `app/pedido/page.tsx` en el detalle del pedido. `mod-orders` conserva el detalle del pedido
-(`OrderDetailPage`) y el flag `csatEnviado`; no es dueño del adapter ni de la UI del CSAT.
+(`OrderDetailPage`) y el flag `csatEnviado`; no es dueño del adapter ni de la UI del CSAT. El
+composition root `app/pedido/page.tsx` es quien inyecta el slot, y `mod-postventa` sigue dependiendo de
+`mod-orders`: mover la UI no crea un ciclo `mod-orders -> mod-postventa`.
 
 Cada módulo backend contiene:
 
@@ -206,7 +208,7 @@ al navegador.
 | Estructura, fronteras y tags | `G3-Chatbot-backend/scripts/check_modules.py` | ids, `MODULE.md`, `public.py`, imports, tags `mod-*`, composition root | Bloqueante en CI |
 | Manifiestos y fronteras | `G3-Chatbot-frontend/scripts/check-modules.mjs` | paridad de ids, estructura, `dependsOn`, registry generado, imports profundos | Bloqueante en CI |
 | OpenAPI del backend | `G3-Chatbot-backend/scripts/export_openapi.py` + job `openapi` | que `docs/openapi.json` se genere desde la app, sea válido y coincida con el archivo comprometido | Generación, validación y check de drift bloqueantes en CI (BE #165, mergeado) |
-| Endpoints del manifiesto contra OpenAPI | `G3-Chatbot-frontend/scripts/check-modules.mjs` + job `modules` | que cada `endpoint` del frontend exista y tenga el tag del módulo | **Bloqueante en CI**: `modules` es requerido por `check`; allowlist CSAT con `reviewBy` 2026-12-19 |
+| Endpoints del manifiesto contra OpenAPI | `G3-Chatbot-frontend/scripts/check-modules.mjs` + job `modules` | que cada `endpoint` del frontend exista y tenga el tag del módulo | **Bloqueante en CI**: `modules` es requerido por `check`; sin excepciones de tag. |
 
 ## 6. Auto-discovery: nadie edita una lista compartida
 
@@ -261,13 +263,10 @@ módulo, sin lógica de negocio.
 
 - **Verificación cruzada de OpenAPI.** El gate de contrato (H-04) es bloqueante: el job `modules` del
   frontend descarga `docs/openapi.json` de `development`, ejecuta `pnpm modules:check` y `check` lo
-  exige en la rama protegida. Falla si un endpoint del manifiesto no existe o si el tag no coincide; la
-  única excepción es CSAT (`/pedidos/{pedidoId}/csat`): el endpoint y su tag pertenecen a
-  `mod-postventa`, pero el manifiesto de `mod-orders` todavía lo declara mientras el adapter y la UI de
-  CSAT no se muevan a `mod-postventa` (decisión del 2026-11-26: el dueño canónico es `mod-postventa`).
-  Está registrada en
-  `scripts/module-boundaries.exceptions.json` con `reviewBy` 2026-12-19. El backend genera, valida y
-  verifica el drift del OpenAPI en CI: el job `openapi` incluye
+  exige en la rama protegida. Falla si un endpoint del manifiesto no existe o si el tag no coincide; no
+  hay excepciones de tag. `/pedidos/{pedidoId}/csat` pertenece a `mod-postventa` en el contrato, el
+  backend, el adapter y la UI; `mod-orders` solo expone el detalle del pedido y `csatEnviado`. El backend
+  genera, valida y verifica el drift del OpenAPI en CI: el job `openapi` incluye
   `Verify committed OpenAPI is up to date` (`python scripts/export_openapi.py --check`, 47 paths), mergeado
   en [BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165), así que un archivo
   comprometido desactualizado rompe el pipeline.

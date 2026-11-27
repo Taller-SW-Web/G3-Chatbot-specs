@@ -70,7 +70,7 @@ El bot no inventa criterios. Revisa contra:
 | SONAR-03 | Cobertura nueva por debajo del umbral del repo | P2 |
 | SONAR-04 | Duplicación o complejidad nueva fuera de umbral | P3 |
 | CI-01 | Check requerido rojo o skipped | P1 |
-| CI-02 | Rama `BEHIND` o sin CI contra `development` | P1 |
+| CI-02 | Rama `BEHIND` o sin CI contra `development` | Digest; no issue (se corrige en el PR) |
 | CI-03 | `Closes` usado cuando el issue pide deploy/verificación | P1 |
 | CI-04 | Dependencia nueva sin justificar o con auditoría roja | P2 |
 
@@ -83,7 +83,7 @@ El bot no inventa criterios. Revisa contra:
 | Seguridad explotable o secreto | Security advisory privado o repo privado | Owner del repo | `security`, `P0` |
 | P3 / estilo | Solo digest | Nadie | — |
 
-**Cobertura por colaborador.** En cada barrido, revisa los PRs abiertos y los merges de los últimos 7 días por autor. Crea una issue paraguas por colaborador con PRs revisados, hallazgos y enlaces a las issues individuales. Si no hay hallazgos P0/P1/P2, la paraguas lo dice explícitamente; no inventes una issue. Las issues de specs van aparte, asignadas a Mathias y David.
+**Cobertura por colaborador.** El barrido revisa los PRs abiertos y los merges de los últimos 7 días por autor, pero **no crea issues paraguas vacías**. La cobertura y el estado de rama (`BEHIND`) van al digest semanal. Solo se crean issues individuales por hallazgos P0/P1/P2 con evidencia. Las issues de specs van aparte, asignadas a Mathias y David.
 
 Reglas:
 
@@ -134,5 +134,6 @@ Reglas:
 
 - Menos de 20 % de falsos positivos en P1.
 - Cero issues duplicadas por fingerprint.
+- Cero issues paraguas vacías o por estado de rama.
 - Toda issue tiene evidencia, fix sugerido y criterio de aceptación.
 - Ningún PR del bot; el bot no escribe código.

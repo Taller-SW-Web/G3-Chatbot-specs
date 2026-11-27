@@ -32,6 +32,8 @@ Lee `AGENTS.md`, `docs/flujo-de-trabajo.md`, `docs/revision-automatica.md`, `doc
 - No asignes issues de specs a nadie más que Mathias y David.
 - No cierres una issue porque el PR se mergeó; ciérrala cuando el fix esté verificado.
 - No crees issues por estilo o preferencias; solo por reglas del proyecto y riesgos.
+- No crees issues paraguas por colaborador ni issues por `BEHIND`; eso va al digest.
+- Si no hay hallazgo P0/P1/P2 con evidencia, no abras una issue.
 
 ## Guardrails
 

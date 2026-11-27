@@ -58,11 +58,11 @@ jobs:
 
           **Run:** ${RUN_URL}
 
-          El job \`validate\` no pasó. Revisa el log del run; los comandos locales son:
+          El job \`OpenSpec y enlaces\` no pasó. Revisa el log del run; los comandos locales son:
 
           \`\`\`bash
-          npx @fission-ai/openspec validate --specs
-          python3 scripts/check_links.py
+          npx @fission-ai/openspec@2.2.0 validate --specs
+          python scripts/check_links.py
           \`\`\`
           EOF
           )

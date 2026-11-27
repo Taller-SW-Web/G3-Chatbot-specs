@@ -12,6 +12,6 @@
 
 ## Verificación
 
-- [ ] `npx @fission-ai/openspec validate --specs`
+- [ ] `npx @fission-ai/openspec@2.2.0 validate --specs`
 - [ ] `python scripts/check_links.py`
 - [ ] Sin secretos ni datos personales.

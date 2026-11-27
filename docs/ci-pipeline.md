@@ -4,13 +4,13 @@ Este documento describe el pipeline vigente de los tres repositorios y cómo ope
 
 ## Reglas comunes
 
-- **Un check requerido por repo:** `test` en backend, `check` en frontend. El job agregador corre siempre (`if: always()`) y falla si un job que el alcance pidió no terminó en `success`. Un job omitido a propósito no cuenta como aprobado.
+- **Checks requeridos:** `test` + `Analyze (python)` en backend, `check` + `Analyze (javascript-typescript)` en frontend, `OpenSpec y enlaces` en specs. El job agregador corre siempre (`if: always()`) y falla si un job que el alcance pidió no terminó en `success`. Un job omitido a propósito no cuenta como aprobado.
 - **Cancelación:** un push nuevo a un PR cancela el run anterior. Los runs de `push` y `schedule` no se cancelan entre sí: el semanal debe terminar aunque llegue un push.
 - **Alcance:** un job `scope` calcula el diff contra el merge-base de `development`, cuenta también borrados y renames, mapea rutas a módulos y cierra el DAG de `modules.manifest.json` hacia dependientes. Si no puede resolver la base, ejecuta todo.
 - **Etiqueta `ci:full`:** fuerza el alcance completo y los jobs caros en un PR (`dast`, `gateway-integration`, `e2e`, audit). Añadirla relanza el workflow (`labeled` está en los triggers).
 - **Schedule semanal:** lunes 08:00 UTC backend, 09:00 UTC frontend. Corre todo, incluido `pip-audit`/`pnpm audit` y los E2E.
 - **Sin secretos nuevos:** `SONAR_TOKEN` ya existe en backend y frontend; `GITHUB_TOKEN` es automático. No se usan tokens de GitLab, Nexus ni registry.
-- **Sonar sin token:** si un PR necesita Sonar y no hay `SONAR_TOKEN`, el job falla. Los PRs de fork no reciben secretos: un maintainer debe ejecutar el análisis en una rama del repo base antes de mergear. Para Dependabot, configura el Dependabot secret `SONAR_TOKEN`.
+- **Sonar sin token:** si un PR necesita Sonar y no hay `SONAR_TOKEN`, el job falla. Los PRs de fork no reciben secretos: el PR original no puede quedar verde; un maintainer recrea el cambio en una rama del repo base, valida ahí y mergea ese PR. Para Dependabot, configura el Dependabot secret `SONAR_TOKEN`; sin él, sus PRs también fallan.
 - **Ramas protegidas:** `development` exige `test` + `Analyze (python)` (backend), `check` + `Analyze (javascript-typescript)` (frontend) u `OpenSpec y enlaces` (specs), con rama actualizada, conversación resuelta y sin force push; `enforce_admins` está activo. Los PRs de forks requieren aprobación de un maintainer (`all_external_contributors`).
 - **Supply-chain:** todas las acciones están fijadas por SHA y la organización exige SHA pinning (`sha_pinning_required=true`).
 
@@ -24,7 +24,7 @@ scope
   │     └─ coverage-merge
   ├─ docker (solo si cambia código/Dockerfile)
   ├─ security (solo si cambian requirements; schedule semanal)
-  ├─ dast + gateway-integration (push, schedule o label ci:full)
+  ├─ dast + gateway-integration (push, schedule, label ci:full o cambio en gateway/**)
   ├─ dependency-review (PR)
   └─ specs (PR)
         └─ sonar (cobertura + quality gate) ── test (agregador)
@@ -45,8 +45,8 @@ scope
   ├─ security (lockfile, package.json, schedule o ci:full)
   ├─ e2e (push, schedule o label ci:full)
   ├─ dependency-review (PR)
-  └─ specs (PR)
-        └─ sonar ── check (agregador)
+  ├─ specs (PR)
+  └─ sonar ── check (agregador)
 notify (si falla, comenta el PR)
 ```
 
@@ -62,7 +62,7 @@ No hay `nx affected`: el build de Next.js es monolítico y el alcance solo decid
 - Además, el pipeline tiene un **gate estricto propio**: consulta `/api/issues/search` y, cuando SonarCloud expone las medidas de *new code* al token del proyecto, exige cobertura ≥ 80 % y duplicación ≤ 3 %. Falla si el PR introduce un issue `MINOR` o superior. En `push` a `development` el umbral de issues es `CRITICAL` para no tumbar el deploy por deuda `MAJOR` heredada; los `CRITICAL`/`BLOCKER` sí bloquean. Si la API no responde o falta el token, **falla cerrado**. La cobertura global de la UI sigue siendo el gate principal mientras no se añada `new_coverage` al quality gate de SonarCloud.
 - Un cambio en `sonar-project.properties` requiere la etiqueta `ci:sonar-config` (revisión de un owner). Sin ella, el job falla.
 - Para bloquear también los `INFO` en PR, cambia `threshold=MINOR` por `threshold=INFO` en el workflow. El default `MINOR` evita bloquear hallazgos puramente informativos.
-- Si el gate falla, el helper (desde el commit base cuando existe) publica condiciones e issues en el job summary y en `sonar-gate-reports` (30 días).
+- Si el gate falla, el helper (desde el commit base cuando existe; en el PR de bootstrap, desde el propio PR) publica condiciones e issues en el job summary y en `sonar-gate-reports` (30 días). La etiqueta `ci:sonar-config` no sustituye la revisión de un owner: solo evita que el cambio pase desapercibido.
 
 ## Verificación local (para colaboradores)
 
@@ -73,6 +73,8 @@ Backend:
 ```bash
 # Reproduce el job `validate` (ruff, mypy, módulos, OpenAPI, import)
 python scripts/ci/run_validators.py
+pip install openapi-spec-validator==0.9.0
+openapi-spec-validator docs/openapi.json
 
 # Qué va a correr el CI para tu rama (con el mismo evento que un PR)
 python scripts/ci/scope.py --base origin/development --event pull_request --json
@@ -114,6 +116,8 @@ En PowerShell, define `OPENAPI_PATH` en una línea aparte antes de invocar Node.
 
 No necesitas `SONAR_TOKEN` localmente: Sonar se ejecuta solo en CI. Tampoco necesitas credenciales de Railway, Vercel ni del broker; los tests de integración usan contenedores locales.
 
+> **Bootstrap de helpers:** el PR que introduce `sonar_gate_report.py`/`notify_failure.py` los ejecuta por primera vez desde su propio commit; a partir del merge, `sonar` y `notify` hacen checkout del commit base y usan esa copia. No se admite `workflow_dispatch` fuera de `development` para no ejecutar helpers con token desde una rama no revisada.
+
 ## Artefactos y retención
 
 | Artefacto | Retención |
@@ -129,6 +133,6 @@ No necesitas `SONAR_TOKEN` localmente: Sonar se ejecuta solo en CI. Tampoco nece
 ## Cuándo forzar el pipeline completo
 
 - Cambios en `src/shared/**`, migraciones, `modules.manifest.json`, `requirements.txt`, `pnpm-lock.yaml`, configuración de build/test o workflows: el `scope` ya fuerza alcance completo.
-- Cambios en `gateway/**`, Docker o contratos que quieras validar contra el stack real: agrega la etiqueta `ci:full` al PR (relanza el workflow).
-- Antes de un release: ejecuta el workflow manualmente (`workflow_dispatch` siempre corre completo) o espera el schedule.
-- `main` es un placeholder de un commit: no se promueve ni se despliega desde ahí. Los checks de `main` existen solo para bloquear PRs accidentales.
+- Cambios en `gateway/**` ya disparan `gateway-integration`; para Docker o contratos contra el stack real, agrega `ci:full` (relanza el workflow).
+- Antes de un release: ejecuta el workflow manualmente en `development` (`workflow_dispatch` siempre corre completo y solo se permite en esa rama) o espera el schedule.
+- `main` es un placeholder de un commit: no se promueve ni se despliega desde ahí. Su protección es de revisión, no de checks de CI; no se abren PRs a `main`.

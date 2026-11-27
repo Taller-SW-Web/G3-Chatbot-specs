@@ -18,6 +18,7 @@ Este documento reúne la evidencia verificable del Hito 5. No repite los casos: 
 | API Management | ✅ | ADR-0031; backend #211/#214 y frontend #152; Kong desplegado en Railway (backend #178/#179, frontend #142 cerrados), verificado el 2026-11-27 |
 | Mecanismo asíncrono | ✅ | [`evidencia-mecanismo-asincrono.md`](evidencia-mecanismo-asincrono.md); #215 mergeado |
 | Casos de prueba y DoD | ✅ | [`casos-prueba-hito-5.md`](casos-prueba-hito-5.md) |
+| Evaluación integral frontend (H5-F1) | 🟡 | Informe 8/8 en [evaluacion-integral-frontend.md](../../G3-Chatbot-frontend/docs/evaluacion-integral-frontend.md) y frontend PR #198; P1 abiertos #182/#184/#186/#188; ver §4.1 |
 | Producción | ✅ | Backend `/health` 200; backend, consumer y gateway en Railway con deploy `SUCCESS` (verificado el 2026-11-27); H5-X1 cerrado (backend #183) |
 
 ## 2. CI/CD y seguridad
@@ -51,6 +52,10 @@ La protección de rama de backend y frontend exige el check `test`/`check`, 1 ap
 | `tests/e2e/mobile-first.spec.ts` | Viewports móviles y zonas táctiles | [run 45925602758](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/45925602758), job `E2E` |
 
 Los E2E corren con los módulos externos en `fake` (ADR-0022) y sin LLM real; los recorridos contra el entorno real están en `chat.real.spec.ts` y en la verificación manual de #142/#183.
+
+### 4.1 Evaluación integral del frontend (H5-F1)
+
+El informe [`evaluacion-integral-frontend.md`](../../G3-Chatbot-frontend/docs/evaluacion-integral-frontend.md) consolida la revisión 8/8 módulos en el PR frontend [#198](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/pull/198) (pendiente de merge al corte). Los hallazgos están distribuidos por módulo en frontend #182–#191; los P1 abiertos son #182 (auth), #184 (carrito), #186 (checkout) y #188 (postventa). H5-F1 queda 🟡 hasta corregir esos P1; no se presenta como cierre.
 
 ## 5. Performance
 

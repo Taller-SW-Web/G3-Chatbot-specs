@@ -79,7 +79,7 @@ Los casos de tipo E2E se ejecutan en el job `e2e` del frontend con los módulos 
 - **Evals del chatbot:** no hay evals contra LLM real; sigue en backend #175.
 - **Lighthouse:** el workflow existe, pero #156 está pendiente de merge; H5-P4 no está cerrado.
 - **Gateway Kong:** código mergeado, pero falta desplegar/verificar en Railway; #178/#179.
-- **Adjuntos:** producción usa `ATTACHMENT_STORAGE=local` sobre volumen; el cierre está en specs #53.
+- **Adjuntos:** producción usa `ATTACHMENT_STORAGE=local` sobre volumen; el cierre operativo y el checklist están en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27).
 - **Administración:** el canal no tiene backoffice; se justifica fuera de alcance y se cubre en los módulos dueños.
 - Los casos que dependen de G5/G6/G7 reales se ejecutan de forma manual/controlada; el CI usa fakes para no depender de servicios externos.
 

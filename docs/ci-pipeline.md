@@ -9,7 +9,7 @@ Este documento describe el pipeline vigente de los tres repositorios. La ejecuci
 - **Cancelación:** un push nuevo a un PR cancela el run anterior. Los runs de `push` y `schedule` no se cancelan entre sí.
 - **Gates de PR:** `specs` y `dependency-review` solo tienen sentido en PR; en `push` corren y terminan verdes con un no-op explícito, para que no aparezcan como `skipped`.
 - **Notificación:** `notify` corre siempre. En fallo publica/actualiza el comentario con jobs y logs; en éxito actualiza el mismo comentario a “CI recuperado”.
-- **Sonar:** el gate de la UI tiene condiciones globales y de *new code* (cobertura ≥ 80 %, duplicación ≤ 3 %, blocker/critical/major/minor = 0 y hotspots revisados). El pipeline además falla cerrado si el PR toca `src/` y Sonar no publica las medidas de new code.
+- **Sonar:** el gate de la UI mantiene las condiciones globales (cobertura ≥ 80 %, duplicación ≤ 3 %, blocker/critical = 0 y hotspots revisados). El pipeline aplica el gate de *new code*: en PR bloquea `MINOR+`, exige cobertura/duplicación nuevas cuando el PR toca `src/` y falla cerrado si faltan las medidas.
 - **Sin secretos nuevos:** `SONAR_TOKEN` existe en Actions y en Dependabot para backend/frontend; `GITHUB_TOKEN` es automático.
 - **Ramas protegidas:** `development` exige los checks anteriores, rama actualizada, conversación resuelta, sin force push/borrado y `enforce_admins`. Los PRs de forks requieren aprobación (`all_external_contributors`).
 - **Supply-chain:** todas las acciones están fijadas por SHA y `sha_pinning_required=true`.
@@ -62,7 +62,7 @@ No hay `nx affected`: el build de Next.js es monolítico. El job `validate` agru
 ## SonarCloud
 
 - El escaneo espera el quality gate (`-Dsonar.qualitygate.wait=true` pasado por el workflow).
-- La UI del gate “G3 Chatbot” tiene condiciones globales y de *new code*: cobertura nueva ≥ 80 %, duplicación nueva ≤ 3 %, blocker/critical/major/minor nuevos = 0 y hotspots nuevos revisados al 100 %.
+- La UI del gate “G3 Chatbot” conserva las condiciones globales: cobertura ≥ 80 %, duplicación ≤ 3 %, blocker/critical = 0 y hotspots revisados al 100 %. SonarCloud no expone una definición de *new code period* para estos proyectos vía API, así que el gate de new code se aplica en el pipeline, no en la UI.
 - El pipeline consulta `/api/issues/search` y `/api/measures/component`; en PR bloquea `MINOR+`, y si el PR toca `src/` exige que Sonar publique `new_lines`/`new_lines_to_cover`; en push usa `CRITICAL` para no bloquear el deploy por deuda `MAJOR` heredada.
 - Un cambio en `sonar-project.properties` requiere `ci:sonar-config` y revisión de owner.
 - Los helpers con token se ejecutan desde el commit base cuando existe; el PR de bootstrap usa su copia una vez.

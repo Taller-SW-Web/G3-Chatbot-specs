@@ -20,6 +20,7 @@ Este documento describe el pipeline vigente de los tres repositorios. La ejecuci
 ```text
 scope
   ├─ validate (ruff, mypy, módulos, OpenAPI, import) ── reporte 90 días
+  ├─ contract (OpenAPI fijados de G7/G6/G2/G5)
   ├─ unit-tests (suite completa, cobertura)
   ├─ integration-tests (matriz por shard: PostgreSQL + RabbitMQ por leg)
   │     └─ coverage-merge
@@ -37,6 +38,8 @@ notify (siempre: fallo o recuperado)
 - El shard `core` ejecuta todos los `tests/integration/test_*.py` raíz; los tests de Kong se saltan si no hay `GATEWAY_TEST_URL` y el job `gateway-integration` los ejecuta con Kong.
 - `coverage-merge` combina los `.coverage.<shard>` y publica `coverage-integration.xml`.
 - Docker escanea también la imagen backend, no solo la de gateway.
+- `contract` fija los OpenAPI de G7/G6/G2/G5 en `tests/contract` y es bloqueante; el drift semanal vive en `contract-drift.yml`.
+- Las evals H5-E1 viven en el workflow aparte `evals.yml` (manual o nocturno, environment `evals`); requieren `LLM_API_KEY` y no participan del gate de PR.
 
 ## Frontend
 
@@ -45,6 +48,7 @@ scope
   ├─ validate (eslint, tsc, modules:check, tests de scope y helpers)
   ├─ unit-tests (561 tests, cobertura)
   ├─ build (next build)
+  ├─ lighthouse (Lighthouse CI mobile: LCP/TBT/CLS, peso y accesibilidad)
   ├─ security (pnpm audit)
   ├─ e2e (stack real con backend fake)
   ├─ dependency-review (PR; push no-op)
@@ -116,6 +120,7 @@ No necesitas `SONAR_TOKEN` localmente: Sonar se ejecuta solo en CI. Tampoco nece
 | `ci-failure-report` | 30 días |
 | `dast-zap-report` | 7 días |
 | `playwright-artifacts` | 7 días |
+| `lighthouse-reports` | 7 días |
 
 ## Dependabot y forks
 

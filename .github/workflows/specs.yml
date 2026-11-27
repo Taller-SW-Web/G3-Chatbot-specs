@@ -5,13 +5,14 @@ on:
     branches: [development]
   push:
     branches: [development]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: specs-${{ github.ref }}
-  cancel-in-progress: true
+  group: specs-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   validate:
@@ -19,13 +20,56 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.12'
       - name: Validar OpenSpec
-        run: npx --yes @fission-ai/openspec validate --specs
+        run: npx --yes @fission-ai/openspec@2.2.0 validate --specs
       - name: Enlaces relativos
-        run: python3 scripts/check_links.py
+        run: python scripts/check_links.py
+
+  notify:
+    name: Notify failure
+    needs: validate
+    if: |
+      failure() && github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Comment the failure on the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          body=$(cat <<EOF
+          <!-- g3-specs-ci-failure -->
+          ## Specs CI falló
+
+          **Run:** ${RUN_URL}
+
+          El job \`OpenSpec y enlaces\` no pasó. Revisa el log del run; los comandos locales son:
+
+          \`\`\`bash
+          npx @fission-ai/openspec@2.2.0 validate --specs
+          python scripts/check_links.py
+          \`\`\`
+          EOF
+          )
+          existing=$(gh api "repos/${{ github.repository }}/issues/$PR/comments" --paginate \
+            --jq '.[] | select(.body | contains("<!-- g3-specs-ci-failure -->")) | .id' | head -n1)
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$existing" -f body="$body"
+          else
+            gh api --method POST "repos/${{ github.repository }}/issues/$PR/comments" -f body="$body"
+          fi

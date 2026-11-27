@@ -127,7 +127,7 @@ pnpm build
 Specs (este repo):
 
 ```bash
-npx @fission-ai/openspec validate --specs
+npx @fission-ai/openspec@2.2.0 validate --specs
 ```
 
 > `--strict` no se usa: el formato híbrido escribe los escenarios con Gherkin en español

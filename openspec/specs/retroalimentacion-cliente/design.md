@@ -3,6 +3,8 @@
 > Origen: SPEC-24 · Especificación de comportamiento: [`spec.md`](spec.md) · Decisión: [ADR-0029](../../../docs/arquitectura/adr/ADR-0029-modelo-de-datos-de-retroalimentacion.md)
 >
 > **Alcance confirmado (2026-11-21, D5):** reacciones, sugerencias/bugs con adjunto, CSAT y notificación interna. Las tablas y la columna `order_ref.csat_sent` ya están definidas en `modelo-datos.md`; el código aún no está mergeado.
+>
+> **Dueño canónico del CSAT (2026-11-26):** el backend y el contrato de `/pedidos/{pedidoId}/csat` son de `mod-postventa` (`csat_router.py`). La UI y el adapter del frontend también pasan a `mod-postventa`: el bloque se inyecta como slot desde `app/pedido/page.tsx` en el detalle del pedido. `mod-orders` conserva el detalle del pedido y el flag `csatEnviado`; no es dueño del adapter ni de la UI del CSAT.
 
 ## Integraciones
 
@@ -20,7 +22,8 @@
 | `MessageFeedback` (en `MessageRenderer`) | Fila de 👍, 👎 y "Copiar" debajo de cada bloque de respuesta; estado optimista al tocar un ícono. |
 | `useReaction` (hook) | Envía la reacción al backend, con reintento silencioso en segundo plano si falla. |
 | `PurchaseRatingModal` | Popup "Califica tu compra" tras el pago: estrellas (1–5), comentario opcional, "Enviar calificación" (deshabilitado sin estrellas) y "Ahora no". Al guardar con éxito, el popup se reemplaza por "¡Gracias por tu calificación!". Se monta junto con `OrderConfirmation` (SPEC-15). Se guarda en el chatbot. "Ahora no" se recuerda por pedido en el navegador (LocalStorage, con `orderId` como clave): es por dispositivo por diseño y no se guarda en el backend, así que al borrar el almacenamiento o abrir otro dispositivo el popup puede volver a mostrarse. |
-| `DeliveryRatingFooter` | Bloque al pie de `OrderDetailPage` (ruta `/pedido?pedidoId=<id>`), solo si el estado es `ENTREGADO` y no está calificado: "¿Qué tal fue tu pedido?", tres caritas (5, 3, 1) y "Enviar calificación" (deshabilitado sin carita). Se envía a Ventas; con `201`, el bloque se reemplaza por "¡Gracias por tu calificación!". No se monta en la lista de pedidos (`OrderHistoryPage`); `409 CSAT_ALREADY_SUBMITTED` se muestra como "Ya calificaste este pedido" y `422 ORDER_NOT_DELIVERED` como "Solo puedes calificar pedidos entregados". |
+| `DeliveryRatingFooter` (en `mod-postventa`) | Bloque al pie del detalle de pedido (ruta `/pedido?pedidoId=<id>`), solo si el estado es `ENTREGADO` y no está calificado: "¿Qué tal fue tu pedido?", tres caritas (5, 3, 1) y "Enviar calificación" (deshabilitado sin carita). Se inyecta como slot desde `app/pedido/page.tsx`; `mod-orders` solo aporta el detalle del pedido y el flag `csatEnviado`. Se envía a Ventas; con `201`, el bloque se reemplaza por "¡Gracias por tu calificación!". No se monta en la lista de pedidos (`OrderHistoryPage`); `409 CSAT_ALREADY_SUBMITTED` se muestra como "Ya calificaste este pedido" y `422 ORDER_NOT_DELIVERED` como "Solo puedes calificar pedidos entregados". |
+| Adapter de CSAT (en `mod-postventa`) | `calificarPedido(pedidoId, puntuacion, comentario?)` contra `POST /pedidos/{pedidoId}/csat`, sin `clienteId` en el cuerpo. `mod-orders` deja de declarar el endpoint y el adapter. |
 | `FeedbackEntryPoint` (en `AccountPage` / "Mi cuenta") | Sección "Ayúdanos a mejorar" con el botón "Enviar sugerencia / Reportar bug". |
 | `FeedbackForm` | Toggle Sugerencia/Bug, campo de título, descripción con contador (0/1000), correo prellenado desde el perfil, `AttachmentPicker` opcional (reutiliza el componente de selección de imagen de SPEC-23) y botones "Cancelar"/"Enviar". |
 | Puerto `ChatbotApiPort` (ampliado) | `enviarReaccion`, `enviarCalificacion`, `enviarSugerencia`. |
@@ -30,10 +33,11 @@
 | Componente | Responsabilidad |
 |---|---|
 | `POST /api/v1/mensajes/{mensajeId}/reaccion` (`chatbot_router.py`) | Registra o actualiza la reacción (👍/👎) de un mensaje; sin autenticación obligatoria (usa `cliente_id` o `chat_sid`, igual que el resto del chat). |
-| `POST /api/v1/pedidos/{pedidoId}/csat` | Valida la pertenencia del pedido al cliente autenticado y que esté `ENTREGADO`, llama a `VentasClient.registrarCsat()` reenviando el token del cliente, y propaga `201`/`403`/`409`/`422`/`503`. El `clienteId` del cuerpo DEBE ser igual al `sub` del token. Marca `order_ref.csat_sent` solo si existe una fila de `order_ref` para el pedido. |
+| `POST /api/v1/pedidos/{pedidoId}/csat` (`mod_postventa`, `csat_router.py`) | Valida la pertenencia del pedido al cliente autenticado y que esté `ENTREGADO`, llama a `VentasClient.registrarCsat()` reenviando el token del cliente, y propaga `201`/`403`/`409`/`422`/`503`. El `clienteId` del cuerpo DEBE ser igual al `sub` del token. Marca `order_ref.csat_sent` solo si existe una fila de `order_ref` para el pedido. |
+| `GET /api/v1/pedidos/{pedidoId}` (`mod_orders`) | Devuelve el detalle del pedido y expone `csatEnviado` (leído de `order_ref.csat_sent`) para que el slot de `mod-postventa` sepa si ya se calificó. No implementa ni declara el CSAT. |
 | `POST /api/v1/pedidos/{pedidoId}/valoracion-compra` | Guarda la valoración de la experiencia de compra en `purchase_rating` (una por pedido). |
 | `POST /api/v1/sugerencias` | Crea la sugerencia o el bug, sube la captura (si existe) vía `AttachmentStorage`, y encola la notificación interna por outbox. |
-| `VentasClient.registrarCsat()` | Cliente de `POST /api/v2/csat`; reenvía el token del cliente (rol `CLIENTE`, sin scope; acuerdo A15), propaga el `403` de Ventas cuando el `sub` no es el dueño del pedido y normaliza errores de Ventas (`codigo` → `code` interno). |
+| `VentasClient.registrarCsat()` (`mod_postventa`) | Cliente de `POST /api/v2/csat`; reenvía el token del cliente (rol `CLIENTE`, sin scope; acuerdo A15), propaga el `403` de Ventas cuando el `sub` no es el dueño del pedido y normaliza errores de Ventas (`codigo` → `code` interno). |
 | `SugerenciaService` | Orquesta la validación, la subida opcional de la captura y el registro; aplica el límite de 5 por hora y, al superarlo, `POST /sugerencias` responde `429`. |
 | `RateLimiter` (ampliado) | Agrega el límite de 30 reacciones/minuto y 5 sugerencias/hora por cliente o IP. |
 | Tablas `message_reaction`, `feedback_suggestion` y `purchase_rating` | Ver más abajo. |
@@ -77,13 +81,13 @@ Se agrega un caso de uso ligero, `GestionarRetroalimentacionUseCase` (sin depend
 
 - [ ] `[BE]` Tablas `message_reaction`, `feedback_suggestion` y `purchase_rating`, columna `order_ref.csat_sent`, migración Alembic
 - [ ] `[BE]` Endpoint `POST /mensajes/{id}/reaccion` con upsert por `(message_id, cliente_id|chat_sid)`
-- [ ] `[BE]` `VentasClient.registrarCsat()` y endpoint `POST /pedidos/{id}/csat` (solo `ENTREGADO`, 1/3/5), con normalización de errores y `order_ref.csat_sent`
+- [ ] `[BE]` `VentasClient.registrarCsat()` y endpoint `POST /pedidos/{id}/csat` en `mod_postventa` (solo `ENTREGADO`, 1/3/5), con normalización de errores y `order_ref.csat_sent`
 - [ ] `[BE]` Endpoint `POST /pedidos/{id}/valoracion-compra` y `purchase_rating`
 - [ ] `[BE]` `SugerenciaService`: validación, subida de captura vía `AttachmentStorage`, registro
 - [ ] `[BE]` Notificación interna por correo (outbox, reutilizando `EmailSender` de SPEC-16)
 - [ ] `[BE]` `RateLimiter`: 30 reacciones/min, 5 sugerencias/hora
 - [ ] `[FE]` `MessageFeedback` y `useReaction` con estado optimista
-- [ ] `[FE]` `PurchaseRatingModal` tras la confirmación del pedido y `DeliveryRatingFooter` solo al pie del detalle de un pedido `ENTREGADO` (no en la lista), con los textos de `409`/`422` y sin `clienteId` en el cuerpo
+- [ ] `[FE]` `PurchaseRatingModal` tras la confirmación del pedido y `DeliveryRatingFooter` en `mod-postventa`, inyectado como slot desde `app/pedido/page.tsx` en el detalle de un pedido `ENTREGADO` (no en la lista), con los textos de `409`/`422` y sin `clienteId` en el cuerpo
 - [ ] `[FE]` `FeedbackEntryPoint` en "Mi cuenta" y `FeedbackForm` completo
 - [x] `[INT]` Dar seguimiento al issue abierto en `G5-Ventas-Postventas` sobre la autenticación de `POST /api/v2/csat` (pregunta abierta 1 de la spec; resuelta en el acuerdo A15)
 - [x] `[INT]` Actualizar `SPEC-16` para quitar la exclusión del CSAT de su "Fuera de alcance"

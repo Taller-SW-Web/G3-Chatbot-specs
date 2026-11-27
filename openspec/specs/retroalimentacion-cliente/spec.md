@@ -18,6 +18,8 @@ Darle al cliente tres formas distintas de opinar sobre su experiencia — una re
 
 1. **Reacciones rápidas (👍/👎) y copiar**, tras cada bloque de respuesta del asistente. Ya estaba *propuesto* en [`kpis.md` §3](../../../docs/conversacion/kpis.md#csat-propuesta-no-está-en-las-specs) y en la [pregunta abierta 9](../../../docs/conversacion/README.md#preguntas-abiertas) del repo, pero solo al final de una compra, reclamo o devolución, una vez por sesión. Esta spec **amplía** esa propuesta: al ser íconos persistentes y no un modal, se muestran tras cualquier bloque de respuesta del asistente, no solo al cierre de una tarea. Con esto, la pregunta abierta 9 queda resuelta por esta spec.
 2. **Calificación del pedido (caritas + comentario)**, al pie del detalle de un pedido `ENTREGADO`, más una **valoración de la experiencia de compra** (popup con estrellas, tras el pago, propia del chatbot). La calificación del pedido **es** la encuesta CSAT de Ventas (su F5), que `SPEC-16` había dejado fuera de alcance explícitamente ("Reembolsos: son responsabilidad de F4…" — en su redacción original, la encuesta CSAT no se mencionaba como parte del canal). Ventas ya publicó `POST /api/v2/csat` con `canal: "CHATBOT"` contemplado, así que esta spec la conecta ahí en vez de construir un almacenamiento propio. ✅ **Resuelto:** la sección "Fuera de alcance" de `SPEC-16` ya se actualizó para reflejar que el CSAT no está fuera de alcance.
+
+   **Dueño canónico del CSAT:** el contrato y el backend viven en `mod-postventa` (`POST /pedidos/{pedidoId}/csat`, `csat_router.py`). La UI y el adapter del frontend también pasan a `mod-postventa`: el bloque de calificación se inyecta como slot desde `app/pedido/page.tsx` en el detalle del pedido. `mod-orders` deja de ser dueño del adapter y de la UI del CSAT; solo conserva el detalle del pedido y el flag `csatEnviado`.
 3. **Sugerencia o reporte de bug**, desde la pantalla "Mi cuenta" (sección "Ayúdanos a mejorar"). No tiene dueño en ningún otro módulo — es retroalimentación sobre el canal mismo, no sobre un pedido. Se diseña como una capacidad propia del chatbot, reutilizando el puerto `AttachmentStorage` que ya existe (SPEC-23) para la captura de pantalla opcional, en vez de construir un segundo mecanismo de carga de archivos.
 
 ✅ Los mockups usan dos nombres porque son dos cosas distintas, no una inconsistencia: **INKA** es la tienda (la marca que ve el cliente en el encabezado), y **Botleta** es el propio asistente conversacional, ya nombrado y aprobado en [`persona-tono.md`](../../../docs/conversacion/persona-tono.md) ("Botleta: bot + atleta"). Por eso el modal de calificación habla en la voz de Botleta ("Tu opinión ayuda a Botleta a mejorar") mientras el encabezado de la app sigue mostrando INKA.
@@ -143,6 +145,8 @@ El sistema DEBE (SHALL) limitar el envío de reacciones, calificaciones y sugere
 ### Requirement: Calificación de la entrega con caritas (CSAT, vía Ventas)
 El sistema DEBE (SHALL) ofrecer la calificación del pedido (CSAT de Ventas) en un bloque fijo al pie del detalle de un pedido `ENTREGADO` (`OrderDetail`), nunca en la lista de pedidos ni en una ventana emergente, con tres caritas (feliz, neutral, triste) y un comentario opcional, y DEBE (SHALL) enviarla a Ventas (`POST /api/v2/csat`) en vez de almacenarla como calificación propia.
 
+El contrato y la implementación del endpoint pertenecen a `mod-postventa`. En el frontend, el adapter y el bloque de calificación también pertenecen a `mod-postventa`: `app/pedido/page.tsx` compone el detalle de `mod-orders` e inyecta el bloque como slot; `mod-orders` solo expone el detalle del pedido y el flag `csatEnviado`.
+
 El frontend NO DEBE (SHALL NOT) enviar `clienteId`: el backend lo arma con el `sub` del token del cliente. La interfaz DEBE (SHALL) mostrar `409 CSAT_ALREADY_SUBMITTED` como "Ya calificaste este pedido" (estado informativo, no error) y `422 ORDER_NOT_DELIVERED` como "Solo puedes calificar pedidos entregados".
 
 *Trazabilidad: SPEC-24 · Requisito 2. Ventas F5 — CSAT (`docs/contratos-integracion.md`); solo acepta pedidos `ENTREGADO`. Alineado con el contrato real de G5 (2026-11).*
@@ -234,7 +238,7 @@ El sistema DEBE (SHALL) mostrar, después del pago y una vez confirmado el pedid
 
 ## Contrato de endpoints
 
-Los endpoints son propios del chatbot y viven en los módulos que indica `design.md`; el CSAT se reenvía a Ventas.
+Los endpoints son propios del chatbot y viven en los módulos que indica `design.md`; el CSAT se reenvía a Ventas. El contrato de `/pedidos/{pedidoId}/csat` pertenece a `mod-postventa`; `mod-orders` no lo declara.
 
 | Método | Ruta | Sesión | Cuerpo / respuesta | Errores propios |
 |---|---|---|---|---|
@@ -256,6 +260,8 @@ Los endpoints son propios del chatbot y viven en los módulos que indica `design
 ## Preguntas abiertas
 
 1. ✅ **¿La calificación requiere un scope nuevo de Seguridad?** **Resuelta por Ventas (12/10/2026, acuerdo A15 en `docs/contratos-integracion.md`):** no requiere scope. `POST /api/v2/csat` se llama con el token del cliente (rol `CLIENTE`); Ventas valida el `sub` del JWT contra el dueño del `pedidoId` y responde `403` si no coincide. El scope `postventa:csat:escribir` no existe y no se solicita.
+
+2. 🟡 **¿`403` o `404` cuando un cliente intenta calificar un pedido ajeno?** La semántica del error del BFF para ese caso sigue en la issue #84 y la resuelve Ankarmin. Esta alineación de dueño canónico no la decide ni cambia los escenarios vigentes.
 
 ✅ **Resueltas con el equipo (02/10/2026):**
 - INKA es la tienda y Botleta es el asistente: no hay conflicto de marca (ver "Contexto").

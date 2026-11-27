@@ -35,11 +35,9 @@ jobs:
         run: python scripts/check_links.py
 
   notify:
-    name: Notify failure
+    name: Notify status
     needs: validate
-    if: |
-      failure() && github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -47,6 +45,9 @@ jobs:
       pull-requests: write
     steps:
       - name: Comment the failure on the pull request
+        if: |
+          failure() && github.event_name == 'pull_request' &&
+          github.event.pull_request.head.repo.full_name == github.repository
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ github.event.pull_request.number }}
@@ -73,3 +74,6 @@ jobs:
           else
             gh api --method POST "repos/${{ github.repository }}/issues/$PR/comments" -f body="$body"
           fi
+      - name: Specs CI is green
+        if: success()
+        run: echo "OpenSpec y enlaces en verde; no hay comentario de fallo que publicar."

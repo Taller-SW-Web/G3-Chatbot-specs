@@ -18,7 +18,7 @@ jobs:
       - uses: actions/github-script@v7
         with:
           script: |
-            const allowed = new Set(["MathiasTL", "Ankarmin", "nikaaat"]);
+            const allowed = new Set(["MathiasTL", "Ankarmin"]);
             const author = context.payload.pull_request.user.login;
             if (allowed.has(author)) {
               return;
@@ -31,7 +31,7 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.payload.pull_request.number,
               body:
-                `Este repositorio solo recibe PRs de @MathiasTL, @Ankarmin y @nikaaat.\n\n` +
+                `Este repositorio solo recibe PRs de @MathiasTL y @Ankarmin.\n\n` +
                 `Para cambios de specs, abre una issue con la plantilla **Spec change request**, ` +
                 `asignada a @Ankarmin y @MathiasTL: ${issueUrl}`,
             });

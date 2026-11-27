@@ -26,7 +26,7 @@ resuélvelo en la spec antes de implementar**. No inventes comportamiento en el 
 2. **Si el código avanza sin estar en la spec, el cambio de spec viaja en el mismo cambio coordinado.**
    El *spec delta* es obligatorio: PR de código + PR de specs enlazados, o una issue en
    `G3-Chatbot-specs` asignada a `@Ankarmin` y `@MathiasTL` que un owner convierte en PR. Solo
-   `@MathiasTL`, `@Ankarmin` y `@nikaaat` abren PRs en este repositorio; el resto no crea ramas ni PRs
+   `@MathiasTL` y `@Ankarmin` abren PRs en este repositorio; el resto no crea ramas ni PRs
    de specs. El PR de código no se mergea hasta que la spec esté en `development`.
 3. **Revisar coherencia antes de mergear.** Lo nuevo no puede contradecir specs previas, estados ya
    cerrados (por ejemplo `PAGADO`, `ENTREGADO`, `ANULADO`, `CONVERTED`), decisiones de ADR ni
@@ -145,7 +145,7 @@ Estas reglas aplican a los tres repositorios. Complementan la Regla 8 de §2 (ci
    contradicción exacta, el impacto y las opciones. La issue original no se cierra hasta que la
    decisión quede registrada en la spec.
 
-   > **PRs en specs:** solo `@MathiasTL`, `@Ankarmin` y `@nikaaat` abren PRs en
+   > **PRs en specs:** solo `@MathiasTL` y `@Ankarmin` abren PRs en
    > `G3-Chatbot-specs`. El resto del equipo reporta el cambio con una issue asignada a
    > `@Ankarmin` y `@MathiasTL`; no abre ramas ni PRs. Un workflow de guardia cierra los PRs de
    > autores no habilitados y deja el enlace a la plantilla de issue.

@@ -19,7 +19,7 @@ Los SLO se miden contra el **stack local o de CI**, nunca contra producción:
 | Base de datos | PostgreSQL 18 en Docker, con las migraciones al día |
 | Módulos externos | `MODULES_MODE=fake`: Seguridad, Productos, Ventas y Despacho en memoria ([ADR-0022](arquitectura/adr/ADR-0022-modulos-simulados-en-proceso-para-los-entornos-desplegados.md)) |
 | LLM | `LLM_PROVIDER=fake`: un modelo con guion fijo que pide `buscar_productos` y cierra con texto, sin red |
-| Broker | RabbitMQ en Docker, nunca CloudAMQP ([ADR-0030](arquitectura/adr/ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md)), cuando existan el relay y el consumidor (H5-M2 y H5-M3); hasta entonces el outbox trabaja solo |
+| Broker | RabbitMQ 4.1 en Docker, nunca CloudAMQP ([ADR-0030](arquitectura/adr/ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md)); relay y consumidor activos desde H5-P5 (corrida del 2026-11-26) |
 
 Por qué no se mide contra producción (restricción de `hito-5.md`):
 
@@ -103,6 +103,20 @@ Criterios de la tabla:
 
 ## 4. Resultados
 
+### 2026-11-26 · corrida en GitHub Actions con broker (H5-P5)
+
+Run [45887721116](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/45887721116), sobre
+la rama de H5-M3/H5-P5: PostgreSQL 18 y RabbitMQ 4.1 en Docker, módulos y LLM en fake,
+`OUTBOX_DISPATCH_MODE=broker` y el consumidor como proceso aparte. **Los tres flujos cumplen todos los
+SLO**, con 100 % de checks y 0 % de errores.
+
+| Flujo | p95 más alto | Throughput medido | SLO de throughput |
+|---|---|---|---|
+| Checkout | 57 ms (pago) | 12,77 compras/s | ≥ 0,3 compras/s |
+
+Consumidor: `consumed=1533`, `retried=0`, `deadLettered=0`, `failed=0`; 1533 pagos aprobados y
+notificados a Ventas a través del broker. El detalle de los tres flujos está en el reporte del run.
+
 ### 2026-11-25 · corrida local sobre `development` `cf75beb`
 
 Repetida después de los cambios del 2026-11-25 (contacto verificado en el checkout, backend #163, y
@@ -145,7 +159,9 @@ corridos en serie. **Los tres flujos cumplen todos los SLO.**
 
 Lectura: con los módulos y el LLM en fake, el backend queda uno o dos órdenes de magnitud por debajo
 de los techos. El margen es el presupuesto que queda para la latencia de los módulos reales y de
-OpenAI. El workflow manual `performance.yml` ya está en `development` (H5-P3), pero aún no registra una corrida en GitHub Actions; la corrida local del 2026-11-25 es la evidencia vigente. El checkout se mide en serie hasta ampliar el fake de Seguridad ([backend#190](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/190)), y la corrida con RabbitMQ en Docker queda en [backend#168](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/168) (H5-P5).
+OpenAI. El workflow manual `performance.yml` ya registra una corrida en GitHub Actions (H5-P3) y la
+corrida con RabbitMQ en Docker quedó cubierta por H5-P5 (2026-11-26). El checkout se mide en serie
+hasta ampliar el fake de Seguridad ([backend#190](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/190)).
 
 ## 5. Fuera de alcance
 

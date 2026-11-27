@@ -27,8 +27,8 @@ Ventas y Postventa es el dueño del pedido (M1 — Pedidos). Su `api-contract.md
 Incluye:
 - Creación del pedido `CREADO` en Ventas al confirmar el checkout, con `Idempotency-Key`, usando exactamente los campos de `api-contract.md` §1.1.
 - Construcción del snapshot: `contacto` (incluye documento, SPEC-12), `items`, `cupon`, `envio` y `pago` (totales proyectados).
-- Notificación del pago aprobado mediante `POST /pagos/notificacion`, con reintentos por outbox.
-- Solicitud de anulación de los pedidos `CREADO`/`PAGADO` con pago fallido o checkout expirado.
+- Notificación del pago aprobado mediante `POST /pagos/notificacion`, con reintentos por outbox, y manejo de la respuesta `nuevoEstado` (`PAGADO` o `ANULADO`).
+- Solicitud de anulación de los pedidos `CREADO`/`PAGADO` con pago fallido o checkout expirado. Un `409 PEDIDO_NO_ANULABLE` se reconcilia mediante una lectura del pedido con token de servicio (scope `ventas:pedidos:consultar`, concedido a `modulo-chatbot`; verificado el 2026-11-27 23:01 UTC, `X-Correlation-Id` `a7c3edba-94db-405f-85ff-316eed5f3957`: G7 concede el scope y G5 respondió 200 a la lectura con token de servicio; evidencia en specs #119 y actualización del contrato de G5 pedida en G5-Ventas-Postventas-Backend#85): si Ventas confirma `ANULADO` es éxito (`CANCELLED`); en cualquier otro caso el `409` es un fallo permanente.
 - Referencia local (`order_ref`) y cierre del carrito.
 - Bloque `CONFIRMACION_PEDIDO` en el chat.
 
@@ -117,12 +117,27 @@ Payload real `POST {VEN}/api/v1/pedidos/{pedidoId}/pagos/notificacion`:
 }
 ```
 
-*Trazabilidad: SPEC-15 · Requisito 2.*
+*Trazabilidad: SPEC-15 · Requisito 2; SPEC-14 · Requisito 7; SPEC-16 · Requisito 1; backend#182.*
 
 #### Scenario: Notificación exitosa
 - **DADO** un pago aprobado
 - **CUANDO** se registra en el outbox (`NOTIFY_SALES_PAYMENT`) en la misma transacción que el intento de pago y el worker lo envía y recibe `200 {pedidoId, nuevoEstado: PAGADO, transaccionId, fechaTransicion}`
-- **ENTONCES** `order_ref` pasa a `PAID_NOTIFIED`, el checkout a `CONFIRMED` y el carrito a `CONVERTED`, se encola el correo (SPEC-16) y el chat muestra `CONFIRMACION_PEDIDO` con el número de pedido, el total, la tarjeta `•••• 1111`, la dirección y "Te enviaremos la confirmación a m****a@…" (SPEC-16: sin prometer que ya llegó)
+- **ENTONCES** `order_ref` pasa a `PAID_NOTIFIED` y el carrito a `CONVERTED`, el worker encola el correo de forma idempotente (SPEC-16) y el chat muestra `CONFIRMACION_PEDIDO` con el número de pedido, el total, la tarjeta `•••• 1111`, la dirección y "Te enviaremos la confirmación a m****a@…" (SPEC-16: sin prometer que ya llegó)
+
+#### Scenario: Pedido pendiente hasta que Ventas responde
+- **DADO** un pago aprobado cuya tarea `NOTIFY_SALES_PAYMENT` aún no se procesó o no obtuvo respuesta
+- **CUANDO** el cliente consulta el resultado del pago
+- **ENTONCES** `order_ref` queda en `PAYMENT_PENDING_NOTIFICATION`, la respuesta es `estado: PAGO_EN_PROCESO` ("Pago recibido. Estamos confirmando tu pedido y te avisaremos por correo.", SPEC-14 Requisito 7) y no se encola el correo ni se muestra el pedido como confirmado
+
+#### Scenario: Pago tardío sobre un pedido anulado
+- **DADO** un pedido que Ventas ya anuló (por ejemplo, `STOCK_NO_DISPONIBLE`) y un pago aprobado que se notifica después
+- **CUANDO** Ventas responde `200 {nuevoEstado: ANULADO}` (el pago queda `CONFIRMADO`, el pedido sigue `ANULADO` y Ventas solicita el reembolso)
+- **ENTONCES** `order_ref` pasa a `CANCELLED`, no se encola el correo de confirmación, la tarea termina sin reintento y el cliente ve la anulación y el reembolso en el estado del pedido (SPEC-17)
+
+#### Scenario: Respuesta sin `nuevoEstado`
+- **DADO** que `nuevoEstado` es opcional en el contrato y Ventas responde `200` sin él o con un valor distinto de `PAGADO`/`ANULADO`
+- **CUANDO** el worker procesa la respuesta
+- **ENTONCES** el sistema falla de forma cerrada: `order_ref` permanece en `PAYMENT_PENDING_NOTIFICATION`, se registra una alerta de error en los logs con `pedidoId` y `correlationId`, no se encola ni se envía el correo y el pedido nunca se muestra como confirmado; solo `nuevoEstado: PAGADO` confirma el pedido (`PAID_NOTIFIED` y correo)
 
 #### Scenario: Ventas cae después del cobro
 - **DADO** un pago aprobado y Ventas sin responder
@@ -135,7 +150,7 @@ Payload real `POST {VEN}/api/v1/pedidos/{pedidoId}/pagos/notificacion`:
 - **ENTONCES** responde `400 Bad Request`; el worker no reintenta automáticamente (es un error de programación, no transitorio) y se alerta para revisión
 
 #### Scenario: Pedido en un estado que no admite la notificación
-- **DADO** un pedido que ya no está `CREADO` (por ejemplo, se anuló por expiración justo antes de que llegara la notificación tardía)
+- **DADO** un pedido que ya no admite el pago y no está `ANULADO` (por ejemplo, ya `DESPACHADO`); el pago tardío sobre un pedido `ANULADO` no es este caso (ver "Pago tardío sobre un pedido anulado")
 - **CUANDO** se notifica el pago
 - **ENTONCES** Ventas responde `409 Conflict`; el worker registra la inconsistencia para revisión manual y **no reintenta** (reintentar no resolvería el conflicto)
 
@@ -147,7 +162,7 @@ Payload real `POST {VEN}/api/v1/pedidos/{pedidoId}/anulaciones`:
 { "motivo": "PAGO_NO_COMPLETADO", "comentario": "Tiempo límite de espera agotado; cancelado por el canal" }
 ```
 
-*Trazabilidad: SPEC-15 · Requisito 3.*
+*Trazabilidad: SPEC-15 · Requisito 3; backend#182.*
 
 #### Scenario: Anulación directa
 - **DADO** un checkout `FAILED` o `EXPIRED` con un pedido `CREADO`
@@ -155,9 +170,24 @@ Payload real `POST {VEN}/api/v1/pedidos/{pedidoId}/anulaciones`:
 - **ENTONCES** Ventas responde `200 {pedidoId, estadoPedido: ANULADO, autorizacionRequerida: false, solicitudReembolsoGenerada: false}` (no `202`, porque `PAGO_NO_COMPLETADO` sobre `CREADO`/`PAGADO` no requiere autorización del Gestor) y `order_ref` pasa a `CANCELLED` (el adapter traduce el `ANULADO` de Ventas al valor local)
 
 #### Scenario: Pedido ya avanzó de estado
-- **DADO** que Ventas responde `409 Conflict` porque el pedido ya está `DESPACHADO` o `ENTREGADO`
+- **DADO** que Ventas responde `409 PEDIDO_NO_ANULABLE` porque el pedido ya está `DESPACHADO` o `ENTREGADO`
 - **CUANDO** se procesa
-- **ENTONCES** se registra la alerta para revisión manual y no se reintenta (en ese punto correspondería una devolución, SPEC-21, no una anulación)
+- **ENTONCES** el `409` es un fallo permanente (comportamiento normativo, haya o no reconciliación): se registra la alerta para revisión manual y no se reintenta (en ese punto correspondería una devolución, SPEC-21, no una anulación)
+
+#### Scenario: Pedido ya anulado por Ventas
+- **DADO** que Ventas responde `409 PEDIDO_NO_ANULABLE` porque el pedido ya está `ANULADO` (por ejemplo, anulado por falta de stock antes de que expirara el checkout)
+- **CUANDO** el worker lee el pedido con el token de servicio y Ventas confirma `estado: ANULADO`
+- **ENTONCES** la tarea se trata como exitosa y `order_ref` pasa a `CANCELLED`
+
+#### Scenario: No se puede confirmar el estado tras el `409`
+- **DADO** un `409 PEDIDO_NO_ANULABLE` y una lectura del pedido que responde `403` o `404`
+- **CUANDO** se procesa
+- **ENTONCES** el `409` se mantiene (con `403` el `409` siempre prevalece) (revisión manual, sin reintento); si la lectura responde `5xx` o agota el tiempo, la tarea se reintenta con el backoff habitual
+
+#### Scenario: Solicitud de anulación duplicada
+- **DADO** que Ventas responde `409 SOLICITUD_DUPLICADA`
+- **CUANDO** se procesa
+- **ENTONCES** no se consulta el estado del pedido y la tarea queda como fallo permanente para revisión manual, porque significa que hay una solicitud pendiente de autorización y no que el pedido esté anulado
 
 ### Requirement: Coherencia del snapshot
 El sistema DEBE (SHALL) enviar a Ventas exactamente los importes mostrados y confirmados por el cliente: `pago.subtotal − pago.descuentoCupon + pago.costoEnvio = pago.total`.
@@ -177,7 +207,8 @@ El sistema DEBE (SHALL) enviar a Ventas exactamente los importes mostrados y con
 ## Requisitos no funcionales
 
 - **Confiabilidad:** patrón outbox transaccional para la notificación de pago y las anulaciones; ningún pago aprobado se queda sin notificar sin una alerta.
-- **Idempotencia:** `Idempotency-Key` en la creación = `checkout.idempotency_key`; en la notificación se usa `transaccionId` como clave.
+- **Idempotencia:** `Idempotency-Key` en la creación = `checkout.idempotency_key`; en la notificación se usa `transaccionId` como clave; el encolado de la confirmación es idempotente por `(order_id, resend_number)`, de modo que una reentrega de `NOTIFY_SALES_PAYMENT` no duplica el correo.
+- **Scope de lectura (resuelto; verificado el 2026-11-27 23:01 UTC, `X-Correlation-Id` `a7c3edba-94db-405f-85ff-316eed5f3957`: G7 concede el scope y G5 respondió 200 a la lectura con token de servicio; evidencia en specs #119 y actualización del contrato de G5 pedida en G5-Ventas-Postventas-Backend#85):** la lectura del pedido con token de servicio exige el scope `ventas:pedidos:consultar`, concedido a `modulo-chatbot`. El texto publicado del contrato de Ventas (`ventas.yaml`, líneas 398-399 de los fixtures de contrato del backend) figura desactualizado: indica que el scope es para `modulo-postventa` y que un token de servicio de canal no tiene acceso. Si G5 respondiera `403` en el futuro, el `409` original se mantiene como fallo permanente y la reconciliación no se activa.
 - **Trazabilidad:** se registran `pedidoId`, `checkoutId`, `transaccionId` y los tiempos de cada paso con un `correlationId` propagado a Ventas en la cabecera `X-Correlation-Id`.
 - **Rendimiento:** la creación del pedido tarda p95 ≤ 1,5 s (incluye la validación de Ventas con Productos).
 - **Mapeo de errores:** Ventas responde errores con la clave `codigo` (no `code`); `VentasClient` normaliza al `code` interno del chatbot antes de propagarlo.

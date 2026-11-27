@@ -24,6 +24,7 @@
 | `NotificacionService` | Encola, deduplica y gestiona los reenvíos. |
 | `EmailSender` (interfaz) + `SmtpEmailSender` | Envío; implementación falsa para las pruebas. |
 | Plantillas Jinja2 `confirmacion_pedido.html` y `.txt` | Contenido del correo. |
+| Encolado de la confirmación | Lo dispara el worker de outbox al recibir `nuevoEstado: PAGADO` en `NOTIFY_SALES_PAYMENT` (capacidad `order_confirmation`); con `ANULADO` no se encola. El checkout ya no lo hace. |
 | Tarea de outbox `SEND_EMAIL` | La procesa `OutboxWorker` en `direct` o el consumidor de RabbitMQ en `broker` (ADR-0030). |
 | `POST /api/v1/pedidos/{id}/reenviar-confirmacion` | Reenvío con límite de 2. |
 

@@ -1,0 +1,55 @@
+name: Spec change request
+description: Solicitud de cambio o corrección en las specs para que la revise un owner.
+title: "[Spec] "
+labels: ["documentation"]
+assignees: ["Ankarmin", "MathiasTL"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Este repositorio solo recibe PRs de `@MathiasTL`, `@Ankarmin` y `@nikaaat`.
+        Si no eres uno de ellos, no abras una rama ni un PR: usa esta issue y un owner
+        convertirá el cambio en PR.
+  - type: input
+    id: origin
+    attributes:
+      label: Repo, PR o issue de origen
+      description: Enlace al PR de código, issue original o conversación que motiva el cambio.
+      placeholder: "https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/..."
+    validations:
+      required: true
+  - type: textarea
+    id: spec
+    attributes:
+      label: Spec y requisito afectado
+      description: Capacidad, archivo y requisito o escenario exacto.
+      placeholder: "openspec/specs/seguimiento-despacho/spec.md — SPEC-18 Req. 3..."
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: Contradicción o cambio exacto
+      description: Qué dice la spec hoy, qué debería decir y por qué.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impacto
+      description: Qué se bloquea o qué se desalinea si no se corrige.
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Opciones
+      description: Alternativas viables y recomendación.
+    validations:
+      required: true
+  - type: checkboxes
+    id: blocking
+    attributes:
+      label: Bloqueo
+      options:
+        - label: Bloquea el avance de un PR o hito (añadir el label `bloqueante`).

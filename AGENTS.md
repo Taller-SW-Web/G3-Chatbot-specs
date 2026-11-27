@@ -23,8 +23,11 @@ resuélvelo en la spec antes de implementar**. No inventes comportamiento en el 
 ## 2. Normas no negociables
 
 1. **Siempre se lee la spec del módulo antes de tocar código.**
-2. **Si el código avanza sin estar en la spec, la spec se actualiza en el mismo PR.** El *spec delta*
-   es obligatorio: no se deja para un PR posterior ni se documenta solo en el mensaje del commit.
+2. **Si el código avanza sin estar en la spec, el cambio de spec viaja en el mismo cambio coordinado.**
+   El *spec delta* es obligatorio: PR de código + PR de specs enlazados, o una issue en
+   `G3-Chatbot-specs` asignada a `@Ankarmin` y `@MathiasTL` que un owner convierte en PR. Solo
+   `@MathiasTL`, `@Ankarmin` y `@nikaaat` abren PRs en este repositorio; el resto no crea ramas ni PRs
+   de specs. El PR de código no se mergea hasta que la spec esté en `development`.
 3. **Revisar coherencia antes de mergear.** Lo nuevo no puede contradecir specs previas, estados ya
    cerrados (por ejemplo `PAGADO`, `ENTREGADO`, `ANULADO`, `CONVERTED`), decisiones de ADR ni
    contratos publicados. Si hay conflicto, se marca la decisión y se actualiza la spec o el ADR; no se
@@ -76,7 +79,7 @@ Un cambio está terminado cuando:
 ## 5. Checklist de PR
 
 - [ ] El PR declara un solo `mod-*` (o `cross-modulo` si toca `shared/`).
-- [ ] La spec o el `design.md` se actualizaron en este mismo PR (o se explica por qué no aplica).
+- [ ] La spec o el `design.md` están actualizados, o existe una issue/PR de specs enlazado abierto por un owner (o se explica por qué no aplica).
 - [ ] Se revisó que no se contradicen specs previas ni estados ya cerrados.
 - [ ] Tests nuevos o ajustados; CI en verde.
 - [ ] `check_modules` / `modules:check` en verde.
@@ -137,10 +140,15 @@ Estas reglas aplican a los tres repositorios. Complementan la Regla 8 de §2 (ci
 
 1. **Incoherencia issue ↔ spec.** Si una issue contradice la spec, pide comportamiento que la spec no
    define o mezcla alcance de dos módulos, **detente y no implementes**. Crea una issue en
-   `G3-Chatbot-specs` asignada a `@Ankarmin`, con label `bloqueante` si impide avanzar, y enlaza la
-   issue original como bloqueada. Incluye la spec y el requisito afectado, la contradicción exacta, el
-   impacto y las opciones. La issue original no se cierra hasta que la decisión quede registrada en la
-   spec.
+   `G3-Chatbot-specs` asignada a `@Ankarmin` y `@MathiasTL`, con label `bloqueante` si impide avanzar,
+   y enlaza la issue original como bloqueada. Incluye la spec y el requisito afectado, la
+   contradicción exacta, el impacto y las opciones. La issue original no se cierra hasta que la
+   decisión quede registrada en la spec.
+
+   > **PRs en specs:** solo `@MathiasTL`, `@Ankarmin` y `@nikaaat` abren PRs en
+   > `G3-Chatbot-specs`. El resto del equipo reporta el cambio con una issue asignada a
+   > `@Ankarmin` y `@MathiasTL`; no abre ramas ni PRs. Un workflow de guardia cierra los PRs de
+   > autores no habilitados y deja el enlace a la plantilla de issue.
 2. **Duplicados.** Antes de crear una issue, busca una abierta o cerrada. Si ya está resuelta, ciérrala
    con PR/commit/evidencia; si es obsoleta, ciérrala con motivo y enlace al reemplazo. No crees dos
    issues para el mismo trabajo.

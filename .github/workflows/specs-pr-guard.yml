@@ -1,0 +1,43 @@
+name: Specs PR guard
+
+on:
+  pull_request_target:
+    branches: [development, main]
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  guard:
+    name: Allowed author
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const allowed = new Set(["MathiasTL", "Ankarmin", "nikaaat"]);
+            const author = context.payload.pull_request.user.login;
+            if (allowed.has(author)) {
+              return;
+            }
+
+            const issueUrl =
+              "https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/new?template=spec-change.yml";
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body:
+                `Este repositorio solo recibe PRs de @MathiasTL, @Ankarmin y @nikaaat.\n\n` +
+                `Para cambios de specs, abre una issue con la plantilla **Spec change request**, ` +
+                `asignada a @Ankarmin y @MathiasTL: ${issueUrl}`,
+            });
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              state: "closed",
+            });

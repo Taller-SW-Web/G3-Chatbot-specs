@@ -86,14 +86,14 @@ No se presentan como evidencia cerrada. Cuando se mergeen, este documento debe a
 | `GET https://g3-chatbot-backend.up.railway.app/health` | `200` |
 | Backend y consumer en Railway | Ambos `Online`; consumer sin dominio público |
 | Gateway Kong | Código mergeado (#211/#214); falta desplegar/verificar (#178/#179) |
-| Adjuntos | `ATTACHMENT_STORAGE=local` sobre volumen; cierre en specs #53 |
+| Adjuntos | `ATTACHMENT_STORAGE=local` sobre volumen; el cierre operativo y el checklist están en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27); specs #53 quedó como tracking documental cerrado |
 
 ## 9. Limitaciones conocidas
 
 - **Contratos y evals** siguen en backend #174/#175; no hay job de contrato ni evals reales en CI.
 - **Lighthouse** está pendiente de merge (#156); H5-P4 no está cerrado.
 - **Gateway** no está desplegado en Railway; H5-G2/G3 no están operativos.
-- **Adjuntos** en producción usan almacenamiento local y volumen efímero; el cierre es specs #53.
+- **Adjuntos** en producción usan almacenamiento local y volumen efímero; el cierre operativo y el checklist están en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27).
 - **SMTP** no está configurado en producción; los correos usan `FakeEmailSender`.
 - **Módulos externos** se simulan con `fake` en CI y en la demo; las pruebas reales con G5/G6/G7 se registran aparte.
 

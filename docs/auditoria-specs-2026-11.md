@@ -18,7 +18,7 @@
 | 🟡 En implementación | Decisión de producto cerrada y contrato escrito; falta configuración de despliegue | **1** (SPEC-23, almacenamiento de producción) |
 | **Total** | | **24** |
 
-> **Corrección 2026-11-21 (auditoría posterior).** El cierre 24/24 "Al día" sobrestimaba SPEC-23: el backend desplegado solo tiene el adaptador de disco local y el de Supabase está en `development` (backend #144 · `e4faadf`) pero no en `main`, mientras la configuración de producción conserva `ATTACHMENT_STORAGE=local` (ADR-0028). La fila 23 y L2 pasan a 🟡. Además, los cambios `alinear-specs-con-prototipo` y `alinear-specs-con-ventas` se archivaron el mismo día: las specs base pasan a **119 requisitos y 416 escenarios** (antes 116 y 389), y ya no quedan cambios pendientes en `openspec/changes/`. Los hallazgos de la auditoría posterior (SPEC-AUD-01 a 34) se tratan fuera de esta tabla.
+> **Corrección 2026-11-21 (auditoría posterior).** El cierre 24/24 "Al día" sobrestimaba SPEC-23: el backend desplegado solo tiene el adaptador de disco local y el de Supabase está en `development` (backend #144 · `e4faadf`) pero no en `main`, mientras la configuración de producción conserva `ATTACHMENT_STORAGE=local` (ADR-0028). La fila 23 y L2 pasan a 🟡. Además, los cambios `alinear-specs-con-prototipo` y `alinear-specs-con-ventas` se archivaron el mismo día: las specs base pasan a **119 requisitos y 416 escenarios** (antes 116 y 389), y ya no quedan cambios pendientes en `openspec/changes/`. **Cifras históricas de esa fecha;** los totales vigentes están en el README y en `docs/producto/trazabilidad.md`. Los hallazgos de la auditoría posterior (SPEC-AUD-01 a 34) se tratan fuera de esta tabla.
 
 **Evidencia de merge:**
 
@@ -117,7 +117,7 @@ equipo `@Taller-SW-Web/chatbot`.
 | ID | Acción | Módulo / repo | Dueño sugerido | Estado | Criterio de cierre |
 |---|---|---|---|---|---|
 | L1 | SPEC-04 completo (H-17): OTP, guard, flag y UI | `mod-auth` + `mod-checkout` | @Ankarmin | ✅ Cerrado (D1); D2 de SPEC-04 documentado (2026-11-25) | Los 3 requisitos y sus escenarios pasan; `CELULAR_NO_VERIFICADO` sigue siendo el error del modo legado y `CONTACTO_NO_VERIFICADO` cubre el modo por defecto. |
-| L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @SebJoq21 | 🟡 Parcial (D2): adaptador en `development`, falta configuración | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501; falta verificar `ATTACHMENT_STORAGE=supabase` en producción. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53) |
+| L2 | SPEC-23 completo: storage, EXIF, miniaturas, URLs firmadas, límites y limpieza | `mod-chat` + `shared/` | @SebJoq21 | 🟡 Parcial (D2): adaptador en `development`, falta configuración | Los 10 requisitos y sus escenarios pasan; `adjuntoIds` ya no es 501; falta verificar `ATTACHMENT_STORAGE=supabase` en producción. El checklist operativo está en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27). |
 | L3 | SPEC-24 completo: reacciones, sugerencias/bugs, valoración, CSAT y outbox | `mod-chat` + `mod-postventa` + `mod-checkout` | @Ankarmin + @MathiasTL | ✅ Cerrado (D5) | Los mecanismos tienen endpoints, tablas y pruebas; la UI dejó de ser estado local |
 | L4 | Endurecer el contrato: OpenAPI como fuente y gate bloqueante | Plataforma | @Ankarmin | ✅ Cerrado (2026-11-25) | S2 convertido en gate bloqueante y documentado en `docs/arquitectura/modularizacion.md` §5 y §9. [BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165) agregó `Verify committed OpenAPI is up to date` (`export_openapi.py --check`) al job `openapi`; `--check` pasa (47 paths) y falla sobre una copia alterada. Mergeado y verificado en CI |
 
@@ -205,7 +205,7 @@ son deuda documental y una mejora conversacional fuera de las 24 capabilities. S
 > [!note] Actualización 2026-11-25 — L2 asignada a Sebastian
 > El proyecto Supabase `olzsuqpowkndoeljpiax` es de **Sebastian (@SebJoq21)**, que queda como responsable
 > de L2: bucket privado, variables de Railway, migración vs pérdida de los archivos locales y verificación
-> de carga + reinicio + lectura. Seguimiento: [issue #53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53).
+> de carga + reinicio + lectura. El checklist operativo está en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27).
 > Mathias conserva la coordinación del deploy y H5-X1 (corregido el 2026-11-26: H5-X1 solo verifica
 > producción sobre `development`; `main` es un placeholder y no se promueve).
 
@@ -225,7 +225,7 @@ son deuda documental y una mejora conversacional fuera de las 24 capabilities. S
 > repositorios; `development` es la rama por defecto y la que despliega producción (ADR-0020, enmienda
 > del 2026-11-26). Por eso **SPEC-23/L2 ya no está bloqueada por una promoción a `main`**: el adaptador
 > de Supabase está en `development` y producción ejecuta esa rama. Sigue 🟡 por el bucket privado y las
-> variables de storage ([specs#53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53)); el
+> variables de storage; el checklist operativo está en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27); el
 > fail-closed de `local` ya está implementado en backend #198. **L4 queda cerrado**:
 > BE #165 se mergeó el 2026-11-25 (`f7fd0af`) y el gate de drift corre en CI. **M5** (specs#64) sigue
 > abierto; **S4** (backend#188) se cerró el 2026-11-26 al alinear los documentos vigentes a `ProductsClient`.

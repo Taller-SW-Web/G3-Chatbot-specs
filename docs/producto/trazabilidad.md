@@ -112,7 +112,7 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 | [HU-PED-07](historias/EP-06-pedido-confirmacion.md#hu-ped-07--ver-mi-compra-confirmada-aunque-el-correo-se-demore) | Ver mi compra confirmada aunque el correo se demore | `SPEC-16 · Req. 3` (escenario 1) | RN-PED-12 | `GET /checkout/{checkoutId}` (bloque `CONFIRMACION_PEDIDO`) | — | Hito 4 | Must | 1 |
 | [HU-PED-08](historias/EP-06-pedido-confirmacion.md#hu-ped-08--pedir-el-reenvío-del-correo-de-confirmación) | Pedir el reenvío del correo de confirmación | `SPEC-16 · Req. 3` (escenario 2) | RN-PED-13 | `POST /pedidos/{id}/reenviar-confirmacion` | SMTP | Hito 4 | Should | 2 |
 | [HU-SGT-01](historias/EP-07-seguimiento.md#hu-sgt-01--encontrar-mi-pedido-rápidamente) | Encontrar mi pedido rápidamente | `SPEC-17 · Req. 1` | RN-SGT-02, RN-SGT-03, RN-SGT-04, RN-SGT-05 | `GET /pedidos`, `GET /pedidos/{pedidoId}` | VEN `GET /api/v1/pedidos`, `GET /api/v1/pedidos/{id}` | Hito 5–6 | Must | 5 |
-| [HU-SGT-02](historias/EP-07-seguimiento.md#hu-sgt-02--ver-el-estado-y-la-línea-de-tiempo-de-mi-pedido) | Ver el estado y la línea de tiempo de mi pedido | `SPEC-17 · Req. 2` | RN-SGT-01, RN-SGT-06, RN-SGT-07 | `GET /pedidos/{pedidoId}` | VEN `GET /api/v1/pedidos/{id}`; DES seguimiento 🟡 | Hito 5–6 | Must | 5 |
+| [HU-SGT-02](historias/EP-07-seguimiento.md#hu-sgt-02--ver-el-estado-y-la-línea-de-tiempo-de-mi-pedido) | Ver el estado y la línea de tiempo de mi pedido | `SPEC-17 · Req. 2 y Req. 5` | RN-SGT-01, RN-SGT-06, RN-SGT-07 | `GET /pedidos/{pedidoId}` | VEN `GET /api/v1/pedidos/{id}`; DES seguimiento 🟡 | Hito 5-6 | Must | 5 |
 | [HU-SGT-03](historias/EP-07-seguimiento.md#hu-sgt-03--obtener-respuestas-directas-sobre-mi-pedido) | Obtener respuestas directas sobre mi pedido | `SPEC-17 · Req. 3` | RN-SGT-08 | `GET /pedidos/{pedidoId}` | VEN `GET /api/v1/pedidos/{id}`; DES seguimiento 🟡 | Hito 5–6 | Should | 3 |
 | [HU-SGT-04](historias/EP-07-seguimiento.md#hu-sgt-04--saber-cuándo-no-se-puede-consultar-mi-pedido) | Saber cuándo no se puede consultar mi pedido | `SPEC-17 · Req. 4` | RN-SGT-09 | `GET /pedidos`, `GET /pedidos/{pedidoId}` | VEN `GET /api/v1/pedidos/{id}` | Hito 5–6 | Must | 2 |
 | [HU-SGT-05](historias/EP-07-seguimiento.md#hu-sgt-05--seguir-mi-paquete-en-ruta) | Seguir mi paquete en ruta | `SPEC-18 · Req. 1` | RN-SGT-10, RN-SGT-12 | `GET /pedidos/{pedidoId}/seguimiento` | DES `GET /seguimiento?idPedido=` 🟡 (propuesto) | Hito 5–6 | Should | 5 |
@@ -141,7 +141,7 @@ Módulos en la columna de endpoints consumidos: `SEG` Seguridad (`{SEG}/api/v1`)
 
 ## 3. Verificación de cobertura de requisitos
 
-Cada uno de los **119 requisitos** de las 24 specs (sin cambios pendientes en `openspec/changes/` desde el archivo del 2026-11-21) está cubierto por al menos una historia.
+Cada uno de los **123 requisitos** de las 24 specs (sin cambios pendientes en `openspec/changes/`; el delta M5 se archivó el 2026-11-27) está cubierto por al menos una historia.
 
 | Requisito | Nombre | Historia(s) |
 |---|---|---|
@@ -176,6 +176,9 @@ Cada uno de los **119 requisitos** de las 24 specs (sin cambios pendientes en `o
 | `SPEC-05 · Req. 12` | Presentación del asistente y aviso de privacidad | HU-CNV-13 |
 | `SPEC-05 · Req. 13` | Consultar en el chat desde una tarjeta | HU-CNV-20, HU-SGT-09, HU-RCL-08, HU-DEV-10 |
 | `SPEC-05 · Req. 14` | Acciones rápidas fijas | HU-CNV-21 |
+| `SPEC-05 · Req. 15` | Contrato del catálogo de herramientas | HU-CNV-04, HU-CNV-09 |
+| `SPEC-05 · Req. 16` | Bloques de pedidos, seguimiento, reclamos y devoluciones | HU-SGT-01, HU-SGT-02, HU-RCL-05, HU-RCL-06, HU-DEV-06, HU-DEV-07 |
+| `SPEC-05 · Req. 17` | Acciones de cliente del chat | HU-CNV-01, HU-CNV-02, HU-CNV-09, HU-IDE-08, HU-IDE-11 |
 | `SPEC-06 · Req. 1` | Búsqueda con filtros combinados | HU-CAT-01 |
 | `SPEC-06 · Req. 2` | Normalización de categoría y marca | HU-CAT-02 |
 | `SPEC-06 · Req. 3` | Refinamiento conversacional | HU-CAT-03 |
@@ -227,6 +230,7 @@ Cada uno de los **119 requisitos** de las 24 specs (sin cambios pendientes en `o
 | `SPEC-17 · Req. 2` | Mostrar el estado y la línea de tiempo | HU-SGT-02 |
 | `SPEC-17 · Req. 3` | Preguntas específicas | HU-SGT-03 |
 | `SPEC-17 · Req. 4` | Tolerancia a fallos | HU-SGT-04 |
+| `SPEC-17 · Req. 5` | Indicar si la calificación de la entrega ya se envió | HU-SGT-02, HU-CNV-23 |
 | `SPEC-18 · Req. 1` | Consultar el seguimiento de un pedido despachado | HU-SGT-05 |
 | `SPEC-18 · Req. 2` | Entregas no exitosas | HU-SGT-06 |
 | `SPEC-18 · Req. 3` | Límites de la información | HU-SGT-07 |
@@ -265,11 +269,11 @@ Cada uno de los **119 requisitos** de las 24 specs (sin cambios pendientes en `o
 | `SPEC-24 · Req. 6` | Límites de uso de los tres mecanismos | HU-CNV-26 |
 | `SPEC-24 · Req. 7` | Valoración de la experiencia de compra (propia del chatbot) | HU-CNV-24 |
 
-**Resultado:** 119 de 119 requisitos cubiertos (100 %). Requisitos sin historia: ninguno.
+**Resultado:** 123 de 123 requisitos cubiertos (100 %). Requisitos sin historia: ninguno.
 
-Requisitos repartidos en más de una historia: `SPEC-05 · Req. 1` (HU-CNV-01 y HU-CNV-02), `SPEC-05 · Req. 13` (HU-CNV-20, HU-SGT-09, HU-RCL-08 y HU-DEV-10) y `SPEC-16 · Req. 3` (HU-PED-07 y HU-PED-08). Historias que cubren más de un requisito: HU-IDE-02 (`SPEC-01 · Req. 2–3`), HU-IDE-05 (`SPEC-02 · Req. 2–3`), HU-IDE-15 (`SPEC-03 · Req. 7`; SPEC-04 · Req. 3), HU-CNV-14 (`SPEC-23 · Req. 1–2`), HU-CNV-15 (`SPEC-23 · Req. 3–4`), HU-CNV-16 (`SPEC-23 · Req. 5–6`), HU-CNV-19 (`SPEC-23 · Req. 9–10`), HU-CNV-25 (`SPEC-24 · Req. 3–4`) y HU-CNV-26 (`SPEC-24 · Req. 5–6`).
+Requisitos repartidos en más de una historia: `SPEC-05 · Req. 1` (HU-CNV-01 y HU-CNV-02), `SPEC-05 · Req. 13` (HU-CNV-20, HU-SGT-09, HU-RCL-08 y HU-DEV-10), `SPEC-05 · Req. 15` (HU-CNV-04 y HU-CNV-09), `SPEC-05 · Req. 16` (HU-SGT-01, HU-SGT-02, HU-RCL-05, HU-RCL-06, HU-DEV-06 y HU-DEV-07), `SPEC-05 · Req. 17` (HU-CNV-01, HU-CNV-02, HU-CNV-09, HU-IDE-08 y HU-IDE-11), `SPEC-16 · Req. 3` (HU-PED-07 y HU-PED-08) y `SPEC-17 · Req. 5` (HU-SGT-02 y HU-CNV-23). Historias que cubren más de un requisito: HU-IDE-02 (`SPEC-01 · Req. 2–3`), HU-IDE-05 (`SPEC-02 · Req. 2–3`), HU-IDE-15 (`SPEC-03 · Req. 7`; SPEC-04 · Req. 3), HU-CNV-14 (`SPEC-23 · Req. 1–2`), HU-CNV-15 (`SPEC-23 · Req. 3–4`), HU-CNV-16 (`SPEC-23 · Req. 5–6`), HU-CNV-19 (`SPEC-23 · Req. 9–10`), HU-CNV-25 (`SPEC-24 · Req. 3–4`) y HU-CNV-26 (`SPEC-24 · Req. 5–6`).
 
-A nivel de escenario, **374 de los 399 escenarios** contados el 23/10 (al archivar `alinear-specs-con-productos`) estaban citados por nombre en los criterios de aceptación de alguna historia. Tras archivar `alinear-specs-con-prototipo` (2026-11-21), `alinear-postventa-g5` y `alinear-filtros-pedidos-g5` (2026-11-22), las specs base suman **424 escenarios**; el recuento de escenarios citados sobre ese total no se ha recalculado (SPEC-AUD-07). Faltaban 25 en el cálculo del 23/10:
+A nivel de escenario, **374 de los 399 escenarios** contados el 23/10 (al archivar `alinear-specs-con-productos`) estaban citados por nombre en los criterios de aceptación de alguna historia. Tras archivar `alinear-specs-con-prototipo` (2026-11-21), `alinear-postventa-g5` y `alinear-filtros-pedidos-g5` (2026-11-22), y el delta M5 con `csatEnviado`, las specs base suman **449 escenarios**; el recuento de escenarios citados sobre ese total no se ha recalculado (SPEC-AUD-07). Faltaban 25 en el cálculo del 23/10:
 
 - 7 anteriores a SPEC-24: `SPEC-03 · Req. 7` ("Visitante sin sesión" y "Cliente sin documento registrado"), `SPEC-05 · Req. 4` ("Error de validación o conversación inexistente", "El turno termina en modo degradado", "Falla inesperada a mitad del stream" y "Pérdida breve de conexión") y `SPEC-21 · Req. 4` ("Pedido no `ENTREGADO`").
 - 18 de `SPEC-24 · Req. 2 a 6`, cuyas historias todavía no citan sus escenarios por nombre.
@@ -315,6 +319,6 @@ Los puntos Won't no se cuentan: lo excluido del ciclo está en [`alcance.md` §5
 
 | Área | IDE | CNV | CAT | CAR | CHK | PED | SGT | RCL | DEV | Total |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Reglas | 22 | 45 | 17 | 16 | 27 | 14 | 14 | 11 | 14 | **180** |
+| Reglas | 22 | 46 | 17 | 16 | 27 | 14 | 15 | 11 | 14 | **182** |
 
 Todas las reglas citadas en las historias existen en el catálogo. Tres reglas del catálogo, anteriores a SPEC-24, no las cita ninguna historia: RN-CHK-27, RN-CNV-30 y RN-CNV-33.

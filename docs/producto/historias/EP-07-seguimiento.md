@@ -34,7 +34,7 @@
 
 | Épica | Prioridad (MoSCoW) | Estimación | Hito | Specs/Requisitos | Reglas de negocio | Dependencias externas |
 |---|---|---|---|---|---|---|
-| EP-07 | Must | 5 | Hito 5–6 | `SPEC-17 · Req. 2` | RN-SGT-01, RN-SGT-06, RN-SGT-07 | Ventas ✅; Despacho 🟡 (A11, enriquecimiento) |
+| EP-07 | Must | 5 | Hito 5–6 | `SPEC-17 · Req. 2 y Req. 5` | RN-SGT-01, RN-SGT-06, RN-SGT-07 | Ventas ✅; Despacho 🟡 (A11, enriquecimiento) |
 
 **Como** cliente, **quiero** ver el estado actual de mi pedido en palabras claras y su línea de tiempo, **para** saber qué pasó y qué falta.
 
@@ -42,6 +42,7 @@
 - `SPEC-17 · Req. 2 · Scenario: Pedido en preparación` — el paso actual aparece resaltado, los anteriores completados y los siguientes en gris.
 - `SPEC-17 · Req. 2 · Scenario: Pedido despachado` — el estado se completa con la etiqueta y los hitos de Despacho.
 - `SPEC-17 · Req. 2 · Scenario: Pedido anulado` — se muestra "Anulado el {fecha}" con el motivo general y, si hubo pago, el aviso de reembolso.
+- `SPEC-17 · Req. 5 · Scenario: Pedido ya calificado` — el detalle expone `csatEnviado: true` y el slot de calificación no se monta.
 
 **Prioridad:** Must: es el núcleo de la consulta de estado.
 

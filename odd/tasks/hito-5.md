@@ -34,7 +34,7 @@ Estado verificado el 2026-11-22 contra `development` (backend `1c9c333`, fronten
 | CI/CD y seguridad | H5-C1, H5-C2, H5-C4 y H5-C5 hechas; H5-C3 redefinida para desplegar producción desde `development` (frontend #139) |
 | Pruebas de integración | H5-I2 hecha (sin `test.fixme`); H5-I1 (contratos), H5-E1 (evals) y H5-I3 (evidencia) pendientes (backend #174, #175; specs #61) |
 | Pruebas de performance | H5-P1, H5-P2, H5-P3 y H5-P5 hechas; la corrida con RabbitMQ y consumidor está en el run 45887721116 y en `docs/slo-performance.md`; H5-P4 (Lighthouse) pendiente (frontend #144) |
-| API Management | H5-G1 (ADR), H5-G2 y H5-G3 (gateway) pendientes (specs #59, backend #178/#179, frontend #142) |
+| API Management | H5-G1 en revisión (ADR-0031, PR #81, issue #59); H5-G2 y H5-G3 (gateway) pendientes (backend #178/#179, frontend #142) |
 | Mecanismo asíncrono | H5-M1, H5-M2 y H5-M3 (código) hechas (#196/#197); falta desplegar el consumidor como servicio Railway y pasar producción a `broker`; H5-M4 (evidencia del flujo asíncrono) pendiente (specs #63) |
 | Producción | `development` es la rama por defecto y la que despliega Railway/Vercel; `main` es un placeholder de un commit con solo `README.md` desde el 2026-11-26. No se promueve `development` a `main`. H5-X1 se limita a verificar producción (backend #183) |
 | Specs y documentación | S2, L4 y S4 cerrados; M5 (specs #64) pendiente; SPEC-23 sigue 🟡 por bucket y variables (specs #53), con fail-closed ya implementado (backend #198) y sin promoción a `main`; `inicio-sesion` queda 🟡 por el Req. 4 (backend #184) y `consulta-estado-pedido` por la anulación/reembolso (backend #182, frontend #143) |
@@ -55,6 +55,8 @@ Fuera de alcance: lote 2 de `audit-2026-11-fixes.md`, migración de adjuntos a S
 - 2026-11-22: **RabbitMQ en CloudAMQP (plan Little Lemur)** para el entregable 4. El enunciado pide "uso de" un mecanismo asincrónico "entre microservicios"; el outbox solo es un proceso interno. Se mantiene el outbox: su worker publica en RabbitMQ y un consumidor que corre como proceso separado procesa los eventos. Límites del plan: 1 M de mensajes al mes, 20 conexiones, 100 colas, 10 000 mensajes en cola y borrado de colas inactivas a los 28 días.
 
 - 2026-11-24: **Los cuatro tipos de tarea del outbox pasan por el broker** (`NOTIFY_SALES_PAYMENT`, `REQUEST_CANCELLATION`, `SEND_EMAIL` y `SEND_FEEDBACK_EMAIL`), porque producción ya tiene todos los módulos en `http` y un consumidor aparte puede llamar a Ventas. Se registra en [ADR-0030](../../docs/arquitectura/adr/ADR-0030-rabbitmq-como-mecanismo-asincrono-del-outbox.md). ADR-0010 queda **modificado, no reemplazado**: la integración con los módulos externos sigue siendo REST síncrona. Sin cambio de esquema del outbox; interruptor de reversa `OUTBOX_DISPATCH_MODE=broker|direct`.
+
+- 2026-11-26: **Kong OSS en modo DB-less (`kong.yml`) como API Gateway** delante del backend FastAPI en Railway. Se registra en [ADR-0031](../../docs/arquitectura/adr/ADR-0031-api-gateway-kong-oss.md) y se enmienda [ADR-0023](../../docs/arquitectura/adr/ADR-0023-proxy-del-frontend-hacia-la-api-mismo-origen.md): `API_PROXY_TARGET` en Vercel pasa a apuntar a Kong, manteniendo el mismo origen y cookies de primera parte. Kong hace *pass-through* de JWT/cookies hacia FastAPI, fija `read_timeout: 90000` en el *service* y `response_buffering: false` en la *route* SSE de chat, aplica rate limiting perimetral por IP (`policy: local`, manteniendo `rate_limiter.py` en backend como defensa en profundidad para no alterar el contrato `problem+json`) y expone `/openapi.json` y `/docs`.
 
 ## Restricciones
 
@@ -185,6 +187,8 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 - 2026-11-26: **H5-M3 (código) y H5-P5 hechas.** Backend #197 mergeó el consumidor RabbitMQ como proceso separado, el handler compartido, el healthcheck y los reintentos/DLX; también agregó RabbitMQ 4.1 y el consumidor a `performance.yml`. La corrida 45887721116 cumple los SLO con 1533 eventos consumidos, 0 reintentos/DLQ/fallos y checkout a 12,77 compras/s; el resultado quedó en `docs/slo-performance.md` (#78) y el consumidor en el C4 (#79). Falta el despliegue operativo del consumidor en Railway y el cambio de producción a `broker` (H5-M3/#177).
 
 - 2026-11-26: **H5-C2 hecha.** Backend #210 agregó el job DAST con OWASP ZAP baseline/OpenAPI safe scan, reportes HTML/JSON/MD como artefacto, resumen en el Step Summary y gate bloqueante de alertas High integrado en el check `test`. El gate exige que toda excepción `IGNORE` esté documentada en `docs/seguridad/zap-exceptions.md`; además falla si ZAP no completa el escaneo.
+
+- 2026-11-26: **H5-G1 redactada (en revisión en PR #81, issue #59).** [ADR-0031](../../docs/arquitectura/adr/ADR-0031-api-gateway-kong-oss.md) documenta Kong OSS en modo DB-less (`kong.yml`) en Railway delante del backend, con enmienda a ADR-0023 (`API_PROXY_TARGET` → Kong), actualización del índice de ADR, conteo en `docs/arquitectura/README.md` y nota en `c4.md`. Queda pendiente de aprobación y merge para cerrar H5-G1 y habilitar formalmente H5-G2 y H5-G3.
 
 ## Siguiente paso
 

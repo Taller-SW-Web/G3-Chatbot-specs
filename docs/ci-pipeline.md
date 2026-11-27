@@ -116,7 +116,7 @@ En PowerShell, define `OPENAPI_PATH` en una línea aparte antes de invocar Node.
 
 No necesitas `SONAR_TOKEN` localmente: Sonar se ejecuta solo en CI. Tampoco necesitas credenciales de Railway, Vercel ni del broker; los tests de integración usan contenedores locales.
 
-> **Bootstrap de helpers:** el PR que introduce `sonar_gate_report.py`/`notify_failure.py` los ejecuta por primera vez desde su propio commit; a partir del merge, `sonar` y `notify` hacen checkout del commit base y usan esa copia. No se admite `workflow_dispatch` fuera de `development` para no ejecutar helpers con token desde una rama no revisada.
+> **Bootstrap de helpers:** el PR que introduce `sonar_gate_report.py`/`notify_failure.py` los ejecuta por primera vez desde su propio commit; a partir del merge, `sonar` y `notify` hacen checkout del commit base y usan esa copia. En backend y frontend no se admite `workflow_dispatch` fuera de `development` para no ejecutar helpers con token desde una rama no revisada; specs no usa tokens y conserva el dispatch en cualquier rama.
 
 ## Artefactos y retención
 
@@ -134,5 +134,5 @@ No necesitas `SONAR_TOKEN` localmente: Sonar se ejecuta solo en CI. Tampoco nece
 
 - Cambios en `src/shared/**`, migraciones, `modules.manifest.json`, `requirements.txt`, `pnpm-lock.yaml`, configuración de build/test o workflows: el `scope` ya fuerza alcance completo.
 - Cambios en `gateway/**` ya disparan `gateway-integration`; para Docker o contratos contra el stack real, agrega `ci:full` (relanza el workflow).
-- Antes de un release: ejecuta el workflow manualmente en `development` (`workflow_dispatch` siempre corre completo y solo se permite en esa rama) o espera el schedule.
+- Antes de un release: ejecuta el workflow manualmente en `development` (`workflow_dispatch` siempre corre completo y en backend/frontend solo se permite en esa rama) o espera el schedule.
 - `main` es un placeholder de un commit: no se promueve ni se despliega desde ahí. Su protección es de revisión, no de checks de CI; no se abren PRs a `main`.

@@ -174,8 +174,8 @@ El sistema DEBE (SHALL) responder un pago aprobado con `estado: PAGO_EN_PROCESO`
 
 #### Scenario: Pago no aprobado
 - **DADO** un intento con resultado `REJECTED` o `ERROR`
-- **CUANDO** se consulta la respuesta del intento
-- **ENTONCES** `estado` y `mensaje` son `null`, porque `PAGO_EN_PROCESO` solo describe un pago aprobado
+- **CUANDO** se responde `POST /checkout/{id}/pago`
+- **ENTONCES** no se devuelve un `200` con `estado` nulo: la respuesta es un error problem+json `402 PAGO_RECHAZADO` (rechazo) o `503 ERROR_PROCESAMIENTO` (error de procesamiento), con `motivo` (por ejemplo `FONDOS_INSUFICIENTES`, `RECHAZADO_POR_EMISOR` o `ERROR_PROCESAMIENTO`) e `intentosRestantes`; `PAGO_EN_PROCESO` solo describe un pago aprobado y está declarado en el contrato OpenAPI del BFF
 
 ### Requirement: Vigencia del checkout
 El sistema DEBE (SHALL) expirar los checkouts no pagados en 15 minutos.

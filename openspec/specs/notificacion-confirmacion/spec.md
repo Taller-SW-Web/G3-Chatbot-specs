@@ -40,7 +40,7 @@ El sistema DEBE (SHALL) encolar y enviar el correo de confirmación al correo de
 *Trazabilidad: SPEC-16 · Requisito 1; SPEC-15 · Requisito 2; backend#182.*
 
 #### Scenario: Correo enviado
-- **DADO** un pedido con el pago notificado a Ventas
+- **DADO** un pedido cuyo pago Ventas ya confirmó respondiendo `nuevoEstado: PAGADO`
 - **CUANDO** el worker procesa `SEND_EMAIL`
 - **ENTONCES** se envía a `maria@ejemplo.com` el asunto "Confirmamos tu pedido PED-2026-00891" con el detalle completo, y `notification` queda en `SENT`
 

@@ -13,7 +13,7 @@ Este documento reúne la evidencia de que las tareas del outbox salen de la API,
 | Prueba con el broker caído sin pérdida de eventos | Cumplido | §5 |
 | Enlaces a workflows, commits y PR | Cumplido | §2 y §4 |
 
-Hallazgo de la prueba: tras reiniciar el broker, el consumidor no volvía a consumir mientras `/health` decía `ok`. La corrección está en el PR [#215](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/215), todavía abierto. Producción la recibe después del merge y del redespliegue del consumidor (§5.3).
+Hallazgo de la prueba: tras reiniciar el broker, el consumidor no volvía a consumir mientras `/health` decía `ok`. La corrección está en el PR [#215](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/215), mergeado en `development` (`7443120`); producción la recibe al redesplegar el consumidor (§5.3).
 
 ## 2. Arquitectura y código
 
@@ -147,7 +147,7 @@ Verificación local de la corrección:
 | Test de integración que corta la conexión con un proxy TCP (`test_the_consumer_resumes_consuming_after_the_connection_is_lost`) | Falla con el código anterior y pasa con la corrección |
 | `docker stop` y `docker start` manuales | `/health` queda `unavailable` durante la caída y vuelve a `ok`; un mensaje publicado después del reinicio se consume sin reiniciar el proceso |
 
-Estado: la corrección no está en producción. Se despliega después del merge del PR #215 y del redespliegue de `G3-Chatbot-consumer`.
+Estado: la corrección está mergeada en `development` (`7443120`). Producción la recibe después del redespliegue de `G3-Chatbot-consumer`; no se verificó el redespliegue desde esta cuenta.
 
 ## 6. Límites conocidos
 

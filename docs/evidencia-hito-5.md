@@ -15,10 +15,10 @@ Este documento reúne la evidencia verificable del Hito 5. No repite los casos: 
 | Evals del chatbot | ✅ | Backend #230; primera corrida real 7/9 con fallos documentados en #175, [run 46073219673](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/46073219673); follow-up #258 |
 | Performance | ✅ | [`slo-performance.md`](slo-performance.md), run 45887721116 |
 | Lighthouse y accesibilidad | ✅ | Frontend #180, job `lighthouse`, run 46048924659 |
-| API Management | 🟡 | ADR-0031 y código #211/#214 mergeados; despliegue #178/#179 |
+| API Management | ✅ | ADR-0031; backend #211/#214 y frontend #152; Kong desplegado en Railway (backend #178/#179, frontend #142 cerrados), verificado el 2026-11-27 |
 | Mecanismo asíncrono | ✅ | [`evidencia-mecanismo-asincrono.md`](evidencia-mecanismo-asincrono.md); #215 mergeado |
 | Casos de prueba y DoD | ✅ | [`casos-prueba-hito-5.md`](casos-prueba-hito-5.md) |
-| Producción | 🟡 | Backend `/health` 200; gateway y cierre operativo #178/#179 |
+| Producción | ✅ | Backend `/health` 200; backend, consumer y gateway en Railway con deploy `SUCCESS` (verificado el 2026-11-27); H5-X1 cerrado (backend #183) |
 
 ## 2. CI/CD y seguridad
 
@@ -95,14 +95,13 @@ Ambos son de elección de herramienta, no de datos inventados. El default incomp
 |---|---|
 | `GET https://g3-chatbot-backend.up.railway.app/health` | `200` |
 | Backend y consumer en Railway | Ambos `Online`; consumer sin dominio público |
-| Gateway Kong | Código mergeado (#211/#214); falta desplegar/verificar (#178/#179) |
+| Gateway Kong | Servicio `G3-Chatbot-gateway` en Railway (`g3-chatbot-gateway-production.up.railway.app`), deploy `SUCCESS`. Verificado el 2026-11-27: `/health` 200 con `via: 1.1 kong/3.9.5`; `/api/v1/catalogo/productos` 200 con rate limit 120/min; ruta no declarada 404; `/openapi.json` y `/docs` 200 por Kong con 60/min; el proxy del frontend en Vercel responde con `via: kong` y `x-kong-request-id` |
 | Adjuntos | `ATTACHMENT_STORAGE=local` sobre volumen; el cierre operativo y el checklist están en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27); specs #53 quedó como tracking documental cerrado |
 
 ## 9. Limitaciones conocidas
 
 - **Evals**: la corrida real da 7/9; los 2 fallos son de elección de herramienta (backend #175). El workflow debe correr con `llm_model=gpt-6-luna` hasta cerrar backend #258.
 - **Lighthouse** ya está en el gate `check` (H5-P4 cerrado, frontend #180); la deuda de LCP/TBT en CI sigue en frontend #164.
-- **Gateway** no está desplegado en Railway; H5-G2/G3 no están operativos.
 - **Adjuntos** en producción usan almacenamiento local y volumen efímero; el cierre operativo y el checklist están en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27).
 - **SMTP** no está configurado en producción; los correos usan `FakeEmailSender`.
 - **Módulos externos** se simulan con `fake` en CI y en la demo; las pruebas reales con G5/G6/G7 se registran aparte.

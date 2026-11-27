@@ -58,8 +58,8 @@ El canal Chatbot incorpora **Kong Gateway OSS (3.x) en modo DB-less declarativo*
 | `POST /api/v1/sesion/registro` | `minute: 5`, `hour: 30` por IP | `REGISTER_PER_IP` (5 req / 10 min, ventana exacta solo en backend) |
 | `POST /api/v1/chat/conversaciones/*/mensajes` | `minute: 25` por IP | `CHAT_MESSAGES_PER_MINUTE` (20 req/min) |
 | `POST /api/v1/chat/conversaciones/*/adjuntos` | `minute: 15` por IP | `ATTACHMENT_UPLOADS_PER_MINUTE` (10 req/min) |
-| `PUT /api/v1/chat/mensajes/*/reaccion` | `minute: 35` por IP | `REACTIONS_PER_MINUTE` (30 req/min) |
-| `POST /api/v1/chat/sugerencias` | `hour: 10` por IP | `SUGGESTIONS_PER_HOUR` (5 req/hora) |
+| `POST /api/v1/mensajes/*/reaccion` | `minute: 35` por IP | `REACTIONS_PER_MINUTE` (30 req/min) |
+| `POST /api/v1/sugerencias` | `hour: 10` por IP | `SUGGESTIONS_PER_HOUR` (5 req/hora) |
 
 - **Reglas exclusivas del backend:** además de las ventanas no nativas de Kong (como 10 min en `REGISTER_PER_IP`), las reglas indexadas por un campo del cuerpo JSON (`REGISTER_DEBOUNCE_PER_EMAIL` y `RESEND_PER_EMAIL`) permanecen exclusivamente en `rate_limiter.py`.
 - **Formato de respuesta `429`:** en uso normal el límite de aplicación del backend responde primero con `application/problem+json` y `code`. Si un cliente supera el tope perimetral (por ejemplo el global de 120 req/min), Kong corta la petición en el borde con `429 Too Many Requests`, cabeceras `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset` y `Retry-After`, y cuerpo JSON `{"message": "API rate limit exceeded"}`.

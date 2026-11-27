@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptada
+Aceptada; ejecución full desde [ADR-0033](ADR-0033-pipeline-full-en-cada-run.md)
 
 ## Fecha
 

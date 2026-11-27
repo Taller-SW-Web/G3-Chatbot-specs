@@ -23,9 +23,9 @@ Este documento reúne la evidencia verificable del Hito 5. No repite los casos: 
 
 | Evidencia | Enlace |
 |---|---|
-| Backend `development`: lint, tipos, unitarias, integración, OpenAPI, módulos, DAST, Trivy, Sonar y gate `test` | [run 45932607534](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/45932607534) |
-| Frontend `development`: lint/typecheck, unitarias, E2E, build, módulos, Sonar y Vercel | [run 45925602758](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/45925602758) |
-| Specs `development`: OpenSpec y enlaces | [run 45918803842](https://github.com/Taller-SW-Web/G3-Chatbot-specs/actions/runs/45918803842) |
+| Backend `development`: lint, tipos, unitarias, integración, OpenAPI, módulos, DAST, Trivy, Sonar y gate `test` | [run 45932607534](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/45932607534) · `41bdbd2` |
+| Frontend `development`: lint/typecheck, unitarias, E2E, build, módulos, Sonar y Vercel | [run 45925602758](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/45925602758) · `ecf4794` |
+| Specs `development`: OpenSpec y enlaces | [run 45936461820](https://github.com/Taller-SW-Web/G3-Chatbot-specs/actions/runs/45936461820) · `c4340c5` |
 | DAST con OWASP ZAP y gate de alertas High | Backend #210, job `DAST (OWASP ZAP)` |
 | Ruleset y CODEOWNERS en backend/frontend | H5-C4, ADR-0024; `.github/CODEOWNERS` |
 
@@ -43,11 +43,11 @@ La protección de rama de backend y frontend exige el check `test`/`check`, 1 ap
 
 | Suite | Qué cubre | Evidencia |
 |---|---|---|
-| `tests/e2e/smoke.spec.ts` | Flujo principal: catálogo, carrito, checkout, pedido y postventa | Job `E2E` en verde |
-| `tests/e2e/chat.real.spec.ts` | Chat, SSE e historial | Job `E2E` en verde |
-| `tests/e2e/home.spec.ts` | Home, ofertas y navegación | Job `E2E` en verde |
-| `tests/e2e/gateway.spec.ts` | Mismo origen y cabeceras del gateway cuando `PLAYWRIGHT_VERIFY_GATEWAY=true` | Job `E2E`; verificación manual contra Vercel en #142 |
-| `tests/e2e/mobile-first.spec.ts` | Viewports móviles y zonas táctiles | Job `E2E` en verde |
+| `tests/e2e/smoke.spec.ts` | Flujo principal: catálogo, carrito, checkout, pedido y postventa | [run 45925602758](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/45925602758), job `E2E` |
+| `tests/e2e/chat.real.spec.ts` | Chat, SSE e historial | [run 45925602758](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/45925602758), job `E2E` |
+| `tests/e2e/home.spec.ts` | Home, ofertas y navegación | [run 45925602758](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/45925602758), job `E2E` |
+| `tests/e2e/gateway.spec.ts` | Mismo origen y cabeceras del gateway cuando `PLAYWRIGHT_VERIFY_GATEWAY=true` | [run 45925602758](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/45925602758), job `E2E`; verificación manual contra Vercel en #142 |
+| `tests/e2e/mobile-first.spec.ts` | Viewports móviles y zonas táctiles | [run 45925602758](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/45925602758), job `E2E` |
 
 Los E2E corren con los módulos externos en `fake` (ADR-0022) y sin LLM real; los recorridos contra el entorno real están en `chat.real.spec.ts` y en la verificación manual de #142/#183.
 

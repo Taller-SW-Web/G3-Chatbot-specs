@@ -327,10 +327,12 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
         { "estado": "EN_PREPARACION", "etiqueta": "En preparación", "fecha": "2026-11-05T19:00:00Z", "completado": true },
         { "estado": "DESPACHADO", "etiqueta": "Despachado", "fecha": "2026-11-06T09:00:00Z", "completado": true }
       ],
+      "csatEnviado": false,
       "seguimientoDisponible": true
     }
     ```
   - **Errores:** `401 REQUIERE_SESION`, `404 RECURSO_NO_ENCONTRADO`, `503 MODULO_NO_DISPONIBLE`.
+  - **`csatEnviado`:** `true` si el chatbot ya marcó la calificación de la entrega como enviada en `order_ref.csat_sent` (tras un `201` o un `409 CSAT_ALREADY_SUBMITTED`); `false` si no hay fila local o aún no se calificó. El frontend lo usa para ocultar el slot de CSAT de `mod-postventa` sin volver a preguntar a Ventas. Un pedido de otro canal sin fila local llega como `false`; si ya estaba calificado, Ventas responde `409` al enviar.
 
 - **`GET /api/v1/pedidos/{pedidoId}/seguimiento`** (requiere sesión `CLIENTE`):
   - Verifica primero que `pedidoId` pertenezca al cliente en Ventas (SPEC-18 Req. 1) y luego consulta `GET /api/v1/seguimientos/pedidos/{pedidoId}` en Despacho con el token de servicio de `modulo-chatbot` (`aud=api-despacho`, scope `seguimientos:leer`, A11/A4).

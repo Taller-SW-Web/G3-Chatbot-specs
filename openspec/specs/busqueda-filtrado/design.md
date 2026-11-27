@@ -22,19 +22,21 @@
 |---|---|
 | `ProductCarousel` (SPEC-09) | Muestra los resultados. |
 | `AppliedFiltersBar` | Chips de los filtros aplicados, con acción de quitar cada uno. |
-| `LoadMoreButton` | Pide la página siguiente (acción `BUSCAR_PAGINA`). |
-| `EmptyResults` | Mensaje y chips de sugerencia. |
+| `LoadMoreButton` | Envía `CARRUSEL_PRODUCTOS.datos.siguiente` a la acción `BUSCAR_PAGINA`; no reconstruye filtros. |
+| `EmptyResults` | Mensaje y hasta 3 acciones de `ACCIONES_RAPIDAS` para relajar el filtro más restrictivo. |
 
 ## Backend
 
 | Componente | Responsabilidad |
 |---|---|
 | Herramienta `buscar_productos` | Esquema real `{q?, categoria?, marca?, talla?, color?, soloOfertas?, orden?: "relevancia" \| "precio_asc" \| "precio_desc" \| "nombre_asc" \| "nombre_desc", precioMin?, precioMax?, pagina?, tamanio?, canal?, estado?}`; `categoria` y `marca` son nombres que el normalizador convierte a `categoriaId`/`marcaId` antes de llamar a Productos. |
-| `CatalogoService.buscar()` | Normaliza, consulta, mapea a `ProductoResumen`, aplica el orden solicitado y guarda `ultimoCarrusel` y `filtrosVigentes`. |
+| `CatalogoService.buscar()` | Normaliza, consulta, mapea a `ProductoResumen`, aplica el orden solicitado y guarda `ultimoCarrusel` y `filtrosVigentes`. Construye `CARRUSEL_PRODUCTOS.datos.total` y `datos.siguiente` (página + filtros normalizados) para que el frontend no reconstruya el contrato. |
 | `OrdenadorResultados` | Traduce `orden` al parámetro de Productos o, para precio, ordena la página enriquecida; valida el conjunto cerrado y responde `400 VALIDACION` si no pertenece. |
-| `Normalizador` | Sinónimos, similitud con `SequenceMatcher` (corte 0.8) y caché de categorías y marcas. |
+| `Normalizador` | `DEFAULT_SYNONYMS` para categorías, `SEARCH_ALIASES` (`correr`/`trotar` → `running`) para vocabulario de búsqueda, similitud con `SequenceMatcher` (corte 0.8) y caché de categorías y marcas. La taxonomía canónica es la de G6 (`Calzado` > `Fútbol`/`Running`, `Ropa`, `Equipamiento y Accesorios`); no inventa categorías ausentes. |
 | `ProductsClient` | httpx con timeout de 4 s y token de servicio si Productos lo requiere. |
 | `GET /api/v1/catalogo/productos` | Misma búsqueda para las acciones directas. |
+
+> **Taxonomía G6 (2026-11-27):** `GET /categorias` expone `Calzado` con subcategorías `Fútbol` y `Running`, más `Ropa` y `Equipamiento y Accesorios`. `Conjunto deportivo`, `Calzado de fútbol sala` y `Camisetas y Tops` no existen hoy; los sinónimos se mapean a la categoría real más cercana. `GET /marcas` no expone la relación marca↔categoría, así que los chips de marca son globales (máx. 6) hasta que G6 la publique.
 
 ## Desglose para issues
 
@@ -43,5 +45,6 @@
 - [ ] `[BE]` `Normalizador` con `sinonimos.yaml` y fuzzy match
 - [ ] `[BE]` Herramienta `buscar_productos` y `CatalogoService.buscar`
 - [ ] `[BE]` Endpoint `GET /catalogo/productos` y acción `BUSCAR_PAGINA`
+- [ ] `[BE]` `CARRUSEL_PRODUCTOS.datos.total`/`siguiente` y `ACCIONES_RAPIDAS` para resultados vacíos
 - [ ] `[FE]` `AppliedFiltersBar`, `LoadMoreButton` y `EmptyResults`
 - [ ] `[QA]` Frases de búsqueda en el conjunto de evaluación (≥ 30) y pruebas de todos los escenarios

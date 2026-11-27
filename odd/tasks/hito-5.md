@@ -31,12 +31,12 @@ Estado verificado el 2026-11-22 contra `development` (backend `1c9c333`, fronten
 
 | Área | Estado |
 |---|---|
-| CI/CD y seguridad | H5-C1, H5-C2, H5-C4 y H5-C5 hechas; H5-C3 redefinida para desplegar producción desde `development` (frontend #139) |
-| Pruebas de integración | H5-I2 hecha (sin `test.fixme`); H5-I1 hecha (contratos G7/G6/G2/G5 en backend #226–#229, job `contract` bloqueante); H5-E1 con suite y workflow mergeados (backend #230), pendiente la primera corrida real con `LLM_API_KEY`; H5-I3 tiene documento base en `docs/evidencia-hito-5.md` (se actualiza al cerrar evals); H5-Q1 cerrada con `docs/casos-prueba-hito-5.md` |
-| Pruebas de performance | H5-P1, H5-P2, H5-P3 y H5-P5 hechas; la corrida con RabbitMQ y consumidor está en el run 45887721116 y en `docs/slo-performance.md`; H5-P4 (Lighthouse) hecha en frontend #180 (issue #144 cerrada) |
-| API Management | H5-G1 hecha (ADR-0031, specs #81); H5-G2 y H5-G3 tienen el código mergeado (backend #211/#214, frontend #152), pero faltan el despliegue/verificación en Railway y Vercel (backend #178/#179, frontend #142) |
-| Mecanismo asíncrono | H5-M1, H5-M2 y H5-M3 (código) hechas (#196/#197/#215); `G3-Chatbot-consumer` está desplegado y consumiendo; falta cerrar #177 con evidencia formal; H5-M4 tiene `docs/evidencia-mecanismo-asincrono.md` (specs #63) |
-| Producción | `development` es la rama por defecto y la que despliega Railway/Vercel; `main` es un placeholder de un commit con solo `README.md` desde el 2026-11-26. No se promueve `development` a `main`. H5-X1 se limita a verificar producción (backend #183) |
+| CI/CD y seguridad | H5-C1, H5-C2, H5-C4 y H5-C5 hechas; H5-C3 abandonada según specs #117 (Ankarmin); quedó sin implementar: frontend #139 se cerró como `NOT_PLANNED` al moverse a specs y specs #50 está cerrada. Hoy producción se despliega desde `development` por Vercel y Railway |
+| Pruebas de integración | H5-I2 hecha (sin `test.fixme`); H5-I1 hecha (contratos G7/G6/G2/G5 en backend #226–#229, job `contract` bloqueante); H5-E1 con suite y workflow mergeados (backend #230) y primera corrida real 7/9 documentada (run 46073219673); cierre pendiente en backend #175, #245 y #258 (abiertas); H5-I3 tiene `docs/evidencia-hito-5.md` sincronizado (specs #117 y #123); H5-Q1 cerrada con `docs/casos-prueba-hito-5.md` |
+| Pruebas de performance | H5-P1, H5-P2 y H5-P5 hechas; H5-P3 con workflow hecho y la medición del checkout en paralelo pendiente en backend #190 (asignada a Lume03); la corrida con RabbitMQ y consumidor está en el run 45887721116 y en `docs/slo-performance.md`; H5-P4 (Lighthouse) hecha en frontend #180 (issue #144 cerrada) |
+| API Management | H5-G1 hecha (ADR-0031, specs #81); H5-G2 y H5-G3 hechas: código mergeado (backend #211/#214, frontend #152), backend #178/#179 y frontend #142 cerradas, y gateway verificado en producción el 2026-11-27 |
+| Mecanismo asíncrono | H5-M1, H5-M2 y H5-M3 (código) hechas (#196/#197/#215); `G3-Chatbot-consumer` está desplegado y consumiendo; backend #177 cerrada; H5-M4 tiene `docs/evidencia-mecanismo-asincrono.md` (specs #63) |
+| Producción | `development` es la rama por defecto y la que despliega Railway/Vercel; `main` es un placeholder de un commit con solo `README.md` desde el 2026-11-26. No se promueve `development` a `main`. H5-X1 hecha: verificación de producción (backend #183 cerrada) |
 | Specs y documentación | S2, L4 y S4 cerrados; M5 (#64) cerrado como supersedido (#96, frontend #162, backend #219); H5-Q1 e H5-I3 (documento base) creados; SPEC-23 sigue 🟡 por bucket y variables (specs #53), con fail-closed ya implementado (backend #198); `inicio-sesion` queda 🟡 por el Req. 4 (backend #184) y `consulta-estado-pedido` por la anulación/reembolso (backend #182, frontend #143) |
 
 ## Alcance
@@ -88,7 +88,7 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 |---|---|---|---|---|
 | H5-C1 | David | backend, frontend | 🔴 | Hacer bloqueantes `pip-audit` y `pnpm audit` (quitar `\|\| echo`), con lista de excepciones justificadas |
 | H5-C2 | Sebastian | backend | 🔴 | DAST con OWASP ZAP baseline contra el stack levantado en CI y reporte como artefacto |
-| H5-C3 | Mathias | backend, frontend | 🟡 | Entorno `production` en GitHub con aprobación requerida (CI-12) y deploy de producción por Actions **desde `development`**, con smoke y rollback. Implementación: [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139) |
+| H5-C3 | Mathias | backend, frontend | ⚪ Abandonada | Entorno `production` en GitHub con aprobación requerida (CI-12) y deploy de producción por Actions **desde `development`**, con smoke y rollback. Implementación: [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139), cerrada como `NOT_PLANNED` el 2026-11-27 al moverse a specs (specs #50 también cerrada); abandonada según specs #117. Los despliegues de producción los hacen Vercel y Railway desde `development` |
 | H5-C4 | David | backend, frontend | 🟡 | Protección de rama: `enforce_admins=true` y revisión de code owners |
 | H5-C5 | David | specs | 🔴 | Pasar ADR-0024 a "Aceptada" y actualizar el diagrama del pipeline con los pasos de seguridad |
 
@@ -194,11 +194,12 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 
 - 2026-11-27: **H5-I1 y H5-P4 hechas.** Backend #226–#229 mergearon el arnés de contratos G7/G6/G2/G5, el lock con hashes y el job bloqueante `contract` (run de development 46050322098); #174 se cierra con esa evidencia. Frontend #180 integró Lighthouse CI móvil en el gate `check` con presupuestos de LCP/TBT/CLS, peso y accesibilidad (run de development 46048924659); #144 cerrada. H5-E1 mantiene la suite y el workflow (backend #230), pero sigue pendiente la corrida real hasta configurar `LLM_API_KEY` en el environment `evals` (#175).
 
+- 2026-11-27: **Sincronización de documentos (specs #117 y #123).** H5-C3 queda abandonada según specs #117 (Ankarmin); quedó sin implementar: frontend #139 se cerró como `NOT_PLANNED` al moverse a specs y specs #50 está cerrada. Hoy producción se despliega desde `development` por Vercel y Railway; no es un paso pendiente. Verificados como cerrados: backend #174, #177, #178, #179 y #183; frontend #142 y #144. H5-E1: primera corrida real 7/9 (run 46073219673); backend #175 y #245 siguen abiertas (corrida real documentada; cierre pendiente) y #258 también. H5-P3: backend #190 abierta y asignada a Lume03. H5-F1: informe `docs/evaluacion-integral-frontend.md` en el frontend, consolidación 8/8 en el PR #198 (abierto); issues por módulo frontend #182 a #191, todos abiertos (P1: #182, #184, #186, #188, #189, #190).
+
 ## Siguiente paso
 
-1. H5-M3: desplegar el consumidor como servicio Railway y pasar producción a `broker` cuando `/health` esté sano ([backend#177](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/177)); después H5-M4 ([specs#63](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/63)). H5-P5 ya está cerrada con el run 45887721116 y el SLO actualizado.
-2. H5-G1: ADR de API Management ([specs#59](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/59)); después H5-G2/G3 ([backend#178](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/178), [#179](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/179); [frontend#142](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/142)).
-3. H5-E1 (evals): [backend#175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175). La suite y el workflow ya están en `development` (#230); falta configurar `LLM_API_KEY` en el environment `evals` y adjuntar la corrida real. H5-I1 cerrada con backend #226–#229.
-4. H5-F1 (evaluación integral): [frontend#145](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/145); H5-P4 cerrada con frontend #180. H5-C3 (deploy por Actions desde `development`): [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139).
-5. SPEC-23/L2: bucket y variables ([specs#53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53)); fail-closed ya implementado en backend #198.
-6. H5-X1: verificar producción sobre `development` ([backend#183](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/183)).
+1. H5-E1 (evals): cerrar [backend#175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175) y [#245](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/245) con la corrida real 7/9 ya documentada (run 46073219673) y resolver [#258](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/258) (modelo por defecto y casos degradados).
+2. H5-P3: medir el checkout en paralelo ([backend#190](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/190), asignada a Lume03).
+3. H5-F1 (evaluación integral): mergear el PR [#198](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/pull/198) y cerrar [frontend#145](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/145); los P1 abiertos están en frontend #182, #184, #186, #188, #189 y #190.
+4. H5-I3: mergear la sincronización de documentos (specs #117 y #123).
+5. SPEC-23/L2: bucket y variables (specs#53 cerrada como tracking documental; el cierre operativo sigue en el runbook de adjuntos); fail-closed ya implementado en backend #198.

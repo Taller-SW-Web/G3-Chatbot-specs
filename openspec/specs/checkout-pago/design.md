@@ -6,7 +6,7 @@
 
 | Módulo | Endpoint | Estado |
 |---|---|---|
-| Ventas | Creación del pedido y notificación del pago: ver SPEC-15 | ✅ A8 |
+| Ventas | Creación del pedido y notificación del pago: ver SPEC-15 (la respuesta `nuevoEstado` decide la confirmación) | ✅ A8 |
 | Ventas | Anulación por pago no completado: ver SPEC-15 | ✅ A9 |
 | Seguridad | `POST /auth/introspeccion` (scope `tokens:introspeccion` **concedido**; credenciales reales desde Hito 4) | ✅ A3 |
 | Productos, Despacho | Revalidación: disponibilidad, precios, evaluación, cupón y cotización | 🟡 A5 |
@@ -27,7 +27,7 @@
 |---|---|
 | `POST /api/v1/checkout` | Guardas de precondición, revalidación completa y creación del checkout; lo persiste en `PENDING_PAYMENT` antes de crear el pedido (SPEC-15). La llamada a Ventas tiene `CHECKOUT_SALES_DEADLINE_SECONDS` (30 s por defecto): si vence, responde `503 MODULO_NO_DISPONIBLE` recuperable con `checkoutId`, `orderId` provisional y `reintentable=true`; la misma `Idempotency-Key` reconcilia el pedido real. |
 | `GET /api/v1/checkout/{id}` | Estado del checkout. |
-| `POST /api/v1/checkout/{id}/pago` | Validación, simulación, registro del intento y disparo de la notificación. |
+| `POST /api/v1/checkout/{id}/pago` | Validación, simulación, registro del intento y disparo de la notificación. Un pago aprobado responde `estado: PAGO_EN_PROCESO` (con `nuevoEstado`, `motivo`, `reembolso` y `correoEnmascarado` en `null`) y deja el pedido en `PAYMENT_PENDING_NOTIFICATION`; el caso de uso ya no encola el correo de confirmación: lo hace el worker de outbox cuando Ventas responde `PAGADO` (SPEC-15, SPEC-16). |
 | `CheckoutService` | Orquesta las precondiciones, la revalidación, la vigencia y los intentos. Persiste el checkout antes de Ventas, aplica el deadline, reconcilia por `Idempotency-Key` y bloquea el pago mientras el pedido sea provisional (`PEDIDO_EN_PROCESO`). |
 | `IntrospeccionClient` | Llama a `POST /auth/introspeccion` con el token de servicio de `modulo-chatbot`; timeout de 3 s, sin caché (la sesión se valida en el momento exacto del pago). |
 | `CardValidator` | Luhn, BIN, vencimiento y CVV. |

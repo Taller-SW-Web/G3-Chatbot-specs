@@ -23,7 +23,7 @@ Secuencia acordada con SPEC-15:
 1. Se confirma el resumen.
 2. Se crea el pedido `CREADO` en Ventas.
 3. Se ejecuta el pago simulado.
-4. Si se aprueba, se notifica `PAGADO` a Ventas.
+4. Si se aprueba, se notifica el pago a Ventas (outbox) y el pedido queda pendiente hasta que Ventas responda: el cliente ve "Pago recibido, estamos confirmando tu pedido" y la confirmación solo llega cuando Ventas responde `nuevoEstado: PAGADO`.
 5. Si el pago falla de forma definitiva, se solicita la anulación.
 
 ## Alcance
@@ -43,7 +43,7 @@ Incluye:
 - Integración con una pasarela real (Niubiz, Culqi, Mercado Pago) y 3-D Secure.
 - Pagos con Yape, PagoEfectivo, **contra entrega** o en cuotas. 🧩 El wireframe de `CheckoutPage` incluía "Efectivo / Pago contra entrega" como alternativa a la tarjeta; se descarta a propósito porque el lineamiento del curso pide "grabación del pedido y pago **con tarjeta**" para el Canal Chatbot. Si el equipo decide reincorporarlo más adelante, es una spec nueva, no una extensión de esta.
 - Guardar tarjetas para compras futuras.
-- Reembolsos: son responsabilidad de F4 de Ventas; la solicitud desde el chat se cubre en SPEC-21 y SPEC-22.
+- Ejecución de reembolsos: son responsabilidad de Ventas (F4, y M2 para los pagos de pedidos anulados por stock); la solicitud desde el chat se cubre en SPEC-21 y SPEC-22 y la comunicación del reembolso por anulación, en SPEC-17.
 - Comprobante electrónico (boleta o factura).
 
 ## Requirements
@@ -145,7 +145,7 @@ El sistema DEBE (SHALL) procesar el pago con un simulador determinista según la
 #### Scenario: Pago aprobado
 - **DADO** un checkout `PENDING_PAYMENT` vigente
 - **CUANDO** se paga con `4111 1111 1111 1111`
-- **ENTONCES** se registra un `payment_attempt` `APPROVED` con `idTransaccion = SIM-<uuid>`, marca y `last4`, el checkout pasa a `PAYMENT_APPROVED` y se dispara la notificación del pago a Ventas (SPEC-15)
+- **ENTONCES** se registra un `payment_attempt` `APPROVED` con `idTransaccion = SIM-<uuid>`, marca y `last4`, el checkout pasa a `PAYMENT_APPROVED`, se dispara la notificación del pago a Ventas (SPEC-15) y la respuesta es la de "Pago aprobado: confirmación pendiente hasta Ventas" (Requisito 6)
 
 #### Scenario: Pago rechazado con intentos restantes
 - **DADO** el primer intento
@@ -161,6 +161,21 @@ El sistema DEBE (SHALL) procesar el pago con un simulador determinista según la
 - **DADO** dos solicitudes de pago con la misma `Idempotency-Key`
 - **CUANDO** se procesan
 - **ENTONCES** se simula una sola vez y la segunda recibe el mismo resultado
+
+### Requirement: Pago aprobado, confirmación pendiente hasta Ventas
+El sistema DEBE (SHALL) responder un pago aprobado con `estado: PAGO_EN_PROCESO` y el mensaje "Pago recibido. Estamos confirmando tu pedido y te avisaremos por correo.", y mantener el pedido en `PAYMENT_PENDING_NOTIFICATION` hasta que Ventas responda la notificación del pago (SPEC-15). El sistema NO DEBE (SHALL NOT) mostrar el pedido como confirmado ni encolar el correo de confirmación antes de esa respuesta. La respuesta de `POST /checkout/{id}/pago` incluye los campos `estado`, `nuevoEstado`, `motivo`, `reembolso`, `correoEnmascarado` y `mensaje`; en un pago aprobado `nuevoEstado`, `motivo`, `reembolso` y `correoEnmascarado` son `null`, porque aún no se conocen.
+
+*Trazabilidad: SPEC-14 · Requisito 7; SPEC-15 · Requisito 2; SPEC-16 · Requisito 1; backend#182.*
+
+#### Scenario: Pago aprobado sin confirmar todavía
+- **DADO** un pago aprobado cuya notificación a Ventas aún no tiene respuesta
+- **CUANDO** el backend responde a `POST /checkout/{id}/pago`
+- **ENTONCES** devuelve `estado: PAGO_EN_PROCESO` con "Pago recibido. Estamos confirmando tu pedido y te avisaremos por correo.", el pedido queda en `PAYMENT_PENDING_NOTIFICATION`, no se encola el correo de confirmación y el cliente no ve "Pedido confirmado"
+
+#### Scenario: Pago no aprobado
+- **DADO** un intento con resultado `REJECTED` o `ERROR`
+- **CUANDO** se consulta la respuesta del intento
+- **ENTONCES** `estado` y `mensaje` son `null`, porque `PAGO_EN_PROCESO` solo describe un pago aprobado
 
 ### Requirement: Vigencia del checkout
 El sistema DEBE (SHALL) expirar los checkouts no pagados en 15 minutos.

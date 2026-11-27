@@ -30,7 +30,7 @@
 | Componente | Responsabilidad |
 |---|---|
 | `GET /api/v1/pedidos` · `GET /api/v1/pedidos/{id}` | Proxy hacia `/pedidos/me` y `/pedidos/{id}`; reenvía el token del cliente y Ventas filtra por `sub`. Reenvía `estado`, `desde`, `hasta`, `page` y `pageSize` sin transformación; `desde`/`hasta` son fechas ISO `YYYY-MM-DD` y una fecha inválida o un rango invertido (`desde > hasta`) responde `400 VALIDACION` sin llamar a Ventas. El detalle incluye `csatEnviado` (leído de `order_ref.csat_sent`; `false` si no hay fila local o no se envió), que el frontend usa para ocultar el slot CSAT. |
-| `EstadoPedidoService` | Selecciona el pedido, mapea las etiquetas, arma la línea de tiempo y enriquece con Despacho (SPEC-18). |
+| `EstadoPedidoService` | Selecciona el pedido, mapea las etiquetas, arma la línea de tiempo y enriquece con Despacho (SPEC-18). Para un pedido `ANULADO` calcula `motivoAnulacion` (último `motivo` del historial `ANULADO`) y `reembolso` ("Se procesará el reembolso al medio de pago original." si hubo pago), y los expone en el detalle, el seguimiento y el chat con el mensaje de anulación por stock. |
 | `EstadoMapper` | Tabla de `contratos-integracion.md §4`. |
 | Herramienta `consultar_pedidos` (`{pedidoId?, estado?}`) | Uso desde el chat: sin `pedidoId` lista o muestra el pedido en curso; con `pedidoId`, el detalle. |
 

@@ -21,7 +21,7 @@ El cliente puede cerrar el chat justo después de pagar, así que el correo es s
 ## Alcance
 
 Incluye:
-- Disparo del correo cuando Ventas acepta la notificación `PAGADO` (SPEC-15).
+- Disparo del correo solo cuando Ventas responde la notificación del pago con `nuevoEstado: PAGADO` (SPEC-15); si responde `ANULADO`, no se envía confirmación.
 - Plantilla HTML responsive con versión de texto plano.
 - Contenido: número de pedido, fecha, líneas (nombre, variante, cantidad y precio), descuentos, cupón, envío, total, tarjeta enmascarada, dirección de entrega, plazo estimado y enlace al chat ("Consultar estado").
 - Envío asíncrono con reintentos e idempotencia por pedido.
@@ -35,14 +35,24 @@ Incluye:
 ## Requirements
 
 ### Requirement: Envío de la confirmación
-El sistema DEBE (SHALL) encolar y enviar el correo de confirmación al correo de la cuenta cuando el pedido pasa a `PAID_NOTIFIED`.
+El sistema DEBE (SHALL) encolar y enviar el correo de confirmación al correo de la cuenta solo cuando Ventas responde la notificación del pago con `nuevoEstado: PAGADO` y el pedido pasa a `PAID_NOTIFIED`. El encolado lo hace el worker de outbox al procesar `NOTIFY_SALES_PAYMENT`, no el checkout, y es idempotente ante una reentrega de la tarea. Si Ventas responde `ANULADO` (pago tardío sobre un pedido anulado, por ejemplo por falta de stock), el sistema NO DEBE (SHALL NOT) enviar la confirmación.
 
-*Trazabilidad: SPEC-16 · Requisito 1.*
+*Trazabilidad: SPEC-16 · Requisito 1; SPEC-15 · Requisito 2; backend#182.*
 
 #### Scenario: Correo enviado
 - **DADO** un pedido con el pago notificado a Ventas
 - **CUANDO** el worker procesa `SEND_EMAIL`
 - **ENTONCES** se envía a `maria@ejemplo.com` el asunto "Confirmamos tu pedido PED-2026-00891" con el detalle completo, y `notification` queda en `SENT`
+
+#### Scenario: Ventas anula el pedido tras el pago
+- **DADO** un pago aprobado notificado sobre un pedido que Ventas ya anuló (pago tardío)
+- **CUANDO** Ventas responde `200 {nuevoEstado: ANULADO}`
+- **ENTONCES** el pedido pasa a `CANCELLED`, no se encola ni se envía el correo de confirmación y el cliente consulta la anulación y el reembolso en el estado del pedido (SPEC-17)
+
+#### Scenario: Reentrega de la notificación del pago
+- **DADO** una tarea `NOTIFY_SALES_PAYMENT` que se procesa otra vez y cuya respuesta vuelve a ser `nuevoEstado: PAGADO`
+- **CUANDO** el worker intenta encolar la confirmación
+- **ENTONCES** no se crea una segunda notificación, porque ya existe `(order_id, 0)`
 
 #### Scenario: Contenido fiel al pedido
 - **DADO** un pedido con cupón y envío
@@ -70,9 +80,9 @@ El sistema DEBE (SHALL) confirmar la compra en el chat aunque el correo falle o 
 *Trazabilidad: SPEC-16 · Requisito 3.*
 
 #### Scenario: Confirmación en el chat sin correo
-- **DADO** un pedido confirmado con el correo aún pendiente
+- **DADO** un pedido confirmado por Ventas (`PAGADO`) con el correo aún pendiente
 - **CUANDO** se muestra `CONFIRMACION_PEDIDO`
-- **ENTONCES** el mensaje dice "Te enviaremos la confirmación a m****a@…", sin prometer que ya llegó
+- **ENTONCES** el mensaje dice "Te enviaremos la confirmación a m****a@…", sin prometer que ya llegó; mientras Ventas no responda, el cliente ve "Pago recibido. Estamos confirmando tu pedido y te avisaremos por correo." (SPEC-14, Requisito 7)
 
 #### Scenario: El cliente pide reenviar el correo
 - **DADO** un pedido con el correo `SENT` o `FAILED`

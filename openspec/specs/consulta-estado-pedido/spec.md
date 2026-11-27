@@ -93,7 +93,7 @@ El listado PUEDE (MAY) filtrarse con los parámetros opcionales `estado`, `desde
 ### Requirement: Mostrar el estado y la línea de tiempo
 El sistema DEBE (SHALL) mostrar la etiqueta del estado actual, un resumen del pedido y la línea de tiempo con los hitos del historial (fecha y hora de Lima), y enriquecerla con Despacho cuando el estado sea `DESPACHADO` o `ENTREGADO`.
 
-*Trazabilidad: SPEC-17 · Requisito 2.*
+*Trazabilidad: SPEC-17 · Requisito 2; SPEC-15 · Requisito 2; SPEC-16 · Requisito 1; backend#182.*
 
 #### Scenario: Pedido en preparación
 - **DADO** un pedido `EN_PREPARACION`
@@ -107,8 +107,18 @@ El sistema DEBE (SHALL) mostrar la etiqueta del estado actual, un resumen del pe
 
 #### Scenario: Pedido anulado
 - **DADO** un pedido `ANULADO`
-- **CUANDO** se muestra
-- **ENTONCES** se ve "Anulado el {fecha}" con el motivo general del historial (sin detalles internos) y, si hubo pago, "Si corresponde un reembolso, se procesará al medio de pago original"
+- **CUANDO** se muestra en el detalle, el seguimiento o el chat
+- **ENTONCES** se ve "Anulado el {fecha}" con `motivoAnulacion` (el `motivo` del historial de Ventas, sin detalles internos) y, si hubo pago (el motivo es `STOCK_NO_DISPONIBLE`, el pago está `CONFIRMADO` o el historial pasó por `PAGADO`), `reembolso`: "Se procesará el reembolso al medio de pago original."; si el pedido se anuló sin pago (por ejemplo `PAGO_NO_COMPLETADO`), `reembolso` es `null`. Si el historial no trae motivo ni hubo pago, el chat conserva el texto genérico "Tu pedido {pedidoId} fue anulado. Si corresponde un reembolso, se procesará al medio de pago original."
+
+#### Scenario: Pedido anulado por falta de stock
+- **DADO** un pedido pagado que Ventas anuló con `historialEstados[estado=ANULADO].motivo = STOCK_NO_DISPONIBLE` (actor `SISTEMA_PRODUCTOS`)
+- **CUANDO** el cliente consulta el detalle, el seguimiento o pregunta por el pedido en el chat
+- **ENTONCES** el detalle devuelve `motivoAnulacion: STOCK_NO_DISPONIBLE`, `reembolso: "Se procesará el reembolso al medio de pago original."` y `historial[].motivo`; el seguimiento devuelve ambos campos y el `mensaje` "Tu pedido fue anulado por falta de stock. Se procesará el reembolso al medio de pago original."; el chat responde "Tu pedido {pedidoId} fue anulado por falta de stock. Se procesará el reembolso al medio de pago original." y el bloque `ESTADO_PEDIDO` incluye `motivoAnulacion` y `reembolso` en `pedido` y `motivo` en el hito "Anulado"
+
+#### Scenario: Pedido anulado nunca se muestra como confirmado
+- **DADO** un pedido pagado que Ventas anuló por falta de stock, incluso cuando el pago llegó después de la anulación
+- **CUANDO** se consulta en cualquier superficie
+- **ENTONCES** el estado es "Anulado", no aparece como "Pago confirmado" ni se envió el correo de confirmación (SPEC-16)
 
 ### Requirement: Preguntas específicas
 El sistema DEBE (SHALL) responder de forma directa las preguntas cerradas sobre el pedido usando los datos obtenidos.
@@ -160,6 +170,7 @@ El sistema DEBE (SHALL) exponer `csatEnviado` en el detalle del pedido, leído d
 - **Seguridad:** el listado usa `GET /api/v1/pedidos/me` con el token del cliente, que Ventas filtra por `sub` sin aceptar `clienteId`; el detalle compara la pertenencia antes de mostrar y Ventas también la valida.
 - **Rendimiento:** la consulta tarda p95 ≤ 800 ms sin Despacho y ≤ 1,2 s con Despacho (llamadas en paralelo cuando se conoce el estado).
 - **Privacidad:** no se muestran datos del repartidor ni el motivo de un fallo de entrega.
+- **Origen de los campos de anulación:** Ventas solo publica el motivo en `historialEstados[estado=ANULADO].motivo` (texto libre) y no tiene un objeto de reembolso para las anulaciones; el BFF deriva `motivoAnulacion` y `reembolso` (texto) a partir del historial y del pago.
 
 ## Criterio de completitud
 

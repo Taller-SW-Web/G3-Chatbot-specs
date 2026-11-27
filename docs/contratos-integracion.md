@@ -334,8 +334,8 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 
 - **`GET /api/v1/pedidos/{pedidoId}/seguimiento`** (requiere sesión `CLIENTE`):
   - Verifica primero que `pedidoId` pertenezca al cliente en Ventas (SPEC-18 Req. 1) y luego consulta `GET /api/v1/seguimientos/pedidos/{pedidoId}` en Despacho con el token de servicio de `modulo-chatbot` (`aud=api-despacho`, scope `seguimientos:leer`, A11/A4).
-  - **Lista blanca obligatoria (SPEC-18 Req. 3 y RNF Privacidad):** de Despacho solo se aceptan `pedidoId`, `estado`, `estadoEtiqueta`, `fechaProgramada`, `distrito`, `hitos[{etiqueta, fecha, completado}]` (campo real de Despacho), `recibidoPor` (solo para la UI del frontend, nunca para el LLM) y `detalleDisponible`. Se descartan coordenadas GPS, teléfono/datos del repartidor, dirección completa y motivos internos de fallo.
-  - **Mapeo de hitos.** Despacho publica el texto de cada hito como `etiqueta`. El BFF (`SeguimientoMapper`) lo normaliza a `titulo` en la respuesta de `/pedidos/{pedidoId}/seguimiento`, que es el campo que consumen la UI y el LLM; `titulo` no existe en el contrato de G2. `fecha` y `completado` pasan sin cambios.
+  - **Lista blanca obligatoria (SPEC-18 Req. 3 y RNF Privacidad):** de Despacho solo se aceptan `pedidoId`, `estado`, `estadoEtiqueta`, `fechaProgramada`, `distrito`, `hitos[{estado, etiqueta, fecha}]` (payload real de Despacho), `recibidoPor` (solo para la UI del frontend, nunca para el LLM) y `detalleDisponible`. Se descartan coordenadas GPS, teléfono/datos del repartidor, dirección completa y motivos internos de fallo.
+  - **Mapeo de hitos.** Despacho publica el texto de cada hito como `etiqueta`. El BFF (`SeguimientoMapper`) lo normaliza a `titulo` en la respuesta de `/pedidos/{pedidoId}/seguimiento`, que es el campo que consumen la UI y el LLM; `titulo` no existe en el contrato de G2. `fecha` pasa sin cambios. G2 no publica `completado`: el BFF lo agrega como `true` cuando falta.
   - Si el pedido está `PAGADO` o `EN_PREPARACION` y Despacho responde `404`, no es un error: devuelve `200 OK` con `detalleDisponible: false`, `estado: "EN_PREPARACION"`, `estadoEtiqueta: "En preparación"`, `hitos: []` y `mensaje: "Tu pedido aún se está preparando; te mostraremos el seguimiento cuando salga del centro de despacho"`.
   - **Respuesta `200 OK`:**
     ```json
@@ -356,7 +356,7 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
     }
     ```
   - **Errores:** `401 REQUIERE_SESION`, `404 RECURSO_NO_ENCONTRADO` (pedido ajeno o inexistente en Ventas), `503 MODULO_NO_DISPONIBLE`.
-  - **Origen de `hitos[].titulo`:** el BFF lo obtiene de `etiqueta` en la respuesta de Despacho; el contrato expuesto al frontend y al LLM conserva `titulo`. No se reenvía el payload crudo de G2.
+  - **Origen de `hitos[].titulo`:** el BFF lo obtiene de `etiqueta` en la respuesta de Despacho; el contrato expuesto al frontend y al LLM conserva `titulo` y agrega `completado` (`true` si G2 no lo envía). No se reenvía el payload crudo de G2.
 
 - **`POST /api/v1/pedidos/{pedidoId}/reenviar-confirmacion`** (requiere sesión `CLIENTE` y cabecera `Idempotency-Key`):
   - Verifica pertenencia del pedido y encola un reenvío de confirmación (`CONFIRMATION_RESEND`, máx. 2 reenvíos por pedido, SPEC-16 Req. 3).
@@ -563,7 +563,7 @@ Códigos esperados: `400` datos incompletos o inconsistentes, `403` el cliente n
 | Endpoint | Uso | Estado |
 |---|---|---|
 | `POST /api/v1/cotizaciones` con `Auth: service-token`, scope `cotizaciones:calcular`, audience `api-despacho` → `destino`, `lineas[]`, `coberturaDisponible`, `tipoCotizacion`, `nombreZona`, `costoEnvio`, `moneda`, `plazoEstimadoDiasHabiles`, `fechaEstimadaEntrega` | Cotización real del pedido | ✅ contrato y scope concedido a `modulo-chatbot` (Seguridad #31, cerrado); credenciales reales en Hito 4 |
-| `GET /api/v1/seguimientos/pedidos/{idPedido}` con token de servicio, scope `seguimientos:leer` | Seguimiento del pedido; cada hito llega con `etiqueta`, `fecha` y `completado` | ✅ contrato y scope concedido a `modulo-chatbot` (Seguridad #31, cerrado); credenciales reales en Hito 4 |
+| `GET /api/v1/seguimientos/pedidos/{idPedido}` con token de servicio, scope `seguimientos:leer` | Seguimiento del pedido; G2 envía cada hito con `estado`, `etiqueta` y `fecha`; el BFF agrega `completado` al exponerlo | ✅ contrato y scope concedido a `modulo-chatbot` (Seguridad #31, cerrado); credenciales reales en Hito 4 |
 
 **Notas de integración**
 - El canal ya no manda `pesoKg` ni `volumenM3`; el payload real usa `destino` y, si aplica, `lineas` con `sku` + `cantidad`.

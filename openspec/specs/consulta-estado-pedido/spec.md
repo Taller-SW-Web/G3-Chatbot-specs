@@ -110,6 +110,21 @@ El sistema DEBE (SHALL) mostrar la etiqueta del estado actual, un resumen del pe
 - **CUANDO** se muestra
 - **ENTONCES** se ve "Anulado el {fecha}" con el motivo general del historial (sin detalles internos) y, si hubo pago, "Si corresponde un reembolso, se procesará al medio de pago original"
 
+### Requirement: Indicar si la calificación de la entrega ya se envió
+El sistema DEBE (SHALL) exponer `csatEnviado` en el detalle del pedido, leído de `order_ref.csat_sent`, para que el frontend oculte el bloque de calificación de SPEC-24 cuando el cliente ya calificó el pedido. El campo DEBE (SHALL) ser `false` cuando no exista fila local o la calificación no se haya enviado.
+
+*Trazabilidad: SPEC-24 · Requisito 2; SPEC-17 · Requisito 2.*
+
+#### Scenario: Pedido ya calificado
+- **DADO** un pedido `ENTREGADO` con `order_ref.csat_sent = true`
+- **CUANDO** el cliente abre su detalle
+- **ENTONCES** la respuesta incluye `csatEnviado: true` y el frontend no monta el bloque de calificación
+
+#### Scenario: Pedido sin calificación enviada
+- **DADO** un pedido `ENTREGADO` sin fila local en `order_ref` o con `csat_sent = false`
+- **CUANDO** el cliente abre su detalle
+- **ENTONCES** la respuesta incluye `csatEnviado: false` y el frontend muestra el bloque de calificación si el pedido sigue `ENTREGADO`
+
 ### Requirement: Preguntas específicas
 El sistema DEBE (SHALL) responder de forma directa las preguntas cerradas sobre el pedido usando los datos obtenidos.
 

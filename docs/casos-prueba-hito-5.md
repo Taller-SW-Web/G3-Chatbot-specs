@@ -171,7 +171,7 @@ Los criterios D1.3 a D1.5, D2.2, D2.4, D2.5, D3.1, D3.3 a D3.5, D4.3, D4.4, D5.1
 
 | Caso | Problema | Seguimiento | Responsable de cierre |
 |---|---|---|---|
-| CP-H5-CHAT-02, CP-H5-CART-01 | El E2E nocturno con LLM real falla desde el 24/11: tras la búsqueda no aparece el carrusel en 30 s. E2E-03 pasa, así que el streaming funciona | Issue por abrir en el frontend | Por definir |
+| CP-H5-CHAT-02, CP-H5-CART-01 | El E2E nocturno con LLM real falla desde el 24/11: tras la búsqueda no aparece el carrusel en 30 s. E2E-03 pasa, así que el streaming funciona | frontend [#157](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/157) | Diego |
 | CP-H5-CHAT-05, CP-H5-ENT-09 | Evals sin ejecutar | backend [#175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175) | Sonny |
 | CP-H5-ENT-03 | Pruebas de contrato sin escribir | backend [#174](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/174) | Sonny |
 | CP-H5-ENT-05 | Lighthouse sin workflow | frontend [#144](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/144) | Diego |

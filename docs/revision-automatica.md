@@ -83,6 +83,8 @@ El bot no inventa criterios. Revisa contra:
 | Seguridad explotable o secreto | Security advisory privado o repo privado | Owner del repo | `security`, `P0` |
 | P3 / estilo | Solo digest | Nadie | — |
 
+**Cobertura por colaborador.** En cada barrido, revisa los PRs abiertos y los merges de los últimos 7 días por autor. Crea una issue paraguas por colaborador con PRs revisados, hallazgos y enlaces a las issues individuales. Si no hay hallazgos P0/P1/P2, la paraguas lo dice explícitamente; no inventes una issue. Las issues de specs van aparte, asignadas a Mathias y David.
+
 Reglas:
 
 1. **Una issue por hallazgo accionable**, no una por línea.
@@ -116,14 +118,14 @@ Reglas:
 1. Recibe PR o workflow terminado.
 2. Lee diff, checks y artefactos; no revisa el repo completo.
 3. Aplica reglas y descarta falsos positivos.
-4. Comenta el PR con el informe.
+4. No comenta el PR; convierte el informe en issues accionables.
 5. Deduplica y crea/actualiza issues.
-6. Publica digest semanal por colaborador.
+6. Publica digest semanal por colaborador en su chat.
 
 ## 6. Guardrails
 
 - **Nunca** aprueba, mergea, pusha, reinicia servicios ni cambia producción.
-- Empieza en **report-only** dos semanas; luego activa P0/P1 y después P2.
+- **Modo activo desde 2026-11-27:** crea issues P0/P1/P2; P3 solo digest. No comenta PRs ni mergea.
 - Permisos mínimos: `contents:read`, `issues:write`, `pull-requests:write`, `security-events:read`.
 - No lee archivos `.env`, claves ni credenciales; si los encuentra, los redacta.
 - Si duda, pregunta al owner; no inventa una regla.

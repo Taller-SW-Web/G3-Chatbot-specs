@@ -32,12 +32,12 @@ Estado verificado el 2026-11-22 contra `development` (backend `1c9c333`, fronten
 | Área | Estado |
 |---|---|
 | CI/CD y seguridad | H5-C1, H5-C2, H5-C4 y H5-C5 hechas; H5-C3 redefinida para desplegar producción desde `development` (frontend #139) |
-| Pruebas de integración | H5-I2 hecha (sin `test.fixme`); H5-I1 (contratos), H5-E1 (evals) y H5-I3 (evidencia) pendientes (backend #174, #175; specs #61) |
-| Pruebas de performance | H5-P1, H5-P2, H5-P3 y H5-P5 hechas; la corrida con RabbitMQ y consumidor está en el run 45887721116 y en `docs/slo-performance.md`; H5-P4 (Lighthouse) pendiente (frontend #144) |
-| API Management | H5-G1 en revisión (ADR-0031, PR #81, issue #59); H5-G2 y H5-G3 (gateway) pendientes (backend #178/#179, frontend #142) |
-| Mecanismo asíncrono | H5-M1, H5-M2 y H5-M3 (código) hechas (#196/#197); falta desplegar el consumidor como servicio Railway y pasar producción a `broker`; H5-M4 (evidencia del flujo asíncrono) pendiente (specs #63) |
+| Pruebas de integración | H5-I2 hecha (sin `test.fixme`); H5-I1 (contratos) y H5-E1 (evals) pendientes (backend #174, #175); H5-I3 tiene documento base en `docs/evidencia-hito-5.md` (se actualiza al cerrar contratos/evals); H5-Q1 cerrada con `docs/casos-prueba-hito-5.md` |
+| Pruebas de performance | H5-P1, H5-P2, H5-P3 y H5-P5 hechas; la corrida con RabbitMQ y consumidor está en el run 45887721116 y en `docs/slo-performance.md`; H5-P4 (Lighthouse) pendiente (frontend #144/#156) |
+| API Management | H5-G1 hecha (ADR-0031, specs #81); H5-G2 y H5-G3 tienen el código mergeado (backend #211/#214, frontend #152), pero faltan el despliegue/verificación en Railway y Vercel (backend #178/#179, frontend #142) |
+| Mecanismo asíncrono | H5-M1, H5-M2 y H5-M3 (código) hechas (#196/#197/#215); `G3-Chatbot-consumer` está desplegado y consumiendo; falta cerrar #177 con evidencia formal; H5-M4 tiene `docs/evidencia-mecanismo-asincrono.md` (specs #63) |
 | Producción | `development` es la rama por defecto y la que despliega Railway/Vercel; `main` es un placeholder de un commit con solo `README.md` desde el 2026-11-26. No se promueve `development` a `main`. H5-X1 se limita a verificar producción (backend #183) |
-| Specs y documentación | S2, L4 y S4 cerrados; M5 (specs #64) pendiente; SPEC-23 sigue 🟡 por bucket y variables (specs #53), con fail-closed ya implementado (backend #198) y sin promoción a `main`; `inicio-sesion` queda 🟡 por el Req. 4 (backend #184) y `consulta-estado-pedido` por la anulación/reembolso (backend #182, frontend #143) |
+| Specs y documentación | S2, L4 y S4 cerrados; M5 (#64) cerrado como supersedido (#96, frontend #162, backend #219); H5-Q1 e H5-I3 (documento base) creados; SPEC-23 sigue 🟡 por bucket y variables (specs #53), con fail-closed ya implementado (backend #198); `inicio-sesion` queda 🟡 por el Req. 4 (backend #184) y `consulta-estado-pedido` por la anulación/reembolso (backend #182, frontend #143) |
 
 ## Alcance
 
@@ -190,11 +190,13 @@ Ruta de cada tarea: delegada al responsable indicado, en su propia rama. Priorid
 
 - 2026-11-26: **H5-G1 redactada (en revisión en PR #81, issue #59).** [ADR-0031](../../docs/arquitectura/adr/ADR-0031-api-gateway-kong-oss.md) documenta Kong OSS en modo DB-less (`kong.yml`) en Railway delante del backend, con enmienda a ADR-0023 (`API_PROXY_TARGET` → Kong), actualización del índice de ADR, conteo en `docs/arquitectura/README.md` y nota en `c4.md`. Queda pendiente de aprobación y merge para cerrar H5-G1 y habilitar formalmente H5-G2 y H5-G3.
 
+- 2026-11-27: **H5-Q1 e H5-I3 (documento base).** Se crean [`docs/casos-prueba-hito-5.md`](../../docs/casos-prueba-hito-5.md) con la matriz de casos por flujo y validación del DoD, y [`docs/evidencia-hito-5.md`](../../docs/evidencia-hito-5.md) con la evidencia de CI, integración, E2E, performance, mecanismo asíncrono y producción. Los contratos (#174), evals (#175) y Lighthouse (#156) quedan enlazados como pendientes; H5-I3 se actualiza cuando se cierren. #64 se cierra como supersedido (#96, frontend #162, backend #219).
+
 ## Siguiente paso
 
 1. H5-M3: desplegar el consumidor como servicio Railway y pasar producción a `broker` cuando `/health` esté sano ([backend#177](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/177)); después H5-M4 ([specs#63](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/63)). H5-P5 ya está cerrada con el run 45887721116 y el SLO actualizado.
 2. H5-G1: ADR de API Management ([specs#59](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/59)); después H5-G2/G3 ([backend#178](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/178), [#179](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/179); [frontend#142](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/142)).
-3. H5-I1 (contratos), H5-E1 (evals), H5-I3 (evidencia) y H5-Q1 (casos de prueba): [backend#174](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/174), [#175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175); [specs#60](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/60), [#61](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/61).
+3. H5-I1 (contratos) y H5-E1 (evals): [backend#174](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/174), [#175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175). La matriz de casos y la evidencia base ya están en `docs/casos-prueba-hito-5.md` y `docs/evidencia-hito-5.md`; se actualizan al cerrar contratos/evals.
 4. H5-P4 (Lighthouse) y H5-F1 (evaluación integral): [frontend#144](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/144), [#145](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/145); H5-C3 (deploy por Actions desde `development`): [frontend#139](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/139).
 5. SPEC-23/L2: bucket y variables ([specs#53](https://github.com/Taller-SW-Web/G3-Chatbot-specs/issues/53)); fail-closed ya implementado en backend #198.
 6. H5-X1: verificar producción sobre `development` ([backend#183](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/183)).

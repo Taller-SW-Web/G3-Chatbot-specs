@@ -12,13 +12,13 @@ Este documento reúne la evidencia verificable del Hito 5. No repite los casos: 
 | CI/CD y seguridad | ✅ | Backend #210 (DAST), #212/#214/#215 (CI); frontend #152; specs #220; runs de `development` |
 | Pruebas de integración y E2E | ✅ | Backend y frontend CI; `tests/integration`, `tests/e2e` |
 | Pruebas de contrato G7/G6/G2/G5 | ✅ | `tests/contract/`, job bloqueante `contract`; backend #226–#229, run 46050322098 |
-| Evals del chatbot | ✅ | Backend #230; primera corrida real 7/9 con fallos documentados en #175, [run 46073219673](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/46073219673); follow-up #258 |
+| Evals del chatbot | ✅ | Backend #230; primera corrida real 7/9 con `gpt-6-luna`, [run 46073219673](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/46073219673); #245 cerrada y los 2 fallos de elección de herramienta quedan en seguimiento (#175, #258) |
 | Performance | ✅ | [`slo-performance.md`](slo-performance.md), run 45887721116 |
 | Lighthouse y accesibilidad | ✅ | Frontend #180, job `lighthouse`, run 46048924659 |
 | API Management | ✅ | ADR-0031; backend #211/#214 y frontend #152; Kong desplegado en Railway (backend #178/#179, frontend #142 cerrados), verificado el 2026-11-27 |
 | Mecanismo asíncrono | ✅ | [`evidencia-mecanismo-asincrono.md`](evidencia-mecanismo-asincrono.md); #215 mergeado |
 | Casos de prueba y DoD | ✅ | [`casos-prueba-hito-5.md`](casos-prueba-hito-5.md) |
-| Evaluación integral frontend (H5-F1) | 🟡 | Informe 8/8 en [evaluacion-integral-frontend.md](../../G3-Chatbot-frontend/docs/evaluacion-integral-frontend.md) y frontend PR #198; P1 abiertos #182/#184/#186/#188; ver §4.1 |
+| Evaluación integral del frontend (H5-F1) | 🟡 | [Informe](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/blob/development/docs/evaluacion-integral-frontend.md); 8/8 en frontend PR #198 (abierto); P1 abiertos frontend #182/#184/#186/#188/#189/#190; ver §4.1 |
 | Producción | ✅ | Backend `/health` 200; backend, consumer y gateway en Railway con deploy `SUCCESS` (verificado el 2026-11-27); H5-X1 cerrado (backend #183) |
 
 ## 2. CI/CD y seguridad
@@ -55,7 +55,7 @@ Los E2E corren con los módulos externos en `fake` (ADR-0022) y sin LLM real; lo
 
 ### 4.1 Evaluación integral del frontend (H5-F1)
 
-El informe [`evaluacion-integral-frontend.md`](../../G3-Chatbot-frontend/docs/evaluacion-integral-frontend.md) consolida la revisión 8/8 módulos en el PR frontend [#198](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/pull/198) (pendiente de merge al corte). Los hallazgos están distribuidos por módulo en frontend #182–#191; los P1 abiertos son #182 (auth), #184 (carrito), #186 (checkout) y #188 (postventa). H5-F1 queda 🟡 hasta corregir esos P1; no se presenta como cierre.
+El informe [`evaluacion-integral-frontend.md`](../../G3-Chatbot-frontend/docs/evaluacion-integral-frontend.md) consolida la revisión 8/8 módulos en el PR frontend [#198](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/pull/198) (pendiente de merge al corte). Los hallazgos están distribuidos por módulo en frontend #182–#191; los P1 abiertos son #182 (auth), #184 (carrito), #186 (checkout), #188 (postventa), #189 (chat) y #190 (modales compartidos). H5-F1 queda 🟡 hasta corregir esos P1; no se presenta como cierre.
 
 ## 5. Performance
 
@@ -64,6 +64,8 @@ El informe [`evaluacion-integral-frontend.md`](../../G3-Chatbot-frontend/docs/ev
 | SLO y resultados de k6 | [`slo-performance.md`](slo-performance.md) |
 | Corrida con RabbitMQ y consumidor (H5-P5) | [run 45887721116](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/45887721116) |
 | Resultado | 1533 eventos consumidos, 0 reintentos/DLQ/fallos; checkout 12,77 compras/s |
+
+La medición del checkout en paralelo con más clientes del fake de Seguridad (H5-P3) sigue abierta en [backend #190](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/190), asignada a Lume03; la corrida registrada mide el checkout en serie.
 
 Lighthouse CI (H5-P4) corre en el gate `check` con el preset móvil y presupuestos bloqueantes de LCP, CLS, peso JS/total y accesibilidad, más TBT como proxy de INP. La excepción de CI 4800/350 está aprobada y documentada en [`rendimiento-lighthouse.md`](../../G3-Chatbot-frontend/docs/rendimiento-lighthouse.md). Evidencia: frontend #180, [run 46048924659](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/actions/runs/46048924659), job `Lighthouse CI`; el reporte se publica como artefacto `lighthouse-reports`.
 
@@ -105,7 +107,8 @@ Ambos son de elección de herramienta, no de datos inventados. El default incomp
 
 ## 9. Limitaciones conocidas
 
-- **Evals**: la corrida real da 7/9; los 2 fallos son de elección de herramienta (backend #175). El workflow debe correr con `llm_model=gpt-6-luna` hasta cerrar backend #258.
+- **H5-C3** (deploy de producción por Actions): abandonada por decisión del owner (Ankarmin, 2026-11-27); quedó sin implementar: frontend #139 se cerró como `NOT_PLANNED` al moverse a specs y specs #50 está cerrada. Hoy producción se despliega desde `development` por Vercel y Railway.
+- **Evals**: la corrida real da 7/9; los 2 fallos son de elección de herramienta y quedan en seguimiento (backend #175 y #258). El workflow debe correr con `llm_model=gpt-6-luna` hasta cerrar backend #258.
 - **Lighthouse** ya está en el gate `check` (H5-P4 cerrado, frontend #180); la deuda de LCP/TBT en CI sigue en frontend #164.
 - **Adjuntos** en producción usan almacenamiento local y volumen efímero; el cierre operativo y el checklist están en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27).
 - **SMTP** no está configurado en producción; los correos usan `FakeEmailSender`.

@@ -36,14 +36,19 @@ Incluye:
 ## Requirements
 
 ### Requirement: Tarjetas en carrusel
-El sistema DEBE (SHALL) representar cada lista de productos como un bloque `CARRUSEL_PRODUCTOS` con tarjetas que contienen los datos de `ProductoResumen` con los nombres reales del contrato: `product_id`, `name`, `brand`, `image`, `price` (`PriceTag`), `short_description` (máx. 90 caracteres, a partir de `description`, omitida si es nula), `has_variants`, `availability` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO`, tal como las entrega Productos, o vacía si no se obtuvo), `single_sku` (si no tiene variantes) y `variants[]` (`sku`, `talla`, `color`). La disponibilidad de un producto sin variantes es la de su `single_sku`; nunca se supone `DISPONIBLE` por defecto. Si no hay precio vigente para ningún SKU del producto, `price` queda vacío: la tarjeta NO DEBE (SHALL NOT) mostrar un importe de `S/ 0.00`.
+El sistema DEBE (SHALL) representar cada lista de productos como un bloque `CARRUSEL_PRODUCTOS` con tarjetas que contienen los datos de `ProductoResumen` con los nombres reales del contrato: `product_id`, `name`, `brand`, `image`, `price` (`PriceTag`), `short_description` (máx. 90 caracteres, a partir de `description`, omitida si es nula), `has_variants`, `availability` (`DISPONIBLE`, `STOCK_BAJO`, `AGOTADO` o `INDETERMINADO`, tal como las entrega Productos, o vacía si no se obtuvo), `single_sku` (si no tiene variantes) y `variants[]` (`sku`, `talla`, `color`). La disponibilidad de un producto sin variantes es la de su `single_sku`; nunca se supone `DISPONIBLE` por defecto. Si no hay precio vigente para ningún SKU del producto, `price` queda vacío: la tarjeta NO DEBE (SHALL NOT) mostrar un importe de `S/ 0.00`. El bloque incluye además `datos.total` (entero; total de coincidencias reportado por Productos, o el total parcial si `partial=true`) y `datos.siguiente` (payload de `BUSCAR_PAGINA` con página y filtros normalizados, o `null` si no hay más páginas); el frontend no calcula el total ni reconstruye los filtros.
 
-*Trazabilidad: SPEC-09 · Requisito 1.*
+*Trazabilidad: SPEC-09 · Requisito 1; SPEC-06 · Requisito 4.*
 
 #### Scenario: Carrusel estándar
 - **DADO** una búsqueda con 7 resultados
 - **CUANDO** se renderiza el bloque
 - **ENTONCES** se muestran 7 tarjetas desplazables horizontalmente, cada una con los datos anteriores y un `alt` descriptivo en la imagen
+
+#### Scenario: Carrusel paginado
+- **DADO** un bloque con `total: 34`, 10 productos y `siguiente` con `pagina: 2` y los filtros normalizados
+- **CUANDO** se renderiza
+- **ENTONCES** se muestra "Mostrando 10 de 34" y "Ver más" envía `siguiente` a `BUSCAR_PAGINA`; si `siguiente` es `null`, no se muestra "Ver más"
 
 #### Scenario: Imagen no disponible
 - **DADO** un producto cuya imagen no carga

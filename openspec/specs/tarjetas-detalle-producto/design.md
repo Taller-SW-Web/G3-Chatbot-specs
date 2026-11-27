@@ -30,7 +30,7 @@
 | Herramienta `ver_detalle_producto` | Esquema `{productoRef? | product_id?}`. |
 | `CatalogoService.detalle()` | Une el producto, sus variantes, precios por SKU y la disponibilidad por SKU en `ProductoDetalle`. |
 | `VarianteResolver` | Mapea atributos en texto ("42", "negra") a los `valor_id` del producto y devuelve el SKU, las faltantes o las alternativas. |
-| DTOs `ProductoResumen`, `ProductoDetalle`, `VarianteDTO` | Contrato del bloque hacia el frontend con nombres reales de Productos. |
+| DTOs `ProductoResumen`, `ProductoDetalle`, `VarianteDTO` | Contrato del bloque hacia el frontend con nombres reales de Productos. `CARRUSEL_PRODUCTOS.datos` añade `total` y `siguiente` (página + filtros normalizados) para la paginación. |
 | `GET /api/v1/catalogo/productos/{id}` | Acceso directo desde la UI. |
 
 ## Desglose para issues

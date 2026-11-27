@@ -27,6 +27,7 @@ Incluye:
 - Refinamiento conversacional ("más baratas", "solo Adidas", "en rojo").
 - Chips de filtros aplicados, editables desde la UI.
 - Manejo de búsquedas sin resultados.
+- Traducción de alias de vocabulario de búsqueda (`correr`/`trotar` → `running`) antes de consultar Productos, limitada a la tabla versionada; no es un sinónimo de categoría.
 
 ### Fuera de alcance
 
@@ -99,7 +100,12 @@ El sistema DEBE (SHALL) mapear los términos del cliente a categorías y marcas 
 #### Scenario: Sinónimo peruano
 - **DADO** el término "chimpunes"
 - **CUANDO** se normaliza
-- **ENTONCES** se mapea a la categoría "Calzado de fútbol" mediante el diccionario de sinónimos (`chimpunes`, `tachos` → fútbol; `polo` → camiseta; `buzo` → conjunto deportivo; `zapatillas de fulbito` → calzado de fútbol sala)
+- **ENTONCES** se mapea a la categoría canónica más cercana de G6 (`Calzado` > `Fútbol` para `chimpunes`, `tachos` y `zapatillas de fulbito`; `Ropa` para `polo` y `buzo`) mediante `DEFAULT_SYNONYMS`; `Calzado de fútbol sala`, `camiseta` y `conjunto deportivo` no existen hoy en la taxonomía de G6 y no se inventan: cuando G6 publique esas categorías, se actualiza la tabla.
+
+#### Scenario: Alias de vocabulario de búsqueda
+- **DADO** el mensaje "zapatillas para correr"
+- **CUANDO** se normaliza
+- **ENTONCES** `correr`/`trotar` se traducen a `running` antes de enviar `q` a Productos; solo se usan los alias de `SEARCH_ALIASES` (`correr`, `trotar` → `running`) y un término fuera de la tabla se deja tal cual, sin inventar traducciones. No cambia la categoría ni sustituye a `DEFAULT_SYNONYMS`.
 
 #### Scenario: Marca mal escrita
 - **DADO** "naik"
@@ -109,7 +115,7 @@ El sistema DEBE (SHALL) mapear los términos del cliente a categorías y marcas 
 #### Scenario: Marca que no existe en el catálogo
 - **DADO** una marca que no vende la tienda
 - **CUANDO** se busca
-- **ENTONCES** se informa "No trabajamos la marca X" y se ofrecen las marcas disponibles de esa categoría (máx. 6 chips)
+- **ENTONCES** se informa "No trabajamos la marca X" y se ofrecen las marcas disponibles globales (máx. 6 chips), porque `GET /marcas` de G6 aún no expone la relación marca↔categoría; cuando G6 la publique, se filtran por la categoría consultada.
 
 ### Requirement: Refinamiento conversacional
 El sistema DEBE (SHALL) mantener los filtros vigentes en `conversation.context.filtrosVigentes` y aplicar cambios incrementales.
@@ -134,17 +140,28 @@ El sistema DEBE (SHALL) mantener los filtros vigentes en `conversation.context.f
 ### Requirement: Paginación y resultados vacíos
 El sistema DEBE (SHALL) mostrar hasta 10 productos por carrusel, permitir cargar más y manejar la ausencia de resultados.
 
-*Trazabilidad: SPEC-06 · Requisito 4.*
+El bloque `CARRUSEL_PRODUCTOS` DEBE incluir en `datos`, además de `productos` y `partial`:
+- `total` (entero): total de coincidencias reportado por Productos para los filtros aplicados. Si la respuesta es parcial, refleja solo lo consultado y el bloque se marca `partial: true`; no se promete un total global.
+- `siguiente` (objeto o `null`): payload exacto para la acción `BUSCAR_PAGINA` con `pagina`, `q`, `categoriaId`, `marcaId`, `precioMin`, `precioMax`, `orden` y `soloOfertas`; `null` si no hay más páginas.
+
+El frontend NO DEBE calcular el total ni reconstruir filtros: muestra "Mostrando {productos.length} de {total}" y "Ver más" solo cuando `siguiente` no es `null`, y envía `siguiente` tal cual a `BUSCAR_PAGINA`.
+
+*Trazabilidad: SPEC-06 · Requisito 4; SPEC-09 · Requisito 1.*
 
 #### Scenario: Más de 10 resultados
 - **DADO** 34 resultados
 - **CUANDO** se muestra el carrusel
-- **ENTONCES** aparecen 10 tarjetas con el texto "Mostrando 10 de 34" y el botón "Ver más", que trae la página siguiente
+- **ENTONCES** aparecen 10 tarjetas con el texto "Mostrando 10 de 34", `datos.total=34` y `datos.siguiente` con la página 2 y los filtros normalizados; el botón "Ver más" envía `siguiente` a `BUSCAR_PAGINA` y trae la página siguiente
 
 #### Scenario: Sin resultados
 - **DADO** filtros sin coincidencias
 - **CUANDO** se busca
-- **ENTONCES** se responde "No encontré productos con esos filtros" con sugerencias para relajar el filtro más restrictivo (por ejemplo, "Quitar límite de precio" o "Ver otras marcas")
+- **ENTONCES** se responde "No encontré productos con esos filtros" y el resultado incluye un bloque `ACCIONES_RAPIDAS` con hasta 3 sugerencias para relajar el filtro más restrictivo (por ejemplo, `BUSCAR_PRODUCTOS` sin `precioMax` o sin `marca`); las acciones usan filtros normalizados y no inventan opciones
+
+#### Scenario: Resultado parcial
+- **DADO** que Productos no responde para una parte de los datos
+- **CUANDO** se arma el bloque
+- **ENTONCES** `partial=true`, `total` refleja solo lo consultado, se muestra el aviso de resultado parcial y no se promete un total global
 
 ### Requirement: Tolerancia a fallos de Productos
 El sistema DEBE (SHALL) informar cuando el catálogo no está disponible, sin mostrar datos obsoletos como si estuvieran vigentes.
@@ -166,7 +183,7 @@ El sistema DEBE (SHALL) informar cuando el catálogo no está disponible, sin mo
 - **Rendimiento:** búsqueda (excluido el LLM) en p95 ≤ 800 ms. Caché de categorías y marcas de 10 min. Los resultados de búsqueda no se cachean más de 60 s y los precios nunca más de 60 s.
 - **Orden:** `relevancia` es el valor por defecto; `nombre_asc`/`nombre_desc` se delegan a Productos (`NOMBRE_ASC`/`NOMBRE_DESC`). Mientras Productos no exponga orden por precio (A16), `precio_asc`/`precio_desc` se aplican en el BFF sobre la página ya enriquecida con Pricing; el orden es de la página, no global, y la UI no debe prometer lo contrario. Supuesto explícito: cuando Productos publique `PRECIO_ASC`/`PRECIO_DESC`, el BFF delega y desaparece la limitación.
 - **Consistencia:** el precio mostrado es el de Pricing para el canal `CHATBOT`; si Productos no devuelve precio para un SKU, el producto se muestra como "Precio no disponible" y no se puede agregar.
-- **Escalabilidad:** el diccionario de sinónimos vive versionado en `ProductNormalizer.DEFAULT_SYNONYMS` (código del módulo `mod-catalog`); las categorías y marcas se cargan de los catálogos de Productos y se cachean.
+- **Escalabilidad:** el diccionario de sinónimos vive versionado en `ProductNormalizer.DEFAULT_SYNONYMS` y la tabla de alias en `ProductNormalizer.SEARCH_ALIASES` (código del módulo `mod-catalog`); las categorías y marcas se cargan de los catálogos de Productos y se cachean. La taxonomía canónica es la de G6 (`Calzado` > `Fútbol`/`Running`, `Ropa`, `Equipamiento y Accesorios`); `GET /marcas` es global hasta que G6 publique la relación marca↔categoría.
 
 ## Criterio de completitud
 
@@ -179,3 +196,4 @@ La capacidad se considera correctamente implementada cuando:
 ## Decisiones
 
 - **D7 — Orden de búsqueda (auditoría §4).** `orden` deja de ser un parámetro ignorado y pasa a un conjunto cerrado: `relevancia | precio_asc | precio_desc | nombre_asc | nombre_desc`, con `relevancia` por defecto y `400 VALIDACION` para valores fuera del conjunto. **Aprobada:** 2026-11-21. **Estado:** Implementado (2026-11-21); código mergeado en backend #141 (`b75fbea6`) y frontend #109 (`7432d463`). **Auditoría:** [auditoría de specs 2026-11](../../../docs/auditoria-specs-2026-11.md).
+- **D8 — Alias de búsqueda, taxonomía G6 y paginación (2026-11-27).** `SEARCH_ALIASES` solo traduce `correr`/`trotar` → `running`; `CARRUSEL_PRODUCTOS.datos` expone `total` y `siguiente`; la taxonomía canónica es la de G6 (`Calzado` > `Fútbol`/`Running`, `Ropa`, `Equipamiento y Accesorios`) y los chips de marca son globales hasta que G6 publique la relación marca↔categoría. **Aprobada:** 2026-11-27. **Issues:** #122, #125, #126.

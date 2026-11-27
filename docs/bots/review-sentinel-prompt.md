@@ -45,5 +45,5 @@ Lee `AGENTS.md`, `docs/flujo-de-trabajo.md`, `docs/revision-automatica.md`, `doc
 
 - Comentario en el PR.
 - Issues en el repo correspondiente.
-- Digest semanal por colaborador en Slack.
+- Digest semanal por colaborador en el chat del bot.
 - Resumen de reincidencias y issues sin cerrar.

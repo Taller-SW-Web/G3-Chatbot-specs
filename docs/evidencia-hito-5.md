@@ -12,7 +12,7 @@ Este documento reúne la evidencia verificable del Hito 5. No repite los casos: 
 | CI/CD y seguridad | ✅ | Backend #210 (DAST), #212/#214/#215 (CI); frontend #152; specs #220; runs de `development` |
 | Pruebas de integración y E2E | ✅ | Backend y frontend CI; `tests/integration`, `tests/e2e` |
 | Pruebas de contrato G7/G6/G2/G5 | ✅ | `tests/contract/`, job bloqueante `contract`; backend #226–#229, run 46050322098 |
-| Evals del chatbot | 🟡 | Suite y workflow mergeados (backend #230); falta la corrida real con `LLM_API_KEY` (#175) |
+| Evals del chatbot | ✅ | Backend #230; primera corrida real 7/9 con fallos documentados en #175, [run 46073219673](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/46073219673); follow-up #258 |
 | Performance | ✅ | [`slo-performance.md`](slo-performance.md), run 45887721116 |
 | Lighthouse y accesibilidad | ✅ | Frontend #180, job `lighthouse`, run 46048924659 |
 | API Management | 🟡 | ADR-0031 y código #211/#214 mergeados; despliegue #178/#179 |
@@ -75,11 +75,19 @@ La evidencia completa está en [`evidencia-mecanismo-asincrono.md`](evidencia-me
 
 Contratos G7/G6/G2/G5: cerrados con backend #226–#229. `tests/contract/` fija los OpenAPI publicados con hash en `contracts.lock.json`, los clientes se prueban con `respx` y el job `contract` es bloqueante dentro de `test`; el drift semanal vive en `contract-drift.yml`. Evidencia: [run 46050322098](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/46050322098), job `Contract tests`.
 
-| Pendiente | Issue | Qué falta |
-|---|---|---|
-| Evals del chatbot | [backend #175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175) | Configurar `LLM_API_KEY` en el environment `evals` y adjuntar la primera corrida real |
+Evals: la suite y el workflow están en `development` (backend #230): 9 casos, reporte `evals-report.json`, corrida manual o nocturna. `LLM_API_KEY` está configurada en el environment `evals` (backend #245).
 
-La suite y el workflow de evals están en `development` (backend #230): 9 casos, reporte `evals-report.json`, corrida manual o nocturna. Sin la clave, la corrida manual falla en cerrado y la programada se omite con aviso explícito; por eso no se presenta como evidencia cerrada todavía.
+| Corrida | Modelo | Resultado |
+|---|---|---|
+| [run 46073219673](https://github.com/Taller-SW-Web/G3-Chatbot-backend/actions/runs/46073219673) (commit `11a25be`) | `gpt-6-luna` (el de producción) | 7/9 aprobados. Ninguna respuesta inventa precios, stock ni datos |
+| run 46072770923 | `gpt-4o-mini` (default del workflow) | Descartada: todas las llamadas al LLM fallaron y el chat cayó en modo degradado |
+
+Fallos de la corrida válida, documentados caso por caso en [backend #175](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/175):
+
+1. `test_search_reference_conversation`: el modelo eligió `recomendar_productos` (con `talla: 42`) en vez de `buscar_productos`.
+2. `test_prices_are_only_quoted_from_tool_data`: buscó el producto pero no llamó a `ver_detalle_producto`; no citó ningún precio.
+
+Ambos son de elección de herramienta, no de datos inventados. El default incompatible del workflow y los casos degradados que pasan como aprobados se siguen en [backend #258](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/258).
 
 ## 8. Producción
 
@@ -92,7 +100,7 @@ La suite y el workflow de evals están en `development` (backend #230): 9 casos,
 
 ## 9. Limitaciones conocidas
 
-- **Evals** están implementadas y en CI, pero sin corrida real hasta configurar `LLM_API_KEY` en backend #175.
+- **Evals**: la corrida real da 7/9; los 2 fallos son de elección de herramienta (backend #175). El workflow debe correr con `llm_model=gpt-6-luna` hasta cerrar backend #258.
 - **Lighthouse** ya está en el gate `check` (H5-P4 cerrado, frontend #180); la deuda de LCP/TBT en CI sigue en frontend #164.
 - **Gateway** no está desplegado en Railway; H5-G2/G3 no están operativos.
 - **Adjuntos** en producción usan almacenamiento local y volumen efímero; el cierre operativo y el checklist están en el [runbook §13](operacion/adjuntos-supabase.md#13-estado-de-cierre-2026-11-27).

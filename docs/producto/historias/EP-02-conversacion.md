@@ -464,14 +464,14 @@
 - `SPEC-24 · Req. 2 · Scenario: El cliente lo descarta` — si sale sin responder, no se envía nada y el bloque vuelve a aparecer al reabrir el pedido.
 - `SPEC-24 · Req. 2 · Scenario: Encuesta ya registrada para ese pedido` — un `409 CSAT_ALREADY_SUBMITTED` muestra "Ya calificaste este pedido", sin error, y marca `order_ref.csat_sent`.
 - `SPEC-24 · Req. 2 · Scenario: Ventas no disponible al calificar` — se informa que no se pudo enviar, el bloque se conserva para reintentar y el detalle sigue usable.
-- `SPEC-24 · Req. 2 · Scenario: El pedido no es del cliente` — un `403` de Ventas muestra el error genérico "No pudimos enviar tu calificación, intenta de nuevo" y conserva el bloque.
+- `SPEC-24 · Req. 2 · Scenario: El pedido no es del cliente` — el BFF responde `404 RECURSO_NO_ENCONTRADO` (aunque Ventas devuelva `403`), el cliente ve el error genérico "No pudimos enviar tu calificación, intenta de nuevo" y el bloque se conserva.
 - `SPEC-24 · Req. 2 · Scenario: Pedido no entregado según Ventas` — un `422 ORDER_NOT_DELIVERED` muestra "Solo puedes calificar pedidos entregados", sin tratarlo como error de red, y refresca el detalle.
 - `SPEC-24 · Req. 2 · Scenario: Pedido aún no entregado` — en pedidos `CREADO`, `PAGADO`, `EN_PREPARACION` o `DESPACHADO` el bloque no aparece.
 - `SPEC-24 · Req. 2 · Scenario: La lista de pedidos no muestra el bloque` — las caritas solo están al pie del detalle, no en el historial de pedidos.
 
 **Prioridad:** Should: conecta el canal con la encuesta CSAT de Ventas (F5), pero no bloquea la compra ni el seguimiento.
 
-**Notas:** los criterios siguen el requisito "Calificación de la entrega con caritas (CSAT, vía Ventas)" (bloque al pie de `OrderDetail` con caritas 5/3/1), que reemplazó al Requisito 2 anterior al archivar el cambio `ajustar-calificacion-compra-y-entrega`. Se llama con el token del cliente (rol `CLIENTE`, sin scope) y un `403` de Ventas indica que el pedido no es del cliente. Depende del detalle del pedido de SPEC-17 (EP-07).
+**Notas:** los criterios siguen el requisito "Calificación de la entrega con caritas (CSAT, vía Ventas)" (bloque al pie de `OrderDetail` con caritas 5/3/1), que reemplazó al Requisito 2 anterior al archivar el cambio `ajustar-calificacion-compra-y-entrega`. Se llama con el token del cliente (rol `CLIENTE`, sin scope) y un `403` de Ventas se normaliza a `404 RECURSO_NO_ENCONTRADO` en el BFF, porque el pedido no es del cliente; se responde igual que si no existiera. Depende del detalle del pedido de SPEC-17 (EP-07).
 
 ---
 

@@ -149,6 +149,8 @@ El contrato y la implementación del endpoint pertenecen a `mod-postventa`. En e
 
 El frontend NO DEBE (SHALL NOT) enviar `clienteId`: el backend lo arma con el `sub` del token del cliente. La interfaz DEBE (SHALL) mostrar `409 CSAT_ALREADY_SUBMITTED` como "Ya calificaste este pedido" (estado informativo, no error) y `422 ORDER_NOT_DELIVERED` como "Solo puedes calificar pedidos entregados".
 
+Para un pedido ajeno o inexistente, el BFF DEBE (SHALL) responder `404 RECURSO_NO_ENCONTRADO` aunque Ventas devuelva `403`, para no revelar si el pedido existe (mismo patrón que `SPEC-17` · Requisito 1).
+
 *Trazabilidad: SPEC-24 · Requisito 2. Ventas F5 — CSAT (`docs/contratos-integracion.md`); solo acepta pedidos `ENTREGADO`. Alineado con el contrato real de G5 (2026-11).*
 
 #### Scenario: Calificación enviada
@@ -182,9 +184,9 @@ El frontend NO DEBE (SHALL NOT) enviar `clienteId`: el backend lo arma con el `s
 - **ENTONCES** se informa "No pudimos enviar tu calificación, intenta de nuevo más tarde" y el bloque se conserva para reintentar; el detalle del pedido sigue usable
 
 #### Scenario: El pedido no es del cliente
-- **DADO** que Ventas responde `403` porque el `sub` del token no es el dueño del pedido
+- **DADO** que el pedido no pertenece al cliente (Ventas responde `403`) o no existe
 - **CUANDO** el cliente envía su calificación
-- **ENTONCES** se muestra el error genérico "No pudimos enviar tu calificación, intenta de nuevo" y el bloque se conserva
+- **ENTONCES** el BFF responde `404 RECURSO_NO_ENCONTRADO` sin revelar si el pedido existe, la UI muestra el error genérico "No pudimos enviar tu calificación, intenta de nuevo" y conserva el bloque
 
 #### Scenario: Pedido no entregado según Ventas
 - **DADO** que Ventas responde `422 ORDER_NOT_DELIVERED` al enviar la calificación
@@ -244,7 +246,7 @@ Los endpoints son propios del chatbot y viven en los módulos que indica `design
 |---|---|---|---|---|
 | POST | `/mensajes/{mensajeId}/reaccion` | Opcional (`CLIENTE` o `chat_sid`) | `{ "reaccion": "POSITIVE" \| "NEGATIVE" }` → `200 { "mensajeId", "reaccion" }` (upsert) | `404 RECURSO_NO_ENCONTRADO`, `429 DEMASIADAS_SOLICITUDES` (la UI lo ignora en silencio) |
 | POST | `/pedidos/{pedidoId}/valoracion-compra` | `CLIENTE` | `{ "estrellas": 1..5, "comentario?": "..." }` → `201 { "valoracionId", "estrellas" }` | `400 VALIDACION`, `404 RECURSO_NO_ENCONTRADO`, `409 VALORACION_YA_REGISTRADA` |
-| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | `{ "puntuacion": 5 \| 3 \| 1, "comentario?": "..." }` (sin `clienteId`; lo arma el backend con el `sub`) → `201` (proxy a Ventas) | `400 VALIDACION`, `403`, `409 CSAT_ALREADY_SUBMITTED`, `422 ORDER_NOT_DELIVERED`, `503` |
+| POST | `/pedidos/{pedidoId}/csat` | `CLIENTE` | `{ "puntuacion": 5 \| 3 \| 1, "comentario?": "..." }` (sin `clienteId`; lo arma el backend con el `sub`) → `201` (proxy a Ventas) | `400 VALIDACION`, `404 RECURSO_NO_ENCONTRADO`, `409 CSAT_ALREADY_SUBMITTED`, `422 ORDER_NOT_DELIVERED`, `503` |
 | POST | `/sugerencias` | `CLIENTE` | `multipart/form-data`: `tipo` (`SUGERENCIA`/`BUG`), `titulo`, `descripcion`, `correoContacto`, `captura?` (JPG/PNG ≤ 5 MB); `Idempotency-Key` obligatoria → `201 { "sugerenciaId", "codigoSeguimiento" }` | `400 VALIDACION`, `400 ADJUNTO_INVALIDO`, `429 DEMASIADAS_SOLICITUDES` |
 
 **Supuesto explícito:** la captura de una sugerencia viaja en la misma llamada `multipart/form-data` para no añadir un endpoint de carga adicional. Si el frontend implementa una carga previa, el contrato pasa a `capturaId` y se actualiza en el mismo PR. La captura usa el puerto `AttachmentStorage` de SPEC-23, pero no la tabla `attachment`; se guarda en `feedback_suggestion.screenshot_key`.
@@ -261,7 +263,7 @@ Los endpoints son propios del chatbot y viven en los módulos que indica `design
 
 1. ✅ **¿La calificación requiere un scope nuevo de Seguridad?** **Resuelta por Ventas (12/10/2026, acuerdo A15 en `docs/contratos-integracion.md`):** no requiere scope. `POST /api/v2/csat` se llama con el token del cliente (rol `CLIENTE`); Ventas valida el `sub` del JWT contra el dueño del `pedidoId` y responde `403` si no coincide. El scope `postventa:csat:escribir` no existe y no se solicita.
 
-2. 🟡 **¿`403` o `404` cuando un cliente intenta calificar un pedido ajeno?** La semántica del error del BFF para ese caso sigue en la issue #84 y la resuelve Ankarmin. Esta alineación de dueño canónico no la decide ni cambia los escenarios vigentes.
+2. ✅ **¿`403` o `404` cuando un cliente intenta calificar un pedido ajeno?** **Resuelta (issue #84):** el BFF responde `404 RECURSO_NO_ENCONTRADO`, no `403`, para no revelar si el pedido existe. Ventas sigue devolviendo `403` cuando el `sub` no es el dueño, pero el chatbot lo normaliza a `404`, igual que hace `GET /pedidos/{pedidoId}` (`SPEC-17` · Requisito 1).
 
 ✅ **Resueltas con el equipo (02/10/2026):**
 - INKA es la tienda y Botleta es el asistente: no hay conflicto de marca (ver "Contexto").

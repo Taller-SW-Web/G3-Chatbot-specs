@@ -102,7 +102,7 @@ Reglas comunes a las tres:
 | Éxito | Ventas responde `201`; el bloque se reemplaza por "¡Gracias por tu calificación!" | "Calificación enviada" |
 | Ya enviado | Ventas responde `409 CSAT_ALREADY_SUBMITTED`; el bloque se reemplaza por "Ya calificaste este pedido", sin presentarlo como error, y se marca `order_ref.csat_sent` | "Encuesta ya registrada para ese pedido" |
 | Error: Ventas no responde | "No pudimos enviar tu calificación, intenta de nuevo más tarde". El bloque se conserva para reintentar y el detalle del pedido sigue usable | "Ventas no disponible al calificar" |
-| Error: pedido ajeno (`403`) | "No pudimos enviar tu calificación, intenta de nuevo". El bloque se conserva | "El pedido no es del cliente" |
+| Error: pedido ajeno (`404 RECURSO_NO_ENCONTRADO`) | "No pudimos enviar tu calificación, intenta de nuevo". El BFF responde `404` aunque Ventas devuelva `403`, para no revelar si el pedido existe; el cliente ve el error genérico y el bloque se conserva | "El pedido no es del cliente" |
 | Error: no entregado según Ventas (`422 ORDER_NOT_DELIVERED`) | Muestra "Solo puedes calificar pedidos entregados" en el bloque, sin tratarlo como error de red, y refresca el detalle con el estado vigente | "Pedido no entregado según Ventas" |
 | Límite de uso | Pendiente hasta el Hito 5-6: no hay un límite de frecuencia fijado para las calificaciones | `design.md` |
 

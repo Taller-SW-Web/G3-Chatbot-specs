@@ -1,6 +1,6 @@
 ## Ownership del PR
 
-- [ ] Este PR lo abre `@MathiasTL`, `@Ankarmin` o `@nikaaat`.
+- [ ] Este PR lo abre `@MathiasTL` o `@Ankarmin`.
 - [ ] Si lo abre cualquier otra persona, ciérralo y abre una issue con la plantilla **Spec change request**, asignada a `@Ankarmin` y `@MathiasTL`.
 
 ## Cambio

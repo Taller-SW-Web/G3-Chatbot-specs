@@ -65,7 +65,7 @@ Cada escenario tocado tiene al menos una prueba automatizada que lo referencia p
 
 Un PR de código toca un solo `mod-*`. Si toca `shared/`, lleva la etiqueta `cross-modulo` y revisión del
 owner de plataforma. El cambio de spec viaja en el mismo cambio coordinado: PR de código + PR de specs
-enlazados. Solo `@MathiasTL`, `@Ankarmin` y `@nikaaat` abren PRs en `G3-Chatbot-specs`; el resto abre
+enlazados. Solo `@MathiasTL` y `@Ankarmin` abren PRs en `G3-Chatbot-specs`; el resto abre
 una issue asignada a `@Ankarmin` y `@MathiasTL` y espera a que un owner la convierta en PR.
 
 ### Paso 6 — Revisión de coherencia
@@ -108,7 +108,7 @@ módulos, **no implementes**. Abre una issue en `G3-Chatbot-specs` asignada a `@
 documenta: spec y requisito afectado, contradicción exacta, impacto y opciones. La issue original no se
 cierra hasta que la decisión quede registrada en la spec.
 
-**PRs en specs.** Solo `@MathiasTL`, `@Ankarmin` y `@nikaaat` abren PRs en `G3-Chatbot-specs`. El resto
+**PRs en specs.** Solo `@MathiasTL` y `@Ankarmin` abren PRs en `G3-Chatbot-specs`. El resto
 del equipo no crea ramas ni PRs: usa la plantilla de issue “Spec change request”, asignada a
 `@Ankarmin` y `@MathiasTL`. Un workflow de guardia cierra los PRs de autores no habilitados.
 
@@ -169,10 +169,9 @@ Mathias y David tienen bypass `pull_request` para mergear sus propios PRs sin ot
 de CI siguen obligatorios para todos (`enforce_admins=true`, `strict=true`). El ownership de módulos sigue
 siendo del equipo `@Taller-SW-Web/chatbot`.
 
-En `G3-Chatbot-specs` rige el mismo ruleset y CODEOWNERS, pero solo `@MathiasTL`, `@Ankarmin` y
-`@nikaaat` pueden abrir PRs; Nikol no tiene bypass y necesita la aprobación de un code owner. El resto
-del equipo reporta con una issue asignada a `@Ankarmin` y `@MathiasTL`. Un workflow de guardia cierra los
-PRs de autores no habilitados.
+En `G3-Chatbot-specs` rige el mismo ruleset y CODEOWNERS, pero solo `@MathiasTL` y `@Ankarmin` pueden
+abrir PRs; ambos tienen bypass `pull_request`. El resto del equipo reporta con una issue asignada a
+`@Ankarmin` y `@MathiasTL`. Un workflow de guardia cierra los PRs de autores no habilitados.
 
 ## 5. Definition of Done
 

@@ -299,7 +299,21 @@ No es un estado aceptable en producción (ADR-0028).
 - [ ] Decisión de migración o pérdida registrada (§9).
 - [ ] Rollback a `local` probado en staging, no en producción.
 
-## 13. Referencias
+## 13. Estado de cierre (2026-11-27)
+
+El código, el contrato y este runbook están completos en `development`. La configuración y la verificación
+real no se pudieron ejecutar desde `G3-Chatbot-specs`:
+
+- El MCP de Supabase disponible solo ve el proyecto `portal-personal`, no `olzsuqpowkndoeljpiax`.
+- La cuenta de Railway disponible no lista el proyecto G3 ni el servicio `G3-Chatbot-consumer`.
+- Por tanto, el bucket privado, las variables `SUPABASE_*`/`ATTACHMENT_*`, la migración vs pérdida y la
+  política de backup siguen siendo responsabilidad del owner de infraestructura.
+
+Para cerrar SPEC-23/L2, el owner debe ejecutar el checklist de §12 y adjuntar la evidencia (carga `201`,
+lectura por URL firmada, reinicio y lectura posterior, bucket no público). Este issue de specs queda como
+tracking documental; la operación se sigue en el runbook y en infraestructura.
+
+## 14. Referencias
 
 - [ADR-0028](../arquitectura/adr/ADR-0028-adjuntos-almacenamiento-externo-privado.md) — decisión de
   almacenamiento externo privado.

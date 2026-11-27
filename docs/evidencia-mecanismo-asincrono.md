@@ -59,6 +59,10 @@ Railway, proyecto `chatbot`, entorno `production`.
 
 El broker es CloudAMQP, plan gratuito.
 
+Ambos servicios despliegan la rama `development` con **Wait for CI** activo (`source.checkSuites=true` en la configuración del entorno `production`). En el consumidor se activó el 2026-11-27 (backend [#221](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/221)); antes desplegaba sin esperar al CI. Con la opción activa, Railway deja el deployment en `WAITING` hasta que terminan los check suites de GitHub del commit y lo marca `SKIPPED` si alguno falla. Ejemplo en la API: el commit `5b670e8` quedó `SKIPPED` (2026-11-26 20:00 UTC) porque falló el check `Production health`.
+
+Railway espera **todos** los check suites del commit, no solo los requeridos por la protección de rama (`test` y `Analyze (python)`; ver [`ci-pipeline.md`](ci-pipeline.md)). Un fallo de un workflow ajeno al código (por ejemplo el smoke programado `Production health`) también bloquea el despliegue de la API y del consumidor, pero **solo del commit al que quedó asociado el run**. El procedimiento de recuperación y el rollback están en el [Runbook: despliegues en Railway](operacion/despliegues-railway.md).
+
 ### 3.1 Pago de punta a punta (2026-11-27)
 
 Checkout desde la web con el usuario autenticado. Pedido `PED-2026-00094`, checkout `e37f6e0e-0ccd-4479-a87b-f582175a3eac`, total S/ 189.90. Respuestas: `POST /api/v1/checkout` 201 y `POST /api/v1/checkout/e37f6e0e-.../pago` 200.

@@ -43,12 +43,12 @@
 
 - [ ] 4.1 Actualizar `evals/intenciones.jsonl`: las frases de EP-07 apuntan a `consultar_pedidos` (con y sin `pedidoId`) y las de INT-CAT-11 a `silenciar_complementos`. *(Seguimiento: backend #175.)*
 - [ ] 4.2 Verificar precisión de intención ≥ 90 % con el catálogo nuevo. *(Seguimiento: backend #175.)*
-- [ ] 4.3 Prueba E2E: "mis pedidos" → lista; elegir uno → estado; "¿ya viene?" → seguimiento; "mis reclamos" → lista; abrir uno → estado; enviar reclamo → constancia. *(Seguimiento: frontend #162.)*
-- [ ] 4.4 Prueba de contrato: `CERRAR_SESION` enviada al BFF responde `ACCION_DESCONOCIDA` y no borra cookies; `IR_A_CHECKOUT` no crea checkout. *(Seguimiento: backend #219.)*
+- [x] 4.3 Prueba E2E: "mis pedidos" → lista; elegir uno → estado; "¿ya viene?" → seguimiento; "mis reclamos" → lista; abrir uno → estado; enviar reclamo → constancia. *(2026-11-27: frontend #162, PR #167; `tests/e2e/pedidos-reclamos.fixture.spec.ts`.)*
+- [x] 4.4 Prueba de contrato: `CERRAR_SESION` enviada al BFF responde `ACCION_DESCONOCIDA` y no borra cookies; `IR_A_CHECKOUT` no crea checkout. *(2026-11-27: backend #219, PR #223; `tests/unit/mod_chat/test_m5_client_actions_http.py`.)*
 - [x] 4.5 Revisar que ningún documento operativo (fuera de los históricos) siga citando `listar_pedidos` o `consultar_pedido`. *(2026-11-27: solo quedan registros históricos y la nota que explica la consolidación.)*
 
 ## 5. Archivo
 
 - [x] 5.1 Aplicar el delta a `openspec/specs/motor-conversacion/spec.md` y mover el cambio a `openspec/changes/archive/` cuando las tareas 2.x y 3.x estén mergeadas. *(2026-11-27: archivado; 3 requisitos modificados y 3 agregados.)*
 
-> Implementado en backend #166 y frontend #141 (2026-11-25). **Archivado el 2026-11-27.** Quedan fuera de este cambio: 4.1 y 4.2 (evals, backend #175), 4.3 (frontend #162), 4.4 (backend #219) y el formulario de reclamo en el chat (frontend #159).
+> Implementado en backend #166 y frontend #141 (2026-11-25). **Archivado el 2026-11-27.** Quedan fuera de este cambio solo 4.1 y 4.2 (evals, backend #175). El formulario de reclamo en el chat (frontend #159) y las tareas 4.3/4.4 quedaron cerrados el 2026-11-27.

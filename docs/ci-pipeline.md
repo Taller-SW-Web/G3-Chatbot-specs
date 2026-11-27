@@ -59,8 +59,8 @@ No hay `nx affected`: el build de Next.js es monolítico y el alcance solo decid
 ## SonarCloud
 
 - El escaneo espera el quality gate (`sonar.qualitygate.wait=true`).
-- Además, el pipeline tiene un **gate estricto propio**: consulta `/api/issues/search` y falla si el PR o la rama introduce un issue de severidad `MINOR` o superior. Si la API no responde, **falla cerrado**.
-- Para bloquear también los `INFO`, cambia `--fail-on-severity MINOR` por `--fail-on-severity INFO` en el workflow. El default `MINOR` evita bloquear hallazgos puramente informativos.
+- Además, el pipeline tiene un **gate estricto propio**: consulta `/api/issues/search` y falla si el PR introduce un issue de severidad `MINOR` o superior. En `push` a `development` el umbral es `CRITICAL` para no tumbar el deploy por deuda `MAJOR` heredada; los `CRITICAL`/`BLOCKER` sí bloquean. Si la API no responde, **falla cerrado**.
+- Para bloquear también los `INFO` en PR, cambia `threshold=MINOR` por `threshold=INFO` en el workflow. El default `MINOR` evita bloquear hallazgos puramente informativos.
 - Si el gate falla, `scripts/ci/sonar_gate_report.py` (backend) o `sonar-gate-report.mjs` (frontend) publica condiciones e issues en el job summary y en `sonar-gate-reports` (30 días).
 - El quality gate de la UI sigue siendo necesario para cobertura de *new code* ≥ 80 %, duplicación ≤ 3 % y hotspots; el gate estricto del pipeline cubre los issues nuevos.
 

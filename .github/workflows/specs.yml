@@ -11,8 +11,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: specs-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: specs-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   validate:
@@ -20,21 +20,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 22
       - name: Validar OpenSpec
-        run: npx --yes @fission-ai/openspec validate --specs
+        run: npx --yes @fission-ai/openspec@2.2.0 validate --specs
       - name: Enlaces relativos
         run: python3 scripts/check_links.py
 
   notify:
     name: Notify failure
     needs: validate
-    if: failure() && github.event_name == 'pull_request'
+    if: |
+      failure() && github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

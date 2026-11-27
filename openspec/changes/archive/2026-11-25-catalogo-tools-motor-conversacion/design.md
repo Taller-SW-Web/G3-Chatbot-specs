@@ -1,6 +1,6 @@
 # Diseño: catálogo de herramientas sin ambigüedades (M5)
 
-> Origen: SPEC-05 · Especificación de comportamiento: [`spec.md`](../../specs/motor-conversacion/spec.md) · Delta: [`specs/motor-conversacion/spec.md`](specs/motor-conversacion/spec.md)
+> Origen: SPEC-05 · Especificación de comportamiento: [`spec.md`](../../../specs/motor-conversacion/spec.md) · Delta: [`specs/motor-conversacion/spec.md`](specs/motor-conversacion/spec.md)
 
 ## Decisiones
 

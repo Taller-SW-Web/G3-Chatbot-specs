@@ -25,11 +25,11 @@ El pipeline se organiza por **alcance calculado una vez** y **orden de costo**:
 - Los tests unitarios corren completos y en un solo job. No se fragmentan: la suite es corta y los shards añadirían más overhead que ahorro.
 - Los tests de integración usan una **matriz dinámica** con `fromJSON`: solo se crean los shards con algo que ejecutar (`mod_catalog`, `mod_chat`, `mod_checkout`, `mod_orders`, `core`). Cada shard levanta su propio PostgreSQL 18 y RabbitMQ; la cobertura se combina después con `coverage combine`.
 - Los jobs de runtime caros (E2E, DAST, gateway-integration) corren en `push` a `development`, en el schedule semanal o en un PR etiquetado `ci:full`. No bloquean el PR por defecto.
-- SonarCloud analiza el PR de forma nativa. **No** se crean ramas `mr-<IID>` ni se limita `sonar.inclusions` por PR: el análisis de PR ya está acotado al *new code* y las inclusiones dinámicas ocultarían problemas entre archivos.
+- SonarCloud analiza el PR de forma nativa. **No** se crean ramas `mr-<IID>` ni se limita `sonar.inclusions` por PR: el análisis de PR ya está acotado al *new code* y las inclusiones dinámicas ocultarían problemas entre archivos. Además del quality gate de la UI, el pipeline consulta los issues nuevos y **falla cerrado** ante severidad `MINOR` o superior; si la API no responde, el job falla.
 - Un job `notify` publica (o actualiza) un comentario en el PR cuando el pipeline falla, con los jobs fallidos y un extracto de cada log.
 - La cobertura mantiene el trinquete actual: 85 % backend y 80/74/78/80 frontend, con subida por módulo cuando se toque. No se adopta un 100 % global.
 
-Los nombres `test` (backend) y `check` (frontend) se conservan porque son los checks requeridos de `development`. El agregador falla si un job que el alcance pidió no terminó en `success`; un job omitido a propósito no cuenta como aprobado.
+Los nombres `test` (backend) y `check` (frontend) se conservan porque son los checks requeridos de `development`. El agregador falla si un job que el alcance pidió no terminó en `success`; un job omitido a propósito no cuenta como aprobado. `development` de specs exige el check `OpenSpec y enlaces`, rama actualizada, conversación resuelta y no permite force push ni borrado; `enforce_admins` queda activo.
 
 ## Alternativas consideradas
 

@@ -33,11 +33,11 @@
 | Componente | Responsabilidad |
 |---|---|
 | `POST /api/v1/mensajes/{mensajeId}/reaccion` (`chatbot_router.py`) | Registra o actualiza la reacción (👍/👎) de un mensaje; sin autenticación obligatoria (usa `cliente_id` o `chat_sid`, igual que el resto del chat). |
-| `POST /api/v1/pedidos/{pedidoId}/csat` (`mod_postventa`, `csat_router.py`) | Valida la pertenencia del pedido al cliente autenticado y que esté `ENTREGADO`, llama a `VentasClient.registrarCsat()` reenviando el token del cliente, y propaga `201`/`403`/`409`/`422`/`503`. El `clienteId` del cuerpo DEBE ser igual al `sub` del token. Marca `order_ref.csat_sent` solo si existe una fila de `order_ref` para el pedido. |
+| `POST /api/v1/pedidos/{pedidoId}/csat` (`mod_postventa`, `csat_router.py`) | Valida la pertenencia del pedido al cliente autenticado y que esté `ENTREGADO`, llama a `VentasClient.registrarCsat()` reenviando el token del cliente, normaliza el `403` de Ventas a `404 RECURSO_NO_ENCONTRADO` (anti-enumeración) y propaga `201`/`409`/`422`/`503`. El `clienteId` del cuerpo DEBE ser igual al `sub` del token. Marca `order_ref.csat_sent` solo si existe una fila de `order_ref` para el pedido. |
 | `GET /api/v1/pedidos/{pedidoId}` (`mod_orders`) | Devuelve el detalle del pedido y expone `csatEnviado` (leído de `order_ref.csat_sent`) para que el slot de `mod-postventa` sepa si ya se calificó. No implementa ni declara el CSAT. |
 | `POST /api/v1/pedidos/{pedidoId}/valoracion-compra` | Guarda la valoración de la experiencia de compra en `purchase_rating` (una por pedido). |
 | `POST /api/v1/sugerencias` | Crea la sugerencia o el bug, sube la captura (si existe) vía `AttachmentStorage`, y encola la notificación interna por outbox. |
-| `VentasClient.registrarCsat()` (`mod_postventa`) | Cliente de `POST /api/v2/csat`; reenvía el token del cliente (rol `CLIENTE`, sin scope; acuerdo A15), propaga el `403` de Ventas cuando el `sub` no es el dueño del pedido y normaliza errores de Ventas (`codigo` → `code` interno). |
+| `VentasClient.registrarCsat()` (`mod_postventa`) | Cliente de `POST /api/v2/csat`; reenvía el token del cliente (rol `CLIENTE`, sin scope; acuerdo A15), traduce el `403` de Ventas a `404 RECURSO_NO_ENCONTRADO` (anti-enumeración) y normaliza errores de Ventas (`codigo` → `code` interno). |
 | `SugerenciaService` | Orquesta la validación, la subida opcional de la captura y el registro; aplica el límite de 5 por hora y, al superarlo, `POST /sugerencias` responde `429`. |
 | `RateLimiter` (ampliado) | Agrega el límite de 30 reacciones/minuto y 5 sugerencias/hora por cliente o IP. |
 | Tablas `message_reaction`, `feedback_suggestion` y `purchase_rating` | Ver más abajo. |
@@ -56,7 +56,7 @@ Pendiente hasta el Hito 5-6: el límite de frecuencia de las calificaciones (car
 
 `POST /sugerencias` responde `429` cuando el cliente supera las 5 sugerencias o bugs por hora; el frontend muestra "Ya enviaste varias sugerencias, intenta en un rato" (escenario "Exceso de sugerencias") y no se registra nada.
 
-La calificación del pedido (CSAT) **no se guarda** como calificación propia: vive en Ventas (`POST /api/v2/csat`). La valoración de la compra sí es propia del chatbot (`purchase_rating`). ✅ Acuerdo A15 (Ventas, 12/10/2026): el endpoint se llama con el token del cliente (rol `CLIENTE`, sin scope); Ventas valida el `sub` del JWT contra el dueño del `pedidoId` y responde `403` si no coincide. El scope `postventa:csat:escribir` no existe.
+La calificación del pedido (CSAT) **no se guarda** como calificación propia: vive en Ventas (`POST /api/v2/csat`). La valoración de la compra sí es propia del chatbot (`purchase_rating`). ✅ Acuerdo A15 (Ventas, 12/10/2026): el endpoint se llama con el token del cliente (rol `CLIENTE`, sin scope); Ventas valida el `sub` del JWT contra el dueño del `pedidoId` y responde `403` si no coincide, y el BFF lo normaliza a `404 RECURSO_NO_ENCONTRADO` para no revelar si el pedido existe. El scope `postventa:csat:escribir` no existe.
 
 ### Contrato de los endpoints
 
@@ -64,13 +64,13 @@ La calificación del pedido (CSAT) **no se guarda** como calificación propia: v
 |---|---|---|---|
 | POST | `/mensajes/{mensajeId}/reaccion` | `200 { mensajeId, reaccion }` (upsert por autor y mensaje) | `404 RECURSO_NO_ENCONTRADO` (mensaje de otra conversación), `429 DEMASIADAS_SOLICITUDES` (la UI lo ignora) |
 | POST | `/pedidos/{pedidoId}/valoracion-compra` | `201 { valoracionId, estrellas }` | `400 VALIDACION`, `404 RECURSO_NO_ENCONTRADO`, `409 VALORACION_YA_REGISTRADA` |
-| POST | `/pedidos/{pedidoId}/csat` | `201` (respuesta de Ventas) | `400 VALIDACION` (puntuación fuera de 1/3/5), `403`, `409 CSAT_ALREADY_SUBMITTED`, `422 ORDER_NOT_DELIVERED`, `503` |
+| POST | `/pedidos/{pedidoId}/csat` | `201` (respuesta de Ventas) | `400 VALIDACION` (puntuación fuera de 1/3/5), `404 RECURSO_NO_ENCONTRADO`, `409 CSAT_ALREADY_SUBMITTED`, `422 ORDER_NOT_DELIVERED`, `503` |
 | POST | `/sugerencias` | `201 { sugerenciaId, codigoSeguimiento }` | `400 VALIDACION`, `400 ADJUNTO_INVALIDO`, `429 DEMASIADAS_SOLICITUDES` |
 
 - **Reacción:** cuerpo `{ "reaccion": "POSITIVE" | "NEGATIVE" }`. El upsert usa `(message_id, customer_id, anonymous_sid)`; cambiar de 👍 a 👎 actualiza la fila, no crea otra. "Copiar" no llama al backend.
 - **Sugerencia:** `multipart/form-data` con `tipo`, `titulo`, `descripcion`, `correoContacto`, `captura?` y `Idempotency-Key`. Supuesto explícito: una sola llamada multipart; si el frontend hace carga previa, se cambia a `capturaId`. La captura se sube al bucket privado con `AttachmentStorage` y se guarda solo `feedback_suggestion.screenshot_key`; no usa la tabla `attachment`.
 - **Valoración de compra:** `{ "estrellas": 1..5, "comentario?": "..." }`; una fila por `order_id` (`UNIQUE`). Un segundo envío responde `409 VALORACION_YA_REGISTRADA`.
-- **CSAT:** se reenvía a Ventas; el chatbot no guarda una calificación propia. El cuerpo del frontend es `{ puntuacion, comentario? }` y no incluye `clienteId`; el backend lo arma con el `sub` del token. `order_ref.csat_sent` se marca con `201` o `409 CSAT_ALREADY_SUBMITTED` cuando existe la fila; si el pedido viene de otro canal, no hay fila y se responde igual. `409` se muestra como "Ya calificaste este pedido", `422 ORDER_NOT_DELIVERED` como "Solo puedes calificar pedidos entregados" y una `puntuacion` fuera de 1/3/5 responde `400 VALIDACION` antes de llamar a Ventas.
+- **CSAT:** se reenvía a Ventas; el chatbot no guarda una calificación propia. El cuerpo del frontend es `{ puntuacion, comentario? }` y no incluye `clienteId`; el backend lo arma con el `sub` del token. `order_ref.csat_sent` se marca con `201` o `409 CSAT_ALREADY_SUBMITTED` cuando existe la fila; si el pedido viene de otro canal, no hay fila y se responde igual. `409` se muestra como "Ya calificaste este pedido", `422 ORDER_NOT_DELIVERED` como "Solo puedes calificar pedidos entregados" y una `puntuacion` fuera de 1/3/5 responde `400 VALIDACION` antes de llamar a Ventas. Si el pedido no es del cliente (Ventas responde `403`) o no existe, el BFF responde `404 RECURSO_NO_ENCONTRADO` para no revelar su existencia, igual que `GET /pedidos/{pedidoId}` (`SPEC-17` · Requisito 1); la UI muestra el error genérico "No pudimos enviar tu calificación, intenta de nuevo" y conserva el bloque.
 - **Notificación interna:** no tiene endpoint propio; el worker de outbox procesa `SEND_EMAIL` y actualiza `feedback_suggestion.notification_status` (`PENDING` → `SENT`/`FAILED`). Un fallo no se muestra al cliente.
 
 ### Encaje en los casos de uso del núcleo

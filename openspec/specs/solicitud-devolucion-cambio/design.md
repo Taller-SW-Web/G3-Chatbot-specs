@@ -43,6 +43,7 @@
 
 - **Sesión:** `CLIENTE`. **Cabecera:** `Idempotency-Key` obligatoria.
 - **Cuerpo:** el payload de Ventas de `spec.md` más `forzar` (booleano, por defecto `false`). `forzar` no se reenvía a Ventas.
+- **Borrador:** acepta `conversacionId` opcional (UUID). Si se envía y pertenece al cliente, el BFF guarda el borrador en `conversation.context` para reintentar durante 24 h; **no se reenvía a Ventas**. Sin el campo, el flujo HTTP actual no cambia.
 - **Detección de duplicados (autoritativa):** antes de llamar a Ventas, consulta `GET /api/v1/devoluciones` (proxy a `/me`) y busca una solicitud del mismo `pedidoId`, `motivo` y firma de líneas (`productoId` + `cantidad`) en estado abierto (`SOLICITADA`, `EN_EVALUACION` o `APROBADA`). `RECHAZADA` y `COMPLETADA` no cuentan.
 - **Si hay duplicado y `forzar=false`:** responde `409` con `application/problem+json`:
 

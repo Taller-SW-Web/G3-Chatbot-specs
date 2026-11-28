@@ -132,7 +132,7 @@ El sistema DEBE (SHALL) ofrecer guardar la dirección ingresada en Seguridad, si
 - **ENTONCES** la dirección se usa solo para ese pedido, no se llama a Seguridad para guardarla y `avisoDireccion` es `null`
 
 ### Requirement: Cotizar el envío
-El sistema DEBE (SHALL) cotizar con Despacho enviando el `destino` (distrito y dirección resueltos) y las `lineas` del carrito (`sku` y `cantidad`), y mostrar el resultado dentro de `CheckoutPage` antes de habilitar el pago. El chatbot **no calcula ni envía peso ni volumen**: Despacho resuelve los datos físicos. `modalidad` se envía siempre como `DELIVERY` (no hay retiro en tienda en este canal).
+El sistema DEBE (SHALL) cotizar con Despacho. El frontend envía el `destino` (distrito y dirección resueltos) a `POST /envio/cotizar`; el BFF arma las `lineas` del carrito (`sku` y `cantidad`) desde el carrito del servidor y las envía a Despacho, y muestra el resultado dentro de `CheckoutPage` antes de habilitar el pago. El chatbot **no calcula ni envía peso ni volumen**: Despacho resuelve los datos físicos. `modalidad` se envía siempre como `DELIVERY` (no hay retiro en tienda en este canal).
 
 *Trazabilidad: SPEC-12 · Requisito 4.*
 
@@ -149,7 +149,7 @@ El sistema DEBE (SHALL) cotizar con Despacho enviando el `destino` (distrito y d
 #### Scenario: Datos físicos resueltos por Despacho
 - **DADO** un carrito con líneas y una dirección con distrito
 - **CUANDO** se cotiza el envío
-- **ENTONCES** el chatbot envía `destino` y `lineas[{sku, cantidad}]`; no calcula ni envía peso ni volumen, y Despacho devuelve costo y plazo con los datos físicos que él mismo resuelve a partir de los SKU
+- **ENTONCES** el frontend envía solo `destino`; el BFF añade `lineas[{sku, cantidad}]` desde el carrito del servidor y no calcula ni envía peso ni volumen, y Despacho devuelve costo y plazo con los datos físicos que él mismo resuelve a partir de los SKU
 
 #### Scenario: Despacho no disponible
 - **DADO** que el cotizador no responde en 4 s

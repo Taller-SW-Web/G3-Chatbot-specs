@@ -405,9 +405,12 @@ Límites provisionales: máx. 3 adjuntos por mensaje, 10 cargas por minuto por c
 | `LIMITE_CANTIDAD` | 422 | Más de 10 unidades por línea o más de 20 líneas. |
 | `SIN_COBERTURA` | 422 | El destino no tiene cobertura de Despacho. |
 | `EVIDENCIA_INVALIDA` | 400 | Archivo mayor a 5 MB o tipo no permitido (evidencia de devolución, SPEC-21). |
+| `EVIDENCIA_REQUERIDA` | 400 | El motivo de la devolución exige evidencia y no se adjuntó (SPEC-21; código de Ventas propagado). |
 | `ADJUNTO_INVALIDO` | 400 | Imagen adjunta al chat (SPEC-23) mayor a 5 MB, de tipo no permitido, con contenido que no es una imagen válida o con dimensiones fuera de rango. |
 | `LIMITE_ADJUNTOS` | 422 | Más de 3 adjuntos por mensaje o más de 10 adjuntos pendientes por conversación (SPEC-23). |
-| `DEVOLUCION_NO_ELEGIBLE` | 422 | El pedido no está `ENTREGADO`, está fuera de plazo, o falta evidencia obligatoria. |
+| `PEDIDO_NO_ENTREGADO` | 409 | La devolución se pidió sobre un pedido que no está `ENTREGADO` (SPEC-21; código de Ventas propagado). |
+| `PLAZO_VENCIDO` | 400 | La devolución está fuera de los 7 días naturales desde la entrega (SPEC-21; código de Ventas propagado). |
+| `DEVOLUCION_EN_CURSO` | 409 | Ya existe una devolución no rechazada para esas unidades (SPEC-21; código de Ventas propagado). |
 | `RECLAMO_DUPLICADO` | 409 | Existe un reclamo abierto para el mismo pedido y motivo y no se envió `forzar: true`; incluye el `codigoSeguimiento` y el estado existentes. |
 | `CSAT_ALREADY_SUBMITTED` | 409 | Código de Ventas propagado: ya existe una encuesta para ese pedido. El chatbot lo muestra como "Ya calificaste este pedido", no como error, y marca `order_ref.csat_sent`. |
 | `ORDER_NOT_DELIVERED` | 422 | Código de Ventas propagado: el pedido no está `ENTREGADO` y no admite CSAT. El chatbot lo muestra como "Solo puedes calificar pedidos entregados" y refresca el detalle; no es un error de red. |
@@ -606,7 +609,20 @@ El estado del pedido lo decide **Ventas**. Cuando el pedido está `DESPACHADO`, 
 | `DESPACHADO` | `PENDIENTE_ASIGNACION` (reprogramado) | Entrega reprogramada para {fecha} |
 | `DESPACHADO` | `DEVUELTO_A_ORIGEN` | Devuelto al centro de despacho (te contactaremos) |
 | `ENTREGADO` | `ENTREGADO` | Entregado el {fecha} |
-| `ANULADO` | `CANCELADO` o — | Anulado |
+| `ANULADO` | `CANCELADO` o — | Anulado el {fecha} (ver §4.1) |
+
+### 4.1 Contrato de un pedido `ANULADO`
+
+Ventas solo publica el motivo en `historialEstados[estado=ANULADO].motivo` (texto libre) y no tiene un objeto de reembolso para las anulaciones. El chatbot deriva los campos del detalle, el seguimiento y el chat:
+
+| Campo | Regla |
+|---|---|
+| Etiqueta | "Anulado el {fecha}", con la fecha del último hito `ANULADO` del historial; si el historial no trae fecha, "Anulado". |
+| `motivoAnulacion` | Solo si el `motivo` está en la lista conocida: `STOCK_NO_DISPONIBLE` y los códigos de `MotivoAnulacion` de Ventas (`PAGO_NO_COMPLETADO`, `ERROR_SELECCION_PRODUCTO`, `ARREPENTIMIENTO_COMPRA`, `SOLICITUD_CLIENTE`, `ERROR_DATOS_ENVIO` y `DUPLICADO`). Un motivo desconocido o de texto libre produce `null`. |
+| `reembolso` | "Se procesará el reembolso al medio de pago original." solo con evidencia de pago (`pago.estado` `CONFIRMADO` o `PAGADO` en `historialEstados`); sin evidencia de pago es `null`. |
+| Mensajes | Con motivo de stock y pago: "Tu pedido fue anulado por falta de stock. Se procesará el reembolso al medio de pago original."; con stock sin pago: "Tu pedido fue anulado por falta de stock."; con motivo desconocido: "Tu pedido fue anulado." |
+
+El `historialEstados` crudo de Ventas no se expone. El contrato completo, con sus escenarios, está en `openspec/specs/consulta-estado-pedido/spec.md` (Scenario: Pedido anulado).
 
 Nunca se muestra el motivo del fallo, el comentario del repartidor, sus datos ni coordenadas (RT-CA-08 y RT-CA-10 de Despacho).
 

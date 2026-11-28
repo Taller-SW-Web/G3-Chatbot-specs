@@ -19,8 +19,8 @@ Permitir al cliente solicitar, desde el chat, el cambio o la devolución con ree
 
 ✅ El `api-contract.md` de Ventas (v1.3.0) publica F3 completo, incluidos los dos endpoints que faltaban (subida de evidencia y listado por cliente — acuerdos A10 y A13, ambos resueltos el 23/09). Reglas de negocio confirmadas:
 
-- La solicitud solo se acepta sobre un pedido en estado `ENTREGADO` (confirmado por F1); si no lo está, responde `409`.
-- **Plazo: 7 días naturales desde la entrega.** Fuera de ese plazo, o si falta evidencia obligatoria, responde `400`.
+- La solicitud solo se acepta sobre un pedido en estado `ENTREGADO` (confirmado por F1); si no lo está, Ventas responde `409 PEDIDO_NO_ENTREGADO`.
+- **Plazo: 7 días naturales desde la entrega.** Fuera de ese plazo, Ventas responde `400 PLAZO_VENCIDO`; si falta evidencia obligatoria, `400 EVIDENCIA_REQUERIDA`.
 - El motivo es tipificado; si el motivo implica un defecto, **se exige evidencia** (fotos o PDF, como `{tipo: IMAGEN, url}`), subida primero a `POST /api/v2/devoluciones/evidencias/upload` — **Ventas hostea el archivo, el chatbot no necesita su propio bucket para la evidencia**. 🧩 Aclaración: las imágenes que el cliente adjunta al chat para que el asistente las interprete (SPEC-23) usan un bucket privado propio de Supabase Storage y no se reutilizan como evidencia; la evidencia se sigue subiendo a Ventas desde este formulario.
 - El Gestor evalúa el expediente vía `PATCH /devoluciones/{id}/resolucion`: `SOLICITADA → EN_EVALUACION → APROBADA/RECHAZADA`, y un rechazo sin `fundamento` responde `400`.
 - F3 nunca modifica el pedido en M1 directamente; solo lo consulta.
@@ -105,7 +105,7 @@ El sistema DEBE (SHALL) permitir adjuntar hasta 3 archivos (`image/jpeg`, `image
 #### Scenario: Archivo inválido
 - **DADO** un archivo de más de 5 MB o de un tipo no permitido
 - **CUANDO** se intenta adjuntar
-- **ENTONCES** Ventas responde `400 Bad Request` y se muestra "El archivo debe pesar menos de 5 MB y ser una imagen o PDF"
+- **ENTONCES** Ventas responde `400 EVIDENCIA_INVALIDA` y se muestra "El archivo debe pesar menos de 5 MB y ser una imagen o PDF"
 
 #### Scenario: Evidencia sin enviar la solicitud
 - **DADO** archivos subidos a un borrador que el cliente abandona sin enviar
@@ -136,15 +136,20 @@ El cuerpo de `POST /api/v1/devoluciones` es ese payload más `forzar` (booleano,
 - **CUANDO** Ventas responde `201 {devolucionId: "DEV-2026-0042", pedidoId, tipo, estado: SOLICITADA, fechaRegistro}`
 - **ENTONCES** se guarda `return_ref` con `devolucionId` como código visible (Ventas ya usa un identificador legible, no hace falta generar uno propio), se ligan las evidencias subidas y se muestra "Te avisaremos cuando el equipo de ventas revise tu solicitud"
 
-#### Scenario: Evidencia obligatoria faltante o plazo excedido
-- **DADO** un motivo `PRODUCTO_DEFECTUOSO` sin evidencia, o una solicitud fuera de los 7 días naturales
+#### Scenario: Evidencia obligatoria faltante
+- **DADO** un motivo `PRODUCTO_DEFECTUOSO` sin evidencia
 - **CUANDO** se envía
-- **ENTONCES** Ventas responde `400 Bad Request` y se muestra el motivo correspondiente
+- **ENTONCES** el formulario mantiene "ENVIAR SOLICITUD" deshabilitado y muestra "Este motivo exige adjuntar al menos una evidencia."; si el envío llega igual a Ventas, responde `400 EVIDENCIA_REQUERIDA`
+
+#### Scenario: Plazo excedido
+- **DADO** una solicitud fuera de los 7 días naturales desde la entrega
+- **CUANDO** se envía
+- **ENTONCES** Ventas responde `400 PLAZO_VENCIDO` y se muestra "El plazo de 7 días para solicitar el cambio o devolución ya venció."
 
 #### Scenario: Pedido no `ENTREGADO`
 - **DADO** un pedido que no está `ENTREGADO`
 - **CUANDO** se envía la solicitud
-- **ENTONCES** Ventas responde `409 Conflict` y se informa que solo se puede solicitar después de la entrega
+- **ENTONCES** Ventas responde `409 PEDIDO_NO_ENTREGADO` y se informa que solo se puede solicitar después de la entrega
 
 #### Scenario: Doble envío
 - **DADO** dos envíos con la misma `Idempotency-Key`
@@ -159,7 +164,7 @@ El cuerpo de `POST /api/v1/devoluciones` es ese payload más `forzar` (booleano,
 #### Scenario: Duplicado detectado al registrar
 - **DADO** una solicitud abierta para el mismo pedido y un envío sin `forzar`
 - **CUANDO** llega el `POST /api/v1/devoluciones`
-- **ENTONCES** se responde `409 DEVOLUCION_DUPLICADA` con `{ devolucionId, estado, motivo }`, no se llama a Ventas y el frontend muestra el aviso con la opción de forzar
+- **ENTONCES** se responde `409 DEVOLUCION_DUPLICADA` con `{ devolucionId, estado, motivo }`, no se llama a Ventas y el frontend muestra el aviso con la opción de forzar. Si Ventas detecta una devolución no rechazada para esas unidades (carrera entre la consulta previa y el registro), responde `409 DEVOLUCION_EN_CURSO` y el frontend muestra el mismo aviso de duplicado
 
 ### Requirement: Solicitud duplicada sobre el mismo pedido
 El sistema DEBE (SHALL) detectar, antes de registrar, si ya existe una solicitud abierta para el mismo pedido, motivo y líneas, consultando `GET /api/v1/devoluciones` (proxy a `GET /api/v2/devoluciones/me?estado=` con el token del cliente) y filtrando por `pedidoId` en el backend del chatbot (el contrato publicado de Ventas no ofrece ese filtro; si Ventas lo agrega, se usa directamente). La detección DEBE (SHALL) repetirse en el `POST /api/v1/devoluciones` como comprobación autoritativa, comparando el `pedidoId`, el `motivo` y la firma de las líneas (`productoId` + `cantidad`). Si existe una solicitud abierta y el cliente no envía `forzar: true`, el backend responde `409 DEVOLUCION_DUPLICADA` con el `devolucionId`, el `estado` y el `motivo` existentes; con `forzar: true` registra una nueva. La `Idempotency-Key` sigue aplicando en ambos casos.

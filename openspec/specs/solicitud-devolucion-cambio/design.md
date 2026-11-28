@@ -66,10 +66,14 @@
 
 | `code` | HTTP | Cuándo |
 |---|---|---|
-| `VALIDACION` | 400 | Faltan campos o la evidencia obligatoria no cumple. |
-| `DEVOLUCION_NO_ELEGIBLE` | 422 | Pedido no `ENTREGADO`, fuera de los 7 días o evidencia obligatoria faltante. |
+| `VALIDACION` | 400 | Faltan campos o el cuerpo no cumple el schema. |
+| `PEDIDO_NO_ENTREGADO` | 409 | El pedido no está `ENTREGADO`. Código de Ventas, propagado sin transformar. |
+| `PLAZO_VENCIDO` | 400 | La solicitud está fuera de los 7 días naturales desde la entrega. Código de Ventas. |
+| `EVIDENCIA_REQUERIDA` | 400 | El motivo exige evidencia y no se adjuntó. Código de Ventas; el formulario también deshabilita el envío. |
 | `DEVOLUCION_DUPLICADA` | 409 | Existe una solicitud abierta para el mismo pedido, motivo y líneas y `forzar` es `false`. |
+| `DEVOLUCION_EN_CURSO` | 409 | Ventas ya tiene una devolución no rechazada para esas unidades (carrera con la consulta previa). Código de Ventas. |
 | `EVIDENCIA_INVALIDA` | 400 | Archivo mayor a 5 MB o tipo no permitido. |
+| `ITEM_INVALIDO` / `DATOS_INVALIDOS` / `FORMATO_INVALIDO` / `CODIGO_INVALIDO` | 400 | Validaciones de Ventas sobre las líneas o el motivo; se propagan y el frontend usa el mensaje genérico. |
 | `RECURSO_NO_ENCONTRADO` | 404 | La conversación de la evidencia no existe o no pertenece al cliente; no se sube a Ventas. |
 | `SERVICIO_NO_DISPONIBLE` | 503 | Ventas no responde; se conserva el borrador 24 h. |
 

@@ -43,9 +43,10 @@
   mecanismo sirve para `local` y para `supabase` (`BE/src/shared/infrastructure/storage/signed_urls.py`).
 - Las claves son `attachments/<hex>.<ext>` (imagen) y `attachments/<hex>_thumb.<ext>` (miniatura). Las
   capturas de bugs de SPEC-24 viven en el mismo bucket bajo `feedback/`.
-- La API y el worker necesitan la misma configuración: la API escribe y firma; el worker ejecuta la
-  limpieza de pendientes y de huérfanos. Si hay varias réplicas de la API, todas necesitan el mismo
-  `ATTACHMENT_SIGNING_SECRET` para validar las URLs que emitió otra réplica.
+- La API necesita la configuración y ejecuta la limpieza de pendientes y de huérfanos en su lifespan
+  (`outbox_worker_lifespan`). El consumer no construye storage ni ejecuta esa limpieza desde backend
+  #222; no hace falta configurarle las variables de adjuntos. Si hay varias réplicas de la API, todas
+  necesitan el mismo `ATTACHMENT_SIGNING_SECRET` para validar las URLs que emitió otra réplica.
 
 ## 3. Prerrequisitos
 
@@ -99,9 +100,9 @@ clave.
 
 ## 6. Paso 2 — Configurar las variables
 
-Configurar **a la vez** en la API y en el worker. La aplicación valida al arrancar y falla si
-`ATTACHMENT_STORAGE=supabase` sin URL y clave, o si en producción `ATTACHMENT_PUBLIC_BASE_URL` apunta a
-`localhost`.
+Configurar en el servicio de la API (y en cada réplica). El consumer no usa storage ni ejecuta la
+limpieza. La aplicación valida al arrancar y falla si `ATTACHMENT_STORAGE=supabase` sin URL y clave, o
+si en producción `ATTACHMENT_PUBLIC_BASE_URL` apunta a `localhost`.
 
 | Variable | Valor | ¿Secreta? | Notas |
 |---|---|---|---|
@@ -128,14 +129,13 @@ Configurar **a la vez** en la API y en el worker. La aplicación valida al arran
 1. **Verificar el código desplegado.** Confirmar que producción ejecuta un commit de `development` que
    contiene `src/shared/infrastructure/storage/` y que el arranque no falla. `main` no es una rama de
    despliegue. Si el servicio usa migraciones de Alembic, deben terminar antes de la API.
-2. **Configurar las variables del §6** en la API y en el worker, en un solo cambio. No configurar
-   `ATTACHMENT_STORAGE=supabase` en un servicio y `local` en el otro: la API escribiría en Supabase y el
-   worker buscaría huérfanos en el disco (o al revés).
-3. **Reiniciar ambos servicios.** Un reinicio de Railway basta; no hace falta reconstruir la imagen.
+2. **Configurar las variables del §6 en la API**, en un solo cambio. El consumer no usa storage; no
+   hace falta configurárselas.
+3. **Reiniciar el servicio de la API.** Un reinicio de Railway basta; no hace falta reconstruir la imagen.
 4. **Revisar los logs de arranque:**
    - No debe aparecer `ATTACHMENT_STORAGE=local in production: uploads sit on the ephemeral container disk...`.
    - No debe aparecer `Refusing to start with APP_ENV=production and unsafe settings...`.
-   - El worker debe registrar `Attachment cleanup started (every 3600s)`.
+   - La API debe registrar `Attachment cleanup started (every 3600s)`.
 5. Si el arranque falla, corregir la variable faltante y reiniciar. No continuar con la verificación
    hasta que ambos procesos estén sanos.
 
@@ -266,7 +266,7 @@ No es un estado aceptable en producción (ADR-0028).
 
 ## 11. Limpieza, retención y riesgos abiertos
 
-- **Pendientes sin enviar:** el worker borra los adjuntos `PENDING` de más de 24 h y sus dos objetos.
+- **Pendientes sin enviar:** la API (lifespan) borra los adjuntos `PENDING` de más de 24 h y sus dos objetos.
   Frecuencia: `ATTACHMENT_CLEANUP_INTERVAL_SECONDS` (3600 s por defecto), con
   `OUTBOX_WORKER_ENABLED=true`.
 - **Huérfanos:** cada pasada lista el bucket y elimina las claves `attachments/` sin fila. Con el
@@ -289,7 +289,7 @@ No es un estado aceptable en producción (ADR-0028).
 
 - [ ] Código del adaptador desplegado desde `development` (commit verificado; `main` es placeholder).
 - [ ] Bucket privado creado y ruta pública bloqueada.
-- [ ] Variables del §6 configuradas en API y worker, con secretos en el vault.
+- [ ] Variables del §6 configuradas en la API, con secretos en el vault.
 - [ ] Arranque sin avisos de `local` ni de ajustes inseguros.
 - [ ] Carga real `201` y objetos en el bucket.
 - [ ] Lectura con URL firmada `200`; firma alterada `403`.
@@ -299,7 +299,7 @@ No es un estado aceptable en producción (ADR-0028).
 - [ ] Decisión de migración o pérdida registrada (§9).
 - [ ] Rollback a `local` probado en staging, no en producción.
 
-## 13. Estado de cierre (2026-11-27)
+## 13. Estado de cierre (2026-11-28)
 
 El código, el contrato y este runbook están completos en `development`. La configuración y la verificación
 real no se pudieron ejecutar desde `G3-Chatbot-specs`:
@@ -308,6 +308,12 @@ real no se pudieron ejecutar desde `G3-Chatbot-specs`:
 - La cuenta de Railway disponible no lista el proyecto G3 ni el servicio `G3-Chatbot-consumer`.
 - Por tanto, el bucket privado, las variables `SUPABASE_*`/`ATTACHMENT_*`, la migración vs pérdida y la
   política de backup siguen siendo responsabilidad del owner de infraestructura.
+
+**Decisión (2026-11-28):** se mantiene la excepción operativa `ATTACHMENT_STORAGE=local` con
+`ALLOW_LOCAL_ATTACHMENTS=true` (aprobada por el PO) hasta que el owner de infraestructura habilite el
+bucket y las variables. **Owner:** Ankarmin (David); **revisión:** 2026-11-28. El código y los tests del
+adaptador Supabase ya están completos; no hay trabajo de aplicación pendiente. El cierre operativo se
+sigue en este runbook y en el issue backend #254.
 
 Para cerrar SPEC-23/L2, el owner debe ejecutar el checklist de §12 y adjuntar la evidencia (carga `201`,
 lectura por URL firmada, reinicio y lectura posterior, bucket no público). Este issue de specs queda como

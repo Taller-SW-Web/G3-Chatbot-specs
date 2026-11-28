@@ -33,6 +33,7 @@
 
 - **Sesión:** `CLIENTE`. **Cabecera:** `Idempotency-Key` obligatoria.
 - **Cuerpo:** el payload de Ventas de `spec.md` más `forzar` (booleano, por defecto `false`). `forzar` no se reenvía a Ventas: es una decisión del chatbot sobre su propia detección de duplicados. `motivo` solo acepta los cinco valores de G5; no se traducen alias ni se acepta `OTRO`. El formulario usa `descripcion` en la UI y el adapter la envía como `detalle` (mín. 20, máx. 1000).
+- **Borrador:** acepta `conversacionId` opcional (UUID). Si se envía y pertenece al cliente, el BFF guarda el borrador en `conversation.context` para reintentar durante 24 h; **no se reenvía a Ventas**. Sin el campo, el flujo HTTP actual no cambia.
 - **Detección de duplicados (autoritativa):** antes de llamar a Ventas, consulta `GET /api/v1/reclamos` (proxy a `/me`) y busca un reclamo con el mismo `pedidoId` y `motivo` en estado `REGISTRADO` o `EN_PROCESO`. Los estados `ATENDIDO` y `DERIVADO` no cuentan como duplicado.
 - **Si hay duplicado y `forzar=false`:** responde `409` con `application/problem+json`:
 

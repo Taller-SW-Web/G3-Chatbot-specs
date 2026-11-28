@@ -44,18 +44,19 @@ figuraban como ⚠️ (`registro-cliente`, `motor-conversacion`, `tarjetas-detal
 Leyenda de evidencia: `BE` = `G3-Chatbot-backend`, `FE` = `G3-Chatbot-frontend`. Las rutas son relativas
 a cada repositorio y todas las rutas backend llevan el prefijo `/api/v1`.
 
-> **Actualización 2026-11-26:** las filas 3 (`inicio-sesion`) y 17 (`consulta-estado-pedido`) pasan a 🟡.
-> El login no invoca `merge_cart_lines` (Req. 4, [backend#184](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/184))
-> y el detalle de un pedido `ANULADO` no muestra el motivo ni el aviso de reembolso
+> **Actualización 2026-11-28:** las filas 3 (`inicio-sesion`) y 17 (`consulta-estado-pedido`) vuelven a ✅.
+> El login y el MFA fusionan el carrito anónimo antes de enlazarlo
+> ([backend#184](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/184), merge backend #276 y
+> frontend #205) y el detalle `ANULADO` muestra el motivo y el aviso de reembolso
 > ([backend#182](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/182),
-> [frontend#143](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/143)). El resto de la tabla
-> conserva el estado verificado el 2026-11-21.
+> [frontend#143](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/143), merges backend #269 y
+> frontend #193). El resto de la tabla conserva el estado verificado el 2026-11-21.
 
 | # | Capability | Módulo(s) | Estado | Evidencia (`archivo:línea`) | Acción |
 |---|---|---|---|---|---|
 | 1 | `registro-cliente` (SPEC-01) | `mod-auth` | ✅ Al día | `BE/src/modules/mod_auth/adapters/http/session_router.py:387` (201); `BE/src/modules/mod_auth/application/manage_session_use_case.py:114-116` (`estado`, `correoEnmascarado`); `BE/src/shared/infrastructure/http/security_client.py:205` (`canalOrigen: CHATBOT`) | Cerrada: spec y código alineados; merge #141/#109 |
 | 2 | `verificacion-correo` (SPEC-02) | `mod-auth` | ✅ Al día | `BE/src/modules/mod_auth/adapters/http/session_router.py:466` (204), `:482` (202); `BE/src/shared/infrastructure/http/security_client.py` (`verify_email`, `resend_verification`); `FE/src/modules/mod-auth/ui/VerificarCorreoPage.tsx` | Sin cambios; merge #141/#109 |
-| 3 | `inicio-sesion` (SPEC-03) | `mod-auth` (+ `mod-cart`) | ✅ Al día → 🟡 2026-11-26 | `BE/src/modules/mod_auth/adapters/http/session_router.py:237` (login), `:340` (refresh), `:359` (logout), `:374` (perfil); cookies `chat_rt`/`chat_chg`; `FE/src/shared/api/http.ts:62-80` (refresh single-flight) | Req. 4 pendiente: el login no invoca `merge_cart_lines` ([backend#184](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/184)); ver nota 2026-11-26 |
+| 3 | `inicio-sesion` (SPEC-03) | `mod-auth` (+ `mod-cart`) | ✅ Al día (2026-11-28) | `BE/src/modules/mod_auth/adapters/http/session_router.py` (login, refresh, logout, perfil); cookies `chat_rt`/`chat_chg`; `BE/src/modules/mod_auth/application/manage_session_use_case.py:194-209` (fusión → enlace → commit/rollback) y `:239` (`merge_for_login`); `BE/src/modules/mod_cart/application/merge_anonymous_cart_service.py:52`; `FE/src/shared/api/http.ts:62-80` (refresh single-flight); `FE/src/modules/mod-auth/ui/AuthModal.tsx` y `FE/src/shared/ui/shell/AppShell.tsx` (aviso de fusión) | Req. 4 cerrado: fusión y enlace comparten UoW y la fusión falla cerrada; backend #276 · `f6032e4`, frontend #205 |
 | 4 | `validacion-celular` (SPEC-04 · H-17) | `mod-auth` + `mod-checkout` | ✅ Spec al día (D1 + D2) | `BE/src/modules/mod_auth/adapters/http/phone_router.py:81` (`solicitar-otp`), `:92` (`verificar-otp`); `BE/src/modules/mod_auth/application/manage_phone_verification_use_case.py` (HMAC, TTL, intentos, ventana); `BE/src/shared/infrastructure/db/models/phone_otp_challenge.py`; `BE/src/modules/mod_checkout/application/manage_checkout_use_case.py:147-180` (`CheckoutGuard` real); `FE/src/modules/mod-auth/adapters/authApi.ts:83,87` | Implementado D1: OTP, HMAC, flag `REQUIRE_PHONE_VERIFICATION`, guard y UI; BE #141 · `b75fbea6` / FE #109 · `7432d463`. **D2 de SPEC-04 (2026-11-25):** contacto verificado por correo con celular opcional y `REQUIRE_VERIFIED_CONTACT`; `REQUIRE_PHONE_VERIFICATION` queda como modo legado. |
 | 5 | `motor-conversacion` (SPEC-05) | `mod-chat` | ✅ Al día | `BE/src/modules/mod_chat/adapters/http/chatbot_router.py:183-213` (`adjuntoIds` implementado), `:154-166` (acciones directas); `BE/src/modules/mod_chat/application/interpret_and_respond_use_case.py:78-85` (`QUICK_ACTIONS`); `BE/src/modules/mod_catalog/application/tools.py:183-219` (tools, incluida `verificar_celular`) | Corregido el escenario de acciones y cerrado el contrato de `adjuntoIds` con SPEC-23; #141/#109 |
 | 6 | `busqueda-filtrado` (SPEC-06) | `mod-catalog` | ✅ Al día | `BE/src/modules/mod_catalog/adapters/http/catalog_router.py:80-95` (`orden` con el enum cerrado); `BE/src/modules/mod_catalog/application/tools.py:62`; `BE/src/modules/mod_catalog/domain/product_normalizer.py:15` (`DEFAULT_SYNONYMS`) | Implementado D7: `relevancia \| precio_asc \| precio_desc \| nombre_asc \| nombre_desc` y `400 VALIDACION`; #141 |
@@ -69,7 +70,7 @@ a cada repositorio y todas las rutas backend llevan el prefijo `/api/v1`.
 | 14 | `checkout-pago` (SPEC-14) | `mod-checkout` | ✅ Al día | `BE/src/modules/mod_checkout/adapters/http/checkout_router.py:93` (201), `:134`, `:156`; `BE/src/modules/mod_checkout/application/manage_checkout_use_case.py` (15 min, 3 intentos, introspección fail-closed, estados `PENDING_PAYMENT`/`PAYMENT_APPROVED`/`FAILED`/`EXPIRED`) | Sin cambios; consume D1, D3 y D6; #141/#109 |
 | 15 | `grabacion-pedido` (SPEC-15) | `mod-checkout` + `mod-orders` | ✅ Al día | `BE/src/modules/mod_checkout/application/manage_checkout_use_case.py:290-340` (crea pedido en Ventas y `order_ref`); `BE/src/shared/infrastructure/worker/outbox_worker.py:62-74` (`NOTIFY_SALES_PAYMENT`, `REQUEST_CANCELLATION`) | Sin cambios; #141/#109 |
 | 16 | `notificacion-confirmacion` (SPEC-16) | `mod-orders` | ✅ Al día | `BE/src/modules/mod_orders/application/notification_service.py:48` (`MAX_RESENDS = 2`), `:156-212`; `BE/src/shared/infrastructure/worker/outbox_worker.py:70` (`SEND_EMAIL`), `:158-165` (backoff) | Sin cambios; #141/#109 |
-| 17 | `consulta-estado-pedido` (SPEC-17) | `mod-orders` | ✅ Al día → 🟡 2026-11-26 | `BE/src/modules/mod_orders/adapters/http/orders_router.py:138` (lista), `:160` (detalle), `:178` (seguimiento), `:197` (reenvío 202); `BE/src/modules/mod_orders/application/orders_service.py:45-89` | La anulación no muestra motivo ni reembolso ([backend#182](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/182), [frontend#143](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/143)); ver nota 2026-11-26 |
+| 17 | `consulta-estado-pedido` (SPEC-17) | `mod-orders` | ✅ Al día (2026-11-28) | `BE/src/modules/mod_orders/adapters/http/orders_router.py:138` (lista), `:160` (detalle), `:178` (seguimiento), `:197` (reenvío 202); `BE/src/modules/mod_orders/application/orders_service.py:111-112` (`motivoAnulacion`, `reembolso`), `:185-186` (seguimiento); `FE/src/modules/mod-orders/domain/utils/anulacionUtils.ts`; `FE/src/modules/mod-orders/ui/OrderDetailPage.tsx:176-191` | Anulación completa: motivo saneado y reembolso sin promesas sin evidencia; backend #269 · `18c833c`, frontend #193 |
 | 18 | `seguimiento-despacho` (SPEC-18) | `mod-orders` + `mod-shipping` | ✅ Al día | `BE/src/modules/mod_orders/adapters/http/orders_router.py:178`; `BE/src/modules/mod_orders/domain/tracking_mapper.py:22-62` (lista blanca, `recibidoPor` solo frontend); `BE/src/modules/mod_shipping/adapters/despacho_client.py:36` (timeout 4 s), `:62-77` | Sin cambios; #141/#109 |
 | 19 | `creacion-reclamo` (SPEC-19) | `mod-postventa` | ✅ Al día | `BE/src/modules/mod_postventa/adapters/http/claims_router.py:46` (201), `:53` (`Idempotency-Key`); `BE/src/modules/mod_postventa/application/postventa_service.py:194-202` (`RECLAMO_DUPLICADO`) y `:280-303` (filtro por pedido + motivo) | Implementado D4: detección autoritativa y `forzar`; BE #141 · `b75fbea6` |
 | 20 | `consulta-reclamo` (SPEC-20) | `mod-postventa` | ✅ Al día | `BE/src/modules/mod_postventa/adapters/http/claims_router.py:74` (lista), `:94` (detalle); `BE/src/modules/mod_postventa/application/postventa_service.py:210-226`; estados G5 `REGISTRADO`/`EN_PROCESO`/`ATENDIDO`/`DERIVADO` | Rutas y estados alineados; #141 |
@@ -156,10 +157,10 @@ prueba y el CI está en verde.
 | SPEC-12 `direccion-cotizacion-envio` | D6 | ✅ Cerrado | `guardarDireccion`, `GuardarDireccionOpcional` y `avisoDireccion` | BE #141 · `b75fbea6`; FE #109 · `7432d463`; tests de fallo no bloqueante |
 | SPEC-19 `creacion-reclamo` | D4 | ✅ Cerrado | Detección autoritativa, `409 RECLAMO_DUPLICADO` y `forzar` | BE #141 · `b75fbea6`; tests de duplicado/forzar/idempotencia |
 | SPEC-21 `solicitud-devolucion-cambio` | D4 | ✅ Cerrado | Detección por pedido + motivo + líneas, `409 DEVOLUCION_DUPLICADA` y `forzar` | BE #141 · `b75fbea6`; tests de duplicado/forzar/evidencia |
-| SPEC-23 `adjuntos-imagenes-chat` | D2 | 🟡 Parcial (configuración) | `AttachmentStorage` local y Supabase, carga/borrado/URL firmada, EXIF/miniaturas, `adjuntoIds` y limpieza; faltan bucket y variables | BE #141 · `b75fbea6`; BE #144 · `e4faadf`; FE #109 · `7432d463`; tests de storage y seguridad; [runbook](operacion/adjuntos-supabase.md) |
+| SPEC-23 `adjuntos-imagenes-chat` | D2 | 🟡 Parcial (configuración) | `AttachmentStorage` local y Supabase, carga/borrado/URL firmada, EXIF/miniaturas, `adjuntoIds` y limpieza; el bucket y las variables siguen pendientes | BE #141 · `b75fbea6`; BE #144 · `e4faadf`; FE #109 · `7432d463`; excepción documentada en `docs/entorno.md` (BE #275) y [runbook](operacion/adjuntos-supabase.md) §13; issue #254 cerrada como no planificada (dueño Ankarmin, revisión 2026-11-28) |
 | SPEC-24 `retroalimentacion-cliente` | D5 | ✅ Cerrado | Reacciones, sugerencias/bugs, CSAT, valoración y outbox interno | BE #141 · `b75fbea6`; FE #109 · `7432d463`; tests de feedback y CSAT |
 
-**Resultado al 2026-11-21:** 23 de 24 capabilities en ✅ y **SPEC-23 en 🟡** hasta la configuración del storage. **Actualizado el 2026-11-26:** 21 ✅, con `inicio-sesion` y `consulta-estado-pedido` en 🟡 (ver notas finales). Las 5 correcciones mecánicas (SPEC-01, SPEC-05, SPEC-09,
+**Resultado al 2026-11-21:** 23 de 24 capabilities en ✅ y **SPEC-23 en 🟡** hasta la configuración del storage. **Actualizado el 2026-11-28:** 23 ✅ y **SPEC-23 🟡** con excepción operativa documentada; `inicio-sesion` y `consulta-estado-pedido` vuelven a ✅ (ver notas finales). Las 5 correcciones mecánicas (SPEC-01, SPEC-05, SPEC-09,
 SPEC-20 y SPEC-22) se promovieron al verificar el código mergeado. El cierre no depende de S4 ni M5:
 son deuda documental y una mejora conversacional fuera de las 24 capabilities. S2 quedó cerrado el
 2026-11-25; L4 queda pendiente del merge del gate de drift ([BE #165](https://github.com/Taller-SW-Web/G3-Chatbot-backend/pull/165)).
@@ -229,17 +230,18 @@ son deuda documental y una mejora conversacional fuera de las 24 capabilities. S
 > fail-closed de `local` ya está implementado en backend #198. **L4 queda cerrado**:
 > BE #165 se mergeó el 2026-11-25 (`f7fd0af`) y el gate de drift corre en CI. **M5** (specs#64) sigue
 > abierto; **S4** (backend#188) se cerró el 2026-11-26 al alinear los documentos vigentes a `ProductsClient`.
-> Ninguno es requisito de las 24 capabilities. El estado real de las 24 specs es **21 ✅, SPEC-23 🟡,
-> `inicio-sesion` 🟡 y `consulta-estado-pedido` 🟡**.
+> Ninguno es requisito de las 24 capabilities. El estado real de las 24 specs es **23 ✅ y SPEC-23 🟡**
+> con la excepción operativa documentada (dueño Ankarmin, revisión 2026-11-28; issue #254 cerrada como
+> no planificada).
 
-> [!warning] Hallazgo 2026-11-26 — `inicio-sesion` no cumple el Req. 4
-> `merge_cart_lines` existe y tiene pruebas unitarias, pero `POST /sesion/login` no la invoca y el estado
-> `MERGED` no se usa. La auditoría del 2026-11-21 marcaba `inicio-sesion` como ✅; la fila 3 queda 🟡 hasta
-> que el login fusione el carrito anónimo. Seguimiento:
-> [backend#184](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/184).
+> [!note] Resuelto 2026-11-28 — `inicio-sesion` cumple el Req. 4
+> `POST /sesion/login` y la verificación MFA fusionan el carrito anónimo (`merge_for_login` de
+> `mod-cart`) **antes** de `link_anonymous_to_customer`, que limpia `anonymous_sid`. Fusión y enlace
+> comparten un solo `UnitOfWork`: si la fusión falla, no se abre sesión y el carrito anónimo queda
+> intacto. La respuesta añade `carritoFusionado`, `avisoCarrito` y `ajustesCarrito`, y el frontend
+> muestra el aviso. Backend #276; frontend #205; issue #184 cerrada.
 
-> [!warning] Hallazgo 2026-11-26 — `consulta-estado-pedido` no muestra la anulación completa
-> La spec exige "Anulado el {fecha}" con el motivo general y el aviso de reembolso. El backend no expone
-> el motivo y la UI solo muestra "Anulado". Seguimiento:
-> [backend#182](https://github.com/Taller-SW-Web/G3-Chatbot-backend/issues/182) y
-> [frontend#143](https://github.com/Taller-SW-Web/G3-Chatbot-frontend/issues/143). La fila 17 queda 🟡.
+> [!note] Resuelto 2026-11-28 — `consulta-estado-pedido` muestra la anulación completa
+> El BFF expone `motivoAnulacion` y `reembolso`; la UI muestra "Anulado el {fecha}", el motivo saneado
+> y el aviso de reembolso solo cuando hay evidencia de pago. Backend #269 · `18c833c`; frontend #193;
+> issues #182 y #143 cerradas.
